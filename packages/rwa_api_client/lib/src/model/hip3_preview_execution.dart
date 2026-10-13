@@ -22,24 +22,24 @@ part 'hip3_preview_execution.g.dart';
 /// * [contextId] 
 /// * [productId] 
 /// * [environment] 
-/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [type] 
 /// * [timeInForce] 
-/// * [limitPrice] - 十进制字符串，避免浮点误差
-/// * [leverage] - 十进制字符串，避免浮点误差
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [leverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [marginMode] 
 /// * [reduceOnly] 
-/// * [notionalUsdc] - 十进制字符串，避免浮点误差
+/// * [notionalUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [marginRequiredUsdc] - 本次订单资金门槛，等于 ceil(notional_usdc / leverage + estimated_fee_usdc, 6)。开仓校验、资金预留和补款需求使用此口径，不包含 fee_reserve_usdc 中的额外缓冲。平仓预览沿用平仓语义。
-/// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
+/// * [availableMarginUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [maximumQuantity] - 含 fee_reserve_multiplier 安全余量的保守滑杆最大数量，不是额外的硬性拒单上限。实际订单仍按保证金加预计手续费校验，并受 HL 数量上限、平台金额和精度等规则约束。
 /// * [maximumQuantityUnavailableReason] - 最大数量不可用的原因；设置尚未生效时为 account_settings_update_required，可用时为 null。旧服务可能不返回此字段。
 /// * [feeReserveUsdc] - 本次开仓建议预留的手续费预算，等于 ceil(estimated_fee_usdc × fee_reserve_multiplier, 6)，包含预计手续费及安全余量；用于展示，不是额外收费或实际冻结金额。margin_required_usdc 仅包括保证金与 estimated_fee_usdc，后端不会要求额外安全余量始终完整。平仓预览不返回该字段。
-/// * [estimatedFeeUsdc] - 十进制字符串，避免浮点误差
-/// * [liquidationPrice] - 十进制字符串，避免浮点误差
+/// * [estimatedFeeUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [liquidationPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [liquidationPriceUnavailableReason] 
 /// * [crossLiquidationImpacts] - 本次订单如果成交，对其他 USDC 全仓仓位强平价的账户级影响；不重复返回本单目标商品。 当前强平价不可用或无法可靠模拟时保留仓位身份和方向，并在 unavailable_reason 说明原因。 
-/// * [slippagePercent] - 十进制字符串，避免浮点误差
+/// * [slippagePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
   /// 当前账户执行此订单的阻塞原因，非预览计算错误。当前包括 account_not_activated、 insufficient_margin、insufficient_size_capacity、leverage_update_required、 margin_mode_update_required；无阻塞返回 []。设置不一致时应先完成设置，再刷新预览。 客户端应容忍未知原因；旧服务可能缺少此字段，缺省不代表已通过执行校验。 即使数组为空，下单及广播仍须重新验证账户状态、余额、容量和行情。 
@@ -60,7 +60,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   Hip3Environment get environment;
   // enum environmentEnum {  mainnet,  testnet,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String get quantity;
 
@@ -72,11 +72,11 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   Hip3TimeInForce get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  alo,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'limit_price')
   String get limitPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'leverage')
   String get leverage;
 
@@ -87,7 +87,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'reduce_only')
   bool get reduceOnly;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'notional_usdc')
   String get notionalUsdc;
 
@@ -95,7 +95,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'margin_required_usdc')
   String get marginRequiredUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_margin_usdc')
   String get availableMarginUsdc;
 
@@ -111,11 +111,11 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'fee_reserve_usdc')
   String? get feeReserveUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_fee_usdc')
   String get estimatedFeeUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'liquidation_price')
   String? get liquidationPrice;
 
@@ -126,7 +126,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'cross_liquidation_impacts')
   BuiltList<Hip3CrossLiquidationImpact> get crossLiquidationImpacts;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'slippage_percent')
   String get slippagePercent;
 

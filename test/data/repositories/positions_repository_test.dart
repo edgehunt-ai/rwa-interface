@@ -151,7 +151,11 @@ void main() {
             _recovered().rebuild(
               (a) => a
                 ..actionId = 'review-1'
-                ..status = api.Hip3ActionStatus.manualReview,
+                ..status = api.Hip3ActionStatus.manualReview
+                ..failureCode =
+                    Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition
+                ..userAction =
+                    Hip3ActionUserActions.keepMarginModeOrClosePosition,
             ),
           ]),
       );
@@ -163,6 +167,14 @@ void main() {
       expect(result.items.last.canResumePositionAction, isFalse);
       expect(result.items.last.effectsApplied, isTrue);
       expect(result.items.last.status, 'manualReview');
+      expect(
+        result.items.last.failureCode,
+        Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition,
+      );
+      expect(
+        result.items.last.userAction,
+        Hip3ActionUserActions.keepMarginModeOrClosePosition,
+      );
     },
   );
 }

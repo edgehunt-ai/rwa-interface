@@ -16,8 +16,8 @@ part 'legacy_bstock_funding_plan.g.dart';
 /// * [rail] 
 /// * [network] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
-/// * [totalFee] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [totalFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [steps] 
 /// * [createdAt] 
@@ -40,11 +40,11 @@ abstract class LegacyBstockFundingPlan implements Built<LegacyBstockFundingPlan,
   LegacyBstockFundingPlanAssetEnum get asset;
   // enum assetEnum {  USDC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_fee')
   String get totalFee;
 

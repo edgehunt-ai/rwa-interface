@@ -93,6 +93,8 @@ final class PositionsRepositoryImpl implements PositionsRepository {
               status: action.status.name,
               positionId: action.positionId,
               orderId: action.orderId,
+              failureCode: action.failureCode,
+              userAction: action.userAction,
               effectsApplied: action.effectsApplied,
               canResumePositionAction:
                   const [

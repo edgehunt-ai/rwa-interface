@@ -14,8 +14,8 @@ part 'hip3_market_order_minimums.g.dart';
 ///
 /// Properties:
 /// * [amountAsset] 
-/// * [slippagePercent] - 十进制字符串，避免浮点误差
-/// * [leverage] - 十进制字符串，避免浮点误差
+/// * [slippagePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [leverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [long] 
 /// * [short] 
 /// * [observedAt] 
@@ -25,11 +25,11 @@ abstract class Hip3MarketOrderMinimums implements Built<Hip3MarketOrderMinimums,
   Hip3MarketOrderMinimumsAmountAssetEnum get amountAsset;
   // enum amountAssetEnum {  USDC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'slippage_percent')
   String get slippagePercent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'leverage')
   String get leverage;
 

@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'order_action.g.dart';
 
-/// 业务订单的一次独立冻结钱包动作。order_id 始终指向原订单，action_id 标识本次动作，二者不可互换。 chain_id/from/to/data/value/payload_hash 是服务端权威值，不接受客户端覆盖。HIP-3 EIP-712 不属于本类型。 erc20_approval 的 to 是输入 token；其余动作的 to 是 Router。动作确认不等于订单成交。 valid_until 是服务端提交窗口；过期不会撤销链上 allowance 或证明未广播。 
+/// 业务订单的一次独立冻结钱包动作。order_id 始终指向原订单，action_id 标识本次动作，二者不可互换。 chain_id/from/to/data/value/payload_hash 是服务端权威值，不接受客户端覆盖。HIP-3 EIP-712 不属于本类型。 erc20_approval 的 to 是输入 token；其余动作的 to 是 Router。动作确认不等于订单成交。 valid_until 是服务端提交窗口；过期不会撤销链上 allowance 或证明未广播。 仅未提交且无交易哈希、未决execution或交付证据的过期cancel_order允许用户在同一订单上用新key再次DELETE； 原动作保留failed/action_expired和原冻结交易，旧key只重放原命令，迟到证据继续对账。不自动重播或替换其他动作。 
 ///
 /// Properties:
 /// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。

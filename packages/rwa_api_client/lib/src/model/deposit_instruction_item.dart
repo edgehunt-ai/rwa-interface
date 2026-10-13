@@ -15,7 +15,7 @@ part 'deposit_instruction_item.g.dart';
 ///
 /// Properties:
 /// * [identity] 
-/// * [minDeposit] - 十进制字符串，避免浮点误差
+/// * [minDeposit] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [confirmationsRequired] 
 /// * [estimatedArrivalSeconds] 
 /// * [qrPayload] - Present only when availability.status is available. The content is the plain EVM wallet address (no `ethereum:` URI) equal to `wallet.address` case-insensitively, so that generic wallet scanners accept the scanned value without manual edits. 
@@ -27,7 +27,7 @@ abstract class DepositInstructionItem implements Built<DepositInstructionItem, D
   @BuiltValueField(wireName: r'identity')
   FundingSourceAssetIdentity get identity;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'min_deposit')
   String get minDeposit;
 

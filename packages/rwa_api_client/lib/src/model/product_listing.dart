@@ -26,12 +26,12 @@ part 'product_listing.g.dart';
 /// * [label] - 展示名，`bStocks` 或 `HIP-3`
 /// * [logoUrl] - 管理后台维护的产品图标 URL；未配置时为 null，客户端用 logo_text 占位，不得伪造图标。
 /// * [logoText] - 无图时的占位字母
-/// * [price] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [change24hPercent] - 24h 涨跌幅（百分比数值，如 `\"0.47\"`）
 /// * [spreadVsReferencePercent] - 有来源证明的参考偏离；当前 bStocks 列表未加载参考盘口时为 null，不能显示成0或独立美股现货溢价。
 /// * [volume24h] - 24h 成交量（以基础资产计价）
 /// * [volume24hUnit] 
-/// * [turnover24hUsd] - 十进制字符串，避免浮点误差
+/// * [turnover24hUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [hotRank] - 当前产品列表筛选集合内的24h成交额热度名次；缺失/非法成交额为 null，不使用目录序号伪造热度。
 /// * [isFavorite] 
 /// * [tradable] - 产品级可交易性。bStocks catalog 展示条目为 false；未返回时按产品类型默认处理。
@@ -85,7 +85,7 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
   @BuiltValueField(wireName: r'logo_text')
   String? get logoText;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price')
   String get price;
 
@@ -104,7 +104,7 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
   @BuiltValueField(wireName: r'volume_24h_unit')
   String? get volume24hUnit;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'turnover_24h_usd')
   String? get turnover24hUsd;
 

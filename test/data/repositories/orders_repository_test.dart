@@ -27,6 +27,7 @@ void main() {
             ..requestedAmount = '10'
             ..quantity = '0.1'
             ..filledQuantity = '0.01'
+            ..cancelledQuantity = '0.09'
             ..limitPrice = '100'
             ..averageFillPrice = '99'
             ..orderValue = '10'
@@ -37,7 +38,9 @@ void main() {
         expect(mapped.settlementAsset, asset);
         expect(mapped.quantity!.asset, 'NVDAB');
         expect(mapped.filledQuantity!.asset, 'NVDAB');
+        expect(mapped.cancelledQuantity!.asset, 'NVDAB');
         expect(mapped.quantity!.value, '0.1');
+        expect(mapped.cancelledQuantity!.value, '0.09');
         for (final value in [
           mapped.requestedAmount,
           mapped.limitPrice,

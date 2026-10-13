@@ -38,11 +38,11 @@ part 'bstock_order.g.dart';
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
-/// * [limitPrice] - 十进制字符串，避免浮点误差
-/// * [filledQuantity] - 十进制字符串，避免浮点误差
-/// * [averageFillPrice] - 十进制字符串，避免浮点误差
-/// * [orderValue] - 十进制字符串，避免浮点误差
-/// * [fee] - 十进制字符串，避免浮点误差
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [filledQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [averageFillPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [orderValue] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 
 /// * [reduceOnly] 
@@ -54,7 +54,7 @@ part 'bstock_order.g.dart';
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [timeInForce] 
-/// * [quantity] - 预算买入在执行前可为 null，原始预算保存在 requested_amount，不能补造数量。
+/// * [quantity] - 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
 /// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
 /// * [currentActionId] 
 /// * [status] 
@@ -71,6 +71,7 @@ part 'bstock_order.g.dart';
 /// * [chainOrderId] - GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
 /// * [placementTransactionHash] - canonical GTC 挂单交易，不是最近辅助动作的交易。
 /// * [transactionHash] - canonical IOC 执行交易，与 log_index 一起标识链证据。
+/// * [cancelledQuantity] - canonical IOC未成交取消余量；filled_quantity+cancelled_quantity=quantity。预算买入quantity是回执上限，非零余量不表示预算购买失败；证据到达前省略。
 /// * [logIndex] 
 /// * [cancellationReason] 
 @BuiltValue()
@@ -371,6 +372,13 @@ class _$BstockOrderSerializer implements PrimitiveSerializer<BstockOrder> {
       yield serializers.serialize(
         object.quantity,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.cancelledQuantity != null) {
+      yield r'cancelled_quantity';
+      yield serializers.serialize(
+        object.cancelledQuantity,
+        specifiedType: const FullType(String),
       );
     }
     if (object.cancellationReason != null) {
@@ -766,6 +774,14 @@ class _$BstockOrderSerializer implements PrimitiveSerializer<BstockOrder> {
           ) as String?;
           if (valueDes == null) continue;
           result.quantity = valueDes;
+          break;
+        case r'cancelled_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.cancelledQuantity = valueDes;
           break;
         case r'cancellation_reason':
           final valueDes = serializers.deserialize(

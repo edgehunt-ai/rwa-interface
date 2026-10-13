@@ -254,6 +254,7 @@ export 'package:rwa_api_client/src/model/hip3_operation.dart';
 export 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
 export 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';
 export 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
+export 'package:rwa_api_client/src/model/hip3_order_protection_spec_not.dart';
 export 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 export 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 export 'package:rwa_api_client/src/model/hip3_protection_spec.dart';

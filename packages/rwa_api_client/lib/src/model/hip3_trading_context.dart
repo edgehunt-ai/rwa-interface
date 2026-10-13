@@ -26,10 +26,10 @@ part 'hip3_trading_context.g.dart';
 /// * [settlementAsset] 
 /// * [rules] 
 /// * [marketOrderMinimums] - 当前盘口可用时返回；不支持市价单或无法取得新鲜盘口时为 null。
-/// * [currentLeverage] - 十进制字符串，避免浮点误差
+/// * [currentLeverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [currentMarginMode] 
-/// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
-/// * [withdrawableUsdc] - 十进制字符串，避免浮点误差
+/// * [availableMarginUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [withdrawableUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [takerFeeRate] - 当前账户和 USDC 抵押 HIP-3 市场的预计 taker 费率（含账户费率、部署者倍率、growth mode 和有效推荐折扣），不含平台额外预留。只读场景无费率证据时为 null。
 /// * [feeReserveMultiplier] - 用于 100% 滑杆最大数量计算及建议预留展示的手续费系数（1–10，初始默认 1.2），不是实际收费倍率或下单资金门槛。后端校验和资金占用仅要求保证金加预计手续费，允许消耗额外缓冲。只读场景为 null。
 /// * [orderCapacity] - 当前账户设置下的双向交易额度。账户尚未就绪、只读场景或上游未提供方向额度时为 null；真实零额度返回字符串 0。
@@ -66,7 +66,7 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
   @BuiltValueField(wireName: r'market_order_minimums')
   Hip3MarketOrderMinimums? get marketOrderMinimums;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'current_leverage')
   String? get currentLeverage;
 
@@ -74,11 +74,11 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
   MarginMode? get currentMarginMode;
   // enum currentMarginModeEnum {  isolated,  cross,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_margin_usdc')
   String get availableMarginUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'withdrawable_usdc')
   String get withdrawableUsdc;
 

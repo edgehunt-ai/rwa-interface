@@ -138,7 +138,7 @@ class OrdersApi {
   }
 
   /// 请求取消订单
-  /// 对真实业务 order_id 取消剩余 GTC 数量，返回同一订单；若需链上撤单则 next_action 为 cancel_order。 DELETE 成功不代表链上已取消。订单已 filled/cancelled 时返回当前状态，不创建动作；保留历史成交。 没有挂单证据返回 order_not_placed，不确定证据返回 order_reconciliation_required，IOC 返回 order_not_cancellable。 不同命令键已有未解决撤单返回 cancellation_in_progress；相同命令键重放，内容冲突返回 idempotency_conflict。 
+  /// 对真实业务 order_id 取消剩余 GTC 数量，返回同一订单；若需链上撤单则 next_action 为 cancel_order。 DELETE 成功不代表链上已取消。订单已 filled/cancelled 时返回当前状态，不创建动作；保留历史成交。 没有挂单证据返回 order_not_placed，不确定证据返回 order_reconciliation_required，IOC 返回 order_not_cancellable。 不同命令键已有未解决撤单返回 cancellation_in_progress；相同命令键重放，内容冲突返回 idempotency_conflict。 唯一的过期撤单例外：原 cancel_order 未提交且已超过 valid_until（或 failed/action_expired）， 服务端确认无交易哈希、未决 execution 或交付证据后，用户可对同一 order_id 用新 Idempotency-Key 再次 DELETE。 旧 key 只重放原命令；旧 action 保留 failed/action_expired 及原冻结交易，不改有效期，不自动重播。 已交付或结果未知仍阻止替换，迟到的原交易证据继续对账；该例外不适用于挂单或 IOC 动作。 
   ///
   /// Parameters:
   /// * [orderId] - 业务订单标识；bStocks 为 bstocks-order:<UUID>，HIP3 保持其现有业务订单 UUID。
@@ -518,7 +518,7 @@ class OrdersApi {
   }
 
   /// 准备并持久化 HIP-3 客户端签名动作
-  /// 根据服务器拥有的订单、平仓预览或仓位创建动作。此调用本身不广播或改变 Provider 仓位；每个步骤都需前端签名。账户和 signer 从已验证身份推导。操作对象必须属于当前账户及同一 environment/product。并发冲突或已有未决动作占用同一业务对象时返回 409；每个步骤必须持久化防重复广播 claim。前端不得提交 raw action、nonce、cloid 或 Provider 状态。 
+  /// 根据服务器拥有的订单、平仓预览或仓位创建动作。此调用本身不广播或改变 Provider 仓位；每个步骤都需前端签名。账户和 signer 从已验证身份推导。操作对象必须属于当前账户及同一 environment/product。并发冲突或已有未决动作占用同一业务对象时返回 409；每个步骤必须持久化防重复广播 claim。前端不得提交 raw action、nonce、cloid 或 Provider 状态。 平仓冲突使用 hip3_close_preview_changed/hip3_close_binding_changed（request_new_preview）、 hip3_position_unavailable（refresh_position）、hip3_close_in_progress（view_close_action）或 hip3_idempotency_conflict（use_new_idempotency_key），retryable&#x3D;false；不使用内部诊断字符串作为恢复依据。 模式切换被已有仓位阻止时，409 hip3_margin_mode_change_requires_flat_position， user_action&#x3D;keep_margin_mode_or_close_position；已持久化控制动作也在 failure_code/user_action 中返回该恢复信息。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -2497,7 +2497,7 @@ class OrdersApi {
   }
 
   /// 预览 HIP-3 全部或部分平仓
-  /// 从当前账户的权威仓位计算平仓方向、最大可平数量、费用与预计已实现盈亏，冻结 position version 和规范化执行条件。数量和百分比互斥；均不传表示全部平仓。预览不保证成交价格或一定成交；确认时必须重新校验仓位和风险。只生成预览，不广播。 
+  /// 从当前账户的权威仓位计算平仓方向、最大可平数量、费用与预计已实现盈亏，冻结 position version 和规范化执行条件。数量和百分比互斥；均不传表示全部平仓。预览不保证成交价格或一定成交；确认时必须重新校验仓位和风险。只生成预览，不广播。 部分平仓规范化后名义金额须至少10 USDC，否则422 hip3_partial_close_below_minimum， user_action&#x3D;increase_close_quantity_or_close_full_position；全平剩余尘埃仓位不受该部分平仓门槛限制。 市价执行价相对mark偏离超过5%返回503 hip3_close_oracle_deviation，不返回可执行预览。 409 hip3_close_preview_changed/hip3_close_binding_changed 要求 request_new_preview； hip3_position_unavailable 要求 refresh_position，hip3_close_in_progress 要求 view_close_action， hip3_idempotency_conflict 要求 use_new_idempotency_key。这些业务冲突 retryable&#x3D;false，不能据此自动广播。 
   ///
   /// Parameters:
   /// * [positionId] 
@@ -2815,7 +2815,7 @@ class OrdersApi {
   }
 
   /// 提交当前 HIP-3 步骤签名并由后端广播
-  /// 仅接收 signature。服务端恢复冻结 action/nonce/environment，校验 step 归属、expected signer、签名摘要、有效期、前置步骤及业务状态，然后通过 CAS 持久化 submitting 后广播。相同 key/相同签名返回已有动作；相同 key/不同内容返回 409。超时、5xx、进程崩溃进入 ambiguous 并独立对账；禁止自动重播或给该步骤换 nonce 重试。只有确认上一动作成功后才释放下一待签步骤。 
+  /// 仅接收 signature。服务端恢复冻结 action/nonce/environment，校验 step 归属、expected signer、签名摘要、有效期、前置步骤及业务状态，然后通过 CAS 持久化 submitting 后广播。相同 key/相同签名返回已有动作；相同 key/不同内容返回 409。超时、5xx、进程崩溃进入 ambiguous 并独立对账；禁止自动重播或给该步骤换 nonce 重试。只有确认上一动作成功后才释放下一待签步骤。 平仓业务绑定失效返回409及 hip3_close_preview_changed/hip3_close_binding_changed 等恢复码， 以 user_action 重新预览或查看原动作，不自动重播；内部冻结动作或有效期不变量错误返回安全500 internal_error。 
   ///
   /// Parameters:
   /// * [actionId] - 服务端为冻结 HIP-3 动作生成的稳定标识

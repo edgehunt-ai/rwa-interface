@@ -126,6 +126,7 @@ final class TradingOrder {
     this.conditional,
     this.quantity,
     this.filledQuantity,
+    this.cancelledQuantity,
     this.limitPrice,
     this.averageFillPrice,
     this.orderValue,
@@ -151,6 +152,7 @@ final class TradingOrder {
   final TradingOrderStatus status;
   final DecimalValue? quantity;
   final DecimalValue? filledQuantity;
+  final DecimalValue? cancelledQuantity;
   final DecimalValue? limitPrice;
   final DecimalValue? averageFillPrice;
   final DecimalValue? orderValue;

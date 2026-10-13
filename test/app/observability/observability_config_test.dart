@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/observability/observability_config.dart';
 
@@ -10,6 +11,7 @@ void main() {
       tracesSampleRate: '0.25',
       profilesSampleRate: '0.5',
       smokeTest: true,
+      performanceDiagnostics: true,
     );
 
     expect(config.dsn, 'https://public@example.invalid/1');
@@ -17,6 +19,7 @@ void main() {
     expect(config.release, 'app@1.2.3');
     expect(config.tracesSampleRate, 0.25);
     expect(config.profilesSampleRate, 0.5);
+    expect(config.performanceDiagnostics, isTrue);
     expect(config.smokeTest, isTrue);
   });
 
@@ -31,6 +34,25 @@ void main() {
     expect(config.enabled, isFalse);
     expect(config.environment, 'unknown');
     expect(config.tracesSampleRate, 0.10);
+    expect(config.performanceDiagnosticsEnabled, isFalse);
     expect(config.profilesSampleRate, 0.10);
+  });
+
+  test('performance diagnostics require an explicit Android debug build', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final enabled = ObservabilityConfig.fromValues(
+      dsn: 'https://public@example.invalid/1',
+      environment: 'test',
+      performanceDiagnostics: true,
+    );
+    final disabled = ObservabilityConfig.fromValues(
+      dsn: 'https://public@example.invalid/1',
+      environment: 'test',
+    );
+
+    expect(enabled.performanceDiagnosticsEnabled, kDebugMode && !kIsWeb);
+    expect(disabled.performanceDiagnosticsEnabled, isFalse);
   });
 }

@@ -21,7 +21,7 @@ part 'perp_funding_rail.g.dart';
 /// * [tokenContract] 
 /// * [tokenDecimals] 
 /// * [provenance] 
-/// * [minimumAmount] - 十进制字符串，避免浮点误差
+/// * [minimumAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class PerpFundingRail implements Built<PerpFundingRail, PerpFundingRailBuilder> {
   @BuiltValueField(wireName: r'rail')
@@ -56,7 +56,7 @@ abstract class PerpFundingRail implements Built<PerpFundingRail, PerpFundingRail
   FundingAssetProvenance get provenance;
   // enum provenanceEnum {  circle_native,  tether_native,  tether_usdt0,  l2_standard_bridged,  binance_peg,  hyperliquid_perps,  testnet_mock,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_amount')
   String? get minimumAmount;
 

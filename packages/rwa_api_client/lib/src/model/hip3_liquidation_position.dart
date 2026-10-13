@@ -12,14 +12,14 @@ part 'hip3_liquidation_position.g.dart';
 ///
 /// Properties:
 /// * [productId] - 原始完整HIP3产品标识。
-/// * [signedPositionSize] - 十进制字符串，避免浮点误差
+/// * [signedPositionSize] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class Hip3LiquidationPosition implements Built<Hip3LiquidationPosition, Hip3LiquidationPositionBuilder> {
   /// 原始完整HIP3产品标识。
   @BuiltValueField(wireName: r'product_id')
   String get productId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'signed_position_size')
   String get signedPositionSize;
 

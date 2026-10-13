@@ -682,7 +682,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               _Hip3SourceChip(
-                label: 'Spot · BSC',
+                label: 'Spot · BNB Smart Chain',
                 backgroundColor: const Color(0x1AEDBC04),
                 leading: SvgPicture.asset(
                   'assets/figma/common/network_bsc.svg',

@@ -16,7 +16,7 @@ part 'deposit_observation.g.dart';
 /// * [observationId] - 服务端生成的不透明公开标识，不是内部证据或 Provider ID。
 /// * [chain] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [confirmations] 
 /// * [confirmationsRequired] 
@@ -38,7 +38,7 @@ abstract class DepositObservation implements Built<DepositObservation, DepositOb
   @BuiltValueField(wireName: r'asset')
   String get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

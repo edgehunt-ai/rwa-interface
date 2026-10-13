@@ -16,9 +16,9 @@ part 'quote.g.dart';
 /// * [priceKind] - HIP3 报价为 mark；oracle 在 stats 中独立标识，不冒充美股参考价。
 /// * [dataStatus] - 服务端按行情源有效期判断；客户端按 updated_at 继续显示报价年龄。
 /// * [label] - 报价说明，如 `Last traded · NVDAB/USDC` 或 `Mark price · NVDA-PERP`
-/// * [price] - 十进制字符串，避免浮点误差
-/// * [change24h] - 十进制字符串，避免浮点误差
-/// * [change24hPercent] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [change24h] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [change24hPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [updatedAt] 
 @BuiltValue()
 abstract class Quote implements Built<Quote, QuoteBuilder> {
@@ -40,15 +40,15 @@ abstract class Quote implements Built<Quote, QuoteBuilder> {
   @BuiltValueField(wireName: r'label')
   String? get label;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price')
   String get price;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'change_24h')
   String? get change24h;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'change_24h_percent')
   String? get change24hPercent;
 

@@ -12,22 +12,22 @@ part 'tp_sl_spec.g.dart';
 ///
 /// Properties:
 /// * [enabled] 
-/// * [takeProfitPrice] - 十进制字符串，避免浮点误差
-/// * [stopLossPrice] - 十进制字符串，避免浮点误差
+/// * [takeProfitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [stopLossPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [stopLimitPrice] - 仅限价单
 /// * [takeProfitPercent] - 与价格互算，二者传其一即可
-/// * [stopLossPercent] - 十进制字符串，避免浮点误差
+/// * [stopLossPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [stopLimitPercent] - 与 `stop_limit_price` 互算，二者传其一即可
 @BuiltValue()
 abstract class TpSlSpec implements Built<TpSlSpec, TpSlSpecBuilder> {
   @BuiltValueField(wireName: r'enabled')
   bool? get enabled;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'take_profit_price')
   String? get takeProfitPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'stop_loss_price')
   String? get stopLossPrice;
 
@@ -39,7 +39,7 @@ abstract class TpSlSpec implements Built<TpSlSpec, TpSlSpecBuilder> {
   @BuiltValueField(wireName: r'take_profit_percent')
   String? get takeProfitPercent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'stop_loss_percent')
   String? get stopLossPercent;
 

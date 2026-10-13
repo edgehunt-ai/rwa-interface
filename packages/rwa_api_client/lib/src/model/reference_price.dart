@@ -13,7 +13,7 @@ part 'reference_price.g.dart';
 ///
 /// Properties:
 /// * [symbol] 
-/// * [price] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [session] 
 /// * [asOf] 
 /// * [isStale] - 休市 / 隔夜时段为 `true`，前端应提示参考价停留在最近收盘水平
@@ -22,7 +22,7 @@ abstract class ReferencePrice implements Built<ReferencePrice, ReferencePriceBui
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price')
   String get price;
 

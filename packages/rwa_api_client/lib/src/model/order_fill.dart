@@ -18,9 +18,9 @@ part 'order_fill.g.dart';
 /// * [pnlAsset] - 成交采集时通过同一网络的场所 collateralToken 和 token 元数据确认并保存的盈亏计价币种；开仓、平仓和保护单使用同一来源。缺失为 null，不从 fee_asset 推断。
 /// * [fillId] 
 /// * [providerTradeId] 
-/// * [price] - 十进制字符串，避免浮点误差
-/// * [quantity] - 十进制字符串，避免浮点误差
-/// * [fee] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [feeAsset] 
 /// * [providerHash] 
 /// * [executedAt] 
@@ -49,15 +49,15 @@ abstract class OrderFill implements Built<OrderFill, OrderFillBuilder> {
   @BuiltValueField(wireName: r'provider_trade_id')
   String get providerTradeId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price')
   String get price;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String get quantity;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'fee')
   String get fee;
 

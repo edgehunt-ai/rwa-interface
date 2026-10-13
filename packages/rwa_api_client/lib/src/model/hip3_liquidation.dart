@@ -14,7 +14,7 @@ part 'hip3_liquidation.g.dart';
 ///
 /// Properties:
 /// * [id] - 同一钱包和环境的同一事件跨查询窗口保持稳定，可去重。
-/// * [providerAccountValue] - 十进制字符串，避免浮点误差
+/// * [providerAccountValue] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [accountValueScope] - 对应来源Cross账户价值或Isolated逐仓账户价值，不是所选HIP3产品的损益，不猜测结算资产。
 /// * [marginMode] 
 /// * [positions] 
@@ -27,7 +27,7 @@ abstract class Hip3Liquidation implements Built<Hip3Liquidation, Hip3Liquidation
   @BuiltValueField(wireName: r'id')
   String get id;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'provider_account_value')
   String get providerAccountValue;
 

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:nobell/app/observability/observability_config.dart';
 import 'package:nobell/app/observability/sentry_event_sanitizer.dart';
+import 'package:nobell/app/observability/sentry_transaction_diagnostics.dart';
 
 typedef ApplicationRunner = FutureOr<void> Function();
 typedef MonitoringInitializer = Future<void> Function(
@@ -84,11 +85,14 @@ abstract final class SentryBootstrap {
     FlutterOptionsConfiguration? optionsOverride,
   }) {
     return SentryFlutter.init((options) {
+      final performanceDiagnostics = config.performanceDiagnosticsEnabled;
       options
         ..dsn = config.dsn
         ..environment = config.smokeTest ? 'android-smoke' : config.environment
         ..release = config.release
-        ..tracesSampleRate = config.smokeTest ? 1.0 : config.tracesSampleRate
+        ..tracesSampleRate = config.smokeTest || performanceDiagnostics
+            ? 1.0
+            : config.tracesSampleRate
         // Profiling is explicitly required; Sentry 9.28 still marks this API experimental.
         // ignore: experimental_member_use
         ..profilesSampleRate = config.profilesSampleRate
@@ -97,6 +101,9 @@ abstract final class SentryBootstrap {
         ..captureNativeFailedRequests = false
         ..beforeSend = SentryEventSanitizer.filterAndSanitize
         ..enableAutoPerformanceTracing = true;
+      if (performanceDiagnostics) {
+        options.beforeSendTransaction = SentryTransactionDiagnostics.inspect;
+      }
       if (config.smokeTest) {
         options
           ..debug = true

@@ -18,11 +18,11 @@ part 'unified_funding_account.g.dart';
 /// Properties:
 /// * [accountId] 
 /// * [valuationCurrency] 
-/// * [valuedTotalUsd] - 十进制字符串，避免浮点误差
-/// * [availableToFundValueUsd] - 十进制字符串，避免浮点误差
-/// * [reservedValueUsd] - 十进制字符串，避免浮点误差
-/// * [inTransitValueUsd] - 十进制字符串，避免浮点误差
-/// * [unavailableValueUsd] - 十进制字符串，避免浮点误差
+/// * [valuedTotalUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [availableToFundValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [reservedValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [inTransitValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [unavailableValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unvaluedPositionCount] 
 /// * [positions] 
 /// * [transfers] 
@@ -38,23 +38,23 @@ abstract class UnifiedFundingAccount implements Built<UnifiedFundingAccount, Uni
   UnifiedFundingAccountValuationCurrencyEnum get valuationCurrency;
   // enum valuationCurrencyEnum {  USD,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'valued_total_usd')
   String get valuedTotalUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_to_fund_value_usd')
   String get availableToFundValueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'reserved_value_usd')
   String get reservedValueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'in_transit_value_usd')
   String get inTransitValueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'unavailable_value_usd')
   String get unavailableValueUsd;
 

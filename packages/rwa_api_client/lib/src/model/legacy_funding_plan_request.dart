@@ -15,7 +15,7 @@ part 'legacy_funding_plan_request.g.dart';
 /// Properties:
 /// * [rail] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @Deprecated('LegacyFundingPlanRequest has been deprecated')
 @BuiltValue()
 abstract class LegacyFundingPlanRequest implements Built<LegacyFundingPlanRequest, LegacyFundingPlanRequestBuilder> {
@@ -27,7 +27,7 @@ abstract class LegacyFundingPlanRequest implements Built<LegacyFundingPlanReques
   LegacyFundingPlanRequestAssetEnum get asset;
   // enum assetEnum {  USDC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

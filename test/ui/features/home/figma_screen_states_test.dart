@@ -237,7 +237,6 @@ void main() {
     tester,
   ) async {
     final container = await _authenticatedContainer();
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -268,13 +267,13 @@ void main() {
     await tester.tap(find.text('Gainers'));
     await tester.pump();
     expect(find.text('Gainers'), findsOneWidget);
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('account avatar opens settings', (tester) async {
     final router = AppRouter.create();
     addTearDown(router.dispose);
     final container = await _authenticatedContainer(account: _Account());
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -288,13 +287,13 @@ void main() {
 
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Ada'), findsOneWidget);
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('market row opens its product trade detail', (tester) async {
     final router = AppRouter.create();
     addTearDown(router.dispose);
     final container = await _authenticatedContainer();
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -313,6 +312,7 @@ void main() {
       tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
       'NVDA',
     );
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('home limits markets to five without a redundant view more', (
@@ -321,7 +321,6 @@ void main() {
     final container = await _authenticatedContainer(
       markets: const _ManyMarkets(count: 5),
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -332,6 +331,7 @@ void main() {
 
     expect(find.byType(MarketProductRow), findsNWidgets(5));
     expect(find.byKey(const Key('home-markets-view-more')), findsNothing);
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('home view more opens markets on the selected ranking tab', (
@@ -343,7 +343,6 @@ void main() {
     final container = await _authenticatedContainer(
       markets: const _ManyMarkets(count: 6),
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -369,6 +368,7 @@ void main() {
       'Gainers',
     );
     expect(container.read(marketRankingTabProvider).value, 'Gainers');
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('home switches to Popular when initial favorites are empty', (
@@ -377,7 +377,6 @@ void main() {
     final container = await _authenticatedContainer(
       markets: _EmptyFavoritesMarkets(),
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -394,6 +393,7 @@ void main() {
     expect(find.text('Popular'), findsOneWidget);
     expect(find.text('NVDA'), findsWidgets);
     expect(find.text('No favorites yet'), findsNothing);
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('home keeps the favorites empty state after user selects it', (
@@ -402,7 +402,6 @@ void main() {
     final container = await _authenticatedContainer(
       markets: _EmptyFavoritesMarkets(),
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -424,6 +423,7 @@ void main() {
       find.text('Tap the star on any market to save it here.'),
       findsOneWidget,
     );
+    await _disposeContainerAfterWidgets(tester, container);
   });
 
   testWidgets('home empty favorites explores the Popular markets tab', (
@@ -434,7 +434,6 @@ void main() {
     final container = await _authenticatedContainer(
       markets: _EmptyFavoritesMarkets(),
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -460,7 +459,16 @@ void main() {
       'Popular',
     );
     expect(container.read(marketRankingTabProvider).value, 'Popular');
+    await _disposeContainerAfterWidgets(tester, container);
   });
+}
+
+Future<void> _disposeContainerAfterWidgets(
+  WidgetTester tester,
+  ProviderContainer container,
+) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  container.dispose();
 }
 
 Future<ProviderContainer> _authenticatedContainer({

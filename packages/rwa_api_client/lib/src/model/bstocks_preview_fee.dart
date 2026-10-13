@@ -15,7 +15,7 @@ part 'bstocks_preview_fee.g.dart';
 /// Properties:
 /// * [status] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [ratePercent] - 百分比，1000 millionths 为 0.1，不是倍率0.001。
 /// * [includedInTotalInput] 
 @BuiltValue()
@@ -27,7 +27,7 @@ abstract class BstocksPreviewFee implements Built<BstocksPreviewFee, BstocksPrev
   @BuiltValueField(wireName: r'asset')
   BstocksFeeAsset get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String? get amount;
 

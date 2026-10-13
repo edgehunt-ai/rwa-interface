@@ -14,7 +14,7 @@ part 'funding_session_transfer_snapshot.g.dart';
 /// Properties:
 /// * [kind] 
 /// * [destination] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class FundingSessionTransferSnapshot implements Built<FundingSessionTransferSnapshot, FundingSessionTransferSnapshotBuilder> {
   @BuiltValueField(wireName: r'kind')
@@ -25,7 +25,7 @@ abstract class FundingSessionTransferSnapshot implements Built<FundingSessionTra
   FundingSessionTransferSnapshotDestinationEnum get destination;
   // enum destinationEnum {  hip3_margin,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

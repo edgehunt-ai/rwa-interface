@@ -67,7 +67,7 @@ class _$AutoMultiSourceFundingPlanRequest
   @override
   final AutoMultiSourceFundingPlanRequestModeEnum mode;
   @override
-  final BuiltSet<String>? excludedSourcePositionIds;
+  final BuiltList<String>? excludedSourcePositionIds;
 
   factory _$AutoMultiSourceFundingPlanRequest(
           [void Function(AutoMultiSourceFundingPlanRequestBuilder)? updates]) =>
@@ -132,11 +132,11 @@ class AutoMultiSourceFundingPlanRequestBuilder
   set mode(AutoMultiSourceFundingPlanRequestModeEnum? mode) =>
       _$this._mode = mode;
 
-  SetBuilder<String>? _excludedSourcePositionIds;
-  SetBuilder<String> get excludedSourcePositionIds =>
-      _$this._excludedSourcePositionIds ??= SetBuilder<String>();
+  ListBuilder<String>? _excludedSourcePositionIds;
+  ListBuilder<String> get excludedSourcePositionIds =>
+      _$this._excludedSourcePositionIds ??= ListBuilder<String>();
   set excludedSourcePositionIds(
-          SetBuilder<String>? excludedSourcePositionIds) =>
+          ListBuilder<String>? excludedSourcePositionIds) =>
       _$this._excludedSourcePositionIds = excludedSourcePositionIds;
 
   AutoMultiSourceFundingPlanRequestBuilder() {

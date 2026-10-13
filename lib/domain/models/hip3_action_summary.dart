@@ -9,6 +9,8 @@ final class Hip3ActionSummary {
     required this.canResumePositionAction,
     this.positionId,
     this.orderId,
+    this.failureCode,
+    this.userAction,
   });
   final String actionId;
   final String productId;
@@ -18,4 +20,6 @@ final class Hip3ActionSummary {
   final bool canResumePositionAction;
   final String? positionId;
   final String? orderId;
+  final String? failureCode;
+  final String? userAction;
 }

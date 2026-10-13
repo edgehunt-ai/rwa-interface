@@ -7,6 +7,10 @@ import '../../../../l10n/generated/app_localizations.dart';
 /// Shared failure copy for the HIP-3 order form and its confirmation sheet, so
 /// the same failure never reads differently depending on where it surfaces.
 String hip3SigningError(BuildContext context, Hip3SigningFailure failure) {
+  if (failure.failureCode ==
+      Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition) {
+    return AppLocalizations.of(context).marginModeOpenPositionNotice;
+  }
   // The server's failure_reason names why this signature was refused; the
   // code-based copy only describes the category.
   if (failure.reason case final reason? when reason.trim().isNotEmpty) {

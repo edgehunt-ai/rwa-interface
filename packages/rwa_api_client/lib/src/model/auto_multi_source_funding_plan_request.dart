@@ -14,7 +14,7 @@ part 'auto_multi_source_funding_plan_request.g.dart';
 /// Properties:
 /// * [tradePreviewId] - Immutable preview from which the target identity and required amount are derived.
 /// * [mode] 
-/// * [excludedSourcePositionIds] - Optional account-scoped opaque positions that the allocator must not use.
+/// * [excludedSourcePositionIds] - 排除的账户内opaque位置ID；先排序去重，最多8个不同ID，重复项不计入上限。空白ID、null或非字符串项返回422。
 @Deprecated('AutoMultiSourceFundingPlanRequest has been deprecated')
 @BuiltValue()
 abstract class AutoMultiSourceFundingPlanRequest implements Built<AutoMultiSourceFundingPlanRequest, AutoMultiSourceFundingPlanRequestBuilder> {
@@ -26,9 +26,9 @@ abstract class AutoMultiSourceFundingPlanRequest implements Built<AutoMultiSourc
   AutoMultiSourceFundingPlanRequestModeEnum get mode;
   // enum modeEnum {  auto_multi_source,  };
 
-  /// Optional account-scoped opaque positions that the allocator must not use.
+  /// 排除的账户内opaque位置ID；先排序去重，最多8个不同ID，重复项不计入上限。空白ID、null或非字符串项返回422。
   @BuiltValueField(wireName: r'excluded_source_position_ids')
-  BuiltSet<String>? get excludedSourcePositionIds;
+  BuiltList<String>? get excludedSourcePositionIds;
 
   AutoMultiSourceFundingPlanRequest._();
 
@@ -67,7 +67,7 @@ class _$AutoMultiSourceFundingPlanRequestSerializer implements PrimitiveSerializ
       yield r'excluded_source_position_ids';
       yield serializers.serialize(
         object.excludedSourcePositionIds,
-        specifiedType: const FullType(BuiltSet, [FullType(String)]),
+        specifiedType: const FullType(BuiltList, [FullType(String)]),
       );
     }
   }
@@ -110,8 +110,8 @@ class _$AutoMultiSourceFundingPlanRequestSerializer implements PrimitiveSerializ
         case r'excluded_source_position_ids':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltSet, [FullType(String)]),
-          ) as BuiltSet<String>?;
+            specifiedType: const FullType.nullable(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>?;
           if (valueDes == null) continue;
           result.excludedSourcePositionIds.replace(valueDes);
           break;

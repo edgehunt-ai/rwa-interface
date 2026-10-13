@@ -41,7 +41,7 @@ part 'order_preview.g.dart';
 /// * [approvalMode] 
 /// * [approvalAmountRaw] - bStocks 服务端建议的 approve 授权目标，输入 token 最小单位字符串，不是交易预算。 allowance_sufficient 比较 required_funding_raw，而不是此值；即使 approval_mode=unlimited， 当前有限 allowance 已覆盖本次交易时也不要求补到 uint256.max。历史/localnet响应可省略。 slippage 模式的目标以预览观测的输入 token balance_raw 为 cap；全部卖出不会生成超出持仓的有限授权。 余额不足时预览仍可返回（目标可为0），但创建订单仍拒绝，不自动缩小交易。 
 /// * [timeInForce] 
-/// * [limitPrice] - 十进制字符串，避免浮点误差
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [priceConditionMet] 
 /// * [fundingMode] 
 /// * [fundsReserved] 
@@ -60,21 +60,21 @@ part 'order_preview.g.dart';
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
-/// * [marketPrice] - 十进制字符串，避免浮点误差
+/// * [marketPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
-/// * [estimatedQuantity] - 十进制字符串，避免浮点误差
+/// * [estimatedQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [estimatedReceive] - 预计获得数量。bStocks 为本次预览的报价输出，尚未扣减用户滑点； 真正的预览同意下限在 bstocks.confirmation_binding.minimum_output_raw，以token原始单位表示。 
 /// * [estimatedReceiveUnit] 
-/// * [orderValue] - 十进制字符串，避免浮点误差
-/// * [fee] - 十进制字符串，避免浮点误差
-/// * [feeRate] - 十进制字符串，避免浮点误差
+/// * [orderValue] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [feeRate] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [slippagePercent] - bStocks限价预览回显请求比例，省略时为\"0\"。GTC为未来每次Keeper执行的策略，不是当前preview的冻结输出下限；IOC口径不变。
-/// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
+/// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户
 /// * [settlementAccountLabel] 
-/// * [marginRequired] - 十进制字符串，避免浮点误差
+/// * [marginRequired] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [liquidationPrice] - 仅 HIP-3
 /// * [quoteExpiresAt] - bStocks 为服务器preview期限（最多120秒），不是approve allowance期限或链上route deadline；仍须满足独立报价区块有效期。
 /// * [details] - 「查看详情」中逐行展示的键值对

@@ -13,7 +13,7 @@ part 'portfolio_allocation_value.g.dart';
 ///
 /// Properties:
 /// * [status] 
-/// * [valueUsd] - 十进制字符串，避免浮点误差
+/// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unvaluedAssetCount] 
 @BuiltValue()
 abstract class PortfolioAllocationValue implements Built<PortfolioAllocationValue, PortfolioAllocationValueBuilder> {
@@ -21,7 +21,7 @@ abstract class PortfolioAllocationValue implements Built<PortfolioAllocationValu
   PortfolioAvailabilityStatus get status;
   // enum statusEnum {  available,  partial,  unavailable,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'value_usd')
   String? get valueUsd;
 

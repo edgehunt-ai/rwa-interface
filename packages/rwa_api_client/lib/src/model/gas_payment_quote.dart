@@ -17,9 +17,9 @@ part 'gas_payment_quote.g.dart';
 /// * [decision] 
 /// * [platformPays] 
 /// * [nativeAsset] - Native gas asset symbol for the frozen action chain, for example BNB or ETH.
-/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差
-/// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差
-/// * [walletNativeBalance] - 十进制字符串，避免浮点误差
+/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [walletNativeBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fallbackAllowed] - True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. This flag is not a gate for primary user-paid bStocks order executions. 
 /// * [eip7702Required] 
 /// * [eip7702Notice] - Required user-facing disclosure when EIP-7702 authorization is needed.
@@ -40,15 +40,15 @@ abstract class GasPaymentQuote implements Built<GasPaymentQuote, GasPaymentQuote
   @BuiltValueField(wireName: r'native_asset')
   String get nativeAsset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_native_fee')
   String get estimatedNativeFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_fee_usd')
   String get estimatedFeeUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'wallet_native_balance')
   String? get walletNativeBalance;
 

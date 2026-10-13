@@ -23,7 +23,7 @@ part 'account_balance.g.dart';
 /// * [totalValueUsd] - 该账户已成功估值资产的合计。没有任何资产估值成功时为 `null`， 不得把未估值资产当作零价值计入。 
 /// * [availableUsd] - 该账户可用于下单的金额，语义由 `available_requires_transfer` 限定：  * `available_requires_transfer: false`（venue 账户，如 `hip3`）——   来自 venue 上报的 withdrawable/available collateral，可直接下单； * `available_requires_transfer: true`（钱包账户，如 `app`、`bstocks`）——   钱包中已估值稳定币的小计，下单前必须先 Transfer 到交易账户。   跨链路由存在手续费、gas 与滑点，实际可交割金额以 Funding Plan 询价为准，   该值只是上界近似，不是下单承诺。  来源缺失、报价失败或该账户无可用资产时为 `null`，不得回退为 `\"0\"`。 
 /// * [availableRequiresTransfer] - `available_usd` 是否需要先经 Transfer/Funding Plan 才能用于下单。 venue 账户为 `false`，钱包账户为 `true`。客户端不得把 `true` 的金额 展示为「立即可交易」。 
-/// * [marginUsedUsd] - 十进制字符串，避免浮点误差
+/// * [marginUsedUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [balances] 
 @BuiltValue()
 abstract class AccountBalance implements Built<AccountBalance, AccountBalanceBuilder> {
@@ -57,7 +57,7 @@ abstract class AccountBalance implements Built<AccountBalance, AccountBalanceBui
   @BuiltValueField(wireName: r'available_requires_transfer')
   bool? get availableRequiresTransfer;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'margin_used_usd')
   String? get marginUsedUsd;
 

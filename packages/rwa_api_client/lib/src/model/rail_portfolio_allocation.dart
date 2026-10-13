@@ -19,7 +19,7 @@ part 'rail_portfolio_allocation.g.dart';
 /// Properties:
 /// * [dimension] 
 /// * [items] - 固定按 account=spot、perps 顺序返回；局部失败保留对应项并标记不可用。
-/// * [valuedTotalUsd] - 十进制字符串，避免浮点误差
+/// * [valuedTotalUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unvaluedAssetCount] 
 /// * [dataStatus] 
 /// * [freshness] 
@@ -36,7 +36,7 @@ abstract class RailPortfolioAllocation implements Built<RailPortfolioAllocation,
   @BuiltValueField(wireName: r'items')
   BuiltList<PortfolioAccountAllocationItem> get items;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'valued_total_usd')
   String get valuedTotalUsd;
 

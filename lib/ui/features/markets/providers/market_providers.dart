@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/provider_lifecycle.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
@@ -51,40 +50,19 @@ const marketListCacheDuration = Duration(minutes: 30);
 const marketListRefreshInterval = Duration(seconds: 15);
 
 void _cacheMarketList(Ref ref) {
-  final link = ref.keepAlive();
-  Timer? expiryTimer;
-  Timer? refreshTimer;
-
-  void stopTimers() {
-    refreshTimer?.cancel();
-    expiryTimer?.cancel();
-  }
-
-  void startRefresh() {
-    refreshTimer?.cancel();
-    refreshTimer = Timer.periodic(
-      marketListRefreshInterval,
-      (_) => ref.invalidateSelf(),
-    );
-  }
-
-  void startExpiry() {
-    expiryTimer?.cancel();
-    expiryTimer = Timer(marketListCacheDuration, link.close);
-  }
-
-  startExpiry();
-  startRefresh();
-  ref.onCancel(stopTimers);
-  ref.onResume(() {
-    startExpiry();
-    startRefresh();
-  });
-  ref.onDispose(() {
-    expiryTimer?.cancel();
-    refreshTimer?.cancel();
-  });
+  cacheAfterLastListener(ref, marketListCacheDuration);
 }
+
+final marketListRefreshProvider = Provider.autoDispose<void>((ref) {
+  refreshWhileActive(
+    ref,
+    interval: marketListRefreshInterval,
+    refresh: () {
+      ref.invalidate(marketProductsProvider);
+      ref.invalidate(marketStocksProvider);
+    },
+  );
+});
 
 final marketProductsProvider = FutureProvider.autoDispose
     .family<DomainPage<MarketProduct>, MarketQuery>((ref, query) {

@@ -35,9 +35,9 @@ part 'funding_plan.g.dart';
 /// * [planId] 
 /// * [tradePreviewId] 
 /// * [mode] 
-/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
+/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [targetSnapshot] 
-/// * [shortfall] - 十进制字符串，避免浮点误差
+/// * [shortfall] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [blocker] 
 /// * [source_] 
@@ -52,8 +52,8 @@ part 'funding_plan.g.dart';
 /// * [fundingSessionId] 
 /// * [selectionVersion] 
 /// * [multiSource] 
-/// * [amount] - 十进制字符串，避免浮点误差
-/// * [totalFee] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [totalFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [steps] 
 @BuiltValue()
 abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {

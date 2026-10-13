@@ -466,6 +466,11 @@ TradingOrder _mapBstockOrder(api.BstockOrder value) => TradingOrder(
     'quantity',
     asset: value.symbol,
   ),
+  cancelledQuantity: _orderValue(
+    value.cancelledQuantity,
+    'quantity',
+    asset: value.symbol,
+  ),
   limitPrice: _orderValue(
     value.limitPrice,
     'price',

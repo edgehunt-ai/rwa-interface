@@ -14,8 +14,8 @@ part 'realtime_price_update.g.dart';
 /// Properties:
 /// * [symbol] 
 /// * [kind] 
-/// * [price] - 十进制字符串，避免浮点误差
-/// * [change24hPercent] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [change24hPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [updatedAt] 
 @BuiltValue(instantiable: false)
 abstract class RealtimePriceUpdate  {
@@ -26,11 +26,11 @@ abstract class RealtimePriceUpdate  {
   ProductKind get kind;
   // enum kindEnum {  bstock,  perp,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price')
   String get price;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'change_24h_percent')
   String get change24hPercent;
 

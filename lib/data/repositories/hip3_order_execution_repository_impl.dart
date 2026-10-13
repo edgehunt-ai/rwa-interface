@@ -202,6 +202,8 @@ final class Hip3OrderExecutionRepositoryImpl
     status: action.status.name,
     positionId: action.positionId,
     orderId: action.orderId,
+    failureCode: action.failureCode,
+    userAction: action.userAction,
     effectsApplied: action.effectsApplied,
     canResumePositionAction: false,
   );
@@ -235,18 +237,22 @@ final class Hip3OrderExecutionRepositoryImpl
   }
 
   void _throwIfTerminal(api.Hip3Action action) {
-    final reason = _failureReason(action);
+    final failure = _failureMetadata(action);
     switch (action.status) {
       case api.Hip3ActionStatus.expired:
         throw Hip3SigningFailure(
           Hip3SigningFailureCode.actionExpired,
-          reason: reason,
+          reason: failure.reason,
+          failureCode: failure.failureCode,
+          userAction: failure.userAction,
         );
       case api.Hip3ActionStatus.failed:
       case api.Hip3ActionStatus.cancelled:
         throw Hip3SigningFailure(
           Hip3SigningFailureCode.invalidPayload,
-          reason: reason,
+          reason: failure.reason,
+          failureCode: failure.failureCode,
+          userAction: failure.userAction,
         );
       default:
         return;
@@ -255,16 +261,22 @@ final class Hip3OrderExecutionRepositoryImpl
 
   /// The step that actually failed explains more than the action-level reason,
   /// so prefer it and fall back to the action's own.
-  String? _failureReason(api.Hip3Action action) {
+  ({String? reason, String? failureCode, String? userAction}) _failureMetadata(
+    api.Hip3Action action,
+  ) {
     final step = action.steps
-        .where(
-          (step) =>
-              step.status == api.Hip3ActionStepStatusEnum.failed &&
-              (step.failureReason?.trim().isNotEmpty ?? false),
-        )
+        .where((step) => step.status == api.Hip3ActionStepStatusEnum.failed)
         .lastOrNull;
-    final reason = step?.failureReason ?? action.failureReason;
-    final trimmed = reason?.trim();
+    return (
+      reason: _nonEmpty(step?.failureReason) ?? _nonEmpty(action.failureReason),
+      failureCode:
+          _nonEmpty(step?.failureCode) ?? _nonEmpty(action.failureCode),
+      userAction: _nonEmpty(action.userAction),
+    );
+  }
+
+  String? _nonEmpty(String? value) {
+    final trimmed = value?.trim();
     return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 

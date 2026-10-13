@@ -35,10 +35,10 @@ part 'portfolio_asset.g.dart';
 /// * [symbol] 
 /// * [decimals] 
 /// * [balanceRaw] - 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
-/// * [balance] - 十进制字符串，避免浮点误差
-/// * [priceUsd] - 十进制字符串，避免浮点误差
+/// * [balance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [priceUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [pricingSource] - USD 估值来源；不代表余额或钱包所有权来源。
-/// * [valueUsd] - 十进制字符串，避免浮点误差
+/// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [observedAt] 
 /// * [blockNumber] 
 /// * [blockHash] 
@@ -105,11 +105,11 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   @BuiltValueField(wireName: r'balance_raw')
   String get balanceRaw;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'balance')
   String get balance;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price_usd')
   String? get priceUsd;
 
@@ -118,7 +118,7 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   PortfolioPriceSource get pricingSource;
   // enum pricingSourceEnum {  fixed_peg,  dodoex,  bstocks_market_data,  unavailable,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'value_usd')
   String? get valueUsd;
 

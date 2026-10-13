@@ -15,7 +15,7 @@ part 'hip3_collateral_risk_preview.g.dart';
 /// Properties:
 /// * [status] 
 /// * [collateralAsset] 
-/// * [sharedMarginDelta] - 十进制字符串，避免浮点误差
+/// * [sharedMarginDelta] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [observedAt] 
 /// * [validUntil] 
 /// * [crossLiquidationImpacts] 
@@ -30,7 +30,7 @@ abstract class Hip3CollateralRiskPreview implements Built<Hip3CollateralRiskPrev
   Hip3CollateralRiskPreviewCollateralAssetEnum get collateralAsset;
   // enum collateralAssetEnum {  USDC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'shared_margin_delta')
   String get sharedMarginDelta;
 

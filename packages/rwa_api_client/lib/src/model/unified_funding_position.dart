@@ -20,10 +20,10 @@ part 'unified_funding_position.g.dart';
 /// * [walletId] 
 /// * [walletAddress] 
 /// * [asset] 
-/// * [totalAmount] - 十进制字符串，避免浮点误差
-/// * [availableAmount] - 十进制字符串，避免浮点误差
-/// * [reservedAmount] - 十进制字符串，避免浮点误差
-/// * [inTransitAmount] - 十进制字符串，避免浮点误差
+/// * [totalAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [availableAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [reservedAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [inTransitAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [valueUsd] - Null when the position cannot be valued from fresh authoritative market data.
 /// * [freshness] 
 /// * [eligibility] 
@@ -48,19 +48,19 @@ abstract class UnifiedFundingPosition implements Built<UnifiedFundingPosition, U
   @BuiltValueField(wireName: r'asset')
   FundingSourceAssetIdentity get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_amount')
   String get totalAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_amount')
   String get availableAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'reserved_amount')
   String get reservedAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'in_transit_amount')
   String get inTransitAmount;
 

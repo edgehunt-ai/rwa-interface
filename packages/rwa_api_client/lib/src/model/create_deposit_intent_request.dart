@@ -15,7 +15,7 @@ part 'create_deposit_intent_request.g.dart';
 /// Properties:
 /// * [chain] 
 /// * [token] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [mode] 
 @Deprecated('CreateDepositIntentRequest has been deprecated')
 @BuiltValue()
@@ -28,7 +28,7 @@ abstract class CreateDepositIntentRequest implements Built<CreateDepositIntentRe
   CreateDepositIntentRequestTokenEnum get token;
   // enum tokenEnum {  USDC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String? get amount;
 

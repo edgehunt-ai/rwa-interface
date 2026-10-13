@@ -434,6 +434,7 @@ Class | Method | HTTP request | Description
  - [Hip3OrderCapacity](doc/Hip3OrderCapacity.md)
  - [Hip3OrderCapacitySide](doc/Hip3OrderCapacitySide.md)
  - [Hip3OrderProtectionSpec](doc/Hip3OrderProtectionSpec.md)
+ - [Hip3OrderProtectionSpecNot](doc/Hip3OrderProtectionSpecNot.md)
  - [Hip3PlaceOrderActionRequest](doc/Hip3PlaceOrderActionRequest.md)
  - [Hip3PreviewExecution](doc/Hip3PreviewExecution.md)
  - [Hip3ProtectionSpec](doc/Hip3ProtectionSpec.md)

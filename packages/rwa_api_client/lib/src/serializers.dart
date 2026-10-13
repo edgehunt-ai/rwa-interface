@@ -246,6 +246,7 @@ import 'package:rwa_api_client/src/model/hip3_operation.dart';
 import 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
 import 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';
 import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_order_protection_spec_not.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
@@ -736,6 +737,7 @@ part 'serializers.g.dart';
   Hip3OrderCapacity,
   Hip3OrderCapacitySide,
   Hip3OrderProtectionSpec,
+  Hip3OrderProtectionSpecNot,
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
   Hip3ProtectionSpec,

@@ -16,7 +16,7 @@ part 'claim.g.dart';
 /// * [claimId] 
 /// * [transferId] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [creditedTo] 
 /// * [status] 
 /// * [failureReason] 
@@ -35,7 +35,7 @@ abstract class Claim implements Built<Claim, ClaimBuilder> {
   @BuiltValueField(wireName: r'asset')
   String get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

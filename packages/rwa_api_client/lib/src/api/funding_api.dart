@@ -262,7 +262,7 @@ class FundingApi {
   }
 
   /// 创建可恢复的资金准备会话
-  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 bStocks 买单支持市价和限价 GTC/IOC（限价省略 time_in_force 默认 GTC）； 市价按 amount，限价按 quantity × limit_price 向上取整到目标结算 token 最小单位计算基础所需余额。 slippage_percent 不放大限价挂单预算；会话安全缓冲单独处理。卖单不走买入补资，返回422 funding_not_required。 
+  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 bStocks 买单支持市价和限价 GTC/IOC（限价省略 time_in_force 默认 GTC）； 市价按 amount，限价按 quantity × limit_price 向上取整到目标结算 token 最小单位计算基础所需余额。 slippage_percent 不放大限价挂单预算；会话安全缓冲单独处理。卖单不走买入补资，返回422 funding_not_required。 HIP3 草稿保留本单 protection，创建阶段只校验静态触发形状；实时触发方向、交易精度和执行资格须在补资后重新预览。 名义金额当前为12..500 USDC（含边界），所需资金包含账户实际taker费，不仅是名义金额除以杠杆。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -366,7 +366,7 @@ class FundingApi {
   }
 
   /// 创建 HIP-3 统一账户提现
-  /// 冻结一笔 Hyperliquid 统一账户的 &#x60;withdraw3&#x60; action：金额、owner 地址、nonce 与过期时间。 响应返回服务端生成的精确 EIP-712 &#x60;HyperliquidTransaction:Withdraw&#x60; typed data 与 &#x60;payload_hash&#x60;；客户端必须把 &#x60;typed_data_json&#x60; 原样交给 Privy 钱包签名，不得修改任何 字段、不得自行组装 action。  提现目标地址固定为账户自己的 unified EVM 地址（Bridge2 在 Arbitrum 上向该地址支付 链上资产：testnet 为 USDC2、mainnet 为 USDC）。请求不接受 &#x60;destination&#x60;、&#x60;signature&#x60; 或任意 action 字段；服务端持有签名后才会把 action 提交到 &#x60;/exchange&#x60;。 
+  /// 冻结所选通道的 Hyperliquid 统一账户 action：bridge2 使用 withdraw3，float/relay 使用 sendAsset， 固定金额、owner、nonce、目标及过期时间。响应返回服务端生成的通道对应精确 EIP-712 typed data 与 &#x60;payload_hash&#x60;；客户端必须把 &#x60;typed_data_json&#x60; 原样交给 Privy 钱包签名，不得修改任何 字段、不得自行组装 action。  最终到账地址固定为账户自己的 unified EVM 地址：bridge2 在 Arbitrum 支付主网USDC/测试网USDC2， float 在 Arbitrum 垫付原生USDC，relay 在BSC支付USDT。sendAsset 的冻结收款方是平台池或Relay depository， 不是客户端指定的任意地址。请求不接受 destination、signature 或任意action字段；服务端持有签名后才提交 /exchange。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -2397,7 +2397,7 @@ class FundingApi {
   }
 
   /// 预览 Perps 转出金额及 Cross 强平价影响
-  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 amount 为 HL USDC 总扣减额；minimum_received 为扣费后到账额。 风险按总扣减额计算，不能按净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为用户承担且从 amount 中扣除的 USDC 总费用；fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
+  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 bridge2/float 请求 amount 为 HL USDC 总扣减额；relay 请求 amount 为 BSC USDT 期望到账额（exact output）。 所有通道响应 amount 为实际 HL USDC 总扣减额，minimum_received 为扣费后目标资产到账额。 风险按实际 HL 总扣减额计算，不能按 relay 请求金额或净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为用户承担且从 amount 中扣除的 USDC 总费用；fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
   ///
   /// Parameters:
   /// * [hip3WithdrawalCreateRequest] 
@@ -2498,7 +2498,7 @@ class FundingApi {
   }
 
   /// 提交 HIP-3 提现签名
-  /// 提交 owner 对冻结 typed data 的 EIP-712 签名。服务端先校验 &#x60;payload_hash&#x60; 与冻结 action 一致、恢复地址等于 owner，再把 &#x60;withdraw3&#x60; 提交到 Hyperliquid &#x60;/exchange&#x60;；venue 接受后 状态进入 &#x60;submitted&#x60; 并由 worker 观测到账。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。venue 明确拒绝已签名 action 时同样返回 409：官方桥 出金额度受限时返回 &#x60;venue_withdrawal_allowance_exceeded&#x60; （user_action&#x3D;&#x60;reduce_amount_or_retry_later&#x60;，降低金额或等待额度窗口恢复后可重新发起）， 其他 venue 拒绝返回 &#x60;venue_rejected&#x60;（user_action&#x3D;&#x60;create_new_intent&#x60;）。 
+  /// 提交 owner 对冻结通道 action 的 EIP-712 签名。服务端先校验 payload_hash 与冻结 action 一致、恢复地址等于 owner，再将 bridge2 的 withdraw3 或 float/relay 的 sendAsset 提交到 Hyperliquid /exchange； venue 接受后状态进入 submitted 并由 worker 观测到账。relay 还需 nonce_mapping_signature。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。venue 明确拒绝已签名 action 时同样返回 409：官方桥 出金额度受限时返回 &#x60;venue_withdrawal_allowance_exceeded&#x60; （user_action&#x3D;&#x60;reduce_amount_or_retry_later&#x60;，降低金额或等待额度窗口恢复后可重新发起）， 其他 venue 拒绝返回 &#x60;venue_rejected&#x60;（user_action&#x3D;&#x60;create_new_intent&#x60;）。 
   ///
   /// Parameters:
   /// * [withdrawalId] 

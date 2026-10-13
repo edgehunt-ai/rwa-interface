@@ -1305,6 +1305,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   String _signingError(Hip3SigningFailure failure) {
+    if (failure.failureCode ==
+        Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition) {
+      return AppLocalizations.of(context).marginModeOpenPositionNotice;
+    }
     final reason = failure.reason?.trim();
     if (reason != null && reason.isNotEmpty) {
       return reason;

@@ -18,7 +18,7 @@ part 'perp_order_wallet_action_state.g.dart';
 /// * [orderId] 
 /// * [timeInForce] 
 /// * [status] 
-/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [kind] 
 /// * [nextAction] 
 /// * [walletActionBlocker] 
@@ -35,7 +35,7 @@ abstract class PerpOrderWalletActionState  {
   OrderStatus get status;
   // enum statusEnum {  pending_signature,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 

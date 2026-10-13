@@ -24,10 +24,10 @@ part 'funding_plan_request.g.dart';
 /// * [tradePreviewId] - Immutable preview from which the target identity and required amount are derived.
 /// * [mode] 
 /// * [sourceAssetId] - Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
-/// * [excludedSourcePositionIds] - Optional account-scoped opaque positions that the allocator must not use.
+/// * [excludedSourcePositionIds] - 排除的账户内opaque位置ID；先排序去重，最多8个不同ID，重复项不计入上限。空白ID、null或非字符串项返回422。
 /// * [rail] 
 /// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class FundingPlanRequest implements Built<FundingPlanRequest, FundingPlanRequestBuilder> {
   /// One Of [AutoMultiSourceFundingPlanRequest], [AutoSingleSourceFundingPlanRequest], [FundingSessionPlanRequest], [LegacyFundingPlanRequest]

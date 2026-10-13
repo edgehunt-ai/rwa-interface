@@ -109,6 +109,35 @@ void main() {
     expect(signer.calls, 0);
     expect(service.submits, 0);
   });
+  test('terminal failure preserves structured recovery metadata', () async {
+    service.initialAction = _action(
+      status: 'failed',
+      stepStatus: 'failed',
+      stepFailureCode:
+          Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition,
+      actionFailureCode: 'less_specific_action_code',
+      userAction: Hip3ActionUserActions.keepMarginModeOrClosePosition,
+    );
+
+    await expectLater(
+      run(),
+      throwsA(
+        isA<Hip3SigningFailure>()
+            .having(
+              (failure) => failure.failureCode,
+              'failure code',
+              Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition,
+            )
+            .having(
+              (failure) => failure.userAction,
+              'user action',
+              Hip3ActionUserActions.keepMarginModeOrClosePosition,
+            ),
+      ),
+    );
+    expect(signer.calls, 0);
+    expect(service.submits, 0);
+  });
   test('polls 50 times at one-second intervals before pending', () async {
     final delays = <Duration>[];
     service.stayPending = true;
@@ -154,6 +183,11 @@ void main() {
 
 api.Hip3Action _action({
   bool done = false,
+  String? status,
+  String? stepStatus,
+  String? stepFailureCode,
+  String? actionFailureCode,
+  String? userAction,
 }) => api.standardSerializers.deserializeWith(
   api.Hip3Action.serializer,
   <String, Object?>{
@@ -167,14 +201,14 @@ api.Hip3Action _action({
     'operation': 'set_leverage',
     'environment': 'testnet',
     'product_id': 'xyz:TSLA',
-    'status': done ? 'succeeded' : 'awaiting_signature',
+    'status': status ?? (done ? 'succeeded' : 'awaiting_signature'),
     'current_step_id': done ? null : 'step-1',
     'steps': <Object?>[
       {
         'step_id': 'step-1',
         'sequence': 1,
         'kind': 'set_leverage',
-        'status': done ? 'succeeded' : 'prepared',
+        'status': stepStatus ?? (done ? 'succeeded' : 'prepared'),
         'signing': done
             ? null
             : {
@@ -203,10 +237,13 @@ api.Hip3Action _action({
                 'expires_after': 2000,
                 'valid_until': '2026-09-10T00:00:00Z',
               },
+        'failure_code': stepFailureCode,
       },
     ],
     'affected_order_ids': <String>[],
     'effects_applied': done,
+    'failure_code': actionFailureCode,
+    'user_action': userAction,
     'created_at': '2026-09-09T00:00:00Z',
     'updated_at': '2026-09-09T00:00:00Z',
   },
@@ -234,12 +271,14 @@ final class _Service implements Hip3PositionActionService {
   bool wrongProduct = false;
   bool multiStep = false;
   bool stayPending = false;
+  api.Hip3Action? initialAction;
   String? key;
   api.Hip3ActionSubmissionRequest? request;
   @override
   Future<api.Hip3Action> get(String actionId) async {
     reads++;
     if (reads > 1 && failRecovery) throw const TimeoutFailure();
+    if (initialAction != null && submits == 0) return initialAction!;
     final result = stayPending
         ? _action().rebuild(
             (b) => b

@@ -20,7 +20,7 @@ part 'multi_source_funding_leg.g.dart';
 /// * [ordinal] 
 /// * [sourcePositionSnapshot] 
 /// * [route] 
-/// * [outputAmount] - 十进制字符串，避免浮点误差
+/// * [outputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [transferId] - Null until the server has created this leg's dedicated Transfer.
 /// * [walletActions] 
@@ -38,7 +38,7 @@ abstract class MultiSourceFundingLeg implements Built<MultiSourceFundingLeg, Mul
   @BuiltValueField(wireName: r'route')
   FundingRouteQuote get route;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'output_amount')
   String get outputAmount;
 

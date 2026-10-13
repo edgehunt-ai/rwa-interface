@@ -255,6 +255,7 @@ lib/src/model/hip3_operation.dart
 lib/src/model/hip3_order_capacity.dart
 lib/src/model/hip3_order_capacity_side.dart
 lib/src/model/hip3_order_protection_spec.dart
+lib/src/model/hip3_order_protection_spec_not.dart
 lib/src/model/hip3_place_order_action_request.dart
 lib/src/model/hip3_preview_execution.dart
 lib/src/model/hip3_protection_spec.dart

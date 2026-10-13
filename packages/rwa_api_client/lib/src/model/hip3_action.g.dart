@@ -36,6 +36,10 @@ class _$Hip3Action extends Hip3Action {
   @override
   final String? failureReason;
   @override
+  final String? failureCode;
+  @override
+  final String? userAction;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
@@ -58,6 +62,8 @@ class _$Hip3Action extends Hip3Action {
       required this.affectedOrderIds,
       required this.effectsApplied,
       this.failureReason,
+      this.failureCode,
+      this.userAction,
       required this.createdAt,
       required this.updatedAt})
       : super._();
@@ -86,6 +92,8 @@ class _$Hip3Action extends Hip3Action {
         affectedOrderIds == other.affectedOrderIds &&
         effectsApplied == other.effectsApplied &&
         failureReason == other.failureReason &&
+        failureCode == other.failureCode &&
+        userAction == other.userAction &&
         createdAt == other.createdAt &&
         updatedAt == other.updatedAt;
   }
@@ -107,6 +115,8 @@ class _$Hip3Action extends Hip3Action {
     _$hash = $jc(_$hash, affectedOrderIds.hashCode);
     _$hash = $jc(_$hash, effectsApplied.hashCode);
     _$hash = $jc(_$hash, failureReason.hashCode);
+    _$hash = $jc(_$hash, failureCode.hashCode);
+    _$hash = $jc(_$hash, userAction.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
@@ -130,6 +140,8 @@ class _$Hip3Action extends Hip3Action {
           ..add('affectedOrderIds', affectedOrderIds)
           ..add('effectsApplied', effectsApplied)
           ..add('failureReason', failureReason)
+          ..add('failureCode', failureCode)
+          ..add('userAction', userAction)
           ..add('createdAt', createdAt)
           ..add('updatedAt', updatedAt))
         .toString();
@@ -205,6 +217,14 @@ class Hip3ActionBuilder implements Builder<Hip3Action, Hip3ActionBuilder> {
   set failureReason(String? failureReason) =>
       _$this._failureReason = failureReason;
 
+  String? _failureCode;
+  String? get failureCode => _$this._failureCode;
+  set failureCode(String? failureCode) => _$this._failureCode = failureCode;
+
+  String? _userAction;
+  String? get userAction => _$this._userAction;
+  set userAction(String? userAction) => _$this._userAction = userAction;
+
   DateTime? _createdAt;
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
@@ -234,6 +254,8 @@ class Hip3ActionBuilder implements Builder<Hip3Action, Hip3ActionBuilder> {
       _affectedOrderIds = $v.affectedOrderIds.toBuilder();
       _effectsApplied = $v.effectsApplied;
       _failureReason = $v.failureReason;
+      _failureCode = $v.failureCode;
+      _userAction = $v.userAction;
       _createdAt = $v.createdAt;
       _updatedAt = $v.updatedAt;
       _$v = null;
@@ -279,6 +301,8 @@ class Hip3ActionBuilder implements Builder<Hip3Action, Hip3ActionBuilder> {
             effectsApplied: BuiltValueNullFieldError.checkNotNull(
                 effectsApplied, r'Hip3Action', 'effectsApplied'),
             failureReason: failureReason,
+            failureCode: failureCode,
+            userAction: userAction,
             createdAt: BuiltValueNullFieldError.checkNotNull(
                 createdAt, r'Hip3Action', 'createdAt'),
             updatedAt: BuiltValueNullFieldError.checkNotNull(

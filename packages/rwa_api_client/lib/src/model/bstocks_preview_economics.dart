@@ -18,8 +18,8 @@ part 'bstocks_preview_economics.g.dart';
 /// Properties:
 /// * [blockers] - 当前交易执行的阻塞原因，不是预览计算错误。当前包括 insufficient_balance、 approval_required、price_condition_not_met（仅限 IOC 限价单）；无已识别阻塞时为 []。 客户端应容忍未知原因；旧服务可能省略此字段。余额为零或授权不足时仍返回 HTTP 200 和可靠报价。 买入检查报价资产，卖出检查股票 token；金额以含手续费的 total_input 为准，限价单使用最大所需资金。 GTC 的 price_condition_met=false 表示等待触发，不列为阻塞。 授权完成或充值后应使用新的 Idempotency-Key 刷新预览；同一 key 重放原结果，不刷新余额。 创建订单仍会重新检查余额、授权和执行条件，可能先返回授权动作。 空数组不代表已经确认 gas 足够、完成代付或保证成交；无法取得可靠报价/账户 RPC 数据时仍返回错误。 
 /// * [inputAsset] 
-/// * [nominalInput] - 十进制字符串，避免浮点误差
-/// * [totalInput] - 十进制字符串，避免浮点误差
+/// * [nominalInput] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [totalInput] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [inputSemantics] 
 /// * [fees] 
 /// * [quoteValidity] 
@@ -35,11 +35,11 @@ abstract class BstocksPreviewEconomics implements Built<BstocksPreviewEconomics,
   @BuiltValueField(wireName: r'input_asset')
   BstocksFeeAsset get inputAsset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'nominal_input')
   String? get nominalInput;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_input')
   String get totalInput;
 

@@ -23,9 +23,9 @@ part 'bstock_funding_plan.g.dart';
 /// * [planId] 
 /// * [tradePreviewId] 
 /// * [mode] 
-/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
+/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [targetSnapshot] 
-/// * [shortfall] - 十进制字符串，避免浮点误差
+/// * [shortfall] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [blocker] 
 /// * [source_] 
@@ -49,14 +49,14 @@ abstract class BstockFundingPlan implements Built<BstockFundingPlan, BstockFundi
   FundingPlanMode get mode;
   // enum modeEnum {  auto_single_source,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'required_target_amount')
   String get requiredTargetAmount;
 
   @BuiltValueField(wireName: r'target_snapshot')
   BstockFundingTargetBalanceSnapshot get targetSnapshot;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'shortfall')
   String get shortfall;
 

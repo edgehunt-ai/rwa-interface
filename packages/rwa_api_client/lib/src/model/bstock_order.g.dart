@@ -355,6 +355,8 @@ class _$BstockOrder extends BstockOrder {
   @override
   final String? transactionHash;
   @override
+  final String? cancelledQuantity;
+  @override
   final int? logIndex;
   @override
   final BstockOrderWalletActionStateCancellationReasonEnum? cancellationReason;
@@ -437,6 +439,7 @@ class _$BstockOrder extends BstockOrder {
       this.chainOrderId,
       this.placementTransactionHash,
       this.transactionHash,
+      this.cancelledQuantity,
       this.logIndex,
       this.cancellationReason,
       this.settlementAsset,
@@ -497,6 +500,7 @@ class _$BstockOrder extends BstockOrder {
         chainOrderId == other.chainOrderId &&
         placementTransactionHash == other.placementTransactionHash &&
         transactionHash == other.transactionHash &&
+        cancelledQuantity == other.cancelledQuantity &&
         logIndex == other.logIndex &&
         cancellationReason == other.cancellationReason &&
         settlementAsset == other.settlementAsset &&
@@ -550,6 +554,7 @@ class _$BstockOrder extends BstockOrder {
     _$hash = $jc(_$hash, chainOrderId.hashCode);
     _$hash = $jc(_$hash, placementTransactionHash.hashCode);
     _$hash = $jc(_$hash, transactionHash.hashCode);
+    _$hash = $jc(_$hash, cancelledQuantity.hashCode);
     _$hash = $jc(_$hash, logIndex.hashCode);
     _$hash = $jc(_$hash, cancellationReason.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
@@ -605,6 +610,7 @@ class _$BstockOrder extends BstockOrder {
           ..add('chainOrderId', chainOrderId)
           ..add('placementTransactionHash', placementTransactionHash)
           ..add('transactionHash', transactionHash)
+          ..add('cancelledQuantity', cancelledQuantity)
           ..add('logIndex', logIndex)
           ..add('cancellationReason', cancellationReason)
           ..add('settlementAsset', settlementAsset)
@@ -739,6 +745,11 @@ class BstockOrderBuilder
   String? get transactionHash => _$this._transactionHash;
   set transactionHash(covariant String? transactionHash) =>
       _$this._transactionHash = transactionHash;
+
+  String? _cancelledQuantity;
+  String? get cancelledQuantity => _$this._cancelledQuantity;
+  set cancelledQuantity(covariant String? cancelledQuantity) =>
+      _$this._cancelledQuantity = cancelledQuantity;
 
   int? _logIndex;
   int? get logIndex => _$this._logIndex;
@@ -909,6 +920,7 @@ class BstockOrderBuilder
       _chainOrderId = $v.chainOrderId;
       _placementTransactionHash = $v.placementTransactionHash;
       _transactionHash = $v.transactionHash;
+      _cancelledQuantity = $v.cancelledQuantity;
       _logIndex = $v.logIndex;
       _cancellationReason = $v.cancellationReason;
       _settlementAsset = $v.settlementAsset;
@@ -984,6 +996,7 @@ class BstockOrderBuilder
             chainOrderId: chainOrderId,
             placementTransactionHash: placementTransactionHash,
             transactionHash: transactionHash,
+            cancelledQuantity: cancelledQuantity,
             logIndex: logIndex,
             cancellationReason: cancellationReason,
             settlementAsset: settlementAsset,

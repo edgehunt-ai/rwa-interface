@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'user_settings_update.g.dart';
 
-/// `PATCH /v1/me/settings` 的请求体。**所有字段可选，传什么改什么**； 未出现的字段保持原值，不会被重置。 
+/// `PATCH /v1/me/settings` 的请求体。**所有字段可选，传什么改什么**； 未出现的字段保持原值，不会被重置。 null 与省略等价，不清空已有设置；非法非空值返回422。当前开启强平通知返回 liquidation_notifications_unavailable。 
 ///
 /// Properties:
 /// * [language] 
@@ -62,35 +62,35 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
       yield r'language';
       yield serializers.serialize(
         object.language,
-        specifiedType: const FullType(UserLanguage),
+        specifiedType: const FullType.nullable(UserLanguage),
       );
     }
     if (object.pushEnabled != null) {
       yield r'push_enabled';
       yield serializers.serialize(
         object.pushEnabled,
-        specifiedType: const FullType(bool),
+        specifiedType: const FullType.nullable(bool),
       );
     }
     if (object.notifyOrderFilled != null) {
       yield r'notify_order_filled';
       yield serializers.serialize(
         object.notifyOrderFilled,
-        specifiedType: const FullType(bool),
+        specifiedType: const FullType.nullable(bool),
       );
     }
     if (object.notifyOrderFailed != null) {
       yield r'notify_order_failed';
       yield serializers.serialize(
         object.notifyOrderFailed,
-        specifiedType: const FullType(bool),
+        specifiedType: const FullType.nullable(bool),
       );
     }
     if (object.notifyLiquidationWarning != null) {
       yield r'notify_liquidation_warning';
       yield serializers.serialize(
         object.notifyLiquidationWarning,
-        specifiedType: const FullType(bool),
+        specifiedType: const FullType.nullable(bool),
       );
     }
   }

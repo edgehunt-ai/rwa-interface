@@ -13,8 +13,8 @@ part 'token_balance.g.dart';
 ///
 /// Properties:
 /// * [symbol] 
-/// * [balance] - 十进制字符串，避免浮点误差
-/// * [valueUsd] - 十进制字符串，避免浮点误差
+/// * [balance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [decimals] 
 /// * [chain] 
 @BuiltValue()
@@ -22,11 +22,11 @@ abstract class TokenBalance implements Built<TokenBalance, TokenBalanceBuilder> 
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'balance')
   String get balance;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'value_usd')
   String? get valueUsd;
 

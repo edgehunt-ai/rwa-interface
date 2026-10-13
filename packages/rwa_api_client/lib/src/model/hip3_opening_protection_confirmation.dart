@@ -13,11 +13,11 @@ part 'hip3_opening_protection_confirmation.g.dart';
 /// 本单止盈止损的冻结确认值，数量等于规范化父单数量，固定不自动调整。 只用于原生 normalTpsl，不能替代已有持仓的默认全仓保护。 父子单在下单时一起签名，未来触发不补签；后续修改/主动撤销需要签名。 父单未完全成交时子保护尚未生效。主动撤销部分成交父单会取消子保护， 需检查剩余持仓的保护状态，不自动补保护。 
 ///
 /// Properties:
-/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [legs] - 每个 role 最多一条，固定顺序 take_profit 然后 stop_loss；只有一腿时仅返回该腿。
 @BuiltValue()
 abstract class Hip3OpeningProtectionConfirmation implements Built<Hip3OpeningProtectionConfirmation, Hip3OpeningProtectionConfirmationBuilder> {
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String get quantity;
 

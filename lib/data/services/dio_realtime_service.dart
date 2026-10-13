@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:dio/dio.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
@@ -19,7 +21,9 @@ final class DioRealtimeService
     this._decoder = const RealtimeEventDecoder(),
     ReconnectPolicy reconnectPolicy = const ReconnectPolicy(),
     Future<void> Function(Duration)? delay,
-  }) : _policy = reconnectPolicy,
+    this.maxDeliveredEventIds = 512,
+  }) : assert(maxDeliveredEventIds > 0),
+       _policy = reconnectPolicy,
        _delay = delay ?? Future<void>.delayed;
 
   final Dio _dio;
@@ -28,6 +32,7 @@ final class DioRealtimeService
   final RealtimeEventDecoder _decoder;
   final ReconnectPolicy _policy;
   final Future<void> Function(Duration) _delay;
+  final int maxDeliveredEventIds;
 
   @override
   Stream<RealtimeEnvelope> subscribe({required Set<String> channels}) async* {
@@ -40,7 +45,7 @@ final class DioRealtimeService
   }) async* {
     final canonicalChannels = _canonicalizeChannels(channels);
     String? lastEventId = initialCursor;
-    final deliveredEventIds = <String>{};
+    final deliveredEventIds = _RecentEventIds(maxDeliveredEventIds);
     for (var attempt = 0; attempt <= _policy.maxAttempts; attempt++) {
       final cancelToken = CancelToken();
       try {
@@ -197,5 +202,22 @@ final class DioRealtimeService
     }
     final sorted = values.toList()..sort();
     return sorted.join(',');
+  }
+}
+
+final class _RecentEventIds {
+  _RecentEventIds(this.capacity) : assert(capacity > 0);
+
+  final int capacity;
+  final Queue<String> _insertionOrder = Queue<String>();
+  final Set<String> _ids = <String>{};
+
+  bool add(String id) {
+    if (!_ids.add(id)) return false;
+    _insertionOrder.addLast(id);
+    if (_insertionOrder.length > capacity) {
+      _ids.remove(_insertionOrder.removeFirst());
+    }
+    return true;
   }
 }

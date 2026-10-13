@@ -21,7 +21,7 @@ part 'hip3_withdrawal.g.dart';
 /// * [ownerAddress] 
 /// * [destinationAddress] 
 /// * [amount] - venue 实际扣款金额（USDC）。relay rail 为 solver quote 的输入额，可能大于请求的到账金额。
-/// * [fee] - 十进制字符串，避免浮点误差
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [minimumReceived] - 链上到账金额（amount - fee）。relay rail 为请求时的目标 BSC USDT 额。
 /// * [status] 
 /// * [rail] 
@@ -62,7 +62,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'fee')
   String get fee;
 

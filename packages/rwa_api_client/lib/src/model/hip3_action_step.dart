@@ -21,6 +21,7 @@ part 'hip3_action_step.g.dart';
 /// * [status] 
 /// * [signing] 
 /// * [failureReason] 
+/// * [failureCode] - 可选步骤机器恢复码；模式切换受已有仓位阻止时为hip3_margin_mode_change_requires_flat_position。
 @BuiltValue()
 abstract class Hip3ActionStep implements Built<Hip3ActionStep, Hip3ActionStepBuilder> {
   /// 保护单步骤 prepared 时必须提供；固定数量或比例保护归一为 size_mode=quantity，quantity 为冻结绝对值；全仓保护保留 size_mode=entire_position 且禁止 quantity/percent，表示触发时整个仓位而非准备时数量。各腿 trigger_price 为冻结绝对值，不再包含 price_change_percent。与签名 payload 的数量语义完全一致，供确认展示；取消步骤展示被取消保护单的原有参数。
@@ -46,6 +47,10 @@ abstract class Hip3ActionStep implements Built<Hip3ActionStep, Hip3ActionStepBui
 
   @BuiltValueField(wireName: r'failure_reason')
   String? get failureReason;
+
+  /// 可选步骤机器恢复码；模式切换受已有仓位阻止时为hip3_margin_mode_change_requires_flat_position。
+  @BuiltValueField(wireName: r'failure_code')
+  String? get failureCode;
 
   Hip3ActionStep._();
 
@@ -107,6 +112,13 @@ class _$Hip3ActionStepSerializer implements PrimitiveSerializer<Hip3ActionStep> 
       object.failureReason,
       specifiedType: const FullType.nullable(String),
     );
+    if (object.failureCode != null) {
+      yield r'failure_code';
+      yield serializers.serialize(
+        object.failureCode,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
   }
 
   @override
@@ -181,6 +193,14 @@ class _$Hip3ActionStepSerializer implements PrimitiveSerializer<Hip3ActionStep> 
           ) as String?;
           if (valueDes == null) continue;
           result.failureReason = valueDes;
+          break;
+        case r'failure_code':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.failureCode = valueDes;
           break;
         default:
           unhandled.add(key);

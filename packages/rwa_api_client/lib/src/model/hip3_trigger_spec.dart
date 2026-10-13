@@ -9,21 +9,21 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_trigger_spec.g.dart';
 
-/// trigger_price 与 price_change_percent 恰传其一。百分比为相对冻结入场价的有符号价格变化， 不是杠杆 ROE：trigger=entry*(1+percent/100)。百分比符号仅表示相对入场价的方向，不限制盈利仓位的止损。 execution_type=limit 必须有 limit_price；market 禁止 limit_price。 Provider 支持的触发参考由 trading rules 决定，不支持的 reference 必须拒绝。 创建/修改还需校验相对于当前触发参考的触发方向；已盈利仓位的保本止损可以高于入场价。 
+/// Hip3TriggerSpec
 ///
 /// Properties:
-/// * [triggerPrice] - 十进制字符串，避免浮点误差
-/// * [priceChangePercent] - 十进制字符串，避免浮点误差
+/// * [triggerPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [priceChangePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [triggerReference] 
 /// * [executionType] 
-/// * [limitPrice] - 十进制字符串，避免浮点误差
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class Hip3TriggerSpec implements Built<Hip3TriggerSpec, Hip3TriggerSpecBuilder> {
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'trigger_price')
   String? get triggerPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price_change_percent')
   String? get priceChangePercent;
 
@@ -35,7 +35,7 @@ abstract class Hip3TriggerSpec implements Built<Hip3TriggerSpec, Hip3TriggerSpec
   Hip3TriggerSpecExecutionTypeEnum get executionType;
   // enum executionTypeEnum {  market,  limit,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
@@ -66,14 +66,14 @@ class _$Hip3TriggerSpecSerializer implements PrimitiveSerializer<Hip3TriggerSpec
       yield r'trigger_price';
       yield serializers.serialize(
         object.triggerPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.priceChangePercent != null) {
       yield r'price_change_percent';
       yield serializers.serialize(
         object.priceChangePercent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     yield r'trigger_reference';
@@ -90,7 +90,7 @@ class _$Hip3TriggerSpecSerializer implements PrimitiveSerializer<Hip3TriggerSpec
       yield r'limit_price';
       yield serializers.serialize(
         object.limitPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
   }

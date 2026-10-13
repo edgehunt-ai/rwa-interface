@@ -15,7 +15,7 @@ part 'self_custodial_withdrawal_create_request.g.dart';
 /// * [walletId] - 当前账户已有的服务端不透明 Privy wallet ID。
 /// * [assetId] - 当前环境允许的 canonical ERC-20 asset identity；bStocks使用准入身份，其他资产须由所选钱包的portfolio观察提供元数据。
 /// * [chain] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [destinationAddress] 
 @BuiltValue()
 abstract class SelfCustodialWithdrawalCreateRequest implements Built<SelfCustodialWithdrawalCreateRequest, SelfCustodialWithdrawalCreateRequestBuilder> {
@@ -31,7 +31,7 @@ abstract class SelfCustodialWithdrawalCreateRequest implements Built<SelfCustodi
   SelfCustodialWithdrawalChain get chain;
   // enum chainEnum {  Ethereum,  Arbitrum,  Base,  BSC,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

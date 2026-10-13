@@ -19,7 +19,7 @@ part 'self_custodial_withdrawal.g.dart';
 /// * [sourceWalletId] 
 /// * [assetId] 
 /// * [assetSymbol] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [destinationAddress] 
 /// * [transaction] 
 /// * [gas] - 创建 intent 响应中服务端观测到的冻结交易 gas 估算；在读取或提交响应、 以及 gas 估算未配置时为 null。客户端在用户签名前应展示该费用，gas 不足时必须先提示补充原生币。 
@@ -50,7 +50,7 @@ abstract class SelfCustodialWithdrawal implements Built<SelfCustodialWithdrawal,
   @BuiltValueField(wireName: r'asset_symbol')
   String get assetSymbol;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

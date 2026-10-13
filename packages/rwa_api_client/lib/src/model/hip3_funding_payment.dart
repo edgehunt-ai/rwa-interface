@@ -13,11 +13,11 @@ part 'hip3_funding_payment.g.dart';
 /// Properties:
 /// * [id] 
 /// * [productId] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [settlementAsset] 
 /// * [collateralToken] 
-/// * [signedPositionSize] - 十进制字符串，避免浮点误差
-/// * [fundingRate] - 十进制字符串，避免浮点误差
+/// * [signedPositionSize] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fundingRate] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [transactionHash] 
 /// * [occurredAt] 
 @BuiltValue()
@@ -28,7 +28,7 @@ abstract class Hip3FundingPayment implements Built<Hip3FundingPayment, Hip3Fundi
   @BuiltValueField(wireName: r'product_id')
   String get productId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -38,11 +38,11 @@ abstract class Hip3FundingPayment implements Built<Hip3FundingPayment, Hip3Fundi
   @BuiltValueField(wireName: r'collateral_token')
   int? get collateralToken;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'signed_position_size')
   String get signedPositionSize;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'funding_rate')
   String get fundingRate;
 

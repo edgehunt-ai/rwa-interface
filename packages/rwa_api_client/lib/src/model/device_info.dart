@@ -65,21 +65,21 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
       yield r'device_id';
       yield serializers.serialize(
         object.deviceId,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.platform != null) {
       yield r'platform';
       yield serializers.serialize(
         object.platform,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.appVersion != null) {
       yield r'app_version';
       yield serializers.serialize(
         object.appVersion,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.pushToken != null) {

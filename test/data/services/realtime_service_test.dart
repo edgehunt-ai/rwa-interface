@@ -96,6 +96,26 @@ void main() {
     );
     expect(adapter.calls, 2);
   });
+
+  test('事件去重窗口有界并在淘汰最旧 ID 后允许再次投递', () async {
+    final adapter = _BoundedDedupAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://fixture.example'))
+      ..httpClientAdapter = adapter;
+    final service = DioRealtimeService(
+      dio,
+      maxDeliveredEventIds: 2,
+      reconnectPolicy: const ReconnectPolicy(
+        maxAttempts: 2,
+        baseDelay: Duration.zero,
+      ),
+      delay: (_) async {},
+    );
+
+    final events = await service.subscribe(channels: {'prices'}).toList();
+
+    expect(events.map((event) => event.eventId), ['1', '2', '3', '1', '4']);
+    expect(adapter.calls, 3);
+  });
 }
 
 final class _SseAdapter implements HttpClientAdapter {
@@ -179,6 +199,34 @@ final class _StreamFailureAdapter implements HttpClientAdapter {
         : Stream.value(Uint8List.fromList(utf8.encode(_priceFrame('2'))));
     return ResponseBody(
       stream,
+      200,
+      headers: {
+        Headers.contentTypeHeader: ['text/event-stream'],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+final class _BoundedDedupAdapter implements HttpClientAdapter {
+  var calls = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    calls++;
+    final frames = switch (calls) {
+      1 => [_priceFrame('1'), _priceFrame('2')],
+      2 => [_priceFrame('2'), _priceFrame('3')],
+      _ => [_priceFrame('1'), _resyncFrame('4')],
+    };
+    return ResponseBody(
+      Stream.value(Uint8List.fromList(utf8.encode(frames.join()))),
       200,
       headers: {
         Headers.contentTypeHeader: ['text/event-stream'],

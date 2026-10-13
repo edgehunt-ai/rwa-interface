@@ -23,9 +23,9 @@ part 'user_selected_multi_source_bstock_testnet_funding_plan.g.dart';
 /// * [fundingSessionId] 
 /// * [selectionVersion] 
 /// * [mode] 
-/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
+/// * [requiredTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [targetSnapshot] 
-/// * [shortfall] - 十进制字符串，避免浮点误差
+/// * [shortfall] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [status] 
 /// * [blocker] 
 /// * [walletActions] 
@@ -54,14 +54,14 @@ abstract class UserSelectedMultiSourceBstockTestnetFundingPlan implements Built<
   UserSelectedMultiSourceBstockTestnetFundingPlanModeEnum get mode;
   // enum modeEnum {  user_selected_multi_source,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'required_target_amount')
   String get requiredTargetAmount;
 
   @BuiltValueField(wireName: r'target_snapshot')
   BstockTestnetFundingTargetBalanceSnapshot get targetSnapshot;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'shortfall')
   String get shortfall;
 

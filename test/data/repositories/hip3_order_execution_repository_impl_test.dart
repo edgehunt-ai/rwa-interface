@@ -33,7 +33,10 @@ void main() {
         status: 'failed',
         stepStatus: 'failed',
         stepFailureReason: 'Insufficient margin after the last fill',
+        stepFailureCode: 'step_failure_code',
         actionFailureReason: 'action level reason',
+        actionFailureCode: 'action_failure_code',
+        actionUserAction: 'review_account_and_retry',
       ),
     );
     await expectLater(
@@ -44,13 +47,41 @@ void main() {
         delay: (_) async {},
       ).awaitActionAndSubmit('order-1'),
       throwsA(
-        isA<Hip3SigningFailure>().having(
-          (e) => e.reason,
-          'reason',
-          // The failing step explains more than the action-level summary.
-          'Insufficient margin after the last fill',
-        ),
+        isA<Hip3SigningFailure>()
+            .having(
+              (e) => e.reason,
+              'reason',
+              // The failing step explains more than the action-level summary.
+              'Insufficient margin after the last fill',
+            )
+            .having((e) => e.failureCode, 'failure code', 'step_failure_code')
+            .having(
+              (e) => e.userAction,
+              'user action',
+              'review_account_and_retry',
+            ),
       ),
+    );
+  });
+  test('action summaries preserve structured recovery metadata', () async {
+    final action = _action(
+      status: 'failed',
+      actionFailureCode:
+          Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition,
+      actionUserAction: Hip3ActionUserActions.keepMarginModeOrClosePosition,
+    );
+    final summary = await Hip3OrderExecutionRepositoryImpl(
+      _Signer(),
+      _Service(createdAction: action, fetchedActions: [action]),
+    ).getAction('action-1');
+
+    expect(
+      summary.failureCode,
+      Hip3ActionFailureCodes.marginModeChangeRequiresFlatPosition,
+    );
+    expect(
+      summary.userAction,
+      Hip3ActionUserActions.keepMarginModeOrClosePosition,
     );
   });
   test('the action reason is used when no step carries one', () async {
@@ -280,7 +311,10 @@ api.Hip3Action _action({
   bool signable = false,
   String validUntil = '2026-09-10T00:00:00Z',
   String? stepFailureReason,
+  String? stepFailureCode,
   String? actionFailureReason,
+  String? actionFailureCode,
+  String? actionUserAction,
   String? stepStatus,
 }) {
   final json = <String, Object?>{
@@ -331,11 +365,14 @@ api.Hip3Action _action({
               }
             : null,
         'failure_reason': stepFailureReason,
+        'failure_code': stepFailureCode,
       },
     ],
     'affected_order_ids': ['order-1'],
     'effects_applied': status == 'succeeded',
     'failure_reason': actionFailureReason,
+    'failure_code': actionFailureCode,
+    'user_action': actionUserAction,
     'created_at': '2026-09-09T00:00:00Z',
     'updated_at': '2026-09-09T00:00:00Z',
   };

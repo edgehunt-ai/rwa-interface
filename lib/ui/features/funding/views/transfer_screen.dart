@@ -820,14 +820,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       child: Scaffold(
         backgroundColor: colors.canvas,
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 38,
-                ),
-                child: IntrinsicHeight(
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -1008,7 +1006,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

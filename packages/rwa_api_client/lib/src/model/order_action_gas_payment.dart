@@ -17,9 +17,9 @@ part 'order_action_gas_payment.g.dart';
 /// * [decision] 
 /// * [platformPays] 
 /// * [nativeAsset] 
-/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差
-/// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差
-/// * [walletNativeBalance] - 十进制字符串，避免浮点误差
+/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [walletNativeBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fallbackAllowed] 
 /// * [eip7702Required] 
 /// * [eip7702Notice] 
@@ -39,15 +39,15 @@ abstract class OrderActionGasPayment implements Built<OrderActionGasPayment, Ord
   @BuiltValueField(wireName: r'native_asset')
   String? get nativeAsset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_native_fee')
   String? get estimatedNativeFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_fee_usd')
   String? get estimatedFeeUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'wallet_native_balance')
   String? get walletNativeBalance;
 

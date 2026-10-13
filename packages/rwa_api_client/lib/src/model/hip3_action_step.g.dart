@@ -225,6 +225,8 @@ class _$Hip3ActionStep extends Hip3ActionStep {
   final Hip3StepSigningPayload? signing;
   @override
   final String? failureReason;
+  @override
+  final String? failureCode;
 
   factory _$Hip3ActionStep([void Function(Hip3ActionStepBuilder)? updates]) =>
       (Hip3ActionStepBuilder()..update(updates))._build();
@@ -236,7 +238,8 @@ class _$Hip3ActionStep extends Hip3ActionStep {
       required this.kind,
       required this.status,
       this.signing,
-      this.failureReason})
+      this.failureReason,
+      this.failureCode})
       : super._();
   @override
   Hip3ActionStep rebuild(void Function(Hip3ActionStepBuilder) updates) =>
@@ -255,7 +258,8 @@ class _$Hip3ActionStep extends Hip3ActionStep {
         kind == other.kind &&
         status == other.status &&
         signing == other.signing &&
-        failureReason == other.failureReason;
+        failureReason == other.failureReason &&
+        failureCode == other.failureCode;
   }
 
   @override
@@ -268,6 +272,7 @@ class _$Hip3ActionStep extends Hip3ActionStep {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, signing.hashCode);
     _$hash = $jc(_$hash, failureReason.hashCode);
+    _$hash = $jc(_$hash, failureCode.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -281,7 +286,8 @@ class _$Hip3ActionStep extends Hip3ActionStep {
           ..add('kind', kind)
           ..add('status', status)
           ..add('signing', signing)
-          ..add('failureReason', failureReason))
+          ..add('failureReason', failureReason)
+          ..add('failureCode', failureCode))
         .toString();
   }
 }
@@ -323,6 +329,10 @@ class Hip3ActionStepBuilder
   set failureReason(String? failureReason) =>
       _$this._failureReason = failureReason;
 
+  String? _failureCode;
+  String? get failureCode => _$this._failureCode;
+  set failureCode(String? failureCode) => _$this._failureCode = failureCode;
+
   Hip3ActionStepBuilder() {
     Hip3ActionStep._defaults(this);
   }
@@ -337,6 +347,7 @@ class Hip3ActionStepBuilder
       _status = $v.status;
       _signing = $v.signing?.toBuilder();
       _failureReason = $v.failureReason;
+      _failureCode = $v.failureCode;
       _$v = null;
     }
     return this;
@@ -371,6 +382,7 @@ class Hip3ActionStepBuilder
                 status, r'Hip3ActionStep', 'status'),
             signing: _signing?.build(),
             failureReason: failureReason,
+            failureCode: failureCode,
           );
     } catch (_) {
       late String _$failedField;

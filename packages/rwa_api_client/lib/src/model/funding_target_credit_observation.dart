@@ -15,9 +15,9 @@ part 'funding_target_credit_observation.g.dart';
 /// Properties:
 /// * [accountRef] 
 /// * [asset] 
-/// * [availableBefore] - 十进制字符串，避免浮点误差
-/// * [availableAfter] - 十进制字符串，避免浮点误差
-/// * [creditedAmount] - 十进制字符串，避免浮点误差
+/// * [availableBefore] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [availableAfter] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [creditedAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [source_] 
 /// * [observedAt] 
 @BuiltValue()
@@ -28,15 +28,15 @@ abstract class FundingTargetCreditObservation implements Built<FundingTargetCred
   @BuiltValueField(wireName: r'asset')
   FundingAssetIdentity get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_before')
   String get availableBefore;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_after')
   String get availableAfter;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'credited_amount')
   String get creditedAmount;
 

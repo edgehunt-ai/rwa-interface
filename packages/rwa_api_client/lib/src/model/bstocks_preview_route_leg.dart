@@ -13,8 +13,8 @@ part 'bstocks_preview_route_leg.g.dart';
 ///
 /// Properties:
 /// * [venue] 
-/// * [amountInRaw] - 十进制字符串，避免浮点误差
-/// * [amountOutRaw] - 十进制字符串，避免浮点误差
+/// * [amountInRaw] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [amountOutRaw] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [feeTier] 
 /// * [quoteReference] 
 @BuiltValue()
@@ -23,11 +23,11 @@ abstract class BstocksPreviewRouteLeg implements Built<BstocksPreviewRouteLeg, B
   BstocksPreviewRouteLegVenueEnum get venue;
   // enum venueEnum {  propamm,  pancake_v3,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount_in_raw')
   String get amountInRaw;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount_out_raw')
   String get amountOutRaw;
 

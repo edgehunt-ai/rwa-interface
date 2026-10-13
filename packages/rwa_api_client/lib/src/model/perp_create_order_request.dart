@@ -124,14 +124,14 @@ class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCrea
       yield r'context_id';
       yield serializers.serialize(
         object.contextId,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.timeInForce != null) {
       yield r'time_in_force';
       yield serializers.serialize(
         object.timeInForce,
-        specifiedType: const FullType(Hip3TimeInForce),
+        specifiedType: const FullType.nullable(Hip3TimeInForce),
       );
     }
     if (object.protection != null) {
@@ -165,28 +165,28 @@ class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCrea
       yield r'amount';
       yield serializers.serialize(
         object.amount,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.quantity != null) {
       yield r'quantity';
       yield serializers.serialize(
         object.quantity,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.limitPrice != null) {
       yield r'limit_price';
       yield serializers.serialize(
         object.limitPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.leverage != null) {
       yield r'leverage';
       yield serializers.serialize(
         object.leverage,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     yield r'margin_mode';
@@ -212,7 +212,7 @@ class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCrea
       yield r'tp_sl';
       yield serializers.serialize(
         object.tpSl,
-        specifiedType: const FullType(TpSlSpec),
+        specifiedType: const FullType.nullable(TpSlSpec),
       );
     }
     if (object.previewId != null) {

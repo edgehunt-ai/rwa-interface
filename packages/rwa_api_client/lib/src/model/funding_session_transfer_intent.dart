@@ -9,11 +9,11 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_session_transfer_intent.g.dart';
 
-/// Account-scoped top-up intent. `destination` names the internal account receiving funds; `amount` is the exact quantity of the destination settlement asset to add. 
+/// Account-scoped top-up intent. `destination` names the internal account receiving funds; `amount` is the exact quantity of the destination settlement asset to add. HIP3补资amount须为正且精确到目标8位小数；末尾零等价可接受，不通过舍入修正超精度输入。 
 ///
 /// Properties:
 /// * [destination] - Internal destination account. `hip3_margin` tops up HIP-3 perpetual margin.
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class FundingSessionTransferIntent implements Built<FundingSessionTransferIntent, FundingSessionTransferIntentBuilder> {
   /// Internal destination account. `hip3_margin` tops up HIP-3 perpetual margin.
@@ -21,7 +21,7 @@ abstract class FundingSessionTransferIntent implements Built<FundingSessionTrans
   FundingSessionTransferIntentDestinationEnum get destination;
   // enum destinationEnum {  hip3_margin,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 

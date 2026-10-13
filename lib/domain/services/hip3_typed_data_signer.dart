@@ -7,8 +7,24 @@ enum Hip3SigningFailureCode {
   rejected,
 }
 
+abstract final class Hip3ActionFailureCodes {
+  static const marginModeChangeRequiresFlatPosition =
+      'hip3_margin_mode_change_requires_flat_position';
+}
+
+abstract final class Hip3ActionUserActions {
+  static const keepMarginModeOrClosePosition =
+      'keep_margin_mode_or_close_position';
+}
+
 final class Hip3SigningFailure implements Exception {
-  const Hip3SigningFailure(this.code, {this.retryable = false, this.reason});
+  const Hip3SigningFailure(
+    this.code, {
+    this.retryable = false,
+    this.reason,
+    this.failureCode,
+    this.userAction,
+  });
 
   final Hip3SigningFailureCode code;
   final bool retryable;
@@ -18,6 +34,13 @@ final class Hip3SigningFailure implements Exception {
   /// It names why this particular signature was refused, which the generic
   /// code cannot; prefer it over the code's fallback copy when present.
   final String? reason;
+
+  /// Stable server recovery code. Unknown values must fail safely.
+  final String? failureCode;
+
+  /// Stable server-recommended recovery action. The client must not perform it
+  /// automatically.
+  final String? userAction;
 }
 
 abstract interface class Hip3TypedDataSigner {

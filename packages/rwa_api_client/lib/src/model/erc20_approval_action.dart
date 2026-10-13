@@ -28,7 +28,7 @@ part 'erc20_approval_action.g.dart';
 /// * [gasPayment] 
 /// * [tokenContract] 
 /// * [spender] 
-/// * [approvalAmount] - 十进制字符串，避免浮点误差
+/// * [approvalAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class Erc20ApprovalAction implements Built<Erc20ApprovalAction, Erc20ApprovalActionBuilder> {
   @BuiltValueField(wireName: r'action_id')
@@ -78,7 +78,7 @@ abstract class Erc20ApprovalAction implements Built<Erc20ApprovalAction, Erc20Ap
   @BuiltValueField(wireName: r'spender')
   String get spender;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'approval_amount')
   String get approvalAmount;
 

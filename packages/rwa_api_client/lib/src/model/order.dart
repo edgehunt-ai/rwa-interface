@@ -39,11 +39,11 @@ part 'order.g.dart';
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
-/// * [limitPrice] - 十进制字符串，避免浮点误差
-/// * [filledQuantity] - 十进制字符串，避免浮点误差
-/// * [averageFillPrice] - 十进制字符串，避免浮点误差
-/// * [orderValue] - 十进制字符串，避免浮点误差
-/// * [fee] - 十进制字符串，避免浮点误差
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [filledQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [averageFillPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [orderValue] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 
 /// * [reduceOnly] 
@@ -55,7 +55,7 @@ part 'order.g.dart';
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [timeInForce] 
-/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [orderId] 
 /// * [currentActionId] 
 /// * [status] 
@@ -72,6 +72,7 @@ part 'order.g.dart';
 /// * [chainOrderId] - GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
 /// * [placementTransactionHash] - canonical GTC 挂单交易，不是最近辅助动作的交易。
 /// * [transactionHash] - canonical IOC 执行交易，与 log_index 一起标识链证据。
+/// * [cancelledQuantity] - canonical IOC未成交取消余量；filled_quantity+cancelled_quantity=quantity。预算买入quantity是回执上限，非零余量不表示预算购买失败；证据到达前省略。
 /// * [logIndex] 
 /// * [cancellationReason] 
 @BuiltValue()

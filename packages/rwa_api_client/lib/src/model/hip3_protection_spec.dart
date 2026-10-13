@@ -14,8 +14,8 @@ part 'hip3_protection_spec.g.dart';
 ///
 /// Properties:
 /// * [sizeMode] 
-/// * [quantity] - 十进制字符串，避免浮点误差
-/// * [percent] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [percent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [takeProfit] 
 /// * [stopLoss] 
 @BuiltValue()
@@ -24,11 +24,11 @@ abstract class Hip3ProtectionSpec implements Built<Hip3ProtectionSpec, Hip3Prote
   Hip3ProtectionSpecSizeModeEnum get sizeMode;
   // enum sizeModeEnum {  entire_position,  quantity,  percent,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'percent')
   String? get percent;
 

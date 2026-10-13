@@ -23,7 +23,7 @@ part 'bstock_create_order_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 必须匹配preview的规范化输入，不增加交易预算。IOC仍沿用preview冻结下限，链上minAmountOut使用新路由报价输出。 GTC（含省略time_in_force的限价单）接受非零滑点：与挂单action快照一起持久化，按账户/钱包/链/Router及规范挂单交易证据绑定。 平台Keeper每次成交重新取得最终签名RFQ及DEX报价Q，最低输出=max(ceil(Q×(1-p/100)),限价要求的最低输出)； Pancake分路也设置最低输出，必要时收紧以保证总路线满足限价；RFQ固定输出不因滑点放宽。 部分成交、重报价仍使用原比例但重新计算绝对下限；当前报价不满足限价时等待，不放宽限价强行成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零值保留并参与绑定；变更比例须重新preview。 历史或外部挂单没有可绑定策略时按0%执行；已绑定的非法策略阻止执行，不静默替换为其他数值。 Router仍独立校验实际支付/净到账及硬限价；比例是平台Keeper策略，不是链上独立认证的报价偏离率，第三方permissionless执行者不受该策略约束。 
+/// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 必须匹配preview的规范化输入，不增加交易预算。市价IOC链上最低输出=max(preview冻结下限,ceil(新路由报价Q×(1-p/100)))； 显式IOC限价仍用新路由报价输出并独立强制用户限价，不因该比例放宽限价。 GTC（含省略time_in_force的限价单）接受非零滑点：与挂单action快照一起持久化，按账户/钱包/链/Router及规范挂单交易证据绑定。 平台Keeper每次成交重新取得最终签名RFQ及DEX报价Q，最低输出=max(ceil(Q×(1-p/100)),限价要求的最低输出)； Pancake分路也设置最低输出，必要时收紧以保证总路线满足限价；RFQ固定输出不因滑点放宽。 部分成交、重报价仍使用原比例但重新计算绝对下限；当前报价不满足限价时等待，不放宽限价强行成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零值保留并参与绑定；变更比例须重新preview。 历史或外部挂单没有可绑定策略时按0%执行；已绑定的非法策略阻止执行，不静默替换为其他数值。 Router仍独立校验实际支付/净到账及硬限价；比例是平台Keeper策略，不是链上独立认证的报价偏离率，第三方permissionless执行者不受该策略约束。 
 /// * [tpSl] 
 /// * [previewId] - 引用账户绑定的有效初始预览；不锁定成交，也不能使用绑定了既有订单的 continuation preview。
 @BuiltValue()
@@ -59,7 +59,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 必须匹配preview的规范化输入，不增加交易预算。IOC仍沿用preview冻结下限，链上minAmountOut使用新路由报价输出。 GTC（含省略time_in_force的限价单）接受非零滑点：与挂单action快照一起持久化，按账户/钱包/链/Router及规范挂单交易证据绑定。 平台Keeper每次成交重新取得最终签名RFQ及DEX报价Q，最低输出=max(ceil(Q×(1-p/100)),限价要求的最低输出)； Pancake分路也设置最低输出，必要时收紧以保证总路线满足限价；RFQ固定输出不因滑点放宽。 部分成交、重报价仍使用原比例但重新计算绝对下限；当前报价不满足限价时等待，不放宽限价强行成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零值保留并参与绑定；变更比例须重新preview。 历史或外部挂单没有可绑定策略时按0%执行；已绑定的非法策略阻止执行，不静默替换为其他数值。 Router仍独立校验实际支付/净到账及硬限价；比例是平台Keeper策略，不是链上独立认证的报价偏离率，第三方permissionless执行者不受该策略约束。 
+  /// bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 必须匹配preview的规范化输入，不增加交易预算。市价IOC链上最低输出=max(preview冻结下限,ceil(新路由报价Q×(1-p/100)))； 显式IOC限价仍用新路由报价输出并独立强制用户限价，不因该比例放宽限价。 GTC（含省略time_in_force的限价单）接受非零滑点：与挂单action快照一起持久化，按账户/钱包/链/Router及规范挂单交易证据绑定。 平台Keeper每次成交重新取得最终签名RFQ及DEX报价Q，最低输出=max(ceil(Q×(1-p/100)),限价要求的最低输出)； Pancake分路也设置最低输出，必要时收紧以保证总路线满足限价；RFQ固定输出不因滑点放宽。 部分成交、重报价仍使用原比例但重新计算绝对下限；当前报价不满足限价时等待，不放宽限价强行成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零值保留并参与绑定；变更比例须重新preview。 历史或外部挂单没有可绑定策略时按0%执行；已绑定的非法策略阻止执行，不静默替换为其他数值。 Router仍独立校验实际支付/净到账及硬限价；比例是平台Keeper策略，不是链上独立认证的报价偏离率，第三方permissionless执行者不受该策略约束。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 
@@ -117,28 +117,28 @@ class _$BstockCreateOrderRequestSerializer implements PrimitiveSerializer<Bstock
       yield r'time_in_force';
       yield serializers.serialize(
         object.timeInForce,
-        specifiedType: const FullType(BstocksTimeInForce),
+        specifiedType: const FullType.nullable(BstocksTimeInForce),
       );
     }
     if (object.amount != null) {
       yield r'amount';
       yield serializers.serialize(
         object.amount,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.quantity != null) {
       yield r'quantity';
       yield serializers.serialize(
         object.quantity,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.limitPrice != null) {
       yield r'limit_price';
       yield serializers.serialize(
         object.limitPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.slippagePercent != null) {
@@ -152,7 +152,7 @@ class _$BstockCreateOrderRequestSerializer implements PrimitiveSerializer<Bstock
       yield r'tp_sl';
       yield serializers.serialize(
         object.tpSl,
-        specifiedType: const FullType(TpSlSpec),
+        specifiedType: const FullType.nullable(TpSlSpec),
       );
     }
     yield r'preview_id';

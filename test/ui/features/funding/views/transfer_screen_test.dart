@@ -107,6 +107,7 @@ void main() {
     );
     await tester.pump();
 
+    expect(find.byType(IntrinsicHeight), findsNothing);
     expect(find.text('USDT'), findsOneWidget);
     expect(find.text('USDC'), findsOneWidget);
     expect(find.text('ETH'), findsNothing);

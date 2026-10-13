@@ -15,8 +15,8 @@ part 'hip3_cross_liquidation_impact.g.dart';
 /// * [productId] 
 /// * [side] 
 /// * [markPrice] - 该受影响仓位在同一 HL 仓位快照中的当前标记价格，按 positionValue / abs(szi) 推导。 用于计算距强平价的百分比；不是下单成交价或外部行情价格。旧快照或缺少有效行情时为 null/缺省。 多仓距离=(mark_price-liquidation_price)/mark_price；空仓距离=(liquidation_price-mark_price)/mark_price。 前后距离分别使用 before/after_liquidation_price，展示百分数时乘 100；任一所需值为 null 时不得计算。 
-/// * [beforeLiquidationPrice] - 十进制字符串，避免浮点误差
-/// * [afterLiquidationPrice] - 十进制字符串，避免浮点误差
+/// * [beforeLiquidationPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [afterLiquidationPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unavailableReason] 
 @BuiltValue()
 abstract class Hip3CrossLiquidationImpact implements Built<Hip3CrossLiquidationImpact, Hip3CrossLiquidationImpactBuilder> {
@@ -31,11 +31,11 @@ abstract class Hip3CrossLiquidationImpact implements Built<Hip3CrossLiquidationI
   @BuiltValueField(wireName: r'mark_price')
   String? get markPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'before_liquidation_price')
   String? get beforeLiquidationPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'after_liquidation_price')
   String? get afterLiquidationPrice;
 

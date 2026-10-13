@@ -13,19 +13,19 @@ part 'network_portfolio_allocation_item.g.dart';
 ///
 /// Properties:
 /// * [network] 
-/// * [valueUsd] - 十进制字符串，避免浮点误差
-/// * [percent] - 十进制字符串，避免浮点误差
+/// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [percent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class NetworkPortfolioAllocationItem implements Built<NetworkPortfolioAllocationItem, NetworkPortfolioAllocationItemBuilder> {
   @BuiltValueField(wireName: r'network')
   PortfolioAssetNetwork get network;
   // enum networkEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'value_usd')
   String get valueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'percent')
   String get percent;
 

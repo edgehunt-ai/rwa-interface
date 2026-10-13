@@ -17,7 +17,7 @@ import 'package:one_of/one_of.dart';
 
 part 'funding_session_trade.g.dart';
 
-/// Frozen creation snapshot. Sessions created from `trade` carry an order preview request; sessions created from `transfer` carry an account-transfer snapshot (`kind` = `account_transfer`) and never produce an order continuation. 
+/// Frozen creation snapshot. Sessions created from `trade` carry an order preview request; sessions created from `transfer` carry an account-transfer snapshot (`kind` = `account_transfer`) and never produce an order continuation. 订单快照中的可选输入可显式为null，包括缺省杠杆、未选择的保护腿及触发价选择器；null与省略等价。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -25,7 +25,7 @@ part 'funding_session_trade.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败

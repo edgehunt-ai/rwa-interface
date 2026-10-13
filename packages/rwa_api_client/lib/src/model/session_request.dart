@@ -64,7 +64,7 @@ class _$SessionRequestSerializer implements PrimitiveSerializer<SessionRequest> 
       yield r'device';
       yield serializers.serialize(
         object.device,
-        specifiedType: const FullType(DeviceInfo),
+        specifiedType: const FullType.nullable(DeviceInfo),
       );
     }
     if (object.loginMethod != null) {

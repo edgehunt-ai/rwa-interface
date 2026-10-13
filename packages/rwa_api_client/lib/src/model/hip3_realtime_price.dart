@@ -23,8 +23,8 @@ part 'hip3_realtime_price.g.dart';
 /// * [unavailableReason] - 不可交易的产品级原因；tradable=true 时为 null。账户级限制仍由 context 返回。
 /// * [symbol] 
 /// * [kind] 
-/// * [price] - 十进制字符串，避免浮点误差
-/// * [change24hPercent] - 十进制字符串，避免浮点误差
+/// * [price] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [change24hPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [updatedAt] 
 /// * [priceLabel] 
 /// * [source_] 

@@ -23,31 +23,31 @@ part 'position.g.dart';
 /// * [name] 
 /// * [kind] 
 /// * [side] - 仅 HIP-3
-/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [quantityUnit] 
 /// * [chainId] 
 /// * [environment] 
 /// * [freshness] 
 /// * [pnlStatus] 
 /// * [valuationStatus] 
-/// * [costBasisQuote] - 十进制字符串，避免浮点误差
+/// * [costBasisQuote] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [costBasisQuoteAsset] 
-/// * [referenceCostUsd] - 十进制字符串，避免浮点误差
+/// * [referenceCostUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unrealizedPnlReferenceUsd] - Binance 参考估值，不是测试币美元锚定或实际结算收益。
 /// * [valueUsd] - 现货为已知估值或null，合约为仓位权益；unknown 不是0。
 /// * [entryPrice] - bStocks 为当前剩余持仓的 FIFO 成本均价：cost_basis_quote / quantity，计价币种见 cost_basis_quote_asset。 不是最近一笔成交价，也不是全部历史买入的平均价；部分卖出后使用剩余批次成本。 沿用交易价格的18位小数截断精度；成本未知、零数量、越界或正成本均价小到截断为0时为null。 成本已知时不依赖当前价格，缺少估值仍可返回入场价；HIP-3 保持 venue entry price 口径。 
-/// * [markPrice] - 十进制字符串，避免浮点误差
+/// * [markPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [unrealizedPnl] - bStocks 复用 Portfolio holding_return.amount_usd，等于 unrealized_pnl_reference_usd： 当前参考估值减 FIFO 剩余参考成本，配合 valuation_status=reference_only。 不是实际结算收益或测试网 TUSDT 美元锚定；成本未知、估值缺失或stale时为null，盈亏平衡为0。 HIP-3 保持交易场所的未实现盈亏口径。 
 /// * [unrealizedPnlPercent] - bStocks 在正FIFO成本已知且参考估值新鲜时返回 (参考估值 - FIFO参考成本)/FIFO参考成本×100， 18位小数half-even舍入，配合 valuation_status=reference_only；不是实际美元结算收益。 未知/零成本、估值缺失/stale或数值越界时省略字段，不返回null或伪造0；HIP3口径不变。 
-/// * [realizedPnl] - 十进制字符串，避免浮点误差
+/// * [realizedPnl] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [costBasis] - bStocks 为 cost_basis_quote 的同值字段，表示当前剩余持仓的 FIFO 总成本，计价币种见 cost_basis_quote_asset；成本未知为null，不依赖当前价格。HIP-3 口径不变。
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 
-/// * [margin] - 十进制字符串，避免浮点误差
-/// * [liquidationPrice] - 十进制字符串，避免浮点误差
+/// * [margin] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [liquidationPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fundingPaid] - 累计资金费；负数为支付，正数为收取
-/// * [takeProfitPrice] - 十进制字符串，避免浮点误差
-/// * [stopLossPrice] - 十进制字符串，避免浮点误差
+/// * [takeProfitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [stopLossPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [stopLimitPrice] - 已设置的止损限价；与 `stop_loss_price` 一起用于完整回显 TP / SL
 /// * [openedAt] 
 /// * [updatedAt] 
@@ -87,7 +87,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   PositionSideEnum? get side;
   // enum sideEnum {  long,  short,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String get quantity;
 
@@ -112,14 +112,14 @@ abstract class Position implements Built<Position, PositionBuilder> {
   PositionValuationStatusEnum? get valuationStatus;
   // enum valuationStatusEnum {  reference_only,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'cost_basis_quote')
   String? get costBasisQuote;
 
   @BuiltValueField(wireName: r'cost_basis_quote_asset')
   String? get costBasisQuoteAsset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'reference_cost_usd')
   String? get referenceCostUsd;
 
@@ -135,7 +135,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'entry_price')
   String? get entryPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'mark_price')
   String? get markPrice;
 
@@ -147,7 +147,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'unrealized_pnl_percent')
   String? get unrealizedPnlPercent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'realized_pnl')
   String? get realizedPnl;
 
@@ -163,11 +163,11 @@ abstract class Position implements Built<Position, PositionBuilder> {
   MarginMode? get marginMode;
   // enum marginModeEnum {  isolated,  cross,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'margin')
   String? get margin;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'liquidation_price')
   String? get liquidationPrice;
 
@@ -175,11 +175,11 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'funding_paid')
   String? get fundingPaid;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'take_profit_price')
   String? get takeProfitPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'stop_loss_price')
   String? get stopLossPrice;
 

@@ -40,6 +40,9 @@ class _MarketDiscoverySearchScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (ModalRoute.of(context)?.isCurrent ?? true) {
+      ref.watch(marketListRefreshProvider);
+    }
     final catalog = ref.watch(
       marketProductsProvider((
         query: null,

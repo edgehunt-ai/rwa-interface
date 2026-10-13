@@ -16,7 +16,7 @@ part 'bstocks_confirmation_binding.g.dart';
 /// * [expiresAt] 
 /// * [deadlineKind] 
 /// * [maximumInputRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
-/// * [minimumOutputRaw] - IOC 预览同意的最低输出边界（原始单位，向下取整），GTC 为 null。 与 estimated_receive 区分：这是旧预览对后续新报价的下限，不表示原样编码成链上 minAmountOut。 当前新路由必须不突破该下限，交易编码却使用新路由自身的报价输出作为更严格的下限。 
+/// * [minimumOutputRaw] - IOC预览同意的最低输出边界（原始单位，向上取整），GTC为null。 市价IOC链上最低输出=max(冻结预览下限,ceil(新路由报价Q×(1-p/100)))，不能突破旧预览下限。 显式IOC限价使用新路由自身报价输出作为链上下限，并独立强制用户限价；两种IOC不承诺同一报价偏离率。 
 /// * [approvalRequiresNewPreview] - 新生成的预览固定返回 true：一个 preview_id 只能创建一个 action（approval 或交易）。 approval 创建即消费该 preview_id；授权后必须获取新 preview_id，并使用新的创建幂等键提交交易。 boolean 类型保留对历史 false 快照的解码兼容；历史 false 不再授予创建第二个 action 的权限。 幂等重放不延长服务端或报价区块有效期，不放宽最大支付/最低收到、账户/钱包/订单/准入绑定。 交易前仍重新核验余额和 allowance；已有足够 allowance 时可直接用有效 preview 创建交易 action。 
 @BuiltValue()
 abstract class BstocksConfirmationBinding implements Built<BstocksConfirmationBinding, BstocksConfirmationBindingBuilder> {
@@ -35,7 +35,7 @@ abstract class BstocksConfirmationBinding implements Built<BstocksConfirmationBi
   @BuiltValueField(wireName: r'maximum_input_raw')
   String get maximumInputRaw;
 
-  /// IOC 预览同意的最低输出边界（原始单位，向下取整），GTC 为 null。 与 estimated_receive 区分：这是旧预览对后续新报价的下限，不表示原样编码成链上 minAmountOut。 当前新路由必须不突破该下限，交易编码却使用新路由自身的报价输出作为更严格的下限。 
+  /// IOC预览同意的最低输出边界（原始单位，向上取整），GTC为null。 市价IOC链上最低输出=max(冻结预览下限,ceil(新路由报价Q×(1-p/100)))，不能突破旧预览下限。 显式IOC限价使用新路由自身报价输出作为链上下限，并独立强制用户限价；两种IOC不承诺同一报价偏离率。 
   @BuiltValueField(wireName: r'minimum_output_raw')
   String? get minimumOutputRaw;
 

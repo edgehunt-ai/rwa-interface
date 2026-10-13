@@ -1201,7 +1201,7 @@ void main() {
 
     for (final text in [
       'NVDAB',
-      'Spot · BSC',
+      'Spot · BNB Smart Chain',
       'Unrealized PnL',
       r'+$16.00',
       '+3.00%',
@@ -1360,7 +1360,7 @@ void main() {
     await _scrollToTradeTab(tester, 'Position');
     await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
-    expect(find.text('Spot · BSC'), findsOneWidget);
+    expect(find.text('Spot · BNB Smart Chain'), findsOneWidget);
 
     final withdraw = find.widgetWithText(OutlinedButton, 'Withdraw');
     await tester.ensureVisible(withdraw);

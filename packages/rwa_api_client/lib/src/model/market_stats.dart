@@ -13,18 +13,18 @@ part 'market_stats.g.dart';
 ///
 /// Properties:
 /// * [quotation] 
-/// * [high24h] - 十进制字符串，避免浮点误差
-/// * [low24h] - 十进制字符串，避免浮点误差
-/// * [turnover24hUsd] - 十进制字符串，避免浮点误差
-/// * [volume24h] - 十进制字符串，避免浮点误差
+/// * [high24h] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [low24h] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [turnover24hUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [volume24h] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [volume24hUnit] 
 /// * [referenceLabel] - 服务端来源标签；当前 bStocks 为对应交易对 candle feed，不可硬编码为独立美股现货报价。
-/// * [referencePrice] - 十进制字符串，避免浮点误差
+/// * [referencePrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [relativeLabel] - bStocks 为 `Premium`；HIP-3 为 `Basis`
-/// * [relativePercent] - 十进制字符串，避免浮点误差
-/// * [spreadPercent] - 十进制字符串，避免浮点误差
-/// * [bestBid] - 十进制字符串，避免浮点误差
-/// * [bestAsk] - 十进制字符串，避免浮点误差
+/// * [relativePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [spreadPercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [bestBid] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [bestAsk] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fundingRate] - 仅 HIP-3，原始小数费率（如 0.0001 表示 0.01%），不是用户已支付的美元金额。正费率多头付空头，负费率反向。
 /// * [nextFundingAt] 
 /// * [openInterestUsd] - 仅 HIP-3
@@ -33,19 +33,19 @@ abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
   @BuiltValueField(wireName: r'quotation')
   BstocksReferenceQuotation? get quotation;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'high_24h')
   String? get high24h;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'low_24h')
   String? get low24h;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'turnover_24h_usd')
   String? get turnover24hUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'volume_24h')
   String? get volume24h;
 
@@ -56,7 +56,7 @@ abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
   @BuiltValueField(wireName: r'reference_label')
   String? get referenceLabel;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'reference_price')
   String? get referencePrice;
 
@@ -64,19 +64,19 @@ abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
   @BuiltValueField(wireName: r'relative_label')
   String? get relativeLabel;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'relative_percent')
   String? get relativePercent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'spread_percent')
   String? get spreadPercent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'best_bid')
   String? get bestBid;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'best_ask')
   String? get bestAsk;
 

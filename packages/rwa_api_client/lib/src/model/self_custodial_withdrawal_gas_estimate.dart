@@ -13,9 +13,9 @@ part 'self_custodial_withdrawal_gas_estimate.g.dart';
 /// Properties:
 /// * [nativeAsset] - 冻结交易所在链的原生 gas 资产符号，例如 ETH 或 BNB。
 /// * [gasUnits] - eth_estimateGas 对服务端冻结交易返回的 gas units 十进制字符串。
-/// * [gasPriceWei] - 十进制字符串，避免浮点误差
-/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差
-/// * [walletNativeBalance] - 十进制字符串，避免浮点误差
+/// * [gasPriceWei] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedNativeFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [walletNativeBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [canPayGas] - 观测时点 source wallet 原生币余额是否足以支付估算 gas 费用。 为 false 时客户端必须提示用户先补充原生币，不得直接发起签名。 
 /// * [observedAt] 
 @BuiltValue()
@@ -28,15 +28,15 @@ abstract class SelfCustodialWithdrawalGasEstimate implements Built<SelfCustodial
   @BuiltValueField(wireName: r'gas_units')
   String get gasUnits;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'gas_price_wei')
   String get gasPriceWei;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_native_fee')
   String get estimatedNativeFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'wallet_native_balance')
   String get walletNativeBalance;
 

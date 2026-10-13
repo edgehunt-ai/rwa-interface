@@ -32,6 +32,8 @@ part 'hip3_action.g.dart';
 /// * [affectedOrderIds] - 包括开仓、平仓和 TP/SL 子订单，可使用订单 GET 查询；顺序无业务含义。
 /// * [effectsApplied] 
 /// * [failureReason] 
+/// * [failureCode] - 可选机器恢复码；模式切换受已有仓位阻止时为hip3_margin_mode_change_requires_flat_position。未知码按失败状态安全处理。
+/// * [userAction] - 对应模式切换失败为keep_margin_mode_or_close_position，不自动平仓或改换保证金模式。
 /// * [createdAt] 
 /// * [updatedAt] 
 @BuiltValue()
@@ -83,6 +85,14 @@ abstract class Hip3Action implements Built<Hip3Action, Hip3ActionBuilder> {
 
   @BuiltValueField(wireName: r'failure_reason')
   String? get failureReason;
+
+  /// 可选机器恢复码；模式切换受已有仓位阻止时为hip3_margin_mode_change_requires_flat_position。未知码按失败状态安全处理。
+  @BuiltValueField(wireName: r'failure_code')
+  String? get failureCode;
+
+  /// 对应模式切换失败为keep_margin_mode_or_close_position，不自动平仓或改换保证金模式。
+  @BuiltValueField(wireName: r'user_action')
+  String? get userAction;
 
   @BuiltValueField(wireName: r'created_at')
   DateTime get createdAt;
@@ -185,6 +195,20 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
       object.failureReason,
       specifiedType: const FullType.nullable(String),
     );
+    if (object.failureCode != null) {
+      yield r'failure_code';
+      yield serializers.serialize(
+        object.failureCode,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.userAction != null) {
+      yield r'user_action';
+      yield serializers.serialize(
+        object.userAction,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
@@ -320,6 +344,22 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
           ) as String?;
           if (valueDes == null) continue;
           result.failureReason = valueDes;
+          break;
+        case r'failure_code':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.failureCode = valueDes;
+          break;
+        case r'user_action':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.userAction = valueDes;
           break;
         case r'created_at':
           final valueDes = serializers.deserialize(

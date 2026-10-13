@@ -12,18 +12,18 @@ part 'funding_session_source_allocation.g.dart';
 ///
 /// Properties:
 /// * [sourcePositionId] 
-/// * [inputAmount] - 十进制字符串，避免浮点误差
-/// * [estimatedTargetAmount] - 十进制字符串，避免浮点误差
+/// * [inputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 @BuiltValue()
 abstract class FundingSessionSourceAllocation implements Built<FundingSessionSourceAllocation, FundingSessionSourceAllocationBuilder> {
   @BuiltValueField(wireName: r'source_position_id')
   String get sourcePositionId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'input_amount')
   String get inputAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_target_amount')
   String get estimatedTargetAmount;
 

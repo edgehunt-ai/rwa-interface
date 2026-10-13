@@ -16,9 +16,9 @@ part 'funding_route_quote.g.dart';
 /// Properties:
 /// * [quoteId] 
 /// * [provider] 
-/// * [inputAmount] - 十进制字符串，避免浮点误差
-/// * [maximumInputAmount] - 十进制字符串，避免浮点误差
-/// * [minimumReceived] - 十进制字符串，避免浮点误差
+/// * [inputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [maximumInputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [minimumReceived] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fees] 
 /// * [etaSeconds] 
 /// * [quotedAt] 
@@ -34,15 +34,15 @@ abstract class FundingRouteQuote implements Built<FundingRouteQuote, FundingRout
   FundingProvider get provider;
   // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'input_amount')
   String get inputAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'maximum_input_amount')
   String get maximumInputAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 

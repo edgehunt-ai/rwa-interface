@@ -415,6 +415,9 @@ abstract class BstockOrderWalletActionStateBuilder {
   String? get transactionHash;
   set transactionHash(String? transactionHash);
 
+  String? get cancelledQuantity;
+  set cancelledQuantity(String? cancelledQuantity);
+
   int? get logIndex;
   set logIndex(int? logIndex);
 
@@ -462,6 +465,8 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
   @override
   final String? transactionHash;
   @override
+  final String? cancelledQuantity;
+  @override
   final int? logIndex;
   @override
   final BstockOrderWalletActionStateCancellationReasonEnum? cancellationReason;
@@ -489,6 +494,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
       this.chainOrderId,
       this.placementTransactionHash,
       this.transactionHash,
+      this.cancelledQuantity,
       this.logIndex,
       this.cancellationReason})
       : super._();
@@ -523,6 +529,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
         chainOrderId == other.chainOrderId &&
         placementTransactionHash == other.placementTransactionHash &&
         transactionHash == other.transactionHash &&
+        cancelledQuantity == other.cancelledQuantity &&
         logIndex == other.logIndex &&
         cancellationReason == other.cancellationReason;
   }
@@ -548,6 +555,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
     _$hash = $jc(_$hash, chainOrderId.hashCode);
     _$hash = $jc(_$hash, placementTransactionHash.hashCode);
     _$hash = $jc(_$hash, transactionHash.hashCode);
+    _$hash = $jc(_$hash, cancelledQuantity.hashCode);
     _$hash = $jc(_$hash, logIndex.hashCode);
     _$hash = $jc(_$hash, cancellationReason.hashCode);
     _$hash = $jf(_$hash);
@@ -575,6 +583,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
           ..add('chainOrderId', chainOrderId)
           ..add('placementTransactionHash', placementTransactionHash)
           ..add('transactionHash', transactionHash)
+          ..add('cancelledQuantity', cancelledQuantity)
           ..add('logIndex', logIndex)
           ..add('cancellationReason', cancellationReason))
         .toString();
@@ -682,6 +691,11 @@ class $BstockOrderWalletActionStateBuilder
   set transactionHash(covariant String? transactionHash) =>
       _$this._transactionHash = transactionHash;
 
+  String? _cancelledQuantity;
+  String? get cancelledQuantity => _$this._cancelledQuantity;
+  set cancelledQuantity(covariant String? cancelledQuantity) =>
+      _$this._cancelledQuantity = cancelledQuantity;
+
   int? _logIndex;
   int? get logIndex => _$this._logIndex;
   set logIndex(covariant int? logIndex) => _$this._logIndex = logIndex;
@@ -719,6 +733,7 @@ class $BstockOrderWalletActionStateBuilder
       _chainOrderId = $v.chainOrderId;
       _placementTransactionHash = $v.placementTransactionHash;
       _transactionHash = $v.transactionHash;
+      _cancelledQuantity = $v.cancelledQuantity;
       _logIndex = $v.logIndex;
       _cancellationReason = $v.cancellationReason;
       _$v = null;
@@ -765,6 +780,7 @@ class $BstockOrderWalletActionStateBuilder
             chainOrderId: chainOrderId,
             placementTransactionHash: placementTransactionHash,
             transactionHash: transactionHash,
+            cancelledQuantity: cancelledQuantity,
             logIndex: logIndex,
             cancellationReason: cancellationReason,
           );

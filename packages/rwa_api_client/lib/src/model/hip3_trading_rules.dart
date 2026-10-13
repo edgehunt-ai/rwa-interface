@@ -19,9 +19,9 @@ part 'hip3_trading_rules.g.dart';
 /// * [priceMaxSignificantDigits] 
 /// * [priceMaxDecimals] 
 /// * [integerPricesAllowed] 
-/// * [minimumNotionalUsdc] - 十进制字符串，避免浮点误差
+/// * [minimumNotionalUsdc] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [maximumNotionalUsdc] - 当前执行策略的单笔名义金额上限；null 表示无额外策略上限，仍受账户容量与交易所规则限制。
-/// * [maxLeverage] - 十进制字符串，避免浮点误差
+/// * [maxLeverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [marginModes] 
 /// * [orderTypes] 
 /// * [timeInForce] 
@@ -44,7 +44,7 @@ abstract class Hip3TradingRules implements Built<Hip3TradingRules, Hip3TradingRu
   @BuiltValueField(wireName: r'integer_prices_allowed')
   bool get integerPricesAllowed;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_notional_usdc')
   String get minimumNotionalUsdc;
 
@@ -52,7 +52,7 @@ abstract class Hip3TradingRules implements Built<Hip3TradingRules, Hip3TradingRu
   @BuiltValueField(wireName: r'maximum_notional_usdc')
   String? get maximumNotionalUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'max_leverage')
   String get maxLeverage;
 

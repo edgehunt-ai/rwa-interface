@@ -10,14 +10,14 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_close_preview_request.g.dart';
 
-/// quantity/percent 互斥；均不传表示全平；quantity>0，percent 在 (0,100]。market 仅支持 ioc；limit 缺省 gtc 且必须有 limit_price。
+/// quantity/percent非null值互斥；均省略或为null表示全平；quantity>0，percent在(0,100]。 market仅支持ioc且禁止非null限价；limit缺省gtc且必须有正limit_price。slippage_percent省略/null默认1，范围[0,5]。 先拒绝超过当前仓位的数量，再按产品size_decimals向下截断数量或比例结果；舍入为零返回422，不用截断掩盖超量。 规范化部分平仓名义金额须至少10 USDC，全平剩余尘埃仓位例外；可选字段null与省略等价。 
 ///
 /// Properties:
 /// * [type] 
-/// * [quantity] - 十进制字符串，避免浮点误差
-/// * [percent] - 十进制字符串，避免浮点误差
-/// * [limitPrice] - 十进制字符串，避免浮点误差
-/// * [slippagePercent] - 十进制字符串，避免浮点误差
+/// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [percent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [slippagePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [timeInForce] 
 @BuiltValue()
 abstract class Hip3ClosePreviewRequest implements Built<Hip3ClosePreviewRequest, Hip3ClosePreviewRequestBuilder> {
@@ -25,19 +25,19 @@ abstract class Hip3ClosePreviewRequest implements Built<Hip3ClosePreviewRequest,
   Hip3ClosePreviewRequestTypeEnum? get type;
   // enum typeEnum {  market,  limit,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'percent')
   String? get percent;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 
@@ -80,35 +80,35 @@ class _$Hip3ClosePreviewRequestSerializer implements PrimitiveSerializer<Hip3Clo
       yield r'quantity';
       yield serializers.serialize(
         object.quantity,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.percent != null) {
       yield r'percent';
       yield serializers.serialize(
         object.percent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.limitPrice != null) {
       yield r'limit_price';
       yield serializers.serialize(
         object.limitPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.slippagePercent != null) {
       yield r'slippage_percent';
       yield serializers.serialize(
         object.slippagePercent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.timeInForce != null) {
       yield r'time_in_force';
       yield serializers.serialize(
         object.timeInForce,
-        specifiedType: const FullType(Hip3TimeInForce),
+        specifiedType: const FullType.nullable(Hip3TimeInForce),
       );
     }
   }

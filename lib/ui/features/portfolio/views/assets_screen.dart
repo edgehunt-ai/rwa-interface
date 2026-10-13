@@ -112,6 +112,9 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (ModalRoute.of(context)?.isCurrent ?? true) {
+      ref.watch(portfolioListRefreshProvider);
+    }
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final authentication = ref.watch(authenticationProvider);
@@ -203,149 +206,184 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                         ? const _EmptyAssets()
                         : RefreshIndicator(
                             onRefresh: _refreshAssets,
-                            child: ListView(
+                            child: CustomScrollView(
                               controller: _scrollController,
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                              children: [
-                                _PortfolioSummary(
-                                  portfolio: value,
-                                  history: history,
-                                  showMiniTrend: !trendExpanded,
-                                  onTrendTap: () =>
-                                      setState(() => trendExpanded = true),
-                                ),
-                                AnimatedSize(
-                                  duration: const Duration(milliseconds: 220),
-                                  curve: Curves.easeOutCubic,
-                                  alignment: Alignment.topCenter,
-                                  child: trendExpanded
-                                      ? Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 28,
-                                          ),
-                                          child: _TrendExpanded(
-                                            range: trendRange,
-                                            history: history,
-                                            onRangeChanged: (value) => setState(
-                                              () => trendRange = value,
+                              slivers: [
+                                SliverPadding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  sliver: SliverList.list(
+                                    children: [
+                                      _PortfolioSummary(
+                                        portfolio: value,
+                                        history: history,
+                                        showMiniTrend: !trendExpanded,
+                                        onTrendTap: () => setState(
+                                          () => trendExpanded = true,
+                                        ),
+                                      ),
+                                      AnimatedSize(
+                                        duration: const Duration(
+                                          milliseconds: 220,
+                                        ),
+                                        curve: Curves.easeOutCubic,
+                                        alignment: Alignment.topCenter,
+                                        child: trendExpanded
+                                            ? Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 28,
+                                                ),
+                                                child: _TrendExpanded(
+                                                  range: trendRange,
+                                                  history: history,
+                                                  onRangeChanged: (value) =>
+                                                      setState(
+                                                        () =>
+                                                            trendRange = value,
+                                                      ),
+                                                  onCollapse: () => setState(
+                                                    () => trendExpanded = false,
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox.shrink(),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: FilledButton(
+                                              onPressed: () =>
+                                                  showDepositRoutesSheet(
+                                                    context,
+                                                  ),
+                                              style: FilledButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                    ),
+                                                textStyle: const TextStyle(
+                                                  fontSize: 15,
+                                                  height: 22 / 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(l10n.deposit),
+                                              ),
                                             ),
-                                            onCollapse: () => setState(
-                                              () => trendExpanded = false,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () =>
+                                                  showWithdrawalSourceSheet(
+                                                    context,
+                                                  ),
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor:
+                                                    colors.subtleSurface,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                    ),
+                                                textStyle: const TextStyle(
+                                                  fontSize: 15,
+                                                  height: 22 / 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(l10n.withdraw),
+                                              ),
                                             ),
                                           ),
-                                        )
-                                      : const SizedBox.shrink(),
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: FilledButton(
-                                        onPressed: () =>
-                                            showDepositRoutesSheet(context),
-                                        style: FilledButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 20,
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () =>
+                                                  context.pushNamed(
+                                                    AppRoutes.transferName,
+                                                  ),
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor:
+                                                    colors.subtleSurface,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                    ),
+                                                textStyle: const TextStyle(
+                                                  fontSize: 15,
+                                                  height: 22 / 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(l10n.transfer),
+                                              ),
+                                            ),
                                           ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            height: 22 / 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Text(l10n.deposit),
+                                        ],
+                                      ),
+                                      _Allocation(
+                                        allocation: allocation,
+                                        expanded: allocationExpanded,
+                                        onTap: () => setState(
+                                          () => allocationExpanded =
+                                              !allocationExpanded,
                                         ),
                                       ),
+                                      const SizedBox(height: 20),
+                                      _AssetTabs(
+                                        selected: tab,
+                                        onSelected: (value) =>
+                                            setState(() => tab = value),
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+                                  ),
+                                ),
+                                SliverPadding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  sliver: switch (tab) {
+                                    _AssetTab.spot => _SpotBalances(
+                                      accounts: accounts,
+                                      holdings: holdings,
+                                      assets: spotAssets,
+                                      loadingMore: holdings.loadingMore,
+                                      productFilter: spotProductFilter,
+                                      networkFilter: spotNetworkFilter,
+                                      onProductFilterChanged: (value) =>
+                                          setState(
+                                            () => spotProductFilter = value,
+                                          ),
+                                      onNetworkFilterChanged: (value) =>
+                                          setState(
+                                            () => spotNetworkFilter = value,
+                                          ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: () =>
-                                            showWithdrawalSourceSheet(context),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: colors.subtleSurface,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                          ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            height: 22 / 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Text(l10n.withdraw),
-                                        ),
+                                    _AssetTab.perps => SliverToBoxAdapter(
+                                      child: _PerpsBalances(
+                                        allocation: allocation,
+                                        accounts: accounts,
+                                        holdings: holdings,
+                                        openOrders: openOrders,
+                                        loadingMore:
+                                            holdings.loadingMore ||
+                                            openOrders.loadingMore,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: () => context.pushNamed(
-                                          AppRoutes.transferName,
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: colors.subtleSurface,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                          ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            height: 22 / 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Text(l10n.transfer),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  },
                                 ),
-                                _Allocation(
-                                  allocation: allocation,
-                                  expanded: allocationExpanded,
-                                  onTap: () => setState(
-                                    () => allocationExpanded =
-                                        !allocationExpanded,
-                                  ),
+                                const SliverToBoxAdapter(
+                                  child: SizedBox(height: 20),
                                 ),
-                                const SizedBox(height: 20),
-                                _AssetTabs(
-                                  selected: tab,
-                                  onSelected: (value) =>
-                                      setState(() => tab = value),
-                                ),
-                                const SizedBox(height: 12),
-                                switch (tab) {
-                                  _AssetTab.spot => _SpotBalances(
-                                    accounts: accounts,
-                                    holdings: holdings,
-                                    assets: spotAssets,
-                                    loadingMore: holdings.loadingMore,
-                                    productFilter: spotProductFilter,
-                                    networkFilter: spotNetworkFilter,
-                                    onProductFilterChanged: (value) => setState(
-                                      () => spotProductFilter = value,
-                                    ),
-                                    onNetworkFilterChanged: (value) => setState(
-                                      () => spotNetworkFilter = value,
-                                    ),
-                                  ),
-                                  _AssetTab.perps => _PerpsBalances(
-                                    allocation: allocation,
-                                    accounts: accounts,
-                                    holdings: holdings,
-                                    openOrders: openOrders,
-                                    loadingMore:
-                                        holdings.loadingMore ||
-                                        openOrders.loadingMore,
-                                  ),
-                                },
                               ],
                             ),
                           ),
@@ -685,9 +723,7 @@ class _PortfolioSummary extends StatelessWidget {
                               Theme.of(context)
                                   .extension<AppRwaColors>()!
                                   .selected,
-                              value.points
-                                  .map((point) => point.totalValueUsd)
-                                  .toList(growable: false),
+                              value.points,
                             ),
                           ),
                   ),
@@ -1458,12 +1494,7 @@ class _TrendChartState extends State<_TrendChart> {
                       ),
                     Positioned.fill(
                       child: CustomPaint(
-                        painter: _TrendPainter(
-                          colors.selected,
-                          points
-                              .map((point) => point.totalValueUsd)
-                              .toList(growable: false),
-                        ),
+                        painter: _TrendPainter(colors.selected, points),
                       ),
                     ),
                     if (selectedIndex == null)
@@ -1759,11 +1790,15 @@ class _SpotBalances extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (holdings.initialLoading) return _loading(context);
-    if (holdings.initialError != null) return _failure(context, ref);
+    if (holdings.initialLoading) {
+      return SliverToBoxAdapter(child: _loading(context));
+    }
+    if (holdings.initialError != null) {
+      return SliverToBoxAdapter(child: _failure(context, ref));
+    }
     return accounts.when(
-      loading: () => _loading(context),
-      error: (_, _) => _failure(context, ref),
+      loading: () => SliverToBoxAdapter(child: _loading(context)),
+      error: (_, _) => SliverToBoxAdapter(child: _failure(context, ref)),
       data: (accountItems) => _content(
         context,
         accountItems,
@@ -1860,12 +1895,13 @@ class _SpotBalances extends ConsumerWidget {
             (networkFilter != null && networkFilter != _bstockSpotNetwork)
         ? const <Position>[]
         : allPositions;
-    final rowItems = <({DecimalValue? valueUsd, String key, Widget child})>[];
+    final rowItems =
+        <({DecimalValue? valueUsd, String key, Widget Function() build})>[];
     for (final position in positions) {
       rowItems.add((
         valueUsd: position.markValue ?? position.valueUsd,
         key: position.symbol,
-        child: _HoldingRow(
+        build: () => _HoldingRow(
           position: position,
           onTap: () => context.push(
             AppRoutes.tradeLocation(
@@ -1880,7 +1916,7 @@ class _SpotBalances extends ConsumerWidget {
       rowItems.add((
         valueUsd: balance.valueUsd,
         key: balance.symbol,
-        child: _CashRow(
+        build: () => _CashRow(
           balance: balance,
           details: _assetDetailsForBalance(balance, assetItems),
         ),
@@ -1890,43 +1926,51 @@ class _SpotBalances extends ConsumerWidget {
       final valueOrder = _compareUsdDescending(left.valueUsd, right.valueUsd);
       return valueOrder != 0 ? valueOrder : left.key.compareTo(right.key);
     });
-    final rows = <Widget>[];
-    for (final item in rowItems) {
-      if (rows.isNotEmpty) rows.add(const SizedBox(height: 8));
-      rows.add(item.child);
-    }
     final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SpotFilters(
-          productFilter: productFilter,
-          networkFilter: networkFilter,
-          networks: networks,
-          onProductChanged: onProductFilterChanged,
-          onNetworkChanged: onNetworkFilterChanged,
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SpotFilters(
+                productFilter: productFilter,
+                networkFilter: networkFilter,
+                networks: networks,
+                onProductChanged: onProductFilterChanged,
+                onNetworkChanged: onNetworkFilterChanged,
+              ),
+              const SizedBox(height: 12),
+              _SectionTitle(
+                title: l10n.totalBalances,
+                value: _sumUsdFixed2([
+                  ...balances.map((item) => item.valueUsd),
+                  ...positions.map((item) => item.valueUsd),
+                ]),
+              ),
+              if (rowItems.isNotEmpty) const SizedBox(height: 8),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
-        _SectionTitle(
-          title: l10n.totalBalances,
-          value: _sumUsdFixed2([
-            ...balances.map((item) => item.valueUsd),
-            ...positions.map((item) => item.valueUsd),
-          ]),
-        ),
-        if (rows.isNotEmpty) const SizedBox(height: 8),
-        if (rows.isEmpty)
-          SizedBox(
-            height: 240,
-            child: DesignStateFeedback(
-              state: DesignState.empty,
-              title: l10n.noMatchingAssets,
-              message: l10n.tryAnotherSearchOrFilter,
+        if (rowItems.isEmpty)
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 240,
+              child: DesignStateFeedback(
+                state: DesignState.empty,
+                title: l10n.noMatchingAssets,
+                message: l10n.tryAnotherSearchOrFilter,
+              ),
             ),
           )
         else
-          ...rows,
-        if (loadingMore) const _PaginationLoader(),
+          SliverList.builder(
+            itemCount: rowItems.length * 2 - 1,
+            itemBuilder: (context, index) => index.isOdd
+                ? const SizedBox(height: 8)
+                : rowItems[index ~/ 2].build(),
+          ),
+        if (loadingMore) const SliverToBoxAdapter(child: _PaginationLoader()),
       ],
     );
   }
@@ -3666,11 +3710,13 @@ class _NetworkBadge extends StatelessWidget {
 class _TrendPainter extends CustomPainter {
   const _TrendPainter(this.color, this.values);
   final Color color;
-  final List<DecimalValue> values;
+  final List<PortfolioHistoryPoint> values;
   @override
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
-    final points = values.map((value) => double.parse(value.value)).toList();
+    final points = values
+        .map((value) => double.parse(value.totalValueUsd.value))
+        .toList();
     final minimum = points.reduce((a, b) => a < b ? a : b);
     final maximum = points.reduce((a, b) => a > b ? a : b);
     final span = maximum - minimum;

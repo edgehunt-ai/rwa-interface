@@ -17,17 +17,17 @@ part 'withdrawal_quote.g.dart';
 /// * [quoteId] - 本次报价的标识，回传到 `CreateWithdrawalRequest.quote_id` 可锁定费率
 /// * [asset] 
 /// * [chain] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [needsConvert] - 目标资产非 USDC 时需内部 Convert
 /// * [convertRoute] 
 /// * [transferRoute] 
 /// * [needsBridge] 
 /// * [bridgeRoute] 
-/// * [convertTransferFee] - 十进制字符串，避免浮点误差
-/// * [bridgeFee] - 十进制字符串，避免浮点误差
-/// * [networkFee] - 十进制字符串，避免浮点误差
-/// * [totalFee] - 十进制字符串，避免浮点误差
-/// * [estimatedReceive] - 十进制字符串，避免浮点误差
+/// * [convertTransferFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [bridgeFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [networkFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [totalFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedReceive] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [estimatedTime] 
 /// * [sufficient] - 提现金额是否足以覆盖费用
 /// * [details] 
@@ -45,7 +45,7 @@ abstract class WithdrawalQuote implements Built<WithdrawalQuote, WithdrawalQuote
   Chain? get chain;
   // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -65,23 +65,23 @@ abstract class WithdrawalQuote implements Built<WithdrawalQuote, WithdrawalQuote
   @BuiltValueField(wireName: r'bridge_route')
   String? get bridgeRoute;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'convert_transfer_fee')
   String? get convertTransferFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'bridge_fee')
   String? get bridgeFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'network_fee')
   String? get networkFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_fee')
   String get totalFee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'estimated_receive')
   String get estimatedReceive;
 

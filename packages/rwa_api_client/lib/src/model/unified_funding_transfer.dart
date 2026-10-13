@@ -15,8 +15,8 @@ part 'unified_funding_transfer.g.dart';
 /// * [transferId] 
 /// * [status] 
 /// * [sourcePositionId] - The one account-scoped source position consumed by this Transfer.
-/// * [allocatedOutputAmount] - 十进制字符串，避免浮点误差
-/// * [valueUsd] - 十进制字符串，避免浮点误差
+/// * [allocatedOutputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [createdAt] 
 /// * [updatedAt] 
 @BuiltValue()
@@ -32,11 +32,11 @@ abstract class UnifiedFundingTransfer implements Built<UnifiedFundingTransfer, U
   @BuiltValueField(wireName: r'source_position_id')
   String get sourcePositionId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'allocated_output_amount')
   String get allocatedOutputAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'value_usd')
   String? get valueUsd;
 

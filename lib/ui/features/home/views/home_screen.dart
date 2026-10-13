@@ -32,6 +32,10 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (ModalRoute.of(context)?.isCurrent ?? true) {
+      ref.watch(portfolioListRefreshProvider);
+      ref.watch(marketListRefreshProvider);
+    }
     final authentication = ref.watch(authenticationProvider);
     final authenticated = authentication is AuthenticationAuthenticated;
     final initializing = authentication is AuthenticationInitializing;

@@ -8,6 +8,7 @@ class ObservabilityConfig {
     required this.tracesSampleRate,
     required this.profilesSampleRate,
     this.smokeTest = false,
+    this.performanceDiagnostics = false,
     this.release,
   });
 
@@ -28,6 +29,9 @@ class ObservabilityConfig {
         defaultValue: '0.10',
       ),
       smokeTest: const bool.fromEnvironment('SENTRY_SMOKE_TEST'),
+      performanceDiagnostics: const bool.fromEnvironment(
+        'SENTRY_PERFORMANCE_DIAGNOSTICS',
+      ),
     );
   }
 
@@ -38,6 +42,7 @@ class ObservabilityConfig {
     String tracesSampleRate = '0.10',
     String profilesSampleRate = '0.10',
     bool smokeTest = false,
+    bool performanceDiagnostics = false,
   }) {
     return ObservabilityConfig(
       dsn: dsn.trim(),
@@ -46,6 +51,7 @@ class ObservabilityConfig {
       tracesSampleRate: _sampleRate(tracesSampleRate, fallback: 0.10),
       profilesSampleRate: _sampleRate(profilesSampleRate, fallback: 0.10),
       smokeTest: smokeTest,
+      performanceDiagnostics: performanceDiagnostics,
     );
   }
 
@@ -55,8 +61,15 @@ class ObservabilityConfig {
   final double tracesSampleRate;
   final double profilesSampleRate;
   final bool smokeTest;
+  final bool performanceDiagnostics;
 
   bool get enabled => dsn.isNotEmpty;
+
+  bool get performanceDiagnosticsEnabled =>
+      performanceDiagnostics &&
+      kDebugMode &&
+      !kIsWeb &&
+      defaultTargetPlatform == TargetPlatform.android;
 
   static double _sampleRate(String value, {required double fallback}) {
     final parsed = double.tryParse(value);

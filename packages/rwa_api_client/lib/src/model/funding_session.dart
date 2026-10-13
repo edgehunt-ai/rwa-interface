@@ -30,21 +30,21 @@ part 'funding_session.g.dart';
 /// * [continuation] - Server-owned navigation hint for resuming the frozen trade after funding completes; `null` unless the funded session still owes a follow-up order action. It never carries an executable quote, calldata or auto-submission.
 /// * [rail] 
 /// * [targetSnapshot] 
-/// * [requiredTargetBalance] - 十进制字符串，避免浮点误差
-/// * [minimumTopUp] - 十进制字符串，避免浮点误差
+/// * [requiredTargetBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [minimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [recommendedTopUp] - Advisory amount derived from the current requirement and safety buffer, rounded half-up to at most one decimal place; if that would fall below minimum_top_up it is raised to the next tenth. Users may choose any otherwise valid amount.
 /// * [safetyBufferBps] - Advisory recommendation input only; the server must not reject a selection merely because it differs from this buffer.
-/// * [selectedTargetAmount] - 十进制字符串，避免浮点误差
-/// * [minimumReceived] - 十进制字符串，避免浮点误差
+/// * [selectedTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [minimumReceived] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [maximumSelectableTargetAmount] - Current server-valued upper bound across eligible selected sources and Provider limits.
-/// * [totalSourceValueUsd] - 十进制字符串，避免浮点误差
+/// * [totalSourceValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [estimatedFees] 
 /// * [etaSeconds] 
 /// * [positions] 
 /// * [unavailableSources] - Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable. 
 /// * [allocations] 
 /// * [canConfirmTransfer] 
-/// * [remainingMinimumTopUp] - 十进制字符串，避免浮点误差
+/// * [remainingMinimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [estimateObservedAt] 
 /// * [createdAt] 
 /// * [updatedAt] 
@@ -79,11 +79,11 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'target_snapshot')
   FundingTargetBalanceSnapshot get targetSnapshot;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'required_target_balance')
   String get requiredTargetBalance;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_top_up')
   String get minimumTopUp;
 
@@ -95,11 +95,11 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'safety_buffer_bps')
   int get safetyBufferBps;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'selected_target_amount')
   String get selectedTargetAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
@@ -107,7 +107,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'maximum_selectable_target_amount')
   String get maximumSelectableTargetAmount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_source_value_usd')
   String get totalSourceValueUsd;
 
@@ -130,7 +130,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'can_confirm_transfer')
   bool get canConfirmTransfer;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'remaining_minimum_top_up')
   String get remainingMinimumTopUp;
 

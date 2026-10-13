@@ -16,7 +16,7 @@ part 'perp_funding_target_balance_snapshot.g.dart';
 /// * [account] 
 /// * [accountRef] 
 /// * [asset] 
-/// * [availableAmount] - 十进制字符串，避免浮点误差
+/// * [availableAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [source_] 
 /// * [observedAt] 
 /// * [validUntil] 
@@ -32,7 +32,7 @@ abstract class PerpFundingTargetBalanceSnapshot implements Built<PerpFundingTarg
   @BuiltValueField(wireName: r'asset')
   PerpFundingTargetAsset get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_amount')
   String get availableAmount;
 

@@ -449,6 +449,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3OrderCapacity.serializer)
       ..add(Hip3OrderCapacitySide.serializer)
       ..add(Hip3OrderProtectionSpec.serializer)
+      ..add(Hip3OrderProtectionSpecNot.serializer)
       ..add(Hip3PlaceOrderActionRequest.serializer)
       ..add(Hip3PlaceOrderActionRequestOperationEnum.serializer)
       ..add(Hip3PreviewExecution.serializer)
@@ -1276,6 +1277,9 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(TokenBalance)]),
           () => ListBuilder<TokenBalance>())
       ..addBuilderFactory(
@@ -1332,9 +1336,6 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltSet,
               const [const FullType(FundingSessionSourceAllocationInput)]),
           () => SetBuilder<FundingSessionSourceAllocationInput>())
-      ..addBuilderFactory(
-          const FullType(BuiltSet, const [const FullType(String)]),
-          () => SetBuilder<String>())
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())

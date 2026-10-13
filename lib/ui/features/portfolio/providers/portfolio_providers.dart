@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/provider_lifecycle.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/api_failure.dart';
@@ -18,40 +17,23 @@ const portfolioListCacheDuration = Duration(minutes: 30);
 const portfolioListRefreshInterval = Duration(seconds: 30);
 
 void _cachePortfolioList(Ref ref) {
-  final link = ref.keepAlive();
-  Timer? expiryTimer;
-  Timer? refreshTimer;
-
-  void stopTimers() {
-    refreshTimer?.cancel();
-    expiryTimer?.cancel();
-  }
-
-  void startRefresh() {
-    refreshTimer?.cancel();
-    refreshTimer = Timer.periodic(
-      portfolioListRefreshInterval,
-      (_) => ref.invalidateSelf(),
-    );
-  }
-
-  void startExpiry() {
-    expiryTimer?.cancel();
-    expiryTimer = Timer(portfolioListCacheDuration, link.close);
-  }
-
-  startExpiry();
-  startRefresh();
-  ref.onCancel(stopTimers);
-  ref.onResume(() {
-    startExpiry();
-    startRefresh();
-  });
-  ref.onDispose(() {
-    expiryTimer?.cancel();
-    refreshTimer?.cancel();
-  });
+  cacheAfterLastListener(ref, portfolioListCacheDuration);
 }
+
+final portfolioListRefreshProvider = Provider.autoDispose<void>((ref) {
+  refreshWhileActive(
+    ref,
+    interval: portfolioListRefreshInterval,
+    refresh: () {
+      ref.invalidate(portfolioSummaryProvider);
+      ref.invalidate(portfolioRailAllocationProvider);
+      ref.invalidate(portfolioHistoryProvider);
+      ref.invalidate(tradingAccountsProvider);
+      ref.invalidate(holdingsProvider);
+      ref.invalidate(spotPortfolioAssetsProvider);
+    },
+  );
+});
 
 final portfolioSummaryProvider = FutureProvider.autoDispose<Portfolio>((ref) {
   _cachePortfolioList(ref);

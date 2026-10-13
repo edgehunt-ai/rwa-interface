@@ -176,10 +176,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('12.123457 NVDAB'), findsOneWidget);
+      await _scrollAssetsUntilVisible(tester, find.text('ETH'));
       expect(find.text('0.0000123457 ETH'), findsOneWidget);
       expect(find.text('0.0000123456789 ETH'), findsNothing);
-      await tester.ensureVisible(find.text('ETH'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('ETH'));
       await tester.pumpAndSettle();
       expect(find.text('0.0000123457 ETH'), findsNWidgets(2));
@@ -795,7 +794,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Perps').last);
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView).first, const Offset(0, -800));
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -800),
+    );
     await tester.pumpAndSettle();
 
     expect(portfolio.holdingCursors, [null, 'holdings-next']);
@@ -1017,6 +1019,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('NVDAB'), findsOneWidget);
+    await _scrollAssetsUntilVisible(tester, find.text('USDC'));
     expect(find.text('USDC'), findsOneWidget);
     expect(find.text(r'$552.00'), findsOneWidget);
 
@@ -1051,12 +1054,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Arbitrum'), findsOneWidget);
-    expect(find.text('BSC'), findsOneWidget);
-    expect(find.text('BNB Smart Chain'), findsNothing);
+    expect(find.text('BSC'), findsNothing);
+    expect(find.text('BNB Smart Chain'), findsOneWidget);
     expect(find.text('Hyperliquid'), findsNothing);
 
-    await tester.tap(find.text('BSC'));
+    await tester.tap(find.text('BNB Smart Chain'));
     await tester.pumpAndSettle();
+    await _scrollAssetsUntilVisible(tester, find.text('USDT'));
     expect(find.text('NVDAB'), findsOneWidget);
     expect(find.text('2.00 USDT'), findsOneWidget);
     expect(find.text('1.00 USDC'), findsNothing);
@@ -1076,6 +1080,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _scrollAssetsUntilVisible(tester, find.text('USDC'));
 
     final bstockTop = tester.getTopLeft(find.text('NVDAB')).dy;
     final usdtTop = tester.getTopLeft(find.text('USDT')).dy;
@@ -1171,8 +1176,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     final usdc = find.text('USDC');
-    await tester.ensureVisible(usdc);
-    await tester.pumpAndSettle();
+    await _scrollAssetsUntilVisible(tester, usdc);
     await tester.tap(usdc);
     await tester.pumpAndSettle();
     await tester.tap(
@@ -1372,6 +1376,18 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'width: $width');
     }
   });
+}
+
+Future<void> _scrollAssetsUntilVisible(
+  WidgetTester tester,
+  Finder finder,
+) async {
+  await tester.scrollUntilVisible(
+    finder,
+    240,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
 }
 
 Widget _assetsApp({Locale? locale}) => ProviderScope(

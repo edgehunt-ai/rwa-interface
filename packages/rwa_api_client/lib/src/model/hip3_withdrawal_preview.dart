@@ -15,20 +15,20 @@ part 'hip3_withdrawal_preview.g.dart';
 /// Hip3WithdrawalPreview
 ///
 /// Properties:
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [fee] - 用户承担并从 amount 中扣除的 USDC 总费用；不包含平台承担的 ETH Gas。到账金额为 amount - fee，明细不能再重复扣费。
-/// * [minimumReceived] - 十进制字符串，避免浮点误差
+/// * [minimumReceived] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [rail] 
 /// * [destinationAddress] 
 /// * [chainId] - 自有 Arbitrum 钱包所在链，主网 42161 / 测试网 421614。
-/// * [maximumTransferable] - 十进制字符串，避免浮点误差
+/// * [maximumTransferable] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [blockers] 
 /// * [estimatedArrivalSeconds] - 从成功提交算起的静态展示预估秒数；当前 float 暂定为 120、bridge2 为 300（官方 withdraw3 约 5 分钟）。不包含用户签名等待；不是实测延迟、截止时间或 SLA，拥堵和资金池异常可能延长到账时间。
 /// * [feeDetails] - 按实际通道返回的费用解释。float 返回用户 USDC 提现费 0 和平台承担的 ETH 网络费（未知金额为 null）；bridge2 仅返回用户承担的官方桥提现费，不拆分、不重复增加网络费。仅 user/USDC 项计入 fee，不能跨币种求和。
 /// * [riskPreview] 
 @BuiltValue()
 abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip3WithdrawalPreviewBuilder> {
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -36,7 +36,7 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
@@ -51,7 +51,7 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
   @BuiltValueField(wireName: r'chain_id')
   String get chainId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'maximum_transferable')
   String get maximumTransferable;
 

@@ -17,7 +17,7 @@ part 'bstock_order_wallet_action_state.g.dart';
 ///
 /// Properties:
 /// * [timeInForce] 
-/// * [quantity] - 预算买入在执行前可为 null，原始预算保存在 requested_amount，不能补造数量。
+/// * [quantity] - 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
 /// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
 /// * [currentActionId] 
 /// * [status] 
@@ -34,6 +34,7 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// * [chainOrderId] - GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
 /// * [placementTransactionHash] - canonical GTC 挂单交易，不是最近辅助动作的交易。
 /// * [transactionHash] - canonical IOC 执行交易，与 log_index 一起标识链证据。
+/// * [cancelledQuantity] - canonical IOC未成交取消余量；filled_quantity+cancelled_quantity=quantity。预算买入quantity是回执上限，非零余量不表示预算购买失败；证据到达前省略。
 /// * [logIndex] 
 /// * [cancellationReason] 
 @BuiltValue(instantiable: false)
@@ -42,7 +43,7 @@ abstract class BstockOrderWalletActionState  {
   BstocksTimeInForce? get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  };
 
-  /// 预算买入在执行前可为 null，原始预算保存在 requested_amount，不能补造数量。
+  /// 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 
@@ -105,6 +106,10 @@ abstract class BstockOrderWalletActionState  {
   /// canonical IOC 执行交易，与 log_index 一起标识链证据。
   @BuiltValueField(wireName: r'transaction_hash')
   String? get transactionHash;
+
+  /// canonical IOC未成交取消余量；filled_quantity+cancelled_quantity=quantity。预算买入quantity是回执上限，非零余量不表示预算购买失败；证据到达前省略。
+  @BuiltValueField(wireName: r'cancelled_quantity')
+  String? get cancelledQuantity;
 
   @BuiltValueField(wireName: r'log_index')
   int? get logIndex;
@@ -240,6 +245,13 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield r'transaction_hash';
       yield serializers.serialize(
         object.transactionHash,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.cancelledQuantity != null) {
+      yield r'cancelled_quantity';
+      yield serializers.serialize(
+        object.cancelledQuantity,
         specifiedType: const FullType(String),
       );
     }
@@ -460,6 +472,14 @@ class _$$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<$
           ) as String?;
           if (valueDes == null) continue;
           result.transactionHash = valueDes;
+          break;
+        case r'cancelled_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.cancelledQuantity = valueDes;
           break;
         case r'log_index':
           final valueDes = serializers.deserialize(

@@ -25,7 +25,7 @@ part 'candle_series.g.dart';
 /// * [from] 
 /// * [to] 
 /// * [changeAbsolute] - 区间涨跌额，用于图表标题 `+$4.12 (+2.31%) 24h`
-/// * [changePercent] - 十进制字符串，避免浮点误差
+/// * [changePercent] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [points] - 链上产品价格序列
 /// * [referencePoints] - 美股参考价序列。仅在美股有报价的时段有值 —— 隔夜与休市时段为空洞， 前端应断开连线或画虚线。 
 /// * [sessions] - 该区间内的时段分段，用于绘制底部色带
@@ -58,7 +58,7 @@ abstract class CandleSeries implements Built<CandleSeries, CandleSeriesBuilder> 
   @BuiltValueField(wireName: r'change_absolute')
   String? get changeAbsolute;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'change_percent')
   String? get changePercent;
 

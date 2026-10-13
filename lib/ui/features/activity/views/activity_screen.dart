@@ -86,6 +86,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (ModalRoute.of(context)?.isCurrent ?? true) {
+      ref.watch(activityListRefreshProvider);
+    }
     ref.listen(sessionGenerationProvider, (_, _) {
       if (!mounted) return;
       setState(_resetPagination);

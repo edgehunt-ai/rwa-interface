@@ -15,7 +15,7 @@ part 'hip3_set_leverage_action_request.g.dart';
 /// Properties:
 /// * [operation] 
 /// * [contextId] 
-/// * [leverage] - 十进制字符串，避免浮点误差
+/// * [leverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [marginMode] 
 @BuiltValue()
 abstract class Hip3SetLeverageActionRequest implements Built<Hip3SetLeverageActionRequest, Hip3SetLeverageActionRequestBuilder> {
@@ -26,7 +26,7 @@ abstract class Hip3SetLeverageActionRequest implements Built<Hip3SetLeverageActi
   @BuiltValueField(wireName: r'context_id')
   String get contextId;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'leverage')
   String get leverage;
 

@@ -15,14 +15,14 @@ part 'holding_group.g.dart';
 ///
 /// Properties:
 /// * [stock] 
-/// * [totalValueUsd] - 十进制字符串，避免浮点误差
+/// * [totalValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [positions] 
 @BuiltValue()
 abstract class HoldingGroup implements Built<HoldingGroup, HoldingGroupBuilder> {
   @BuiltValueField(wireName: r'stock')
   HoldingStock get stock;
 
-  /// 十进制字符串，避免浮点误差
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'total_value_usd')
   String get totalValueUsd;
 
