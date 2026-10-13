@@ -212,7 +212,7 @@ class MarketProductFilter extends StatelessWidget {
   }
 }
 
-class MarketProductRow extends ConsumerWidget {
+class MarketProductRow extends StatelessWidget {
   const MarketProductRow({
     super.key,
     required this.product,
@@ -225,7 +225,7 @@ class MarketProductRow extends ConsumerWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -237,7 +237,8 @@ class MarketProductRow extends ConsumerWidget {
         children: [
           MarketAssetMark(
             symbol: product.symbol,
-            logoUrl: ref.watch(marketStockLogoUrlProvider(product.symbol)),
+            logoUrl: product.logoUrl,
+            logoText: product.logoText,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -318,40 +319,95 @@ class MarketProductRow extends ConsumerWidget {
   }
 }
 
+/// Resolves product metadata through the existing Riverpod API boundary.
+class MarketProductMark extends ConsumerWidget {
+  const MarketProductMark({
+    super.key,
+    required this.product,
+    this.size = 40,
+    this.borderRadius,
+  });
+
+  final MarketProductRef product;
+  final double size;
+  final double? borderRadius;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final metadata = ref.watch(marketProductProvider(product)).value;
+    return MarketAssetMark(
+      symbol: product.symbol,
+      logoUrl: metadata?.logoUrl,
+      logoText: metadata?.logoText,
+      size: size,
+      borderRadius: borderRadius,
+    );
+  }
+}
+
+/// Assets without a product kind use an exact, unambiguous API search result.
+class MarketAssetLookupMark extends ConsumerWidget {
+  const MarketAssetLookupMark({
+    super.key,
+    required this.symbol,
+    this.size = 40,
+  });
+
+  final String symbol;
+  final double size;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final matches = ref
+        .watch(
+          marketProductLookupProvider((
+            query: symbol,
+            cursor: null,
+            group: null,
+            productType: null,
+          )),
+        )
+        .value
+        ?.items
+        .where((product) => product.symbol == symbol)
+        .toList();
+    final metadata = matches?.length == 1 ? matches!.single : null;
+    return MarketAssetMark(
+      symbol: symbol,
+      logoUrl: metadata?.logoUrl,
+      logoText: metadata?.logoText,
+      size: size,
+    );
+  }
+}
+
 class MarketAssetMark extends StatelessWidget {
   const MarketAssetMark({
     super.key,
     required this.symbol,
     this.logoUrl,
+    this.logoText,
     this.size = 40,
     this.borderRadius,
   });
 
   final String symbol;
   final String? logoUrl;
+  final String? logoText;
   final double size;
   final double? borderRadius;
-
-  static const _assets = {
-    'NVDA': 'assets/figma/home_markets/nvidia.svg',
-    'TSLA': 'assets/figma/home_markets/tesla.svg',
-    'MSFT': 'assets/figma/home_markets/microsoft.svg',
-    'AAPL': 'assets/figma/home_markets/apple.svg',
-    'META': 'assets/figma/home_markets/meta.svg',
-    'GOOGL': 'assets/figma/home_markets/google.svg',
-    'AMD': 'assets/figma/home_markets/amd.svg',
-    'NFLX': 'assets/figma/home_markets/netflix.svg',
-    'PLTR': 'assets/figma/home_markets/palantir.svg',
-  };
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final asset = _assets[symbol];
     final remoteUrl = logoUrl?.trim();
-    final fallback = asset == null
-        ? Text(symbol.characters.first)
-        : SvgPicture.asset(asset, width: 24, height: 24);
+    final placeholder = logoText?.trim();
+    final fallback = Text(
+      placeholder != null && placeholder.isNotEmpty
+          ? placeholder
+          : symbol.characters.firstOrNull ?? '—',
+      style: TextStyle(fontSize: size * .4),
+    );
     return Container(
       width: size,
       height: size,

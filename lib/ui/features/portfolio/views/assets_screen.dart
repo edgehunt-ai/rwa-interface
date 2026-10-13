@@ -27,6 +27,7 @@ import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
@@ -3031,7 +3032,10 @@ class _PerpsPositionDetail extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              _TokenIcon(symbol: displaySymbol, size: 32),
+              MarketProductMark(
+                product: MarketProductRef(symbol: symbol, kind: kind),
+                size: 32,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -3202,6 +3206,7 @@ class _HoldingRow extends StatelessWidget {
                         _AssetIcon(
                           symbol: position.symbol,
                           network: isBstock ? 'BNB Smart Chain' : null,
+                          productKind: position.kind,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -3590,49 +3595,16 @@ class _TokenIcon extends StatelessWidget {
           ? SvgPicture.asset(tokenAsset, width: size, height: size)
           : Image.asset(tokenAsset, width: size, height: size);
     }
-    final companyAsset = switch (symbol) {
-      'NVDA' => 'assets/figma/home_markets/nvidia.svg',
-      'TSLA' => 'assets/figma/home_markets/tesla.svg',
-      'AAPL' => 'assets/figma/home_markets/apple.svg',
-      _ => null,
-    };
-    if (companyAsset != null) {
-      return SizedBox(
-        width: size,
-        height: size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            SvgPicture.asset(
-              'assets/figma/portfolio/asset_icon_surface.svg',
-              width: size,
-              height: size,
-            ),
-            SvgPicture.asset(companyAsset, width: size * .6, height: size * .6),
-          ],
-        ),
-      );
-    }
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Theme.of(context).extension<AppRwaColors>()!.border,
-        ),
-      ),
-      child: Text(symbol.substring(0, symbol.length.clamp(0, 3))),
-    );
+    return MarketAssetLookupMark(symbol: symbol, size: size);
   }
 }
 
 class _AssetIcon extends StatelessWidget {
-  const _AssetIcon({required this.symbol, this.network});
+  const _AssetIcon({required this.symbol, this.network, this.productKind});
 
   final String symbol;
   final String? network;
+  final MarketProductKind? productKind;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -3641,7 +3613,12 @@ class _AssetIcon extends StatelessWidget {
     child: Stack(
       clipBehavior: Clip.none,
       children: [
-        _TokenIcon(symbol: symbol),
+        if (productKind case final kind?)
+          MarketProductMark(
+            product: MarketProductRef(symbol: symbol, kind: kind),
+          )
+        else
+          _TokenIcon(symbol: symbol),
         if (network case final network?)
           Positioned(
             right: 0,

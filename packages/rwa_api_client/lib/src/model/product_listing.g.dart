@@ -279,6 +279,10 @@ class _$ProductListing extends ProductListing {
   @override
   final String? label;
   @override
+  final String? logoUrl;
+  @override
+  final String? logoText;
+  @override
   final String price;
   @override
   final String? change24hPercent;
@@ -313,6 +317,8 @@ class _$ProductListing extends ProductListing {
       required this.kind,
       this.productType,
       this.label,
+      this.logoUrl,
+      this.logoText,
       required this.price,
       this.change24hPercent,
       this.spreadVsReferencePercent,
@@ -345,6 +351,8 @@ class _$ProductListing extends ProductListing {
         kind == other.kind &&
         productType == other.productType &&
         label == other.label &&
+        logoUrl == other.logoUrl &&
+        logoText == other.logoText &&
         price == other.price &&
         change24hPercent == other.change24hPercent &&
         spreadVsReferencePercent == other.spreadVsReferencePercent &&
@@ -370,6 +378,8 @@ class _$ProductListing extends ProductListing {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, productType.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, logoUrl.hashCode);
+    _$hash = $jc(_$hash, logoText.hashCode);
     _$hash = $jc(_$hash, price.hashCode);
     _$hash = $jc(_$hash, change24hPercent.hashCode);
     _$hash = $jc(_$hash, spreadVsReferencePercent.hashCode);
@@ -397,6 +407,8 @@ class _$ProductListing extends ProductListing {
           ..add('kind', kind)
           ..add('productType', productType)
           ..add('label', label)
+          ..add('logoUrl', logoUrl)
+          ..add('logoText', logoText)
           ..add('price', price)
           ..add('change24hPercent', change24hPercent)
           ..add('spreadVsReferencePercent', spreadVsReferencePercent)
@@ -458,6 +470,14 @@ class ProductListingBuilder
   String? _label;
   String? get label => _$this._label;
   set label(String? label) => _$this._label = label;
+
+  String? _logoUrl;
+  String? get logoUrl => _$this._logoUrl;
+  set logoUrl(String? logoUrl) => _$this._logoUrl = logoUrl;
+
+  String? _logoText;
+  String? get logoText => _$this._logoText;
+  set logoText(String? logoText) => _$this._logoText = logoText;
 
   String? _price;
   String? get price => _$this._price;
@@ -522,6 +542,8 @@ class ProductListingBuilder
       _kind = $v.kind;
       _productType = $v.productType;
       _label = $v.label;
+      _logoUrl = $v.logoUrl;
+      _logoText = $v.logoText;
       _price = $v.price;
       _change24hPercent = $v.change24hPercent;
       _spreadVsReferencePercent = $v.spreadVsReferencePercent;
@@ -565,6 +587,8 @@ class ProductListingBuilder
               kind, r'ProductListing', 'kind'),
           productType: productType,
           label: label,
+          logoUrl: logoUrl,
+          logoText: logoText,
           price: BuiltValueNullFieldError.checkNotNull(
               price, r'ProductListing', 'price'),
           change24hPercent: change24hPercent,

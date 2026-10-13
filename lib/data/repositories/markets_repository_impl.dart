@@ -26,6 +26,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
               name: group.stock.name,
               referencePrice: group.stock.referencePrice,
               logoUrl: group.stock.logoUrl,
+              logoText: group.stock.logoText,
               products: group.products
                   .map(
                     (product) => MarketProductRef(
@@ -106,6 +107,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       symbol: value.symbol,
       name: value.name ?? value.symbol,
       kind: _kind(value.kind),
+      logoUrl: value.logoUrl,
+      logoText: value.logoText,
       price: DecimalValue(value.quote.price, asset: 'USDC', unit: 'price'),
       settlementAsset: value.kind == api.ProductKind.bstock ? 'TUSDT' : 'USDC',
       network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
@@ -252,6 +255,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     symbol: value.symbol,
     name: value.name ?? value.symbol,
     kind: _kind(value.kind),
+    logoUrl: value.logoUrl,
+    logoText: value.logoText,
     price: DecimalValue(value.price, asset: 'USDC', unit: 'price'),
     settlementAsset: value.kind == api.ProductKind.bstock ? 'TUSDT' : 'USDC',
     network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',

@@ -25,6 +25,8 @@ final class MarketProduct {
     required this.network,
     required this.tradable,
     this.productId,
+    this.logoUrl,
+    this.logoText,
     this.change24hPercent,
     this.volume24h,
     this.isFavorite = false,
@@ -38,6 +40,8 @@ final class MarketProduct {
   final String network;
   final bool tradable;
   final String? productId;
+  final String? logoUrl;
+  final String? logoText;
   final DecimalValue? change24hPercent;
   final DecimalValue? volume24h;
   final bool isFavorite;

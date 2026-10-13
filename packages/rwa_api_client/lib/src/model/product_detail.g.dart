@@ -81,6 +81,10 @@ class _$ProductDetail extends ProductDetail {
   @override
   final ProductKind kind;
   @override
+  final String? logoUrl;
+  @override
+  final String? logoText;
+  @override
   final String? title;
   @override
   final String? badge;
@@ -106,6 +110,8 @@ class _$ProductDetail extends ProductDetail {
       required this.symbol,
       this.name,
       required this.kind,
+      this.logoUrl,
+      this.logoText,
       this.title,
       this.badge,
       this.description,
@@ -132,6 +138,8 @@ class _$ProductDetail extends ProductDetail {
         symbol == other.symbol &&
         name == other.name &&
         kind == other.kind &&
+        logoUrl == other.logoUrl &&
+        logoText == other.logoText &&
         title == other.title &&
         badge == other.badge &&
         description == other.description &&
@@ -151,6 +159,8 @@ class _$ProductDetail extends ProductDetail {
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, logoUrl.hashCode);
+    _$hash = $jc(_$hash, logoText.hashCode);
     _$hash = $jc(_$hash, title.hashCode);
     _$hash = $jc(_$hash, badge.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
@@ -172,6 +182,8 @@ class _$ProductDetail extends ProductDetail {
           ..add('symbol', symbol)
           ..add('name', name)
           ..add('kind', kind)
+          ..add('logoUrl', logoUrl)
+          ..add('logoText', logoText)
           ..add('title', title)
           ..add('badge', badge)
           ..add('description', description)
@@ -218,6 +230,14 @@ class ProductDetailBuilder
   ProductKind? get kind => _$this._kind;
   set kind(ProductKind? kind) => _$this._kind = kind;
 
+  String? _logoUrl;
+  String? get logoUrl => _$this._logoUrl;
+  set logoUrl(String? logoUrl) => _$this._logoUrl = logoUrl;
+
+  String? _logoText;
+  String? get logoText => _$this._logoText;
+  set logoText(String? logoText) => _$this._logoText = logoText;
+
   String? _title;
   String? get title => _$this._title;
   set title(String? title) => _$this._title = title;
@@ -261,6 +281,8 @@ class ProductDetailBuilder
       _symbol = $v.symbol;
       _name = $v.name;
       _kind = $v.kind;
+      _logoUrl = $v.logoUrl;
+      _logoText = $v.logoText;
       _title = $v.title;
       _badge = $v.badge;
       _description = $v.description;
@@ -300,6 +322,8 @@ class ProductDetailBuilder
             name: name,
             kind: BuiltValueNullFieldError.checkNotNull(
                 kind, r'ProductDetail', 'kind'),
+            logoUrl: logoUrl,
+            logoText: logoText,
             title: title,
             badge: badge,
             description: description,

@@ -39,11 +39,30 @@ void main() {
     expect(page.nextCursor, 'next-page');
     expect(page.items.single.referencePrice, financial);
     expect(page.items.single.logoUrl, 'https://cdn.example.com/nvda.png');
+    expect(page.items.single.logoText, 'ST');
     expect(page.items.single.products, [
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
     ]);
   });
+
+  test(
+    'product list and detail preserve their own API logo metadata',
+    () async {
+      final repository = MarketsRepositoryImpl(_Markets('100'));
+      final page = await repository.listProducts();
+      final detail = await repository.getProduct(
+        const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+      );
+
+      expect(page.items.first.logoUrl, 'https://cdn.example.com/product.svg');
+      expect(page.items.first.logoText, 'PR');
+      expect(page.items.last.logoUrl, isNull);
+      expect(page.items.last.logoText, 'NO');
+      expect(detail.logoUrl, 'https://cdn.example.com/detail.png');
+      expect(detail.logoText, 'DT');
+    },
+  );
 
   test(
     'bStocks snapshot preserves the product ID from the order book',
@@ -172,6 +191,8 @@ final class _Markets implements MarketsService {
     (product) => product
       ..symbol = symbol
       ..kind = kind
+      ..logoUrl = 'https://cdn.example.com/detail.png'
+      ..logoText = 'DT'
       ..quote.update((quote) => quote.price = financial)
       ..assetInfo.update(
         (info) => info
@@ -186,6 +207,34 @@ final class _Markets implements MarketsService {
     String symbol,
     wire.ProductKind kind,
   ) async => wire.OrderBook((book) => book.productId = 'bstocks:nvdab');
+
+  @override
+  Future<wire.ProductPage> listProducts({
+    String? query,
+    String? cursor,
+    String? group,
+    wire.ProductType? productType,
+  }) async => wire.ProductPage(
+    (page) => page
+      ..hasMore = false
+      ..items.addAll([
+        wire.ProductListing(
+          (product) => product
+            ..symbol = 'NVDAB'
+            ..kind = wire.ProductKind.bstock
+            ..price = financial
+            ..logoUrl = 'https://cdn.example.com/product.svg'
+            ..logoText = 'PR',
+        ),
+        wire.ProductListing(
+          (product) => product
+            ..symbol = 'NVDA'
+            ..kind = wire.ProductKind.perp
+            ..price = financial
+            ..logoText = 'NO',
+        ),
+      ]),
+  );
 
   @override
   Future<wire.StockPage> listStocks() async => wire.StockPage(
@@ -214,6 +263,7 @@ final class _Markets implements MarketsService {
                 ..symbol = 'NVDA'
                 ..name = 'NVIDIA'
                 ..logoUrl = 'https://cdn.example.com/nvda.png'
+                ..logoText = 'ST'
                 ..referencePrice = financial,
             ),
         ),

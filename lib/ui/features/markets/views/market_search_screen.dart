@@ -506,6 +506,7 @@ class _StockBrowseRow extends StatelessWidget {
               MarketAssetMark(
                 symbol: stock.symbol,
                 logoUrl: stock.logoUrl,
+                logoText: stock.logoText,
                 borderRadius: 12,
               ),
               const SizedBox(width: 12),

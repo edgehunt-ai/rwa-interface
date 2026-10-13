@@ -6,11 +6,13 @@ final class Stock {
     required this.name,
     required this.referencePrice,
     this.logoUrl,
+    this.logoText,
     this.products = const [],
   });
   final String symbol;
   final String name;
   final String referencePrice;
   final String? logoUrl;
+  final String? logoText;
   final List<MarketProductRef> products;
 }

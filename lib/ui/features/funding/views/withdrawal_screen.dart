@@ -25,6 +25,7 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
   const WithdrawalScreen({
@@ -738,8 +739,7 @@ class _RouteCard extends StatelessWidget {
             child: _RouteRow(
               label: AppLocalizations.of(context).token,
               value: token,
-              asset: _tokenIcon(token),
-              raster: token == 'USDT',
+              icon: _WithdrawalAssetMark(symbol: token, size: 24),
             ),
           ),
           Divider(),
@@ -747,7 +747,11 @@ class _RouteCard extends StatelessWidget {
             child: _RouteRow(
               label: AppLocalizations.of(context).network,
               value: chain,
-              asset: _networkIcon(chain),
+              icon: SvgPicture.asset(
+                _networkIcon(chain),
+                width: 24,
+                height: 24,
+              ),
             ),
           ),
         ],
@@ -760,14 +764,12 @@ class _RouteRow extends StatelessWidget {
   const _RouteRow({
     required this.label,
     required this.value,
-    required this.asset,
-    this.raster = false,
+    required this.icon,
   });
 
   final String label;
   final String value;
-  final String asset;
-  final bool raster;
+  final Widget icon;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -775,13 +777,7 @@ class _RouteRow extends StatelessWidget {
     child: Row(
       children: [
         Expanded(child: Text(label)),
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: raster
-              ? Image.asset(asset, width: 24, height: 24)
-              : SvgPicture.asset(asset, width: 24, height: 24),
-        ),
+        SizedBox(width: 24, height: 24, child: icon),
         const SizedBox(width: 8),
         Text(value, style: _strongText),
       ],
@@ -1171,17 +1167,7 @@ class _AssetRow extends StatelessWidget {
       height: 72,
       child: Row(
         children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: asset.symbol == 'USDT'
-                ? Image.asset(_tokenIcon(asset.symbol), width: 40, height: 40)
-                : SvgPicture.asset(
-                    _tokenIcon(asset.symbol),
-                    width: 40,
-                    height: 40,
-                  ),
-          ),
+          _WithdrawalAssetMark(symbol: asset.symbol),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1321,12 +1307,27 @@ OutlineInputBorder _withdrawalInputBorder(Color color, {double width = 1}) =>
       borderSide: BorderSide(color: color, width: width),
     );
 
-String _tokenIcon(String symbol) => switch (symbol.toUpperCase()) {
-  'USDT' => 'assets/figma/funding/usdt.png',
-  'NVDAB' => 'assets/figma/home_markets/nvidia.svg',
-  'TSLAB' => 'assets/figma/home_markets/tesla.svg',
-  _ => 'assets/figma/funding/usdc.svg',
-};
+class _WithdrawalAssetMark extends StatelessWidget {
+  const _WithdrawalAssetMark({required this.symbol, this.size = 40});
+
+  final String symbol;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => switch (symbol.toUpperCase()) {
+    'USDT' => Image.asset(
+      'assets/figma/funding/usdt.png',
+      width: size,
+      height: size,
+    ),
+    'USDC' => SvgPicture.asset(
+      'assets/figma/funding/usdc.svg',
+      width: size,
+      height: size,
+    ),
+    _ => MarketAssetLookupMark(symbol: symbol, size: size),
+  };
+}
 
 String _networkIcon(String chain) =>
     networkIconAssetPath(chain) ?? NetworkIconAssets.arbitrum;

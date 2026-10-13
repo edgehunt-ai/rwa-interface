@@ -24,6 +24,8 @@ part 'product_listing.g.dart';
 /// * [kind] 
 /// * [productType] 
 /// * [label] - 展示名，`bStocks` 或 `HIP-3`
+/// * [logoUrl] - 管理后台维护的产品图标 URL；未配置时为 null，客户端用 logo_text 占位，不得伪造图标。
+/// * [logoText] - 无图时的占位字母
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 24h 涨跌幅（百分比数值，如 `\"0.47\"`）
 /// * [spreadVsReferencePercent] - 有来源证明的参考偏离；当前 bStocks 列表未加载参考盘口时为 null，不能显示成0或独立美股现货溢价。
@@ -74,6 +76,14 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
   /// 展示名，`bStocks` 或 `HIP-3`
   @BuiltValueField(wireName: r'label')
   String? get label;
+
+  /// 管理后台维护的产品图标 URL；未配置时为 null，客户端用 logo_text 占位，不得伪造图标。
+  @BuiltValueField(wireName: r'logo_url')
+  String? get logoUrl;
+
+  /// 无图时的占位字母
+  @BuiltValueField(wireName: r'logo_text')
+  String? get logoText;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'price')
@@ -201,6 +211,20 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
       yield r'label';
       yield serializers.serialize(
         object.label,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.logoUrl != null) {
+      yield r'logo_url';
+      yield serializers.serialize(
+        object.logoUrl,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.logoText != null) {
+      yield r'logo_text';
+      yield serializers.serialize(
+        object.logoText,
         specifiedType: const FullType(String),
       );
     }
@@ -372,6 +396,22 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
           ) as String?;
           if (valueDes == null) continue;
           result.label = valueDes;
+          break;
+        case r'logo_url':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.logoUrl = valueDes;
+          break;
+        case r'logo_text':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.logoText = valueDes;
           break;
         case r'price':
           final valueDes = serializers.deserialize(

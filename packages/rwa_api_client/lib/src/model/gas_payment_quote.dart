@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'gas_payment_quote.g.dart';
 
-/// Server-authoritative gas estimate and sponsorship/fallback decision.
+/// Server-authoritative gas estimate and payment decision; bStocks order actions choose sponsored or user-paid native BNB per request, while other rails retain their fallback policy.
 ///
 /// Properties:
 /// * [mode] 
@@ -20,7 +20,7 @@ part 'gas_payment_quote.g.dart';
 /// * [estimatedNativeFee] - 十进制字符串，避免浮点误差
 /// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差
 /// * [walletNativeBalance] - 十进制字符串，避免浮点误差
-/// * [fallbackAllowed] - True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. 
+/// * [fallbackAllowed] - True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. This flag is not a gate for primary user-paid bStocks order executions. 
 /// * [eip7702Required] 
 /// * [eip7702Notice] - Required user-facing disclosure when EIP-7702 authorization is needed.
 @BuiltValue()
@@ -52,7 +52,7 @@ abstract class GasPaymentQuote implements Built<GasPaymentQuote, GasPaymentQuote
   @BuiltValueField(wireName: r'wallet_native_balance')
   String? get walletNativeBalance;
 
-  /// True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. 
+  /// True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. This flag is not a gate for primary user-paid bStocks order executions. 
   @BuiltValueField(wireName: r'fallback_allowed')
   bool get fallbackAllowed;
 

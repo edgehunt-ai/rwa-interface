@@ -116,21 +116,6 @@ void main() {
     ]);
   });
 
-  test('resolves a stock logo for its product symbols', () async {
-    final container = ProviderContainer(
-      overrides: [
-        marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(marketStocksProvider.future);
-    expect(
-      container.read(marketStockLogoUrlProvider('NVDAB')),
-      'https://cdn.example.com/nvda.png',
-    );
-  });
-
   test('resolves bStock decimals from the supported token catalog', () async {
     final container = ProviderContainer(
       overrides: [

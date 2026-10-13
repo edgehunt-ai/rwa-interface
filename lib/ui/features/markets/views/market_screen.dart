@@ -345,6 +345,7 @@ class _StockTile extends StatelessWidget {
                     MarketAssetMark(
                       symbol: stock.symbol,
                       logoUrl: stock.logoUrl,
+                      logoText: stock.logoText,
                       size: 36,
                       borderRadius: 12,
                     ),

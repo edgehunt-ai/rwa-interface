@@ -302,7 +302,7 @@ class WalletsApi {
   }
 
   /// 提交钱包动作执行授权或交易定位符
-  /// &#x60;app_sponsored&#x60; 执行只接受 Privy SDK 针对服务端返回的结构化 authorization payload 生成的授权签名；&#x60;user_paid_native&#x60; 执行只接受 &#x60;tx_hash&#x60;，且该值仅是不可信定位符， 服务端仍须按 frozen transaction 独立核验 receipt。  API 必须先以 compare-and-set 持久化 &#x60;submitting&#x60;，再在本请求内同步 relay 到 Privy， 且绝不持久化、记录或回显授权签名。Privy accepted 后持久化 transaction id 和/或 user operation hash；Worker 只对已有该标识的执行做 polling/Webhook/RPC 对账。  Privy 已接受请求或 timeout/5xx/崩溃导致状态不明后，执行模式与 payload 均被冻结： 不得切换模式、重新签名或自动重播。只有确定发生在广播前的拒绝才可进入 user-paid fallback；状态不明必须进入 &#x60;ambiguous&#x60; 或 &#x60;manual_review&#x60;。 
+  /// &#x60;app_sponsored&#x60; 执行只接受 Privy SDK 针对服务端返回的结构化 authorization payload 生成的授权签名；&#x60;user_paid_native&#x60; 执行只接受 &#x60;tx_hash&#x60;，且该值仅是不可信定位符， 服务端仍须按 frozen transaction 独立核验 receipt。  app_sponsored 提交必须先以 compare-and-set 持久化 &#x60;submitting&#x60;，再在本请求内同步 relay 到 Privy，且绝不持久化、记录或回显授权签名。Privy accepted 后持久化 transaction id 和/或 user operation hash；Provider polling 只对已有该标识的执行进行。 bStocks 新执行使用 user_paid_native / user_wallet，用户自行广播并支付 BNB； 无需先尝试代付，服务端根据提交的 tx_hash 独立核验交易、receipt 和 canonicality。 已有 app_sponsored bStocks 执行仍通过本端点提交其授权签名并继续跟踪。  Privy 已接受请求或 timeout/5xx/崩溃导致状态不明后，执行模式与 payload 均被冻结： 不得切换模式、重新签名或自动重播。只有确定发生在广播前的拒绝才可进入 user-paid fallback；转账与自托管提现仍须满足原有回退运行时门禁。该限制不是 bStocks 主路径 user-paid 执行的前置条件；状态不明必须进入 &#x60;ambiguous&#x60; 或 &#x60;manual_review&#x60;。 
   ///
   /// Parameters:
   /// * [executionId] 

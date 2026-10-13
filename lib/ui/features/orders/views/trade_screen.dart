@@ -430,6 +430,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   _NavigationBar(
                     stockSymbol: stock?.symbol,
                     stockName: stock?.name,
+                    logoUrl: stock?.logoUrl,
+                    logoText: stock?.logoText,
                     marketHours: marketHours,
                     onMarketHours: () => setState(() => marketHoursOpen = true),
                   ),
@@ -448,7 +450,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   else ...[
                     _ProductHeader(
                       symbol: productDisplaySymbol,
-                      markSymbol: stock?.symbol,
+                      logoUrl:
+                          (productDetailState.value ?? activeProduct)?.logoUrl,
+                      logoText:
+                          (productDetailState.value ?? activeProduct)?.logoText,
                       kind: productKind,
                       chartStyle: chartStyle,
                       snapshot: snapshot,
@@ -670,12 +675,16 @@ class _NavigationBar extends StatelessWidget {
   const _NavigationBar({
     required this.stockSymbol,
     required this.stockName,
+    required this.logoUrl,
+    required this.logoText,
     required this.marketHours,
     required this.onMarketHours,
   });
 
   final String? stockSymbol;
   final String? stockName;
+  final String? logoUrl;
+  final String? logoText;
   final MarketHours? marketHours;
   final VoidCallback onMarketHours;
 
@@ -706,7 +715,13 @@ class _NavigationBar extends StatelessWidget {
           ),
         ),
         if (stockSymbol case final symbol?)
-          _ProductMark(symbol: symbol, size: 32, logoSize: 17.455)
+          MarketAssetMark(
+            symbol: symbol,
+            logoUrl: logoUrl,
+            logoText: logoText,
+            size: 32,
+            borderRadius: 12,
+          )
         else
           const SkeletonBlock(width: 32, height: 32, radius: 12),
         const SizedBox(width: 8),
@@ -880,7 +895,8 @@ class _Segment extends StatelessWidget {
 class _ProductHeader extends StatelessWidget {
   const _ProductHeader({
     required this.symbol,
-    required this.markSymbol,
+    required this.logoUrl,
+    required this.logoText,
     required this.kind,
     required this.chartStyle,
     required this.snapshot,
@@ -893,7 +909,8 @@ class _ProductHeader extends StatelessWidget {
     required this.onFavoriteToggle,
   });
   final String? symbol;
-  final String? markSymbol;
+  final String? logoUrl;
+  final String? logoText;
   final MarketProductKind kind;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
@@ -919,8 +936,14 @@ class _ProductHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            if (markSymbol case final mark?)
-              _ProductMark(symbol: mark, size: 24, logoSize: 13.091)
+            if (symbol case final productSymbol?)
+              MarketAssetMark(
+                symbol: productSymbol,
+                logoUrl: logoUrl,
+                logoText: logoText,
+                size: 24,
+                borderRadius: 12,
+              )
             else
               const SkeletonBlock(width: 24, height: 24, radius: 12),
             const SizedBox(width: 4),
@@ -1862,44 +1885,6 @@ class _Statistics extends StatelessWidget {
 
 Stock? _stockForProduct(List<Stock>? stocks, MarketProductRef product) =>
     stocks?.where((stock) => stock.products.contains(product)).firstOrNull;
-
-class _ProductMark extends StatelessWidget {
-  const _ProductMark({
-    required this.symbol,
-    required this.size,
-    required this.logoSize,
-  });
-
-  final String symbol;
-  final double size;
-  final double logoSize;
-
-  @override
-  Widget build(BuildContext context) {
-    // Keep the product mark tied to the route symbol; the NVIDIA export is only
-    // appropriate for NVDA/NVDAB and must never be reused for another product.
-    if (symbol == 'NVDA') {
-      return Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Theme.of(context).extension<AppRwaColors>()!.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).extension<AppRwaColors>()!.border,
-          ),
-        ),
-        child: SvgPicture.asset(
-          'assets/figma/trade/nvidia.svg',
-          width: logoSize,
-          height: logoSize,
-        ),
-      );
-    }
-    return MarketAssetMark(symbol: symbol, size: size, borderRadius: 12);
-  }
-}
 
 class _Metric extends StatelessWidget {
   const _Metric(this.label, this.value, {this.loading = false});

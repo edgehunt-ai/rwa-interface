@@ -19,7 +19,7 @@ import 'package:built_value/serializer.dart';
 
 part 'wallet_action_execution.g.dart';
 
-/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  Submission performs a compare-and-set to `submitting` before synchronously relaying an app-sponsored signature to Privy. The signature is never persisted. When Privy accepts the request, the server stores `privy_transaction_id` and/or `user_operation_hash`; only executions with such an identifier may be polled or reconciled by workers/Webhooks/RPC. A timeout, 5xx or crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. User-paid fallback is allowed only after a deterministic pre-broadcast rejection. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation. 
+/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  New bStocks approval, IOC market trade, GTC placement and cancellation executions choose `app_sponsored` / `privy` or `user_paid_native` / `user_wallet` through the request `mode`. Sponsorship remains subject to existing eligibility, budget and circuit controls. Primary user-paid native BNB requires no prior sponsored execution or fallback gate. Creation retries may recover the same execution idempotently; pending or ambiguous existing executions fence a second delivery even if another payment mode is requested.  Sponsored submission performs a compare-and-set to `submitting` before synchronously relaying the signature to Privy; the signature is never persisted. Privy acceptance stores `privy_transaction_id` and/or `user_operation_hash` for provider polling/reconciliation. A timeout, 5xx or crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay. User-paid submission accepts only `tx_hash` as an untrusted locator; the server independently verifies the frozen transaction and canonical receipt evidence.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. Transfer and self-custodial withdrawal user-paid fallback still requires a deterministic pre-broadcast rejection and the existing runtime gate. A definitely rejected legacy sponsored order execution may also be linked by a user-paid execution. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation. 
 ///
 /// Properties:
 /// * [executionId] 
@@ -37,7 +37,7 @@ part 'wallet_action_execution.g.dart';
 /// * [providerStatus] 
 /// * [gasPayment] 
 /// * [frozenTransaction] 
-/// * [fallbackFromExecutionId] - Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`. 
+/// * [fallbackFromExecutionId] - Null for app-sponsored executions and primary user-paid bStocks order executions. Transfer and self-custodial withdrawal user-paid fallback must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required` after a definite pre-broadcast rejection. A user-paid bStocks order execution may also link such a definitely rejected legacy sponsored execution. 
 /// * [privyAuthorizationPayload] - Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
 /// * [authorizationExpiresAt] - Mirrors the structured Privy request expiry; null when no authorization is exposed.
 /// * [privyTransactionId] 
@@ -107,7 +107,7 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
   @BuiltValueField(wireName: r'frozen_transaction')
   FrozenEvmTransaction get frozenTransaction;
 
-  /// Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`. 
+  /// Null for app-sponsored executions and primary user-paid bStocks order executions. Transfer and self-custodial withdrawal user-paid fallback must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required` after a definite pre-broadcast rejection. A user-paid bStocks order execution may also link such a definitely rejected legacy sponsored execution. 
   @BuiltValueField(wireName: r'fallback_from_execution_id')
   String? get fallbackFromExecutionId;
 

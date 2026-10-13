@@ -37,6 +37,7 @@ import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart'
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
@@ -69,7 +70,16 @@ void main() {
       symbol: 'TOKEN-X',
       kind: MarketProductKind.bstock,
     );
-    final product = _marketProduct('TOKEN-X', MarketProductKind.bstock);
+    final product = MarketProduct(
+      symbol: 'TOKEN-X',
+      name: 'Token X',
+      kind: MarketProductKind.bstock,
+      price: DecimalValue('100'),
+      settlementAsset: 'USDT',
+      network: 'BSC',
+      tradable: true,
+      logoText: 'PX',
+    );
     const lookup = (
       query: 'ACME',
       cursor: null,
@@ -87,6 +97,7 @@ void main() {
                   symbol: 'ACME',
                   name: 'Acme Corporation',
                   referencePrice: '100',
+                  logoText: 'ST',
                   products: [productRef],
                 ),
               ],
@@ -130,6 +141,12 @@ void main() {
       tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
       'TOKEN-X',
     );
+    expect(find.text('ST'), findsOneWidget);
+    expect(find.text('PX'), findsOneWidget);
+    final marks = tester.widgetList<MarketAssetMark>(
+      find.byType(MarketAssetMark),
+    );
+    expect(marks.map((mark) => mark.logoText), ['ST', 'PX']);
   });
 
   testWidgets('Trade pull-to-refresh reloads the current position list', (

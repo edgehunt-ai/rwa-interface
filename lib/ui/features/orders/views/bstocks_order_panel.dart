@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
@@ -22,6 +21,7 @@ import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -2204,7 +2204,6 @@ class _BstocksConfirmationAssetMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
     if (asset == 'USDT') {
       return Image.asset(
         'assets/figma/trade/usdt_mark.png',
@@ -2212,29 +2211,12 @@ class _BstocksConfirmationAssetMark extends StatelessWidget {
         height: 20,
       );
     }
-    if (asset == 'NVDAB' || asset == 'NVDA') {
-      return Container(
-        width: 20,
-        height: 20,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: colors.surface,
-          shape: BoxShape.circle,
-          border: Border.all(color: colors.border),
-        ),
-        child: SvgPicture.asset(
-          'assets/figma/trade/nvidia.svg',
-          width: 11,
-          height: 11,
-        ),
-      );
+    if (asset == 'USDC' || asset == 'TUSDT') {
+      return MarketAssetMark(symbol: asset, size: 20);
     }
-    return Container(
-      width: 20,
-      height: 20,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: colors.surface, shape: BoxShape.circle),
-      child: Text(asset.substring(0, 1), style: const TextStyle(fontSize: 10)),
+    return MarketProductMark(
+      product: MarketProductRef(symbol: asset, kind: MarketProductKind.bstock),
+      size: 20,
     );
   }
 }

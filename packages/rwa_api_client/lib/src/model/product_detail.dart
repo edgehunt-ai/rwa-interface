@@ -25,6 +25,8 @@ part 'product_detail.g.dart';
 /// * [symbol] 
 /// * [name] 
 /// * [kind] 
+/// * [logoUrl] - 管理后台维护的产品图标 URL；未配置时为 null，客户端用 logo_text 占位。
+/// * [logoText] - 无图时的占位字母
 /// * [title] - 产品标题，如 `BSC bStocks Token` / `HIP-3 Perpetual`
 /// * [badge] - 角标，如 `Spot · BSC` / `Isolated margin`
 /// * [description] - 产品说明长文案，与 asset_info.description 保持一致。
@@ -56,6 +58,14 @@ abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilde
   @BuiltValueField(wireName: r'kind')
   ProductKind get kind;
   // enum kindEnum {  bstock,  perp,  };
+
+  /// 管理后台维护的产品图标 URL；未配置时为 null，客户端用 logo_text 占位。
+  @BuiltValueField(wireName: r'logo_url')
+  String? get logoUrl;
+
+  /// 无图时的占位字母
+  @BuiltValueField(wireName: r'logo_text')
+  String? get logoText;
 
   /// 产品标题，如 `BSC bStocks Token` / `HIP-3 Perpetual`
   @BuiltValueField(wireName: r'title')
@@ -153,6 +163,20 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
       object.kind,
       specifiedType: const FullType(ProductKind),
     );
+    if (object.logoUrl != null) {
+      yield r'logo_url';
+      yield serializers.serialize(
+        object.logoUrl,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.logoText != null) {
+      yield r'logo_text';
+      yield serializers.serialize(
+        object.logoText,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.title != null) {
       yield r'title';
       yield serializers.serialize(
@@ -274,6 +298,22 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
             specifiedType: const FullType(ProductKind),
           ) as ProductKind;
           result.kind = valueDes;
+          break;
+        case r'logo_url':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.logoUrl = valueDes;
+          break;
+        case r'logo_text':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.logoText = valueDes;
           break;
         case r'title':
           final valueDes = serializers.deserialize(
