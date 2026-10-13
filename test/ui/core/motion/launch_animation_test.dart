@@ -1,40 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lottie/lottie.dart';
 import 'package:nobell/ui/core/motion/launch_animation.dart';
 
 void main() {
-  test(
-    'compressed animation asset decodes with the approved timeline',
-    () async {
-      TestWidgetsFlutterBinding.ensureInitialized();
-      final data = await rootBundle.load(launchAnimationAsset);
-      final composition = await LottieComposition.fromByteData(
-        data,
-        decoder: LottieComposition.decodeGZip,
-      );
+  test('animation asset has a valid Rive header', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final data = await rootBundle.load(launchAnimationAsset);
+    final header = data.buffer.asUint8List(data.offsetInBytes, 4);
 
-      expect(composition.duration, const Duration(milliseconds: 4217));
-    },
-  );
+    expect(String.fromCharCodes(header), 'RIVE');
+  });
 
-  testWidgets('renders the approved surface animation without distortion', (
+  testWidgets('renders the reduced-motion frame without distortion', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: LaunchAnimation(onFinished: () {})),
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: LaunchAnimation(onFinished: () {}),
+        ),
+      ),
     );
 
     final surface = tester.widget<ColoredBox>(find.byKey(launchSurfaceKey));
-    final animation = tester.widget<LottieBuilder>(
-      find.byKey(launchAnimationKey),
-    );
+    final finalFrame = tester.widget<SvgPicture>(find.byType(SvgPicture));
 
     expect(surface.color, launchBackgroundColor);
-    expect(animation.fit, BoxFit.contain);
-    expect(animation.repeat, isFalse);
-    expect(animation.lottie.decoder, LottieComposition.decodeGZip);
+    expect(finalFrame.fit, BoxFit.contain);
+    expect(find.byKey(launchAnimationKey), findsNothing);
   });
 
   testWidgets('reveals the app as soon as it is ready', (tester) async {

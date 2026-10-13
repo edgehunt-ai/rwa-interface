@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
+import 'package:rive/rive.dart' as rive;
 
 const launchBackgroundColor = Color(0xFFF7F7FA);
 const launchForegroundColor = Color(0xFFFF7BE5);
-const launchAnimationAsset = 'assets/launch/surface/foreground.tgs';
+const launchAnimationAsset = 'assets/launch/surface/nobell-surface.riv';
 const launchFirstFrameAsset = 'assets/launch/surface/first-frame.svg';
 const launchFinalFrameAsset = 'assets/launch/surface/final-frame.svg';
+
+const _launchAnimationDuration = Duration(milliseconds: 4217);
 
 const launchSurfaceKey = Key('launch-surface');
 const launchAnimationKey = Key('launch-animation');
@@ -118,11 +120,12 @@ class LaunchAnimation extends StatefulWidget {
   State<LaunchAnimation> createState() => _LaunchAnimationState();
 }
 
-class _LaunchAnimationState extends State<LaunchAnimation>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(vsync: this);
+class _LaunchAnimationState extends State<LaunchAnimation> {
+  rive.File? _file;
+  rive.RiveWidgetController? _controller;
   Timer? _completionTimer;
-  bool _compositionLoaded = false;
+  bool _animationLoaded = false;
+  bool _loadRequested = false;
   bool _started = false;
   bool _finished = false;
   bool _reduceMotion = false;
@@ -141,22 +144,56 @@ class _LaunchAnimationState extends State<LaunchAnimation>
 
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     _reduceMotion = reduceMotion;
-    if (!reduceMotion) return;
+    if (!reduceMotion) {
+      if (!_loadRequested) {
+        _loadRequested = true;
+        unawaited(_loadAnimation());
+      }
+      return;
+    }
 
     _started = true;
     _completionTimer?.cancel();
     _completionTimer = Timer(widget.reducedMotionHold, _finish);
   }
 
-  void _onCompositionLoaded(LottieComposition composition) {
-    if (!mounted || _reduceMotion) return;
-    setState(() => _compositionLoaded = true);
-    if (_started) return;
+  Future<void> _loadAnimation() async {
+    rive.File? file;
+    try {
+      file = await rive.File.asset(
+        launchAnimationAsset,
+        riveFactory: rive.Factory.rive,
+      );
+      if (file == null || !mounted || _reduceMotion) {
+        file?.dispose();
+        return;
+      }
 
-    _started = true;
-    _completionTimer?.cancel();
-    _controller.duration = widget.durationOverride ?? composition.duration;
-    unawaited(_controller.forward().whenComplete(_finish));
+      final controller = rive.RiveWidgetController(
+        file,
+        artboardSelector: rive.ArtboardSelector.byName('Nobell Launch'),
+        stateMachineSelector: rive.StateMachineSelector.byName('LaunchOnce'),
+      );
+      if (!mounted) {
+        controller.dispose();
+        file.dispose();
+        return;
+      }
+
+      _file = file;
+      _controller = controller;
+      setState(() => _animationLoaded = true);
+
+      _started = true;
+      _completionTimer?.cancel();
+      _completionTimer = Timer(
+        widget.durationOverride ?? _launchAnimationDuration,
+        _finish,
+      );
+    } on Object {
+      file?.dispose();
+      // Keep the SVG first frame visible until the safety timeout expires.
+    }
   }
 
   void _finish() {
@@ -168,8 +205,26 @@ class _LaunchAnimationState extends State<LaunchAnimation>
   @override
   void dispose() {
     _completionTimer?.cancel();
-    _controller.dispose();
+    _controller?.dispose();
+    _file?.dispose();
     super.dispose();
+  }
+
+  Widget _buildAnimatedLaunch() {
+    final controller = _controller;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (!_animationLoaded)
+          SvgPicture.asset(launchFirstFrameAsset, fit: BoxFit.contain),
+        if (controller != null)
+          rive.RiveWidget(
+            key: launchAnimationKey,
+            controller: controller,
+            fit: rive.Fit.contain,
+          ),
+      ],
+    );
   }
 
   @override
@@ -179,23 +234,7 @@ class _LaunchAnimationState extends State<LaunchAnimation>
     child: ExcludeSemantics(
       child: _reduceMotion
           ? SvgPicture.asset(launchFinalFrameAsset, fit: BoxFit.contain)
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                if (!_compositionLoaded)
-                  SvgPicture.asset(launchFirstFrameAsset, fit: BoxFit.contain),
-                Lottie.asset(
-                  launchAnimationAsset,
-                  key: launchAnimationKey,
-                  controller: _controller,
-                  fit: BoxFit.contain,
-                  repeat: false,
-                  frameRate: FrameRate.composition,
-                  decoder: LottieComposition.decodeGZip,
-                  onLoaded: _onCompositionLoaded,
-                ),
-              ],
-            ),
+          : _buildAnimatedLaunch(),
     ),
   );
 }
