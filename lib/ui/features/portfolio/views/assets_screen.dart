@@ -3585,9 +3585,9 @@ class _TokenIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokenAsset = switch (symbol) {
-      'USDC' => 'assets/figma/portfolio/token_usdc.svg',
-      'USDT' => 'assets/figma/portfolio/token_usdt.png',
-      'ETH' => 'assets/figma/portfolio/token_eth.svg',
+      'USDC' => 'assets/figma/funding/usdc.svg',
+      'USDT' => 'assets/figma/funding/usdt.png',
+      'ETH' => 'assets/figma/funding/eth.svg',
       _ => null,
     };
     if (tokenAsset != null) {

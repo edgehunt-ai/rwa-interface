@@ -582,7 +582,7 @@ Widget? _depositTokenIcon(String token, {double size = 24}) =>
         height: size,
       ),
       'ETH' => SvgPicture.asset(
-        'assets/figma/portfolio/token_eth.svg',
+        'assets/figma/funding/eth.svg',
         key: const ValueKey('deposit-token-icon-eth'),
         width: size,
         height: size,

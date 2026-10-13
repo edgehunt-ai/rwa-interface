@@ -6,8 +6,7 @@ abstract final class NetworkIconAssets {
   static const base = 'assets/figma/common/network_base.svg';
   static const bsc = 'assets/figma/common/network_bsc.svg';
   static const arbitrum = 'assets/figma/funding/arbitrum.svg';
-  static const arbitrumMark =
-      'assets/figma/portfolio/network_arbitrum_mark.svg';
+  static const arbitrumMark = arbitrum;
   static const ethereum = 'assets/figma/funding/eth.svg';
   static const ethereumMark =
       'assets/figma/portfolio/network_ethereum_mark.svg';
