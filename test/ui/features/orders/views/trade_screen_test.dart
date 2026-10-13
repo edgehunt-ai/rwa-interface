@@ -1304,10 +1304,7 @@ void main() {
     expect(screen.token, 'NVDAB');
     expect(screen.chain, 'BSC');
     expect(withdrawalUri?.queryParameters, containsPair('source', 'spot'));
-    expect(
-      find.byKey(const Key('withdrawal-source-spot')),
-      findsNothing,
-    );
+    expect(find.byKey(const Key('withdrawal-source-spot')), findsNothing);
   });
 
   testWidgets('Trade tab counts stay on their matching tabs without overflow', (
