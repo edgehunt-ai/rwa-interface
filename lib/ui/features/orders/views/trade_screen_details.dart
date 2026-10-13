@@ -744,7 +744,6 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
                 AppRoutes.withdrawalLocation(
                   token: position.symbol,
                   chain: 'BSC',
-                  source: 'spot',
                 ),
               ),
             ),
