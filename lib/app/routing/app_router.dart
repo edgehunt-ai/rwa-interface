@@ -4,6 +4,8 @@ import 'package:nobell/ui/features/home/views/details_screen.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
+import 'package:nobell/ui/features/funding/views/perps_withdrawal_screen.dart';
+import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
@@ -76,14 +78,22 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.withdrawalName,
           path: AppRoutes.withdrawalPath,
-          builder: (context, state) => WithdrawalScreen(
-            token: state.uri.queryParameters['token'] ?? 'USDC',
-            chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
-          ),
+          builder: (context, state) =>
+              state.uri.queryParameters['source'] == 'perps'
+              ? const PerpsWithdrawalScreen()
+              : WithdrawalScreen(
+                  token: state.uri.queryParameters['token'] ?? 'USDC',
+                  chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
+                ),
         ),
         GoRoute(
           name: AppRoutes.withdrawalSelectName,
           path: AppRoutes.withdrawalSelectPath,
+          builder: (context, state) => const WithdrawalSourcePage(),
+        ),
+        GoRoute(
+          name: AppRoutes.withdrawalAssetSelectName,
+          path: AppRoutes.withdrawalAssetSelectPath,
           builder: (context, state) =>
               const WithdrawalScreen(showSelector: true),
         ),

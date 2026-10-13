@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/wallet_action_execution.dart';
@@ -144,23 +145,27 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     final current = prepared;
     if (currentQuote == null || current == null || submitting) return;
     setState(() => submitting = true);
+    // Let the disabled button and progress indicator paint before wallet or
+    // network work starts. Some embedded-wallet calls can otherwise keep the
+    // first visible frame waiting long enough to make the tap look ignored.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
     final openingBalance = await _readWithdrawableBalance(currentQuote);
     if (!mounted) return;
     try {
       await ref
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(
-            quote: currentQuote,
-            prepared: current,
-            confirmWalletUpgrade: _confirmWalletUpgrade,
-          );
-      await _waitForBalanceChange(currentQuote, openingBalance);
+          .execute(quote: currentQuote, prepared: current);
+      final balanceUpdated = await _waitForBalanceChange(
+        currentQuote,
+        openingBalance,
+      );
       if (mounted) {
         ref.invalidate(portfolioSummaryProvider);
-        context.goNamed(AppRoutes.homeName);
-        AppToast.showSuccess(
-          context,
-          AppLocalizations.of(context).withdrawalSucceeded,
+        _completeSubmission(
+          balanceUpdated
+              ? AppLocalizations.of(context).withdrawalSucceeded
+              : AppLocalizations.of(context).balanceRefreshFailed,
         );
       }
     } on SponsoredGasUnavailable catch (refusal) {
@@ -178,8 +183,6 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         return;
       }
       await _submitUserPaid(currentQuote, current, openingBalance);
-    } on WalletUpgradeDeclined {
-      if (mounted) setState(() => submitting = false);
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
     } on Object catch (failure) {
@@ -200,13 +203,16 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       await ref
           .read(selfCustodialWithdrawalCommandsProvider)
           .executeUserPaid(quote: currentQuote, prepared: current);
-      await _waitForBalanceChange(currentQuote, openingBalance);
+      final balanceUpdated = await _waitForBalanceChange(
+        currentQuote,
+        openingBalance,
+      );
       if (mounted) {
         ref.invalidate(portfolioSummaryProvider);
-        context.goNamed(AppRoutes.homeName);
-        AppToast.showSuccess(
-          context,
-          AppLocalizations.of(context).withdrawalSucceeded,
+        _completeSubmission(
+          balanceUpdated
+              ? AppLocalizations.of(context).withdrawalSucceeded
+              : AppLocalizations.of(context).balanceRefreshFailed,
         );
       }
     } on InsufficientWithdrawalGas catch (failure) {
@@ -216,6 +222,19 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         AppToast.showFailure(context, _withdrawalErrorMessage(failure));
       }
     }
+  }
+
+  void _completeSubmission(String message) {
+    address.clear();
+    amount.clear();
+    setState(() {
+      quote = null;
+      prepared = null;
+      error = null;
+      submitting = false;
+      waitingForBalance = false;
+    });
+    AppToast.showSuccess(context, message);
   }
 
   String _withdrawalErrorMessage(Object failure) {
@@ -242,31 +261,30 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     }
   }
 
-  Future<void> _waitForBalanceChange(
+  Future<bool> _waitForBalanceChange(
     WithdrawalQuote quote,
     DecimalValue? openingBalance,
   ) async {
-    if (openingBalance == null) return;
+    if (openingBalance == null) return true;
     if (mounted) setState(() => waitingForBalance = true);
-    final deadline = DateTime.now().add(_balancePollTimeout);
+    final attempts =
+        _balancePollTimeout.inMilliseconds ~/
+        _balancePollInterval.inMilliseconds;
     try {
-      while (DateTime.now().isBefore(deadline)) {
+      for (var attempt = 0; attempt < attempts; attempt++) {
         await Future<void>.delayed(_balancePollInterval);
-        if (!mounted) return;
+        if (!mounted) return false;
         try {
           final accounts = await ref.refresh(tradingAccountsProvider.future);
           final current = _matchingBalance(accounts, quote);
-          if (current != null && current.compareTo(openingBalance) < 0) return;
+          if (current != null && current.compareTo(openingBalance) < 0) {
+            return true;
+          }
         } on Object {
           // A transient balance request failure should not hide a submitted withdrawal.
         }
       }
-      if (mounted) {
-        AppToast.showFailure(
-          context,
-          AppLocalizations.of(context).balanceRefreshFailed,
-        );
-      }
+      return false;
     } finally {
       if (mounted) setState(() => waitingForBalance = false);
     }
@@ -287,22 +305,6 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       }
     }
     return null;
-  }
-
-  /// The disclosure is shown in the app's own language. The server also sends
-  /// [GasPaymentQuote.eip7702Notice], but it arrives in one language only, so
-  /// the localized copy is what reaches the user.
-  Future<bool> _confirmWalletUpgrade(GasPaymentQuote _) async {
-    if (!mounted) return false;
-    final l10n = AppLocalizations.of(context);
-    final accepted = await showAppAlert(
-      context: context,
-      title: l10n.walletUpgradeTitle,
-      message: l10n.walletUpgradeNotice,
-      confirmLabel: l10n.walletUpgradeConfirm,
-      cancelLabel: l10n.cancel,
-    );
-    return accepted ?? false;
   }
 
   Future<bool> _confirmUserPaidGas(SponsoredGasUnavailable refusal) async {
@@ -331,6 +333,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.showSelector) return const _AssetSelector();
+    final accounts = ref.watch(tradingAccountsProvider).value;
     final selectedAsset = ref
         .watch(withdrawalAssetsProvider)
         .value
@@ -341,57 +344,42 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                   normalizeChainLabel(widget.chain),
         )
         .firstOrNull;
+    final sourceAddress = accounts
+        ?.where((account) => account.kind != TradingAccountKind.hip3)
+        .where(
+          (account) =>
+              normalizeChainLabel(account.chain ?? '') ==
+              normalizeChainLabel(widget.chain),
+        )
+        .map((account) => account.address)
+        .whereType<String>()
+        .firstOrNull;
     return Scaffold(
       body: SafeArea(
-        child: Stack(
-          children: [
-            quote == null
-                ? _WithdrawalForm(
-                    address: address,
-                    amount: amount,
-                    error: error,
-                    submitting: quoting,
-                    asset: selectedAsset,
-                    token: widget.token,
-                    chain: widget.chain,
-                    onReview: _review,
-                  )
-                : _WithdrawalReview(
-                    quote: quote!,
-                    prepared: prepared,
-                    error: error,
-                    onBack: () => setState(() {
-                      quote = null;
-                      prepared = null;
-                      error = null;
-                    }),
-                    onSubmit: _submit,
-                    submitting: submitting || waitingForBalance,
-                  ),
-            if (submitting)
-              Positioned.fill(
-                child: ColoredBox(
-                  color: Colors.white70,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 16),
-                        Text(
-                          waitingForBalance
-                              ? AppLocalizations.of(context)
-                                    .confirmingWithdrawal
-                              : AppLocalizations.of(context)
-                                    .preparingWithdrawal,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+        child: quote == null
+            ? _WithdrawalForm(
+                address: address,
+                amount: amount,
+                error: error,
+                submitting: quoting,
+                asset: selectedAsset,
+                token: widget.token,
+                chain: widget.chain,
+                onReview: _review,
+              )
+            : _WithdrawalReview(
+                quote: quote!,
+                prepared: prepared,
+                sourceAddress: sourceAddress,
+                error: error,
+                onBack: () => setState(() {
+                  quote = null;
+                  prepared = null;
+                  error = null;
+                }),
+                onSubmit: _submit,
+                submitting: submitting || waitingForBalance,
               ),
-          ],
-        ),
       ),
     );
   }
@@ -511,20 +499,25 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
         AppPageHeader(
-          title: l10n.withdrawToken(widget.token),
-          fallbackLocation: AppRoutes.withdrawalSelectPath,
+          title: l10n.withdraw,
+          fallbackLocation: AppRoutes.withdrawalAssetSelectPath,
         ),
-        const SizedBox(height: 40),
-        _RouteCard(token: widget.token, chain: widget.chain),
-        const SizedBox(height: 36),
+        const SizedBox(height: 16),
+        _RouteCard(
+          token: widget.token,
+          chain: widget.chain,
+          onSelectAsset: () =>
+              context.push(AppRoutes.withdrawalAssetSelectPath),
+        ),
+        const SizedBox(height: 16),
         _InputCard(
           key: const ValueKey('withdrawal-address-card'),
-          height: _addressError == null ? 112 : 136,
+          height: _addressError == null ? 80 : 104,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _FieldLabel(l10n.recipientAddress),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
@@ -535,29 +528,15 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       decoration: InputDecoration(
                         hintText: l10n.enterWalletAddress,
                         errorText: _addressError,
-                        border: _withdrawalInputBorder(colors.border),
-                        enabledBorder: _withdrawalInputBorder(colors.border),
-                        focusedBorder: _withdrawalInputBorder(
-                          colors.primaryText,
-                          width: 1.5,
-                        ),
-                        disabledBorder: _withdrawalInputBorder(colors.border),
-                        errorBorder: _withdrawalInputBorder(
-                          Theme.of(context)
-                              .extension<AppSemanticColors>()!
-                              .loss,
-                        ),
-                        focusedErrorBorder: _withdrawalInputBorder(
-                          Theme.of(context)
-                              .extension<AppSemanticColors>()!
-                              .loss,
-                          width: 1.5,
-                        ),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
+                        filled: false,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.zero,
                       ),
                       style: _strongText,
                     ),
@@ -584,10 +563,10 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
             ],
           ),
         ),
-        const SizedBox(height: 36),
+        const SizedBox(height: 16),
         _InputCard(
           key: const ValueKey('withdrawal-amount-card'),
-          height: 128,
+          height: 96,
           child: Column(
             children: [
               Row(
@@ -607,7 +586,6 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -617,31 +595,14 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: '0.00',
-                        border: _withdrawalInputBorder(colors.border),
-                        enabledBorder: _withdrawalInputBorder(colors.border),
-                        focusedBorder: _withdrawalInputBorder(
-                          colors.primaryText,
-                          width: 1.5,
-                        ),
-                        disabledBorder: _withdrawalInputBorder(colors.border),
-                        errorBorder: _withdrawalInputBorder(
-                          Theme.of(context)
-                              .extension<AppSemanticColors>()!
-                              .loss,
-                        ),
-                        focusedErrorBorder: _withdrawalInputBorder(
-                          Theme.of(context)
-                              .extension<AppSemanticColors>()!
-                              .loss,
-                          width: 1.5,
-                        ),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
+                        filled: false,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.zero,
                       ),
                       style: _strongText,
                     ),
@@ -654,7 +615,6 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -681,10 +641,8 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
             ],
           ),
         ),
-        // No fee or recipient subtotal here: the network fee is only observed
-        // when the intent is created on the way to the review step, and a
-        // placeholder would just be noise.
-        const SizedBox(height: 36),
+        const SizedBox(height: 16),
+        _WithdrawalEstimateCard(amount: parsedAmount, token: widget.token),
         if (widget.error != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -718,16 +676,22 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
 }
 
 class _RouteCard extends StatelessWidget {
-  const _RouteCard({required this.token, required this.chain});
+  const _RouteCard({
+    required this.token,
+    required this.chain,
+    required this.onSelectAsset,
+  });
 
   final String token;
   final String chain;
+  final VoidCallback onSelectAsset;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
-      height: 104,
+      key: const ValueKey('withdrawal-route-card'),
+      height: 155,
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border.all(color: colors.border),
@@ -737,18 +701,45 @@ class _RouteCard extends StatelessWidget {
         children: [
           Expanded(
             child: _RouteRow(
-              label: AppLocalizations.of(context).token,
-              value: token,
-              icon: _WithdrawalAssetMark(symbol: token, size: 24),
+              key: const ValueKey('withdrawal-network-selector'),
+              label: AppLocalizations.of(context).network,
+              value: networkDisplayName(chain),
+              onTap: onSelectAsset,
+              showChevron: true,
+              chevronKey: const ValueKey('withdrawal-network-selector-arrow'),
+              icon: SvgPicture.asset(
+                _networkIcon(chain),
+                width: 24,
+                height: 24,
+              ),
             ),
           ),
           Divider(),
           Expanded(
             child: _RouteRow(
-              label: AppLocalizations.of(context).network,
-              value: chain,
+              key: const ValueKey('withdrawal-token-selector'),
+              label: AppLocalizations.of(context).token,
+              value: token,
+              onTap: onSelectAsset,
+              showChevron: true,
+              chevronKey: const ValueKey('withdrawal-token-selector-arrow'),
+              icon: _WithdrawalAssetMark(
+                symbol: token,
+                chain: chain,
+                isBstock: false,
+                size: 24,
+                showNetworkMark: false,
+              ),
+            ),
+          ),
+          Divider(),
+          Expanded(
+            child: _RouteRow(
+              label: AppLocalizations.of(context).signatureFrom,
+              value: AppLocalizations.of(context).spotAccount,
+              valueKey: const ValueKey('withdrawal-from-value'),
               icon: SvgPicture.asset(
-                _networkIcon(chain),
+                'assets/figma/funding/venue_bnb_chain_24.svg',
                 width: 24,
                 height: 24,
               ),
@@ -762,33 +753,101 @@ class _RouteCard extends StatelessWidget {
 
 class _RouteRow extends StatelessWidget {
   const _RouteRow({
+    super.key,
     required this.label,
     required this.value,
     required this.icon,
+    this.onTap,
+    this.showChevron = false,
+    this.chevronKey,
+    this.valueKey,
   });
 
   final String label;
   final String value;
   final Widget icon;
+  final VoidCallback? onTap;
+  final bool showChevron;
+  final Key? chevronKey;
+  final Key? valueKey;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Row(
-      children: [
-        Expanded(child: Text(label)),
-        SizedBox(width: 24, height: 24, child: icon),
-        const SizedBox(width: 8),
-        Text(value, style: _strongText),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          SizedBox(width: 80, child: Text(label)),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(width: 24, height: 24, child: icon),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    value,
+                    key: valueKey,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: _strongText,
+                  ),
+                ),
+                if (showChevron) ...[
+                  const SizedBox(width: 8),
+                  SvgPicture.asset(
+                    'assets/figma/funding/chevron_right.svg',
+                    key: chevronKey,
+                    width: 20,
+                    height: 20,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (onTap == null) return content;
+    return Semantics(
+      button: true,
+      child: InkWell(onTap: onTap, child: content),
+    );
+  }
+}
+
+class _WithdrawalEstimateCard extends StatelessWidget {
+  const _WithdrawalEstimateCard({required this.amount, required this.token});
+
+  final DecimalValue? amount;
+  final String token;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.subtleSurface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: _ReviewDetail(
+        label: l10n.recipientReceives,
+        value: amount == null
+            ? '— $token'
+            : TokenAmountFormatter.format(amount!, symbol: token),
+      ),
+    );
+  }
 }
 
 class _WithdrawalReview extends StatelessWidget {
   const _WithdrawalReview({
     required this.quote,
     required this.prepared,
+    required this.sourceAddress,
     required this.error,
     required this.onBack,
     required this.onSubmit,
@@ -797,6 +856,7 @@ class _WithdrawalReview extends StatelessWidget {
 
   final WithdrawalQuote quote;
   final PreparedSelfCustodialWithdrawal? prepared;
+  final String? sourceAddress;
   final String? error;
   final VoidCallback onBack;
   final VoidCallback onSubmit;
@@ -812,10 +872,9 @@ class _WithdrawalReview extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final gas = prepared?.gas;
     final amount = TokenAmountFormatter.format(
       quote.intent.amount,
-      symbol: 'USDC',
+      symbol: quote.intent.amount.asset ?? 'USDC',
     );
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -858,19 +917,20 @@ class _WithdrawalReview extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _ReviewDetail(
+                label: l10n.fromSpotAccount,
+                value: _shortAddress(
+                  prepared?.transaction.from ?? sourceAddress ?? '—',
+                ),
+              ),
+              const SizedBox(height: 8),
+              _ReviewDetail(
                 label: l10n.to,
                 value: _shortAddress(quote.intent.address),
               ),
               const SizedBox(height: 8),
-              _ReviewDetail(label: l10n.network, value: quote.intent.chain),
-              const SizedBox(height: 8),
               _ReviewDetail(
-                label: l10n.networkFee,
-                // Gas is paid from the wallet in the chain's native asset, not
-                // in the token being withdrawn.
-                value: gas == null
-                    ? '—'
-                    : '≈ ${TokenAmountFormatter.format(gas.estimatedNativeFee, symbol: gas.nativeAsset)}',
+                label: l10n.network,
+                value: networkDisplayName(quote.intent.chain),
               ),
             ],
           ),
@@ -880,7 +940,7 @@ class _WithdrawalReview extends StatelessWidget {
           label: l10n.recipientReceives,
           value: TokenAmountFormatter.format(
             quote.estimatedReceive,
-            symbol: 'USDC',
+            symbol: quote.intent.amount.asset ?? 'USDC',
           ),
           mutedLabel: true,
         ),
@@ -888,14 +948,10 @@ class _WithdrawalReview extends StatelessWidget {
         _BreakdownRow(label: l10n.totalDeducted, value: amount),
         const SizedBox(height: 12),
         Text(
-          l10n.finalNetworkFeeMayVary,
+          l10n.networkFeeCoveredByPlatform,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
-        if (prepared != null) ...[
-          const SizedBox(height: 16),
-          _WithdrawalSignatureDetails(transaction: prepared!.transaction),
-        ],
         if (error != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -906,151 +962,29 @@ class _WithdrawalReview extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 40),
-        FilledButton(
-          onPressed: submitting || !_canSign ? null : onSubmit,
-          child: Text(
-            l10n.signAndWithdraw(quote.intent.amount.asset ?? 'USDC'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  static String _shortAddress(String value) {
-    if (value.length <= 18) return value;
-    return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
-  }
-}
-
-class _WithdrawalSignatureDetails extends StatefulWidget {
-  const _WithdrawalSignatureDetails({required this.transaction});
-
-  final SelfCustodialWithdrawalTransaction transaction;
-
-  @override
-  State<_WithdrawalSignatureDetails> createState() =>
-      _WithdrawalSignatureDetailsState();
-}
-
-class _WithdrawalSignatureDetailsState
-    extends State<_WithdrawalSignatureDetails> {
-  var _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      key: const ValueKey('withdrawal-signature-details'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          key: const ValueKey('withdrawal-signature-details-toggle'),
-          onTap: () => setState(() => _expanded = !_expanded),
-          borderRadius: BorderRadius.circular(4),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.signatureDetails,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: colors.secondaryText),
-                ),
-                const SizedBox(width: 4),
-                AnimatedRotation(
-                  turns: _expanded ? 0.5 : 0,
-                  duration: const Duration(milliseconds: 160),
-                  child: Icon(
-                    Icons.keyboard_arrow_up,
-                    size: 14,
-                    color: colors.secondaryText,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (_expanded) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.subtleSurface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                _SignatureField(
-                  label: l10n.signatureFrom,
-                  value: _shortAddress(widget.transaction.from),
-                ),
-                _SignatureField(
-                  label: l10n.signatureTo,
-                  value: _shortAddress(widget.transaction.to),
-                ),
-                _SignatureField(
-                  label: l10n.signatureValue,
-                  value: widget.transaction.value,
-                ),
-                _SignatureField(
-                  label: l10n.signatureData,
-                  value: widget.transaction.data,
-                  multiline: true,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  static String _shortAddress(String value) {
-    if (value.length <= 18) return value;
-    return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
-  }
-}
-
-class _SignatureField extends StatelessWidget {
-  const _SignatureField({
-    required this.label,
-    required this.value,
-    this.multiline = false,
-  });
-
-  final String label;
-  final String value;
-  final bool multiline;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
         SizedBox(
-          width: 40,
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SelectableText(
-            value,
-            textAlign: TextAlign.right,
-            style: Theme.of(context).textTheme.bodySmall,
+          height: 48,
+          child: FilledButton(
+            onPressed: submitting || !_canSign ? null : onSubmit,
+            child: submitting
+                ? const SizedBox.square(
+                    key: ValueKey('withdrawal-submit-progress'),
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    l10n.signAndWithdraw(quote.intent.amount.asset ?? 'USDC'),
+                  ),
           ),
         ),
       ],
-    ),
-  );
+    );
+  }
+
+  static String _shortAddress(String value) {
+    if (value.length <= 18) return value;
+    return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
+  }
 }
 
 class _AssetSelector extends ConsumerStatefulWidget {
@@ -1062,6 +996,7 @@ class _AssetSelector extends ConsumerStatefulWidget {
 
 class _AssetSelectorState extends ConsumerState<_AssetSelector> {
   String query = '';
+  String? network;
 
   @override
   Widget build(BuildContext context) {
@@ -1073,9 +1008,35 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
           children: [
-            AppPageHeader(
-              title: l10n.selectAsset,
-              fallbackLocation: AppRoutes.assetsPath,
+            Row(
+              children: [
+                Expanded(
+                  child: AppPageHeader(
+                    title: l10n.withdraw,
+                    fallbackLocation: AppRoutes.withdrawalSelectPath,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      context.go('${AppRoutes.activityPath}?tab=cash'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.secondaryText,
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: SvgPicture.asset(
+                    'assets/figma/funding/activity.svg',
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(
+                      colors.secondaryText,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  label: Text(l10n.history),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -1101,6 +1062,61 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
               ),
             ),
             const SizedBox(height: 16),
+            Text(
+              l10n.availableToWithdraw,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: colors.tertiaryText),
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: PopupMenuButton<String?>(
+                initialValue: network,
+                onSelected: (value) => setState(() => network = value),
+                itemBuilder: (context) => [
+                  PopupMenuItem(value: null, child: Text(l10n.allNetworks)),
+                  for (final value
+                      in (assets.value ?? const <WithdrawableAsset>[])
+                          .map((asset) => asset.chain)
+                          .toSet())
+                    PopupMenuItem(value: value, child: Text(value)),
+                ],
+                child: Container(
+                  key: const ValueKey('withdrawal-network-filter'),
+                  width: 135,
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border.all(color: colors.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          network ?? l10n.allNetworks,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            height: 18 / 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      SvgPicture.asset(
+                        'assets/figma/home_markets/chevron_down.svg',
+                        width: 20,
+                        height: 20,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             assets.when(
               loading: () => const SizedBox(
                 height: 360,
@@ -1121,9 +1137,11 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
               data: (items) {
                 final filtered = items
                     .where(
-                      (asset) => '${asset.symbol} ${asset.chain}'
-                          .toLowerCase()
-                          .contains(query.toLowerCase()),
+                      (asset) =>
+                          (network == null || asset.chain == network) &&
+                          '${asset.symbol} ${asset.chain}'
+                              .toLowerCase()
+                              .contains(query.toLowerCase()),
                     )
                     .toList(growable: false);
                 if (filtered.isEmpty) {
@@ -1141,7 +1159,11 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                 }
                 return Column(
                   children: [
-                    for (final asset in filtered) _AssetRow(asset: asset),
+                    for (final (index, asset) in filtered.indexed) ...[
+                      _AssetRow(asset: asset),
+                      if (index != filtered.length - 1)
+                        const SizedBox(height: 8),
+                    ],
                   ],
                 );
               },
@@ -1159,60 +1181,139 @@ class _AssetRow extends StatelessWidget {
   final WithdrawableAsset asset;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: () => context.push(
-      AppRoutes.withdrawalLocation(token: asset.symbol, chain: asset.chain),
-    ),
-    child: SizedBox(
-      height: 72,
-      child: Row(
-        children: [
-          _WithdrawalAssetMark(symbol: asset.symbol),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final isBstock = asset.productId != null;
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final returnText = _holdingReturnText(asset);
+    return InkWell(
+      onTap: () => context.push(
+        AppRoutes.withdrawalLocation(token: asset.symbol, chain: asset.chain),
+      ),
+      child: SizedBox(
+        key: ValueKey('withdrawal-asset-row-${asset.key}'),
+        height: isBstock ? 76 : 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
               children: [
-                Row(children: [Text(asset.symbol, style: _strongText)]),
-                Text(
-                  '${_assetName(asset.symbol)} · ${asset.chain}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .extension<AppRwaColors>()!
-                        .secondaryText,
+                _WithdrawalAssetMark(
+                  symbol: asset.symbol,
+                  chain: asset.chain,
+                  isBstock: isBstock,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(asset.symbol, style: _strongText),
+                      const SizedBox(height: 2),
+                      if (isBstock)
+                        Row(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/figma/home_markets/venue_bnb.svg',
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppLocalizations.of(context).bstocks,
+                              style: _assetMetaStyle(colors),
+                            ),
+                          ],
+                        )
+                      else
+                        Text(
+                          AppLocalizations.of(context).cash,
+                          style: _assetMetaStyle(colors),
+                        ),
+                    ],
                   ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      TokenAmountFormatter.formatValue(
+                        asset.balance,
+                        decimals: asset.decimals,
+                      ),
+                      style: _strongText,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      asset.valueUsd == null
+                          ? '—'
+                          : TokenAmountFormatter.formatUsd(asset.valueUsd!),
+                      style: _assetMetaStyle(colors),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                TokenAmountFormatter.formatValue(
-                  asset.balance,
-                  decimals: asset.decimals,
-                ),
-                style: _strongText,
-              ),
-              Text(
-                asset.valueUsd == null
-                    ? '—'
-                    : TokenAmountFormatter.formatUsd(asset.valueUsd!),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .extension<AppRwaColors>()!
-                      .secondaryText,
-                ),
+            if (isBstock && returnText != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const SizedBox(width: 52),
+                  Text(
+                    AppLocalizations.of(context).holdingReturn,
+                    style: _assetMetaStyle(colors),
+                  ),
+                  const Spacer(),
+                  Text(
+                    returnText,
+                    style: _assetMetaStyle(colors)
+                        .copyWith(color: _holdingReturnColor(context, asset)),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+TextStyle _assetMetaStyle(AppRwaColors colors) =>
+    TextStyle(fontSize: 12, height: 16 / 12, color: colors.secondaryText);
+
+String? _holdingReturnText(WithdrawableAsset asset) {
+  final amount = asset.holdingReturnAmountUsd;
+  final percent = asset.holdingReturnPercent;
+  if (amount == null && percent == null) return null;
+  final amountText = amount == null ? null : _formatSignedUsd(amount);
+  final percentText = percent == null
+      ? null
+      : TokenAmountFormatter.formatPercent(
+          percent,
+          maxFractionDigits: 2,
+          trimInsignificantZeros: false,
+        );
+  if (amountText == null) return '($percentText)';
+  if (percentText == null) return amountText;
+  return '$amountText ($percentText)';
+}
+
+String _formatSignedUsd(DecimalValue value) {
+  final formatted = TokenAmountFormatter.formatUsdFixed(value);
+  return value.value.startsWith('-') ||
+          RegExp(r'^0(?:\.0+)?$').hasMatch(value.value)
+      ? formatted
+      : '+$formatted';
+}
+
+Color _holdingReturnColor(BuildContext context, WithdrawableAsset asset) {
+  final value =
+      asset.holdingReturnAmountUsd?.value ?? asset.holdingReturnPercent?.value;
+  final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+  return value?.startsWith('-') ?? false ? semantic.loss : semantic.success;
 }
 
 class _InputCard extends StatelessWidget {
@@ -1226,11 +1327,11 @@ class _InputCard extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       height: height,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: child,
     );
@@ -1301,44 +1402,121 @@ const _strongText = TextStyle(
   fontWeight: FontWeight.w600,
 );
 
-OutlineInputBorder _withdrawalInputBorder(Color color, {double width = 1}) =>
-    OutlineInputBorder(
-      borderRadius: const BorderRadius.all(Radius.circular(6)),
-      borderSide: BorderSide(color: color, width: width),
-    );
-
 class _WithdrawalAssetMark extends StatelessWidget {
-  const _WithdrawalAssetMark({required this.symbol, this.size = 40});
+  const _WithdrawalAssetMark({
+    required this.symbol,
+    required this.chain,
+    required this.isBstock,
+    this.size = 40,
+    this.showNetworkMark = true,
+  });
 
   final String symbol;
+  final String chain;
+  final bool isBstock;
   final double size;
+  final bool showNetworkMark;
 
   @override
-  Widget build(BuildContext context) => switch (symbol.toUpperCase()) {
-    'USDT' => Image.asset(
-      'assets/figma/funding/usdt.png',
-      width: size,
-      height: size,
-    ),
-    'USDC' => SvgPicture.asset(
-      'assets/figma/funding/usdc.svg',
-      width: size,
-      height: size,
-    ),
-    _ => MarketAssetLookupMark(symbol: symbol, size: size),
-  };
+  Widget build(BuildContext context) {
+    final networkAsset = networkIconAssetPath(
+      chain,
+      variant: NetworkIconVariant.mark,
+    );
+    return SizedBox.square(
+      dimension: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(child: _assetMark()),
+          if (showNetworkMark && networkAsset != null)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: _WithdrawalNetworkMark(
+                chain: chain,
+                key: ValueKey('withdrawal-network-mark-$chain'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _assetMark() {
+    if (isBstock) {
+      return MarketProductMark(
+        product: MarketProductRef(
+          symbol: symbol,
+          kind: MarketProductKind.bstock,
+        ),
+        size: size,
+      );
+    }
+    return switch (symbol.toUpperCase()) {
+      'USDT' => Image.asset(
+        'assets/figma/funding/usdt.png',
+        width: size,
+        height: size,
+      ),
+      'USDC' => SvgPicture.asset(
+        'assets/figma/funding/usdc.svg',
+        width: size,
+        height: size,
+      ),
+      _ => MarketAssetLookupMark(symbol: symbol, size: size),
+    };
+  }
+}
+
+class _WithdrawalNetworkMark extends StatelessWidget {
+  const _WithdrawalNetworkMark({super.key, required this.chain});
+
+  final String chain;
+
+  @override
+  Widget build(BuildContext context) {
+    final kind = networkKind(chain);
+    if (kind == NetworkKind.bsc) {
+      return SvgPicture.asset(
+        'assets/figma/funding/withdrawal_network_bsc.svg',
+        width: 16,
+        height: 16,
+      );
+    }
+    if (kind == NetworkKind.arbitrum || kind == NetworkKind.ethereum) {
+      final asset = kind == NetworkKind.arbitrum
+          ? NetworkIconAssets.arbitrumMark
+          : NetworkIconAssets.ethereumMark;
+      return Container(
+        width: 16,
+        height: 16,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: kind == NetworkKind.arbitrum
+              ? const Color(0xFF2F3749)
+              : const Color(0xFF627EEA),
+          border: Border.all(
+            color: Theme.of(context).extension<AppRwaColors>()!.border,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SvgPicture.asset(
+          asset,
+          width: kind == NetworkKind.arbitrum ? 10.7 : 7.5,
+          height: 12,
+        ),
+      );
+    }
+    final asset = networkIconAssetPath(chain, variant: NetworkIconVariant.mark);
+    return asset == null
+        ? const SizedBox.shrink()
+        : SvgPicture.asset(asset, width: 16, height: 16);
+  }
 }
 
 String _networkIcon(String chain) =>
     networkIconAssetPath(chain) ?? NetworkIconAssets.arbitrum;
-
-String _assetName(String symbol) => switch (symbol.toUpperCase()) {
-  'USDC' => 'USD Coin',
-  'USDT' => 'Tether USD',
-  'NVDAB' => 'NVIDIA',
-  'TSLAB' => 'Tesla',
-  _ => symbol,
-};
 
 bool _isEvmAddress(String value) =>
     RegExp(r'^0x[a-fA-F0-9]{40}$').hasMatch(value);

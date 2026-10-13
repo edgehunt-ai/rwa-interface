@@ -103,11 +103,24 @@ final class PortfolioRepositoryImpl
               asset: asset.symbol,
               unit: 'token',
             ),
+            valueUsd: asset.valueUsd == null
+                ? null
+                : DecimalValue(asset.valueUsd!, asset: 'USD', unit: 'fiat'),
             withdrawable: asset.withdrawable ?? false,
             walletId: asset.walletId,
             contractAddress: asset.contractAddress,
             native: asset.native_,
             productId: asset.productId ?? asset.bstocks?.productId,
+            holdingReturnAmountUsd: asset.holdingReturn?.amountUsd == null
+                ? null
+                : DecimalValue(
+                    asset.holdingReturn!.amountUsd!,
+                    asset: 'USD',
+                    unit: 'fiat',
+                  ),
+            holdingReturnPercent: asset.holdingReturn?.percent == null
+                ? null
+                : DecimalValue(asset.holdingReturn!.percent!, unit: 'percent'),
             bstocksAvailableQuantity: asset.bstocks?.availableQuantity == null
                 ? null
                 : DecimalValue(

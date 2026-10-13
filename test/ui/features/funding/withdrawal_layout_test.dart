@@ -49,11 +49,11 @@ void main() {
 
     expect(
       tester.getSize(find.byKey(const ValueKey('withdrawal-address-card'))),
-      const Size(760, 112),
+      const Size(760, 80),
     );
     expect(
       tester.getSize(find.byKey(const ValueKey('withdrawal-amount-card'))),
-      const Size(760, 128),
+      const Size(760, 96),
     );
     final addressCardFinder = find.descendant(
       of: find.byKey(const ValueKey('withdrawal-address-card')),
@@ -65,15 +65,15 @@ void main() {
     );
     final addressCard = tester.widget<Container>(addressCardFinder.first);
     final amountCard = tester.widget<Container>(amountCardFinder.first);
-    expect(addressCard.padding, const EdgeInsets.all(16));
-    expect(amountCard.padding, const EdgeInsets.all(16));
+    expect(addressCard.padding, const EdgeInsets.all(12));
+    expect(amountCard.padding, const EdgeInsets.all(12));
     expect(
       (addressCard.decoration! as BoxDecoration).borderRadius,
-      BorderRadius.circular(8),
+      BorderRadius.circular(12),
     );
     expect(
       (amountCard.decoration! as BoxDecoration).borderRadius,
-      BorderRadius.circular(8),
+      BorderRadius.circular(12),
     );
 
     final addressField = tester.widget<TextField>(
@@ -83,42 +83,16 @@ void main() {
       const ValueKey('withdrawal-amount-field'),
     );
     final amountField = tester.widget<TextField>(amountFieldFinder);
-    expect(
-      addressField.decoration!.contentPadding,
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-    );
-    expect(
-      (addressField.decoration!.border! as OutlineInputBorder).borderRadius,
-      BorderRadius.circular(6),
-    );
-    expect(
-      (addressField.decoration!.enabledBorder! as OutlineInputBorder)
-          .borderRadius,
-      BorderRadius.circular(6),
-    );
-    expect(
-      (addressField.decoration!.focusedBorder! as OutlineInputBorder)
-          .borderRadius,
-      BorderRadius.circular(6),
-    );
-    expect(
-      amountField.decoration!.contentPadding,
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-    );
-    expect(
-      (amountField.decoration!.border! as OutlineInputBorder).borderRadius,
-      BorderRadius.circular(6),
-    );
-    expect(
-      (amountField.decoration!.enabledBorder! as OutlineInputBorder)
-          .borderRadius,
-      BorderRadius.circular(6),
-    );
-    expect(
-      (amountField.decoration!.focusedBorder! as OutlineInputBorder)
-          .borderRadius,
-      BorderRadius.circular(6),
-    );
+    expect(addressField.decoration!.contentPadding, EdgeInsets.zero);
+    expect(addressField.decoration!.border, InputBorder.none);
+    expect(addressField.decoration!.enabledBorder, InputBorder.none);
+    expect(addressField.decoration!.focusedBorder, InputBorder.none);
+    expect(addressField.decoration!.isCollapsed, isTrue);
+    expect(amountField.decoration!.contentPadding, EdgeInsets.zero);
+    expect(amountField.decoration!.border, InputBorder.none);
+    expect(amountField.decoration!.enabledBorder, InputBorder.none);
+    expect(amountField.decoration!.focusedBorder, InputBorder.none);
+    expect(amountField.decoration!.isCollapsed, isTrue);
 
     final addressFieldFinder = find.byKey(
       const ValueKey('withdrawal-address-field'),

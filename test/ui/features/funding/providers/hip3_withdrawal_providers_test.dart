@@ -5,12 +5,32 @@ import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/app/providers/session_scope.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/hip3_withdrawal.dart';
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/domain/models/portfolio.dart';
+import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
+import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 
 void main() {
+  test(
+    'transfer balance uses HIP-3 available USD instead of total USDC',
+    () async {
+      final repository = _AvailableBalancePortfolio();
+      final container = ProviderContainer(
+        overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final balance = await container.read(hip3TransferBalanceProvider.future);
+
+      expect(balance, '1.962684');
+    },
+  );
+
   test('preparation reuses the frozen intent and submits it once', () async {
     final repo = _Repository();
     final container = ProviderContainer(
@@ -158,6 +178,29 @@ void main() {
     await expectLater(commands.submit(intent), throwsStateError);
     expect(repo.submitted, 0);
   });
+}
+
+final class _AvailableBalancePortfolio implements PortfolioRepository {
+  @override
+  Future<List<TradingAccount>> listAccounts() async => [
+    TradingAccount(
+      kind: TradingAccountKind.hip3,
+      availableUsd: DecimalValue('1.962684', asset: 'USD', unit: 'fiat'),
+      balances: [
+        TokenBalance(
+          symbol: 'USDC',
+          balance: DecimalValue('4.943396', asset: 'USDC', unit: 'token'),
+        ),
+      ],
+    ),
+  ];
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
 }
 
 class _Repository implements Hip3WithdrawalRepository {

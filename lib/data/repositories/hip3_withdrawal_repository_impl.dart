@@ -64,23 +64,27 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
         prepared.destinationAddress.toLowerCase()) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
     }
-    final raw = prepared.typedDataJson;
-    final hash = prepared.payloadHash;
-    if (raw == null || hash == null || hash.isEmpty) {
-      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
-    }
-    Object? decoded;
-    try {
-      decoded = jsonDecode(raw);
-    } on FormatException {
-      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
-    }
-    if (decoded is! Map<String, dynamic>) {
-      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    final decoded = _decodeTypedData(
+      prepared.typedDataJson,
+      prepared.payloadHash,
+    );
+    String? nonceMappingSignature;
+    if (prepared.rail == 'relay') {
+      final nonceMapping = _decodeTypedData(
+        prepared.nonceMappingTypedDataJson,
+        prepared.nonceMappingPayloadHash,
+      );
+      nonceMappingSignature = await _signer.signTypedDataV4(
+        expectedSigner: prepared.ownerAddress,
+        typedData: nonceMapping,
+      );
+      if (!_isActive()) {
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+      }
     }
     final signature = await _signer.signTypedDataV4(
       expectedSigner: prepared.ownerAddress,
-      typedData: decoded.cast<String, Object?>(),
+      typedData: decoded,
     );
     if (!_isActive()) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
@@ -91,7 +95,8 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
         api.Hip3WithdrawalSubmissionRequest(
           (b) => b
             ..signature = signature
-            ..payloadHash = hash,
+            ..payloadHash = prepared.payloadHash!
+            ..nonceMappingSignature = nonceMappingSignature,
         ),
         idempotencyKey: idempotencyKey,
       ),
@@ -107,8 +112,25 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
         'auto' => api.Hip3WithdrawalCreateRequestRailEnum.auto,
         'bridge2' => api.Hip3WithdrawalCreateRequestRailEnum.bridge2,
         'float' => api.Hip3WithdrawalCreateRequestRailEnum.float,
+        'relay' => api.Hip3WithdrawalCreateRequestRailEnum.relay,
         _ => throw FormatException('Unsupported HIP-3 withdrawal rail: $value'),
       };
+
+  Map<String, Object?> _decodeTypedData(String? raw, String? hash) {
+    if (raw == null || hash == null || hash.isEmpty) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
+    Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
+    if (decoded is! Map<String, dynamic>) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
+    return decoded.cast<String, Object?>();
+  }
 
   domain_preview.Hip3WithdrawalPreview _mapPreview(
     api.Hip3WithdrawalPreview value,
@@ -189,5 +211,7 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
     failureReason: value.failureReason,
     typedDataJson: value.typedDataJson,
     payloadHash: value.payloadHash,
+    nonceMappingTypedDataJson: value.nonceMapping?.typedData,
+    nonceMappingPayloadHash: value.nonceMapping?.payloadHash,
   );
 }

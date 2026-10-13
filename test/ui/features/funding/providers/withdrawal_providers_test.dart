@@ -4,12 +4,34 @@ import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/session_scope.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/portfolio.dart';
+import 'package:nobell/domain/models/portfolio_asset.dart';
+import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 
 void main() {
+  test(
+    'withdrawal assets merge Spot display data with withdrawal eligibility',
+    () async {
+      final portfolio = _PortfolioAssetsRepository();
+      final container = ProviderContainer(
+        overrides: [portfolioRepositoryProvider.overrideWithValue(portfolio)],
+      );
+      addTearDown(container.dispose);
+
+      final assets = await container.read(withdrawalAssetsProvider.future);
+
+      expect(portfolio.accounts, containsAll(<String?>['spot', null]));
+      expect(assets.single.holdingReturnAmountUsd?.value, '16');
+      expect(assets.single.holdingReturnPercent?.value, '3');
+      expect(assets.single.withdrawable, isTrue);
+    },
+  );
+
   test(
     'withdrawal command lifecycle uses stable keys and validates authorization',
     () async {
@@ -184,4 +206,48 @@ final class _WalletsRepository implements WalletsRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _PortfolioAssetsRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  final accounts = <String?>[];
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+    String? account,
+  }) async {
+    accounts.add(account);
+    return [
+      PortfolioAsset(
+        assetId: 'asset-1',
+        network: 'BSC',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
+        valueUsd: account == 'spot'
+            ? DecimalValue('550', asset: 'USD', unit: 'fiat')
+            : null,
+        withdrawable: account == null,
+        productId: account == 'spot' ? 'bstocks:nvdab' : null,
+        holdingReturnAmountUsd: account == 'spot'
+            ? DecimalValue('16', asset: 'USD', unit: 'fiat')
+            : null,
+        holdingReturnPercent: account == 'spot'
+            ? DecimalValue('3', unit: 'percent')
+            : null,
+      ),
+    ];
+  }
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<List<TradingAccount>> listAccounts() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
 }

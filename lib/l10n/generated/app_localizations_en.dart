@@ -261,6 +261,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withdraw => 'Withdraw';
 
   @override
+  String get withdrawFromQuestion => 'Where do you want to withdraw from?';
+
+  @override
+  String get spotAccount => 'Spot account';
+
+  @override
+  String get spotAccountDescription => 'bStocks & spot assets';
+
+  @override
+  String get perpsAccount => 'Perps account';
+
+  @override
+  String get fromSpotAccount => 'From spot account';
+
+  @override
+  String get fromPerpsAccount => 'From perps account';
+
+  @override
+  String get perpsWithdrawalDestinationNotice =>
+      'Perps withdrawals are sent to your linked wallet.';
+
+  @override
   String get selectAsset => 'Select asset';
 
   @override
@@ -797,7 +819,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tradeAssetRightsDescription =>
-      'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BSC wallet, not direct ownership of NVIDIA shares.';
+      'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BNB Smart Chain wallet, not direct ownership of NVIDIA shares.';
 
   @override
   String get tradeIssuer => 'Issuer';
@@ -835,7 +857,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeAssetLocation => 'Asset Location';
 
   @override
-  String get tradeAssetLocationValue => 'Held in BSC Wallet';
+  String get tradeAssetLocationValue => 'Held in BNB Smart Chain Wallet';
 
   @override
   String get tradeMarketHoursTitle => 'US Market Trading Hours';
@@ -1424,16 +1446,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Withdrawal submitted. Balance is still updating.';
 
   @override
-  String get walletUpgradeTitle => 'Upgrade this wallet?';
-
-  @override
-  String get walletUpgradeNotice =>
-      'To cover the network fee for you, this wallet is upgraded to a smart contract account (EIP-7702). The upgrade happens once, your wallet address does not change, and you keep full control of the wallet.';
-
-  @override
-  String get walletUpgradeConfirm => 'Upgrade and continue';
-
-  @override
   String get sponsoredGasUnavailableTitle => 'Network fee not covered';
 
   @override
@@ -1462,6 +1474,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get finalNetworkFeeMayVary =>
       'The final network fee may vary slightly.';
+
+  @override
+  String get networkFeeCoveredByPlatform =>
+      'Network fee is covered by the platform.';
 
   @override
   String get unableToLoadAssets => 'Unable to load assets';
@@ -1542,6 +1558,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openOrderMargin => 'Open Order Margin';
+
+  @override
+  String get sharedMarginForCross => 'Shared Margin for Cross';
 
   @override
   String get maxWithdraw => 'Max Withdraw';
@@ -2072,7 +2091,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get externalDepositDetail =>
-      'Deposit USDT on BSC from another platform or wallet';
+      'Deposit USDT on BNB Smart Chain from another platform or wallet';
 
   @override
   String get prepareFunds => 'Prepare Funds';

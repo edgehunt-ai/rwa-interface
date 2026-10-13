@@ -130,6 +130,8 @@ void main() {
     expect(service.account, 'spot');
     expect(assets.single.productId, 'bstocks:nvdab');
     expect(assets.single.walletId, 'wallet-1');
+    expect(assets.single.holdingReturnAmountUsd?.value, '16');
+    expect(assets.single.holdingReturnPercent?.value, '3');
     expect(assets.single.bstocksAvailableQuantity?.value, '1.25');
     expect(assets.single.bstocksAvailabilityStatus, 'complete');
     expect(assets.single.freshness, 'live');
@@ -384,6 +386,13 @@ final class _ProductPortfolio implements PortfolioService {
                     ..availabilityStatus = api
                         .BstocksPortfolioAvailabilityAvailabilityStatusEnum
                         .complete,
+                ),
+              )
+              ..holdingReturn.replace(
+                api.PortfolioHoldingReturn(
+                  (value) => value
+                    ..amountUsd = '16'
+                    ..percent = '3',
                 ),
               )
               ..assetId = 'asset-1'

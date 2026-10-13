@@ -1022,7 +1022,7 @@ class _NetworkLabel extends StatelessWidget {
           ),
         const SizedBox(width: 4),
         Text(
-          network,
+          networkDisplayName(network),
           style: TextStyle(
             fontSize: 12,
             height: 16 / 12,

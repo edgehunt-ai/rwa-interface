@@ -584,6 +584,48 @@ abstract class AppLocalizations {
   /// **'Withdraw'**
   String get withdraw;
 
+  /// No description provided for @withdrawFromQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you want to withdraw from?'**
+  String get withdrawFromQuestion;
+
+  /// No description provided for @spotAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot account'**
+  String get spotAccount;
+
+  /// No description provided for @spotAccountDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'bStocks & spot assets'**
+  String get spotAccountDescription;
+
+  /// No description provided for @perpsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Perps account'**
+  String get perpsAccount;
+
+  /// No description provided for @fromSpotAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'From spot account'**
+  String get fromSpotAccount;
+
+  /// No description provided for @fromPerpsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'From perps account'**
+  String get fromPerpsAccount;
+
+  /// No description provided for @perpsWithdrawalDestinationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Perps withdrawals are sent to your linked wallet.'**
+  String get perpsWithdrawalDestinationNotice;
+
   /// No description provided for @selectAsset.
   ///
   /// In en, this message translates to:
@@ -1583,7 +1625,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeAssetRightsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BSC wallet, not direct ownership of NVIDIA shares.'**
+  /// **'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BNB Smart Chain wallet, not direct ownership of NVIDIA shares.'**
   String get tradeAssetRightsDescription;
 
   /// No description provided for @tradeIssuer.
@@ -1655,7 +1697,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeAssetLocationValue.
   ///
   /// In en, this message translates to:
-  /// **'Held in BSC Wallet'**
+  /// **'Held in BNB Smart Chain Wallet'**
   String get tradeAssetLocationValue;
 
   /// No description provided for @tradeMarketHoursTitle.
@@ -2714,24 +2756,6 @@ abstract class AppLocalizations {
   /// **'Withdrawal submitted. Balance is still updating.'**
   String get balanceRefreshFailed;
 
-  /// No description provided for @walletUpgradeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Upgrade this wallet?'**
-  String get walletUpgradeTitle;
-
-  /// No description provided for @walletUpgradeNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'To cover the network fee for you, this wallet is upgraded to a smart contract account (EIP-7702). The upgrade happens once, your wallet address does not change, and you keep full control of the wallet.'**
-  String get walletUpgradeNotice;
-
-  /// No description provided for @walletUpgradeConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Upgrade and continue'**
-  String get walletUpgradeConfirm;
-
   /// No description provided for @sponsoredGasUnavailableTitle.
   ///
   /// In en, this message translates to:
@@ -2779,6 +2803,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The final network fee may vary slightly.'**
   String get finalNetworkFeeMayVary;
+
+  /// No description provided for @networkFeeCoveredByPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Network fee is covered by the platform.'**
+  String get networkFeeCoveredByPlatform;
 
   /// No description provided for @unableToLoadAssets.
   ///
@@ -2929,6 +2959,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Order Margin'**
   String get openOrderMargin;
+
+  /// No description provided for @sharedMarginForCross.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared Margin for Cross'**
+  String get sharedMarginForCross;
 
   /// No description provided for @maxWithdraw.
   ///
@@ -3803,7 +3839,7 @@ abstract class AppLocalizations {
   /// No description provided for @externalDepositDetail.
   ///
   /// In en, this message translates to:
-  /// **'Deposit USDT on BSC from another platform or wallet'**
+  /// **'Deposit USDT on BNB Smart Chain from another platform or wallet'**
   String get externalDepositDetail;
 
   /// No description provided for @prepareFunds.

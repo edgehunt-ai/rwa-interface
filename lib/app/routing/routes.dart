@@ -19,6 +19,8 @@ abstract final class AppRoutes {
   static const withdrawalPath = '/funding/withdraw';
   static const withdrawalSelectName = 'withdrawalSelect';
   static const withdrawalSelectPath = '/funding/withdraw/select';
+  static const withdrawalAssetSelectName = 'withdrawalAssetSelect';
+  static const withdrawalAssetSelectPath = '/funding/withdraw/spot/select';
   static const transferName = 'transfer';
   static const transferPath = '/funding/transfer';
 
@@ -29,6 +31,11 @@ abstract final class AppRoutes {
   }) => Uri(
     path: withdrawalPath,
     queryParameters: {'token': token, 'chain': chain, 'source': source},
+  ).toString();
+
+  static String get perpsWithdrawalLocation => Uri(
+    path: withdrawalPath,
+    queryParameters: const {'source': 'perps'},
   ).toString();
   static const tradeName = 'trade';
   static const tradePath = '/trade';

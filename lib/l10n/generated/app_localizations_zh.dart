@@ -255,6 +255,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withdraw => '提现';
 
   @override
+  String get withdrawFromQuestion => '你希望从哪里提现？';
+
+  @override
+  String get spotAccount => '现货账户';
+
+  @override
+  String get spotAccountDescription => 'bStocks 与现货资产';
+
+  @override
+  String get perpsAccount => '永续合约账户';
+
+  @override
+  String get fromSpotAccount => '来自现货账户';
+
+  @override
+  String get fromPerpsAccount => '来自永续合约账户';
+
+  @override
+  String get perpsWithdrawalDestinationNotice => '永续合约提现将发送至你的关联钱包。';
+
+  @override
   String get selectAsset => '选择资产';
 
   @override
@@ -773,7 +794,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tradeAssetRightsDescription =>
-      '提供对标的 NVIDIA 证券的经济敞口。你在 BSC 钱包中持有链上证券代币，并不直接拥有 NVIDIA 股票。';
+      '提供对标的 NVIDIA 证券的经济敞口。你在 BNB Smart Chain 钱包中持有链上证券代币，并不直接拥有 NVIDIA 股票。';
 
   @override
   String get tradeIssuer => '发行方';
@@ -809,7 +830,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tradeAssetLocation => '资产位置';
 
   @override
-  String get tradeAssetLocationValue => '存放于 BSC 钱包';
+  String get tradeAssetLocationValue => '存放于 BNB Smart Chain 钱包';
 
   @override
   String get tradeMarketHoursTitle => '美股交易时段';
@@ -1367,16 +1388,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceRefreshFailed => '提现已提交，余额仍在更新中。';
 
   @override
-  String get walletUpgradeTitle => '升级这个钱包？';
-
-  @override
-  String get walletUpgradeNotice =>
-      '为了替你支付网络手续费，这个钱包会升级为智能合约账户（EIP-7702）。升级只需一次，钱包地址不变，你仍然完全掌控这个钱包。';
-
-  @override
-  String get walletUpgradeConfirm => '升级并继续';
-
-  @override
   String get sponsoredGasUnavailableTitle => '手续费无法代付';
 
   @override
@@ -1403,6 +1414,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get finalNetworkFeeMayVary => '最终网络费用可能略有不同。';
+
+  @override
+  String get networkFeeCoveredByPlatform => '网络费用由平台代付。';
 
   @override
   String get unableToLoadAssets => '无法加载资产';
@@ -1478,6 +1492,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openOrderMargin => '挂单保证金';
+
+  @override
+  String get sharedMarginForCross => '全仓共享保证金';
 
   @override
   String get maxWithdraw => '最大可转出';
@@ -1966,7 +1983,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serverSelectedFundingRoute => '使用服务端选择的资金路线';
 
   @override
-  String get externalDepositDetail => '从其他平台或钱包向 BSC 充值 USDT';
+  String get externalDepositDetail => '从其他平台或钱包向 BNB Smart Chain 充值 USDT';
 
   @override
   String get prepareFunds => '准备资金';

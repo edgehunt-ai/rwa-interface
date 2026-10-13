@@ -7,11 +7,14 @@ final class PortfolioAsset {
     required this.symbol,
     required this.decimals,
     required this.balance,
+    this.valueUsd,
     this.withdrawable = false,
     this.walletId,
     this.contractAddress,
     this.native = false,
     this.productId,
+    this.holdingReturnAmountUsd,
+    this.holdingReturnPercent,
     this.bstocksAvailableQuantity,
     this.bstocksUnavailableQuantity,
     this.bstocksAvailabilityStatus,
@@ -27,11 +30,14 @@ final class PortfolioAsset {
   final String symbol;
   final int decimals;
   final DecimalValue balance;
+  final DecimalValue? valueUsd;
   final bool withdrawable;
   final String? walletId;
   final String? contractAddress;
   final bool native;
   final String? productId;
+  final DecimalValue? holdingReturnAmountUsd;
+  final DecimalValue? holdingReturnPercent;
   final DecimalValue? bstocksAvailableQuantity;
   final DecimalValue? bstocksUnavailableQuantity;
   final String? bstocksAvailabilityStatus;

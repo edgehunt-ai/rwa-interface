@@ -11,13 +11,18 @@ import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/deposit.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/funding_catalog.dart';
+import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/self_custodial_withdrawal.dart';
 import 'package:nobell/domain/models/wallet.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/models/trading_account.dart';
+import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/domain/repositories/portfolio_repository.dart';
+import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
+import 'package:nobell/domain/services/wallet_authorization_signer.dart';
+import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
@@ -26,6 +31,7 @@ import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
@@ -33,6 +39,8 @@ import '../../../helpers/test_app.dart';
 import '../../../helpers/display_config.dart';
 
 void main() {
+  tearDown(AppToast.dismiss);
+
   testWidgets('deposit routes loading state fits a short viewport', (
     tester,
   ) async {
@@ -83,9 +91,9 @@ void main() {
     );
     await tester.tap(find.text('Choose Network'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('BSC'));
+    await tester.tap(find.text('BNB Smart Chain'));
     await tester.pumpAndSettle();
-    expect(find.text('BSC'), findsOneWidget);
+    expect(find.text('BNB Smart Chain'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('deposit-network-selector-arrow')),
       findsNothing,
@@ -174,11 +182,11 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('deposit-network-selector')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('BSC'));
+    await tester.tap(find.text('BNB Smart Chain'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('deposit-qr')), findsNothing);
-    expect(find.text('BSC'), findsOneWidget);
+    expect(find.text('BNB Smart Chain'), findsOneWidget);
     expect(find.text('Choose network first'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('deposit-network-selector-arrow')),
@@ -500,7 +508,7 @@ void main() {
 
   testWidgets('withdrawal picker shows available assets', (tester) async {
     final router = AppRouter.create(
-      initialLocation: '/funding/withdraw/select',
+      initialLocation: AppRoutes.withdrawalAssetSelectPath,
     );
     addTearDown(router.dispose);
 
@@ -508,8 +516,14 @@ void main() {
       ProviderScope(
         overrides: [
           withdrawalAssetsProvider.overrideWith(
-            (ref) async => [_withdrawableAsset],
+            (ref) async => [_withdrawableBstock, _withdrawableAsset],
           ),
+          marketProductProvider(
+            const MarketProductRef(
+              symbol: 'NVDAB',
+              kind: MarketProductKind.bstock,
+            ),
+          ).overrideWith((ref) async => _nvdabProduct),
           portfolioRepositoryProvider.overrideWithValue(
             _WithdrawablePortfolio(),
           ),
@@ -520,14 +534,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WithdrawalScreen), findsOneWidget);
-    expect(find.text('Select asset'), findsOneWidget);
-    expect(find.text('USD Coin · Arbitrum'), findsOneWidget);
+    expect(find.text('Withdraw'), findsOneWidget);
+    expect(find.text('Cash'), findsOneWidget);
+    expect(find.text('Cash · Arbitrum'), findsNothing);
+    expect(find.text('bStocks'), findsOneWidget);
+    expect(find.text('Holding return'), findsOneWidget);
+    expect(find.text(r'+$16.00 (+3.00%)'), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('withdrawal-network-filter'))),
+      const Size(135, 36),
+    );
+    final bstockRow = tester.getRect(
+      find.byKey(const ValueKey('withdrawal-asset-row-NVDAB|BSC')),
+    );
+    final cashRow = tester.getRect(
+      find.byKey(const ValueKey('withdrawal-asset-row-USDC|Arbitrum')),
+    );
+    expect(bstockRow.height, 76);
+    expect(cashRow.height, 64);
+    expect(cashRow.top - bstockRow.bottom, 8);
+    expect(
+      find.byKey(const ValueKey('withdrawal-network-mark-BSC')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('withdrawal-network-mark-Arbitrum')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(
+        find.byKey(const ValueKey('withdrawal-network-mark-Arbitrum')),
+      ),
+      const Size.square(16),
+    );
     expect(find.text('Native'), findsNothing);
     expect(find.text('USDT'), findsNothing);
 
     await tester.tap(find.text('USDC'));
     await tester.pumpAndSettle();
-    expect(find.text('Withdraw USDC'), findsOneWidget);
+    expect(find.text('Network'), findsOneWidget);
+    expect(find.text('Spot account'), findsOneWidget);
   });
 
   testWidgets('withdrawal picker retry refreshes portfolio assets', (
@@ -558,7 +604,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(requests, 2);
-    expect(find.text('USD Coin · Arbitrum'), findsOneWidget);
+    expect(find.text('Cash'), findsOneWidget);
   });
 
   testWidgets('deposit instruction retry refreshes its directory', (
@@ -634,6 +680,9 @@ void main() {
     await tester.enterText(find.byType(TextField).at(1), '5');
     await tester.pump();
     expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
+    expect(find.text('Network fee'), findsNothing);
+    expect(find.text('Recipient receives'), findsOneWidget);
+    expect(find.text('5 USDC'), findsWidgets);
     await tester.scrollUntilVisible(
       reviewButton,
       160,
@@ -644,22 +693,27 @@ void main() {
 
     expect(find.text('Review withdrawal'), findsOneWidget);
     expect(find.text('5 USDC'), findsWidgets);
-    // Entering the review step is what creates the intent, and it is the
-    // server's gas observation that reaches the fee row — never a placeholder.
+    // Entering the review step creates the self-custodial intent, while gas is
+    // sponsored and therefore not presented as a user-paid withdrawal fee.
     expect(
       funding.selfCustodialCreateRequests,
       1,
       reason: 'the review step takes exactly one gas observation',
     );
-    expect(find.text('Network fee'), findsOneWidget);
-    expect(find.text('≈ 0.000065 BNB'), findsOneWidget);
+    expect(find.text('Network fee'), findsNothing);
+    expect(find.text('≈ 0.000065 BNB'), findsNothing);
+    expect(
+      find.text('Network fee is covered by the platform.'),
+      findsOneWidget,
+    );
+    expect(find.text('0x22222222...2222'), findsOneWidget);
     expect(find.text('Recipient receives'), findsOneWidget);
-    expect(find.text('—'), findsNothing);
     expect(funding.quoteRequests, 0);
     expect(
       find.byKey(const ValueKey('withdrawal-signature-details')),
-      findsOneWidget,
+      findsNothing,
     );
+    expect(find.text('Signature Details'), findsNothing);
     expect(find.text('Signing wallet'), findsNothing);
     expect(
       find.widgetWithText(FilledButton, 'Sign & Withdraw USDC'),
@@ -667,7 +721,96 @@ void main() {
     );
   });
 
-  testWidgets('withdrawal form shows no fee before the intent exists', (
+  testWidgets('Spot withdrawal succeeds in place and resets the form', (
+    tester,
+  ) async {
+    await _pumpAndSubmitSpotWithdrawal(tester, accounts: const []);
+
+    expect(find.text('Withdrawal successful'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('withdrawal-address-field')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('withdrawal-address-field')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('withdrawal-amount-field')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(find.text('Review withdrawal'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Spot withdrawal shows progress inside the submit button', (
+    tester,
+  ) async {
+    final signature = Completer<String>();
+    await _pumpAndSubmitSpotWithdrawal(
+      tester,
+      accounts: const [],
+      signer: _DelayedWithdrawalSigner(signature.future),
+    );
+
+    final progress = find.byKey(const ValueKey('withdrawal-submit-progress'));
+    expect(progress, findsOneWidget);
+    expect(
+      find.ancestor(of: progress, matching: find.byType(FilledButton)),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.ancestor(of: progress, matching: find.byType(FilledButton)),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(find.text('Preparing withdrawal…'), findsNothing);
+    expect(find.text('Confirming withdrawal…'), findsNothing);
+
+    signature.complete('0xauthorization');
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'Spot withdrawal timeout shows only the pending balance message',
+    (tester) async {
+      await _pumpAndSubmitSpotWithdrawal(tester, accounts: _accounts);
+
+      for (var attempt = 0; attempt < 15; attempt++) {
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump();
+      }
+
+      expect(
+        find.text('Withdrawal submitted. Balance is still updating.'),
+        findsOneWidget,
+      );
+      expect(find.text('Withdrawal successful'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('withdrawal-address-field')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('withdrawal form shows unavailable estimates before intent', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -681,12 +824,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Gas is only observed when the intent is created, so the form cannot know
-    // a fee yet and must not imply one.
     expect(find.text('Network fee'), findsNothing);
-    expect(find.text('Recipient receives'), findsNothing);
-    expect(find.text('—'), findsNothing);
-    expect(find.text('— USDC'), findsNothing);
+    expect(find.text('Recipient receives'), findsOneWidget);
+    expect(find.text('— USDC'), findsOneWidget);
   });
 
   testWidgets('withdrawal rejects an invalid recipient before quoting', (
@@ -723,6 +863,67 @@ void main() {
     await tester.pump();
     expect(find.text('Enter a valid wallet address.'), findsNothing);
   });
+}
+
+Future<void> _pumpAndSubmitSpotWithdrawal(
+  WidgetTester tester, {
+  required List<TradingAccount> accounts,
+  WalletAuthorizationSigner? signer,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        withdrawalAssetsProvider.overrideWith(
+          (ref) async => [_withdrawableAsset],
+        ),
+        fundingRepositoryProvider.overrideWithValue(_CountingFunding()),
+        tradingAccountsProvider.overrideWith((_) async => accounts),
+        portfolioRepositoryProvider.overrideWithValue(_WithdrawablePortfolio()),
+        walletsProvider(null).overrideWith((_) async => _withdrawalWallets),
+        walletActionExecutionRepositoryProvider.overrideWithValue(
+          _SuccessfulWithdrawalExecutions(),
+        ),
+        walletAuthorizationSignerProvider.overrideWithValue(
+          signer ?? _SuccessfulWithdrawalSigner(),
+        ),
+      ],
+      child: _fundingApp(const WithdrawalScreen()),
+    ),
+  );
+  await tester.pumpAndSettle();
+
+  await tester.enterText(
+    find.byKey(const ValueKey('withdrawal-address-field')),
+    '0x1111111111111111111111111111111111111111',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('withdrawal-amount-field')),
+    '5',
+  );
+  await tester.pump();
+  final reviewButton = find.widgetWithText(FilledButton, 'Review withdrawal');
+  expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
+  await tester.scrollUntilVisible(
+    reviewButton,
+    160,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(reviewButton);
+  await tester.pumpAndSettle();
+
+  expect(find.text('You are sending'), findsOneWidget);
+  final submitButton = find.widgetWithText(
+    FilledButton,
+    'Sign & Withdraw USDC',
+  );
+  await tester.scrollUntilVisible(
+    submitButton,
+    160,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(submitButton);
+  await tester.pump();
+  await tester.pump();
 }
 
 final _accounts = [
@@ -867,6 +1068,98 @@ final class _CountingFunding extends _Funding {
       ),
     );
   }
+
+  @override
+  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
+    String id,
+  ) async => SelfCustodialWithdrawalSummary(
+    withdrawalId: id,
+    assetSymbol: 'USDC',
+    amount: DecimalValue('5', asset: 'USDC', unit: 'token'),
+    destinationAddress: '0x1111111111111111111111111111111111111111',
+    status: SelfCustodialWithdrawalState.submitted,
+  );
+}
+
+final class _SuccessfulWithdrawalExecutions
+    implements WalletActionExecutionRepository {
+  late final WalletActionExecution execution = WalletActionExecution(
+    executionId: 'execution-1',
+    resourceId: 'withdrawal-1',
+    chainId: 42161,
+    walletAddress: _walletAddress,
+    mode: GasPaymentMode.appSponsored,
+    status: WalletActionExecutionState.awaitingUserAuthorization,
+    gasPayment: GasPaymentQuote(
+      mode: GasPaymentMode.appSponsored,
+      decision: GasSponsorshipDecision.eligible,
+      platformPays: true,
+      nativeAsset: 'ETH',
+      estimatedNativeFee: DecimalValue('0.000065', asset: 'ETH', unit: 'token'),
+      estimatedFeeUsd: DecimalValue('0.20', asset: 'USD', unit: 'fiat'),
+      fallbackAllowed: true,
+      eip7702Required: false,
+    ),
+    transaction: const FrozenTransaction(
+      to: _usdcContract,
+      data: '0xa9059cbb',
+      value: '0x0',
+    ),
+    authorization: const WalletAuthorizationRequest(
+      version: 1,
+      method: 'POST',
+      url: 'https://example.test/wallet',
+      headers: {},
+      body: {},
+      referenceId: 'execution-1',
+      sponsor: true,
+      caip2: 'eip155:42161',
+      transaction: AuthorizedTransaction(
+        from: _walletAddress,
+        to: _usdcContract,
+        data: '0xa9059cbb',
+        value: '0x0',
+      ),
+    ),
+    authorizationExpiresAt: DateTime.now().add(const Duration(minutes: 1)),
+  );
+
+  @override
+  Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
+    required String withdrawalId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  }) async => execution;
+
+  @override
+  Future<WalletActionExecution> submitAuthorization({
+    required String executionId,
+    required String signature,
+    required String idempotencyKey,
+  }) async => execution;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _SuccessfulWithdrawalSigner implements WalletAuthorizationSigner {
+  @override
+  Future<String> signWalletAuthorization({
+    required String expectedSigner,
+    required WalletAuthorizationRequest request,
+  }) async => '0xauthorization';
+}
+
+final class _DelayedWithdrawalSigner implements WalletAuthorizationSigner {
+  const _DelayedWithdrawalSigner(this.result);
+
+  final Future<String> result;
+
+  @override
+  Future<String> signWalletAuthorization({
+    required String expectedSigner,
+    required WalletAuthorizationRequest request,
+  }) => result;
 }
 
 const _usdcContract = '0xaf88d065e77c8cc2239327c5edb3a432268e5831';
@@ -919,4 +1212,30 @@ final _withdrawableAsset = WithdrawableAsset(
   walletId: 'wallet-1',
   contractAddress: _usdcContract,
   withdrawable: true,
+);
+
+final _withdrawableBstock = WithdrawableAsset(
+  symbol: 'NVDAB',
+  chain: 'BSC',
+  balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
+  valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+  productId: 'bstocks:nvdab',
+  holdingReturnAmountUsd: DecimalValue('16', asset: 'USD', unit: 'fiat'),
+  holdingReturnPercent: DecimalValue('3', unit: 'percent'),
+  decimals: 18,
+  assetId: 'portfolio-bstock-1',
+  walletId: 'wallet-1',
+  withdrawable: true,
+);
+
+final _nvdabProduct = MarketProduct(
+  symbol: 'NVDAB',
+  name: 'NVIDIA',
+  kind: MarketProductKind.bstock,
+  price: DecimalValue('182.396', asset: 'USD', unit: 'fiat'),
+  settlementAsset: 'USDC',
+  network: 'BSC',
+  tradable: true,
+  productId: 'bstocks:nvdab',
+  logoText: 'NV',
 );

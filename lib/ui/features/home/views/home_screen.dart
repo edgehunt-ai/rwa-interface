@@ -23,6 +23,7 @@ import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
+import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -349,8 +350,7 @@ class _QuickActions extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () =>
-                  context.pushNamed(AppRoutes.withdrawalSelectName),
+              onPressed: () => showWithdrawalSourceSheet(context),
               icon: SvgPicture.asset(
                 'assets/figma/home_markets/withdraw.svg',
                 width: 20,

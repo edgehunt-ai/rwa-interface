@@ -32,11 +32,7 @@ void main() {
       await expectLater(
         container
             .read(selfCustodialWithdrawalCommandsProvider)
-            .execute(
-              quote: _quote,
-              prepared: _prepared(canPayGas: false),
-              confirmWalletUpgrade: (_) async => true,
-            ),
+            .execute(quote: _quote, prepared: _prepared(canPayGas: false)),
         throwsA(isA<InsufficientWithdrawalGas>()),
       );
       expect(sender.calls, 0);
@@ -60,11 +56,7 @@ void main() {
     await expectLater(
       container
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(
-            quote: _quote,
-            prepared: _prepared(canPayGas: true),
-            confirmWalletUpgrade: (_) async => true,
-          ),
+          .execute(quote: _quote, prepared: _prepared(canPayGas: true)),
       throwsA(anything),
     );
     expect(sender.calls, 1);
@@ -85,11 +77,7 @@ void main() {
     await expectLater(
       container
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(
-            quote: _quote,
-            prepared: _prepared(),
-            confirmWalletUpgrade: (_) async => true,
-          ),
+          .execute(quote: _quote, prepared: _prepared()),
       throwsA(anything),
     );
     expect(sender.calls, 1);

@@ -39,7 +39,7 @@ void main() {
     return result;
   }
 
-  test('platform-sponsored withdrawal signs the server request only', () async {
+  test('platform-sponsored withdrawal signs without an upgrade prompt', () async {
     final signer = _Signer();
     final executions = _Executions(create: _sponsored());
     final sender = _Sender();
@@ -52,7 +52,6 @@ void main() {
     final summary = await commands.execute(
       quote: _quote,
       prepared: _prepared(canPayGas: false),
-      confirmWalletUpgrade: (_) async => true,
     );
 
     expect(summary.withdrawalId, 'withdrawal-1');
@@ -64,29 +63,6 @@ void main() {
     // reason to refuse, and the wallet never signs a transaction.
     expect(sender.calls, 0);
     expect(executions.submittedHashes, isEmpty);
-  });
-
-  test('a declined wallet upgrade signs nothing', () async {
-    final signer = _Signer();
-    final executions = _Executions(create: _sponsored());
-    final sender = _Sender();
-    final commands = container(
-      executions: executions,
-      sender: sender,
-      signer: signer,
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    await expectLater(
-      commands.execute(
-        quote: _quote,
-        prepared: _prepared(canPayGas: true),
-        confirmWalletUpgrade: (_) async => false,
-      ),
-      throwsA(isA<WalletUpgradeDeclined>()),
-    );
-    expect(signer.requests, isEmpty);
-    expect(executions.submittedSignatures, isEmpty);
-    expect(sender.calls, 0);
   });
 
   test(
@@ -108,11 +84,7 @@ void main() {
       ).read(selfCustodialWithdrawalCommandsProvider);
 
       await expectLater(
-        commands.execute(
-          quote: _quote,
-          prepared: _prepared(canPayGas: true),
-          confirmWalletUpgrade: (_) async => true,
-        ),
+        commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
         throwsA(isA<StateError>()),
       );
       expect(signer.requests, isEmpty);
@@ -160,11 +132,7 @@ void main() {
     ).read(selfCustodialWithdrawalCommandsProvider);
 
     await expectLater(
-      commands.execute(
-        quote: _quote,
-        prepared: _prepared(canPayGas: true),
-        confirmWalletUpgrade: (_) async => true,
-      ),
+      commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
       throwsA(isA<StateError>()),
     );
     expect(signer.requests, isEmpty);
@@ -179,11 +147,7 @@ void main() {
     ).read(selfCustodialWithdrawalCommandsProvider);
 
     await expectLater(
-      commands.execute(
-        quote: _quote,
-        prepared: _prepared(canPayGas: true),
-        confirmWalletUpgrade: (_) async => true,
-      ),
+      commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
       throwsA(
         isA<SponsoredGasUnavailable>()
             .having((f) => f.executionId, 'executionId', 'execution-1')
@@ -256,11 +220,7 @@ void main() {
 
       final summary = await result
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(
-            quote: _quote,
-            prepared: _prepared(canPayGas: true),
-            confirmWalletUpgrade: (_) async => true,
-          );
+          .execute(quote: _quote, prepared: _prepared(canPayGas: true));
 
       expect(summary.withdrawalId, 'withdrawal-1');
       expect(sender.calls, 1);
@@ -278,15 +238,10 @@ void main() {
       sender: _Sender(),
     ).read(selfCustodialWithdrawalCommandsProvider);
 
-    await commands.execute(
-      quote: _quote,
-      prepared: _prepared(canPayGas: true),
-      confirmWalletUpgrade: (_) async => true,
-    );
+    await commands.execute(quote: _quote, prepared: _prepared(canPayGas: true));
     await commands.execute(
       quote: _quote,
       prepared: _prepared(canPayGas: true, withdrawalId: 'withdrawal-2'),
-      confirmWalletUpgrade: (_) async => true,
     );
 
     // The server rejects a key reused against a different withdrawal.
@@ -316,11 +271,7 @@ void main() {
     await expectLater(
       result
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(
-            quote: _quote,
-            prepared: _prepared(canPayGas: true),
-            confirmWalletUpgrade: (_) async => true,
-          ),
+          .execute(quote: _quote, prepared: _prepared(canPayGas: true)),
       throwsA(isA<ServerFailure>()),
     );
     // The intent already has an execution bound, so the direct path would be

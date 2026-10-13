@@ -101,7 +101,6 @@ final class SelfCustodialWithdrawalCommands {
   Future<SelfCustodialWithdrawalSummary> execute({
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
-    required Future<bool> Function(GasPaymentQuote gas) confirmWalletUpgrade,
   }) => _runObserved(
     operation: 'execute_self_custodial_withdrawal',
     context: {
@@ -109,17 +108,12 @@ final class SelfCustodialWithdrawalCommands {
       'mode': GasPaymentMode.appSponsored.name,
       'stage': 'execute',
     },
-    command: () => _execute(
-      quote: quote,
-      prepared: prepared,
-      confirmWalletUpgrade: confirmWalletUpgrade,
-    ),
+    command: () => _execute(quote: quote, prepared: prepared),
   );
 
   Future<SelfCustodialWithdrawalSummary> _execute({
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
-    required Future<bool> Function(GasPaymentQuote gas) confirmWalletUpgrade,
   }) => _guard.run(
     operation: 'self-custodial-withdrawal-execute',
     // The key reaches the server as the execution's idempotency key, so it
@@ -167,13 +161,6 @@ final class SelfCustodialWithdrawalCommands {
         authorization: authorization,
         prepared: prepared,
       );
-
-      // The sponsored path delegates the wallet to a smart contract, which the
-      // server marks as a disclosure the user must see before signing.
-      if (execution.gasPayment.eip7702Required &&
-          !await confirmWalletUpgrade(execution.gasPayment)) {
-        throw const WalletUpgradeDeclined();
-      }
 
       final signature = await _ref
           .read(walletAuthorizationSignerProvider)
@@ -401,14 +388,6 @@ final class SelfCustodialWithdrawalCommands {
         operation: operation,
         failure: failure,
         stackTrace: stackTrace,
-        context: context,
-        duration: stopwatch.elapsed,
-      );
-      rethrow;
-    } on WalletUpgradeDeclined {
-      reporter.recordOperation(
-        operation,
-        outcome: 'cancelled',
         context: context,
         duration: stopwatch.elapsed,
       );

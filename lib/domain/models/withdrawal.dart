@@ -7,6 +7,9 @@ final class WithdrawableAsset {
     required this.chain,
     required this.balance,
     this.valueUsd,
+    this.productId,
+    this.holdingReturnAmountUsd,
+    this.holdingReturnPercent,
     this.decimals,
     this.assetId,
     this.walletId,
@@ -19,6 +22,9 @@ final class WithdrawableAsset {
   final String chain;
   final DecimalValue balance;
   final DecimalValue? valueUsd;
+  final String? productId;
+  final DecimalValue? holdingReturnAmountUsd;
+  final DecimalValue? holdingReturnPercent;
   final int? decimals;
   final String? assetId;
   final String? walletId;

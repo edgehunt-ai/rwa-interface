@@ -43,6 +43,38 @@ void main() {
     expect(prepared.status, 'awaiting_signature');
   });
 
+  test('creates and double-signs a relay withdrawal', () async {
+    final service = _Service()
+      ..resourceRail = api.Hip3WithdrawalRail.relay
+      ..includeNonceMapping = true;
+    final signer = _Signer();
+    final repository = Hip3WithdrawalRepositoryImpl(service, signer);
+
+    final prepared = await repository.create(
+      amount: '1',
+      rail: 'relay',
+      idempotencyKey: 'create-key',
+    );
+    await repository.signAndSubmit(prepared, idempotencyKey: 'submit-key');
+
+    expect(service.request!.amount, '1');
+    expect(
+      service.request!.rail,
+      api.Hip3WithdrawalCreateRequestRailEnum.relay,
+    );
+    expect(signer.typedDataRequests, [
+      {
+        'domain': {'name': 'Relay'},
+        'message': {'nonce': '1'},
+      },
+      {
+        'domain': {'name': 'Hyperliquid'},
+        'message': {'amount': '51.4'},
+      },
+    ]);
+    expect(service.signature!.nonceMappingSignature, '0xsigned');
+  });
+
   test(
     'signs the frozen server payload and submits the matching hash',
     () async {
@@ -140,11 +172,14 @@ domain.Hip3Withdrawal _copy(
   expiresAt: expiresAt ?? value.expiresAt,
   typedDataJson: typedData ?? value.typedDataJson,
   payloadHash: value.payloadHash,
+  nonceMappingTypedDataJson: value.nonceMappingTypedDataJson,
+  nonceMappingPayloadHash: value.nonceMappingPayloadHash,
 );
 
 class _Signer implements Hip3TypedDataSigner {
   String? address;
   Map<String, Object?>? typedData;
+  final typedDataRequests = <Map<String, Object?>>[];
   void Function()? onSigned;
 
   @override
@@ -154,6 +189,7 @@ class _Signer implements Hip3TypedDataSigner {
   }) async {
     address = expectedSigner;
     this.typedData = typedData;
+    typedDataRequests.add(typedData);
     onSigned?.call();
     return '0xsigned';
   }
@@ -166,10 +202,12 @@ class _Service implements Hip3WithdrawalService {
   api.Hip3WithdrawalSubmissionRequest? signature;
   String? createKey;
   String? submissionKey;
+  api.Hip3WithdrawalRail resourceRail = api.Hip3WithdrawalRail.float;
+  bool includeNonceMapping = false;
 
   api.Hip3Withdrawal _resource(api.Hip3WithdrawalStatus status) =>
-      api.Hip3Withdrawal(
-        (b) => b
+      api.Hip3Withdrawal((b) {
+        b
           ..withdrawalId = 'id'
           ..ownerAddress = address
           ..destinationAddress = address
@@ -177,15 +215,25 @@ class _Service implements Hip3WithdrawalService {
           ..fee = '1.18'
           ..minimumReceived = '50.22'
           ..status = status
-          ..rail = api.Hip3WithdrawalRail.float
+          ..rail = resourceRail
           ..nonce = 1
           ..typedDataJson =
               '{"domain":{"name":"Hyperliquid"},"message":{"amount":"51.4"}}'
           ..payloadHash = '0xfrozen'
           ..expiresAt = DateTime.now().add(const Duration(minutes: 5))
           ..createdAt = DateTime.now()
-          ..updatedAt = DateTime.now(),
-      );
+          ..updatedAt = DateTime.now();
+        if (includeNonceMapping) {
+          b.nonceMapping.replace(
+            api.Hip3WithdrawalNonceMapping(
+              (nonce) => nonce
+                ..typedData =
+                    '{"domain":{"name":"Relay"},"message":{"nonce":"1"}}'
+                ..payloadHash = '0xnonce',
+            ),
+          );
+        }
+      });
 
   api.Hip3WithdrawalPreview get previewResource => api.Hip3WithdrawalPreview(
     (b) => b

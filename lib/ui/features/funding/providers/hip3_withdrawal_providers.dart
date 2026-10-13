@@ -22,8 +22,7 @@ final hip3TransferBalanceProvider = FutureProvider.autoDispose<String?>((
       .where((a) => a.kind == TradingAccountKind.hip3)
       .toList();
   if (hip3.length != 1) return null;
-  final balances = hip3.single.balances.where((b) => b.symbol == 'USDC');
-  return balances.length == 1 ? balances.single.balance.value : null;
+  return hip3.single.availableUsd?.value;
 }, retry: (_, _) => null);
 
 final hip3WithdrawalCommandsProvider = Provider((ref) {

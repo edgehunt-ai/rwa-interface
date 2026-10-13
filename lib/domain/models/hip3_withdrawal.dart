@@ -12,6 +12,8 @@ final class Hip3Withdrawal {
     this.failureReason,
     this.typedDataJson,
     this.payloadHash,
+    this.nonceMappingTypedDataJson,
+    this.nonceMappingPayloadHash,
   });
 
   final String id;
@@ -26,6 +28,8 @@ final class Hip3Withdrawal {
   final String? failureReason;
   final String? typedDataJson;
   final String? payloadHash;
+  final String? nonceMappingTypedDataJson;
+  final String? nonceMappingPayloadHash;
 
   bool get isPending => status == 'submitted' || status == 'payout';
 }

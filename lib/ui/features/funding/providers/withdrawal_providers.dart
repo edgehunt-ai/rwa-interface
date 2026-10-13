@@ -15,12 +15,19 @@ final withdrawalAssetsProvider =
     FutureProvider.autoDispose<List<WithdrawableAsset>>((ref) async {
       final repository = ref.watch(portfolioRepositoryProvider);
       if (repository is! PortfolioAssetsRepository) return const [];
-      final assets = await (repository as PortfolioAssetsRepository)
-          .listAssets();
-      return assets
+      final assetsRepository = repository as PortfolioAssetsRepository;
+      final results = await Future.wait([
+        assetsRepository.listAssets(account: 'spot'),
+        assetsRepository.listAssets(),
+      ]);
+      final spotAssets = results[0];
+      final withdrawalEligibility = {
+        for (final asset in results[1]) asset.assetId: asset,
+      };
+      return spotAssets
           .where(
             (asset) =>
-                asset.withdrawable &&
+                withdrawalEligibility[asset.assetId]?.withdrawable == true &&
                 asset.balance.compareTo(
                       DecimalValue(
                         '0',
@@ -30,19 +37,25 @@ final withdrawalAssetsProvider =
                     ) >
                     0,
           )
-          .map(
-            (asset) => WithdrawableAsset(
+          .map((asset) {
+            final eligibility = withdrawalEligibility[asset.assetId]!;
+            return WithdrawableAsset(
               symbol: asset.symbol,
               chain: asset.network,
               balance: asset.balance,
+              valueUsd: asset.valueUsd,
+              productId: asset.productId,
+              holdingReturnAmountUsd: asset.holdingReturnAmountUsd,
+              holdingReturnPercent: asset.holdingReturnPercent,
               decimals: asset.decimals,
               assetId: asset.assetId,
-              walletId: asset.walletId,
-              contractAddress: asset.contractAddress,
+              walletId: asset.walletId ?? eligibility.walletId,
+              contractAddress:
+                  asset.contractAddress ?? eligibility.contractAddress,
               native: asset.native,
-              withdrawable: asset.withdrawable,
-            ),
-          )
+              withdrawable: eligibility.withdrawable,
+            );
+          })
           .toList(growable: false);
     });
 

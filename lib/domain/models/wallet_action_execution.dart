@@ -53,9 +53,8 @@ final class GasPaymentQuote {
   /// after a rejection proven to have happened before any broadcast.
   final bool fallbackAllowed;
 
-  /// The sponsored path upgrades the wallet into a smart contract account via
-  /// EIP-7702. [eip7702Notice] is the disclosure that must reach the user
-  /// before any authorization is signed.
+  /// Whether the sponsored path uses EIP-7702 wallet delegation. The server's
+  /// optional [eip7702Notice] remains available as execution metadata.
   final bool eip7702Required;
   final String? eip7702Notice;
 
@@ -172,9 +171,4 @@ final class SponsoredGasUnavailable implements Exception {
   final GasPaymentQuote gasPayment;
 
   bool get fallbackAllowed => gasPayment.fallbackAllowed;
-}
-
-/// The user declined the EIP-7702 wallet upgrade the sponsored path requires.
-final class WalletUpgradeDeclined implements Exception {
-  const WalletUpgradeDeclined();
 }

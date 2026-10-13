@@ -27,6 +27,7 @@ import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
+import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -261,9 +262,8 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: OutlinedButton(
-                                        onPressed: () => context.pushNamed(
-                                          AppRoutes.withdrawalSelectName,
-                                        ),
+                                        onPressed: () =>
+                                            showWithdrawalSourceSheet(context),
                                         style: OutlinedButton.styleFrom(
                                           backgroundColor: colors.subtleSurface,
                                           padding: const EdgeInsets.symmetric(
@@ -540,7 +540,7 @@ enum _AssetTab { spot, perps }
 
 enum _SpotProductFilter { all, cash, bstocks }
 
-const _bstockSpotNetwork = 'BSC';
+const _bstockSpotNetwork = 'BNB Smart Chain';
 
 String? _spotNetworkLabel(String? network) {
   final value = network?.trim();
@@ -2125,7 +2125,7 @@ class _CashRow extends StatelessWidget {
           onWithdraw: () {
             final router = GoRouter.of(context);
             Navigator.of(sheetContext).pop();
-            router.pushNamed(AppRoutes.withdrawalName);
+            router.pushNamed(AppRoutes.withdrawalAssetSelectName);
           },
           onClose: () => Navigator.of(sheetContext).pop(),
         ),
@@ -2483,15 +2483,7 @@ String _cashAssetName(String symbol) => switch (symbol.toUpperCase()) {
 String? _depositNetworkLabel(String? network) {
   final value = network?.trim();
   if (value == null || value.isEmpty) return null;
-  return switch (networkKind(value)) {
-    NetworkKind.arbitrum => 'Arbitrum',
-    NetworkKind.base => 'Base',
-    NetworkKind.bsc => 'BSC',
-    NetworkKind.ethereum => 'Ethereum',
-    NetworkKind.polygon => 'Polygon',
-    NetworkKind.hyperliquid => 'Hyperliquid',
-    null => value,
-  };
+  return networkDisplayName(value);
 }
 
 String _shortContract(String contract) => contract.length <= 12

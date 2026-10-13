@@ -177,7 +177,7 @@ class _DepositRouteTile extends ConsumerWidget {
     final tokenIcon = _depositTokenIcon(route.token, size: 40);
     return Semantics(
       button: true,
-      label: l10n.depositOn(route.token, route.chain),
+      label: l10n.depositOn(route.token, networkDisplayName(route.chain)),
       child: InkWell(
         onTap: () {
           final router = GoRouter.of(context);
@@ -210,7 +210,10 @@ class _DepositRouteTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.depositOn(route.token, route.chain),
+                      l10n.depositOn(
+                        route.token,
+                        networkDisplayName(route.chain),
+                      ),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
@@ -443,7 +446,7 @@ class _DepositReceivedSheet extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${change.chain})',
+                '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${networkDisplayName(change.chain)})',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: colors.secondaryText),
@@ -492,7 +495,10 @@ class _DepositInstructions extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
         AppPageHeader(
-          title: l10n.depositOn(instruction.token, instruction.chain),
+          title: l10n.depositOn(
+            instruction.token,
+            networkDisplayName(instruction.chain),
+          ),
           onBack: () => context.pop(),
         ),
         const SizedBox(height: 40),
@@ -677,7 +683,10 @@ class _RouteDetails extends ConsumerWidget {
         Text(l10n.routeDetails, style: TextStyle(color: colors.secondaryText)),
         const SizedBox(height: 4),
         Text(
-          l10n.sendTokenOnChainOnly(instruction.token, instruction.chain),
+          l10n.sendTokenOnChainOnly(
+            instruction.token,
+            networkDisplayName(instruction.chain),
+          ),
           style: TextStyle(color: colors.secondaryText, fontSize: 12),
         ),
         const SizedBox(height: 12),
@@ -872,7 +881,9 @@ class _DepositSelectionCard extends StatelessWidget {
           _SelectionRow(
             key: const ValueKey('deposit-network-selector'),
             label: AppLocalizations.of(context).network,
-            value: chain ?? 'Choose Network',
+            value: chain == null
+                ? 'Choose Network'
+                : networkDisplayName(chain!),
             valueColor: colors.primaryText,
             icon: chain == null ? null : _depositNetworkIcon(chain!),
             showArrow: chain == null,
@@ -881,6 +892,7 @@ class _DepositSelectionCard extends StatelessWidget {
             selectedValue: chain,
             optionKeyPrefix: 'deposit-network-option',
             optionIconBuilder: _depositNetworkMenuIcon,
+            optionLabelBuilder: networkDisplayName,
             onSelected: onChainSelected,
           ),
           Divider(height: 1, color: colors.subtleSurface),
@@ -922,6 +934,7 @@ class _SelectionRow extends StatelessWidget {
     required this.onSelected,
     this.icon,
     this.enabled = true,
+    this.optionLabelBuilder,
   });
 
   final String label;
@@ -936,6 +949,7 @@ class _SelectionRow extends StatelessWidget {
   final ValueChanged<String> onSelected;
   final Widget? icon;
   final bool enabled;
+  final String Function(String)? optionLabelBuilder;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -1041,7 +1055,7 @@ class _SelectionRow extends StatelessWidget {
                     ],
                     Expanded(
                       child: Text(
-                        option,
+                        optionLabelBuilder?.call(option) ?? option,
                         style: TextStyle(
                           color: option == selectedValue
                               ? colors.primaryText
