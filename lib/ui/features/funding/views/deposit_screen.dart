@@ -367,21 +367,30 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     ref.invalidate(tradingAccountsProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      await showDepositReceivedSheet(context, change: change);
-      if (mounted) _presentingReceipt = false;
+      final transferToPerps = await showDepositReceivedSheet(
+        context,
+        change: change,
+      );
+      if (!mounted) return;
+      _presentingReceipt = false;
+      if (transferToPerps) {
+        context.goNamed(AppRoutes.transferName);
+      }
     });
   }
 }
 
-Future<void> showDepositReceivedSheet(
+Future<bool> showDepositReceivedSheet(
   BuildContext context, {
   required DepositBalanceChange change,
-}) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
-  backgroundColor: Colors.transparent,
-  builder: (context) => _DepositReceivedSheet(change: change),
-);
+}) async =>
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _DepositReceivedSheet(change: change),
+    ) ??
+    false;
 
 class _DepositReceivedSheet extends StatelessWidget {
   const _DepositReceivedSheet({required this.change});
@@ -391,6 +400,9 @@ class _DepositReceivedSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final canTransferToPerps =
+        change.chain.trim().toLowerCase() == 'arbitrum' &&
+        change.token.trim().toUpperCase() == 'USDC';
     return SafeArea(
       top: false,
       child: Material(
@@ -437,10 +449,29 @@ class _DepositReceivedSheet extends StatelessWidget {
                     ?.copyWith(color: colors.secondaryText),
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.gotIt),
-              ),
+              if (canTransferToPerps) ...[
+                SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    key: const ValueKey('deposit-received-transfer'),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(l10n.transfer),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  child: TextButton(
+                    key: const ValueKey('deposit-received-maybe-later'),
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(l10n.maybeLater),
+                  ),
+                ),
+              ] else
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.gotIt),
+                ),
             ],
           ),
         ),

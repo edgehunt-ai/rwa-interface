@@ -1335,6 +1335,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get depositReceived => 'Deposit received';
 
   @override
+  String get maybeLater => 'Maybe later';
+
+  @override
   String get gotIt => 'Got it';
 
   @override

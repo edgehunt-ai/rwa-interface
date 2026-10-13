@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter_wc/qr_flutter_wc.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
+import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/deposit.dart';
 import 'package:nobell/domain/models/domain_page.dart';
@@ -20,8 +21,10 @@ import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
+import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
+import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
@@ -389,11 +392,110 @@ void main() {
     expect(find.text('Deposit assets'), findsOneWidget);
     expect(find.text('Deposit received'), findsOneWidget);
     expect(find.text('+ 1,000 USDC (Arbitrum)'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Got it'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Transfer'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Maybe later'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Got it'), findsNothing);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Got it'));
+    await tester.tap(find.widgetWithText(TextButton, 'Maybe later'));
     await tester.pumpAndSettle();
     expect(find.text('Deposit received'), findsNothing);
+  });
+
+  testWidgets('Arbitrum USDC receipt opens a Spot to Perps transfer', (
+    tester,
+  ) async {
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    final change = DepositBalanceChange(
+      eventId: 'balance-transfer',
+      chain: route.chain,
+      token: route.token,
+      amount: DecimalValue('25', asset: route.token, unit: 'token'),
+    );
+    final router = AppRouter.create(
+      initialLocation: Uri(
+        path: AppRoutes.depositPath,
+        queryParameters: const {'chain': 'Arbitrum', 'token': 'USDC'},
+      ).toString(),
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => Stream.value(change)),
+          transferOptionsProvider.overrideWith(
+            (_) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('25', asset: 'USD'),
+                availableToFundUsd: DecimalValue('25', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc-arbitrum',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('25', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: null,
+            ),
+          ),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('deposit-received-transfer')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TransferScreen), findsOneWidget);
+    final spot = find.text('Spot');
+    final perps = find.text('Perps');
+    expect(spot, findsOneWidget);
+    expect(perps, findsOneWidget);
+    expect(tester.getCenter(spot).dx, lessThan(tester.getCenter(perps).dx));
+    expect(
+      router.routerDelegate.currentConfiguration.uri.path,
+      AppRoutes.transferPath,
+    );
+  });
+
+  testWidgets('other deposit routes retain the dismiss-only receipt', (
+    tester,
+  ) async {
+    const route = (chain: 'BSC', token: 'USDC');
+    final change = DepositBalanceChange(
+      eventId: 'balance-bsc',
+      chain: route.chain,
+      token: route.token,
+      amount: DecimalValue('10', asset: route.token, unit: 'token'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => Stream.value(change)),
+        ],
+        child: buildTestApp(const DepositScreen(chain: 'BSC', token: 'USDC')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'Got it'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Transfer'), findsNothing);
+    expect(find.text('Maybe later'), findsNothing);
   });
 
   testWidgets('withdrawal picker shows available assets', (tester) async {

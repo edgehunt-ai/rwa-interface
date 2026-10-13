@@ -468,6 +468,7 @@
   "returnToDepositRoutes": "Return to deposit routes and try again.",
   "depositAssets": "Deposit assets",
   "depositReceived": "Deposit received",
+  "maybeLater": "Maybe later",
   "gotIt": "Got it",
   "backToDepositRoutes": "Back to deposit routes",
   "depositQrCode": "Deposit QR code",

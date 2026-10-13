@@ -2564,6 +2564,12 @@ abstract class AppLocalizations {
   /// **'Deposit received'**
   String get depositReceived;
 
+  /// No description provided for @maybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get maybeLater;
+
   /// No description provided for @gotIt.
   ///
   /// In en, this message translates to:

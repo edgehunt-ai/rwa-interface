@@ -1282,6 +1282,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get depositReceived => '充值已到账';
 
   @override
+  String get maybeLater => '稍后再说';
+
+  @override
   String get gotIt => '知道了';
 
   @override

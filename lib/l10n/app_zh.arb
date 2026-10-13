@@ -430,6 +430,7 @@
   "returnToDepositRoutes": "请返回充值路线后重试。",
   "depositAssets": "充值资产",
   "depositReceived": "充值已到账",
+  "maybeLater": "稍后再说",
   "gotIt": "知道了",
   "backToDepositRoutes": "返回充值路线",
   "depositQrCode": "充值二维码",
