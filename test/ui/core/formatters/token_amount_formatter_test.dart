@@ -180,6 +180,48 @@ void main() {
       );
     });
 
+    test(
+      'fixed formats can preserve non-zero values with adaptive precision',
+      () {
+        expect(
+          TokenAmountFormatter.formatUsdFixed(
+            DecimalValue('16'),
+            preserveSmallValues: true,
+          ),
+          r'$16.00',
+        );
+        expect(
+          TokenAmountFormatter.formatUsdFixed(
+            DecimalValue('0.00491234567'),
+            preserveSmallValues: true,
+          ),
+          r'$0.00491235',
+        );
+        expect(
+          TokenAmountFormatter.formatUsdFixed(
+            DecimalValue('-0.0000123456789'),
+            preserveSmallValues: true,
+          ),
+          r'$-0.0000123457',
+        );
+        expect(
+          TokenAmountFormatter.formatUsdFixed(
+            DecimalValue('0'),
+            preserveSmallValues: true,
+          ),
+          r'$0.00',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(
+            DecimalValue('-0.0000123456789'),
+            trimInsignificantZeros: false,
+            preserveSmallValues: true,
+          ),
+          '-0.0000123457%',
+        );
+      },
+    );
+
     test('formats large values with compact suffixes', () {
       expect(
         TokenAmountFormatter.formatCompact(DecimalValue('12580.42'), usd: true),

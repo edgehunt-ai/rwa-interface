@@ -48,10 +48,22 @@ abstract final class TokenAmountFormatter {
   /// Formats USD values with an exact number of fractional digits.
   ///
   /// This is intended for compact price/value labels where unrestricted
-  /// sub-dollar precision would overflow the available layout.
-  static String formatUsdFixed(DecimalValue amount, {int fractionDigits = 2}) {
+  /// sub-dollar precision would overflow the available layout. When
+  /// [preserveSmallValues] is enabled, a non-zero value that would round to
+  /// zero uses the shared adaptive precision instead. Adaptive precision keeps
+  /// at most six digits beginning with the first non-zero fractional digit.
+  static String formatUsdFixed(
+    DecimalValue amount, {
+    int fractionDigits = 2,
+    bool preserveSmallValues = false,
+  }) {
     _validateDecimals(fractionDigits);
     final rounded = _roundToFractionDigits(amount.value, fractionDigits);
+    if (preserveSmallValues &&
+        _isZeroDecimal(rounded) &&
+        !_isZeroDecimal(amount.value)) {
+      return formatUsd(amount);
+    }
     final fixed = _padFractionDigits(rounded, fractionDigits);
     return '\$${_groupIntegerDigits(fixed)}';
   }
@@ -92,9 +104,16 @@ abstract final class TokenAmountFormatter {
     bool signed = true,
     int maxFractionDigits = 2,
     bool trimInsignificantZeros = true,
+    bool preserveSmallValues = false,
   }) {
     _validateDecimals(maxFractionDigits);
-    final rounded = _roundToFractionDigits(amount.value, maxFractionDigits);
+    final fixed = _roundToFractionDigits(amount.value, maxFractionDigits);
+    final rounded =
+        preserveSmallValues &&
+            _isZeroDecimal(fixed) &&
+            !_isZeroDecimal(amount.value)
+        ? _formatAdaptiveDecimal(amount.value)
+        : fixed;
     final normalized = _groupIntegerDigits(
       trimInsignificantZeros
           ? _trimInsignificantZeros(rounded)
@@ -252,6 +271,10 @@ abstract final class TokenAmountFormatter {
         ? withoutZeros.substring(0, withoutZeros.length - 1)
         : withoutZeros;
   }
+
+  static bool _isZeroDecimal(String value) =>
+      BigInt.parse(value.replaceFirst('-', '').replaceAll('.', '')) ==
+      BigInt.zero;
 
   static String _formatAdaptiveDecimal(String value) {
     final unsigned = value.startsWith('-') ? value.substring(1) : value;

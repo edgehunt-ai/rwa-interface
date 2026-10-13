@@ -1633,6 +1633,66 @@ void main() {
     );
   }
 
+  testWidgets(
+    'sell approval is labeled as approval until the order can be confirmed',
+    (tester) async {
+      final orders = _ApprovalOrdersRepository();
+      final execution = _ApprovalExecutionRepository(orders);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+            ordersRepositoryProvider.overrideWithValue(orders),
+            bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+              execution,
+            ),
+            bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
+              (ref) async => BstocksSellAvailability(
+                quantity: DecimalValue('12.5', asset: 'NVDAB', unit: 'token'),
+                decimals: 18,
+              ),
+            ),
+          ],
+          child: buildTestApp(
+            const BstocksOrderPanel(
+              symbol: 'NVDAB',
+              productId: 'bstocks:nvdab',
+              initialSide: TradingSide.sell,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('bstocks-market-amount-input')),
+        '1',
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      await _pumpUntilFound(
+        tester,
+        find.widgetWithText(FilledButton, 'Approve'),
+      );
+
+      expect(find.text('Approve NVDAB'), findsOneWidget);
+      expect(find.text('Approve NVDAB · Market'), findsOneWidget);
+      expect(find.text('Sell NVDAB'), findsNothing);
+      expect(find.text('Sell NVDAB · Market'), findsNothing);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Approve'));
+      await tester.pump();
+      execution.completeApproval();
+      await _pumpUntilFound(
+        tester,
+        find.widgetWithText(FilledButton, 'Confirm Sell'),
+      );
+
+      expect(find.text('Sell NVDAB'), findsOneWidget);
+      expect(find.text('Sell NVDAB · Market'), findsOneWidget);
+      expect(find.text('Approve NVDAB'), findsNothing);
+    },
+  );
+
   testWidgets('failed approval stays at confirmation and can be retried', (
     tester,
   ) async {

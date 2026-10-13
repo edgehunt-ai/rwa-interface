@@ -1153,6 +1153,30 @@ void main() {
     expect(find.text('Edit TP/SL'), findsNothing);
   });
 
+  testWidgets('Trade bStocks position card preserves tiny non-zero PnL', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        locale: const Locale('en'),
+        positionsRepository: _PositionsRepository(
+          bstockPnl: '-0.0000123456789',
+          bstockPnlPercent: '-0.0000123456789',
+        ),
+        portfolioRepository: _BstocksPositionPortfolioRepository(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Position');
+    await tester.tap(_tradeTab('Position'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(r'$-0.0000123457'), findsOneWidget);
+    expect(find.text('-0.0000123457%'), findsOneWidget);
+    expect(find.text(r'$-0.00'), findsNothing);
+    expect(find.text('-0.00%'), findsNothing);
+  });
+
   testWidgets('Trade bStocks availability uses skeletons while loading', (
     tester,
   ) async {
@@ -1227,9 +1251,10 @@ void main() {
     expect(find.text('HIP-3 Perp'), findsOneWidget);
   });
 
-  testWidgets('Trade bStocks Withdraw selects its token and chain', (
+  testWidgets('Trade bStocks Withdraw opens its selected Spot asset', (
     tester,
   ) async {
+    Uri? withdrawalUri;
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -1238,14 +1263,13 @@ void main() {
         ),
         GoRoute(
           path: AppRoutes.withdrawalPath,
-          builder: (_, state) => WithdrawalScreen(
-            token: state.uri.queryParameters['token'] ?? 'USDC',
-            chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
-          ),
-        ),
-        GoRoute(
-          path: AppRoutes.withdrawalSelectPath,
-          builder: (_, _) => const WithdrawalScreen(showSelector: true),
+          builder: (_, state) {
+            withdrawalUri = state.uri;
+            return WithdrawalScreen(
+              token: state.uri.queryParameters['token'] ?? 'USDC',
+              chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
+            );
+          },
         ),
       ],
     );
@@ -1273,10 +1297,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WithdrawalScreen), findsOneWidget);
-    expect(find.text('Withdraw NVDAB'), findsOneWidget);
-    expect(find.text('NVDAB'), findsWidgets);
-    expect(find.text('BSC'), findsOneWidget);
-    expect(find.text('Available 3.0154 NVDAB'), findsOneWidget);
+    final screen = tester.widget<WithdrawalScreen>(
+      find.byType(WithdrawalScreen),
+    );
+    expect(screen.showSelector, isFalse);
+    expect(screen.token, 'NVDAB');
+    expect(screen.chain, 'BSC');
+    expect(withdrawalUri?.queryParameters, containsPair('source', 'spot'));
+    expect(
+      find.byKey(const Key('withdrawal-source-spot')),
+      findsNothing,
+    );
   });
 
   testWidgets('Trade tab counts stay on their matching tabs without overflow', (
@@ -1500,6 +1531,7 @@ Position _position(
   MarketProductKind kind, {
   PositionSide side = PositionSide.long,
   String unrealizedPnl = '16',
+  String unrealizedPnlPercent = '3',
 }) => switch (kind) {
   MarketProductKind.perp => Position(
     positionId: 'position-1',
@@ -1516,7 +1548,7 @@ Position _position(
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
     markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
     unrealizedPnl: DecimalValue(unrealizedPnl, asset: 'USDC', unit: 'token'),
-    unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+    unrealizedPnlPercent: DecimalValue(unrealizedPnlPercent, unit: 'percent'),
     fundingPaid: DecimalValue('1.05', asset: 'USDC', unit: 'token'),
     liquidationPrice: DecimalValue('120.33', asset: 'USDC', unit: 'price'),
     margin: DecimalValue('2.0154'),
@@ -1532,8 +1564,8 @@ Position _position(
     valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
     markPrice: DecimalValue('228.71', asset: 'USDC', unit: 'price'),
-    unrealizedPnl: DecimalValue('16', asset: 'USDC', unit: 'token'),
-    unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+    unrealizedPnl: DecimalValue(unrealizedPnl, asset: 'USDC', unit: 'token'),
+    unrealizedPnlPercent: DecimalValue(unrealizedPnlPercent, unit: 'percent'),
   ),
 };
 
@@ -1912,10 +1944,14 @@ final class _PositionsRepository implements PositionsRepository {
   _PositionsRepository({
     this.perpSide = PositionSide.long,
     this.perpPnl = '16',
+    this.bstockPnl = '16',
+    this.bstockPnlPercent = '3',
   });
 
   final PositionSide perpSide;
   final String perpPnl;
+  final String bstockPnl;
+  final String bstockPnlPercent;
   var listCalls = 0;
 
   @override
@@ -1954,7 +1990,10 @@ final class _PositionsRepository implements PositionsRepository {
                 : PositionSide.long,
             unrealizedPnl: resolvedKind == MarketProductKind.perp
                 ? perpPnl
-                : '16',
+                : bstockPnl,
+            unrealizedPnlPercent: resolvedKind == MarketProductKind.bstock
+                ? bstockPnlPercent
+                : '3',
           ),
         ],
       ),

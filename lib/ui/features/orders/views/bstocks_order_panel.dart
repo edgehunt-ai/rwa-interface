@@ -1346,7 +1346,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final action = isBuy ? l10n.buy : l10n.sell;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final actionColor = isBuy ? semantic.success : kShortTradeColor;
+    final approvalRequired = current.approvalRequired;
+    final confirmationAction = approvalRequired ? l10n.approve : action;
+    final actionColor = approvalRequired
+        ? colors.primaryAction
+        : isBuy
+        ? semantic.success
+        : kShortTradeColor;
     final settlementAsset =
         current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
@@ -1387,19 +1393,21 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         const SizedBox(height: 16),
         if (_confirmationFromFunding)
           OrderFundingConfirmationHeader(
-            title: '$action ${widget.symbol}',
+            title: '$confirmationAction ${widget.symbol}',
             stepKey: const Key('bstocks-funding-confirmation-step-3'),
           )
         else
           Text(
-            '$action ${widget.symbol}',
+            '$confirmationAction ${widget.symbol}',
+            key: const Key('bstocks-confirmation-title'),
             style: Theme.of(context).textTheme.titleLarge,
           ),
         const SizedBox(height: 12),
         Divider(color: colors.subtleSurface),
         const SizedBox(height: 16),
         Text(
-          '$action ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? l10n.market : l10n.limit}',
+          '$confirmationAction ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? l10n.market : l10n.limit}',
+          key: const Key('bstocks-confirmation-action'),
           style: Theme.of(context).textTheme.bodyMedium
               ?.copyWith(fontWeight: FontWeight.w500),
         ),
@@ -1507,7 +1515,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   onPressed:
                       reviewing || _approving || _recoveringRejectedPreview
                       ? null
-                      : current.approvalRequired
+                      : approvalRequired
                       ? _approveConfirmation
                       : _submit,
                   child: _approving
@@ -1522,7 +1530,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       : Text(
                           reviewing
                               ? l10n.submittingOrder
-                              : current.approvalRequired
+                              : approvalRequired
                               ? l10n.approve
                               : '${l10n.confirm} $action',
                         ),

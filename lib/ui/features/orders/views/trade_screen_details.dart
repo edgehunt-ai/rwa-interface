@@ -690,6 +690,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
                     TokenAmountFormatter.formatPercent(
                       position.unrealizedPnlPercent!,
                       trimInsignificantZeros: false,
+                      preserveSmallValues: true,
                     ),
                     style: TextStyle(
                       fontSize: 12,
@@ -743,6 +744,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
                 AppRoutes.withdrawalLocation(
                   token: position.symbol,
                   chain: 'BSC',
+                  source: 'spot',
                 ),
               ),
             ),
@@ -994,7 +996,10 @@ String _formatTokenQuantity(DecimalValue? value) =>
 
 String _formatSignedUsdFixed2(DecimalValue? value) {
   if (value == null) return '—';
-  final formatted = TokenAmountFormatter.formatUsdFixed(value);
+  final formatted = TokenAmountFormatter.formatUsdFixed(
+    value,
+    preserveSmallValues: true,
+  );
   return value.value.startsWith('-') || value.value == '0'
       ? formatted
       : '+$formatted';
