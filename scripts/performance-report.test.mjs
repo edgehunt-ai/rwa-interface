@@ -19,11 +19,11 @@ function fixture() {
     },
     logical_size: { width: 393, height: 852 }, refresh_rate_hz: 60,
     commit: 'abc123', generated_at: '2026-10-13T00:00:00Z',
-    scenarios: scenarioIds.map((id) => ({ id, label: id,
+    scenarios: scenarioIds.map((id, index) => ({ id, label: id,
       duration_ms: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
       frames: [
-        { build_ms: 1, raster_ms: 2, total_ms: 18 },
-        { build_ms: 17, raster_ms: 20, total_ms: 37 },
+        { build_start_us: index * 2, build_ms: 1, raster_ms: 2, total_ms: 18 },
+        { build_start_us: index * 2 + 1, build_ms: 17, raster_ms: 20, total_ms: 37 },
       ],
     })),
   };
@@ -72,6 +72,16 @@ test('summary highlights user workflows and frame health', () => {
   assert.equal(report.machine.host.cpu_model, 'Test CPU');
 });
 
+test('summary frame health counts overlapping milestone frames once', () => {
+  const raw = fixture();
+  raw.scenarios[1].frames = structuredClone(raw.scenarios[0].frames);
+  const report = summarize(raw);
+  assert.equal(report.scenarios[0].frame_count, 2);
+  assert.equal(report.scenarios[1].frame_count, 2);
+  assert.equal(report.highlights.frames.count, 50);
+  assert.equal(report.highlights.frames.slow_count, 25);
+});
+
 test('incomplete, invalid, debug, and web results fail instead of producing a green report', () => {
   for (const mutate of [
     (r) => { r.mode = 'debug'; }, (r) => { r.platform = 'web'; },
@@ -79,6 +89,7 @@ test('incomplete, invalid, debug, and web results fail instead of producing a gr
     (r) => { r.scenarios[0].duration_ms.pop(); }, (r) => { r.scenarios[0].frames = []; },
     (r) => { r.scenarios[0].duration_ms[0] = NaN; },
     (r) => { r.scenarios[0].frames[0].build_ms = -1; },
+    (r) => { delete r.scenarios[0].frames[0].build_start_us; },
     (r) => { delete r.environment; }, (r) => { delete r.environment.physical_device; },
     (r) => { delete r.machine; },
     (r) => { r.machine.host.logical_cores = 0; }, (r) => { r.refresh_rate_hz = 0; },

@@ -439,6 +439,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       reviewing = true;
       _confirmationFromFunding = false;
     });
+    var confirmationPresented = false;
     try {
       var completedFundingFlow = false;
       if (intent.side == TradingSide.buy) {
@@ -476,7 +477,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ? cachedQuote!
           : await ref.read(orderPreviewProvider(intent).future);
       if (!mounted) return;
-      _showConfirmation(next, fromFunding: completedFundingFlow);
+      confirmationPresented = _showConfirmation(
+        next,
+        fromFunding: completedFundingFlow,
+        completeReview: true,
+      );
     } on Object catch (error) {
       if (mounted) {
         setState(
@@ -490,7 +495,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         );
       }
     } finally {
-      if (mounted) {
+      if (mounted && !confirmationPresented) {
         setState(() {
           reviewing = false;
           _fundingRechecking = false;
@@ -620,10 +625,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
   }
 
-  void _showConfirmation(
+  bool _showConfirmation(
     OrderPreview next, {
     required bool fromFunding,
     bool clearError = true,
+    bool completeReview = false,
   }) {
     if (!next.executionReady) {
       setState(() {
@@ -634,7 +640,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           source: _BstocksErrorSource.operation,
         );
       });
-      return;
+      return false;
     }
     _previewPollingTimer?.cancel();
     _previewPollingGeneration++;
@@ -643,8 +649,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       if (clearError) _clearError();
       preview = next;
       _confirmationFromFunding = fromFunding;
+      if (completeReview) {
+        reviewing = false;
+        _fundingRechecking = false;
+      }
     });
     _startPreviewPolling(next);
+    return true;
   }
 
   void _startPreviewPolling(OrderPreview next) {
@@ -870,13 +881,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Future<void> _editSlippage() async {
-    final next = await showModalBottomSheet<double>(
+    final next = await showSlippageSheet(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => SlippageSheet(
-        initialValue: slippage,
-        inputKey: const Key('bstocks-slippage-input'),
-      ),
+      initialValue: slippage,
+      inputKey: const Key('bstocks-slippage-input'),
     );
     if (next == null || !mounted) return;
     setState(() => slippage = next);

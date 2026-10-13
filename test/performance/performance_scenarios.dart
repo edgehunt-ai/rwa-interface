@@ -141,11 +141,25 @@ Future<void> runPerformanceScenarios(
   PerformanceRecorder recorder, {
   int samples = 30,
   int warmups = 2,
-  Future<void> Function(Future<void> Function())? traceDetails,
+  Future<void> Function(String scenarioId, Future<void> Function() action)?
+  traceScenario,
 }) async {
   if (samples < 1 || warmups < 0) throw ArgumentError('Invalid sample count');
   for (var round = -warmups; round < samples; round++) {
     recorder.warmingUp = round < 0;
+    Future<void> measure(
+      String id,
+      String label,
+      Future<void> Function() action, {
+      bool trace = false,
+    }) {
+      Future<void> measuredAction() => recorder.measure(id, label, action);
+      if (trace && round == 0 && traceScenario != null) {
+        return traceScenario(id, measuredAction);
+      }
+      return measuredAction();
+    }
+
     final home = PerformanceFixture();
     try {
       await recorder.measure('home_load', '首页数据加载', () async {
@@ -159,14 +173,14 @@ Future<void> runPerformanceScenarios(
 
     final market = PerformanceFixture(initialLocation: AppRoutes.marketsPath);
     try {
-      await recorder.measure('markets_load', '行情列表加载（60 项）', () async {
+      await measure('markets_load', '行情列表加载（60 项）', () async {
         await tester.pumpWidget(market.app);
         await _waitFor(
           tester,
           find.byKey(const Key('market-product-NVDAB-bstock')),
         );
         await _waitFor(tester, find.text('NVDAB'));
-      });
+      }, trace: true);
       final list = find.byType(CustomScrollView).first;
       await recorder.measure('markets_scroll', '行情列表滚动', () async {
         for (var i = 0; i < 4; i++) {
@@ -184,27 +198,14 @@ Future<void> runPerformanceScenarios(
       );
       scrollable.position.jumpTo(0);
       await tester.pumpAndSettle();
-      Future<void> loadDetails() => recorder.measure(
-        'details_load',
-        '行情详情加载（240 根 K 线）',
-        () async {
-          await tester.tap(
-            find.byKey(const Key('market-product-NVDAB-bstock')),
-          );
-          await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
-          await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
-          expect(market.markets.snapshots, greaterThan(0));
-          expect(market.markets.charts, greaterThan(0));
-          expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
-        },
-      );
-      // Capture one measured navigation separately for diagnosis. VM tracing
-      // is optional and adds overhead; it is not part of the normal baseline.
-      if (traceDetails != null && round == 0) {
-        await traceDetails(loadDetails);
-      } else {
-        await loadDetails();
-      }
+      await measure('details_load', '行情详情加载（240 根 K 线）', () async {
+        await tester.tap(find.byKey(const Key('market-product-NVDAB-bstock')));
+        await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
+        await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
+        expect(market.markets.snapshots, greaterThan(0));
+        expect(market.markets.charts, greaterThan(0));
+        expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
+      }, trace: true);
     } finally {
       await _unmount(tester, market);
     }
@@ -292,7 +293,7 @@ Future<void> runPerformanceScenarios(
             FilledButton,
             side == TradingSide.buy ? 'Confirm Buy' : 'Confirm Sell',
           );
-          await recorder.measure('${prefix}_preview', '$name确认预览', () async {
+          await measure('${prefix}_preview', '$name确认预览', () async {
             final review = find.byKey(
               const Key('bstocks-primary-order-action'),
             );
@@ -305,10 +306,10 @@ Future<void> runPerformanceScenarios(
                   tester.widget<FilledButton>(confirm).onPressed != null,
               description: '$name enabled confirmation',
             );
-          });
+          }, trace: prefix == 'market_buy');
           await tester.ensureVisible(confirm);
           await tester.pumpAndSettle();
-          await recorder.measure('${prefix}_submit', '$name提交到结果展示', () async {
+          await measure('${prefix}_submit', '$name提交到结果展示', () async {
             await tester.tap(confirm);
             await _waitFor(
               tester,
@@ -325,7 +326,7 @@ Future<void> runPerformanceScenarios(
               );
               expect(fixture.orders.createdIntents.single.quantity?.value, '1');
             }
-          });
+          }, trace: prefix == 'limit_buy');
 
           if (type == TradingOrderType.limit) {
             // Dismiss the sheet, then cancel using the real detail-page control.

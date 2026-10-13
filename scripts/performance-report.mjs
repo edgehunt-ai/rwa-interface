@@ -25,7 +25,7 @@ function distribution(values, label) {
 
 function compatibility(raw) {
   return {
-    report_version: 2,
+    report_version: 3,
     schema_version: raw.schema_version,
     suite_version: raw.suite_version,
     environment: raw.environment,
@@ -53,17 +53,18 @@ function worstScenario(scenarios, predicate, metric = 'duration_ms') {
     !worst || scenario[metric].p95 > worst[metric].p95 ? scenario : worst, null);
 }
 
-function performanceHighlights(scenarios, frameBudget, rasterActionable) {
+function performanceHighlights(scenarios, frames, frameBudget, rasterActionable) {
   const pageLoad = worstScenario(scenarios, (s) => ['home_load', 'markets_load', 'details_load'].includes(s.id));
   const interactive = worstScenario(scenarios, (s) => s.id.endsWith('_open_ready'));
   const quote = worstScenario(scenarios, (s) => s.id.endsWith('_quote'));
   const command = worstScenario(scenarios, (s) => /_(preview|submit|cancel)$/.test(s.id));
   const build = worstScenario(scenarios, () => true, 'build_ms');
   const raster = worstScenario(scenarios, () => true, 'raster_ms');
-  const frameCount = scenarios.reduce((sum, s) => sum + s.frame_count, 0);
-  const slowFrameCount = scenarios.reduce((sum, s) => sum + s.slow_frame_count, 0);
-  const uiSlowFrameCount = scenarios.reduce((sum, s) => sum + s.ui_slow_frame_count, 0);
-  const rasterSlowFrameCount = scenarios.reduce((sum, s) => sum + s.raster_slow_frame_count, 0);
+  const frameCount = frames.length;
+  const uiSlowFrameCount = frames.filter((frame) => frame.build_ms > frameBudget).length;
+  const rasterSlowFrameCount = frames.filter((frame) => frame.raster_ms > frameBudget).length;
+  const slowFrameCount = frames.filter((frame) =>
+    frame.build_ms > frameBudget || (rasterActionable && frame.raster_ms > frameBudget)).length;
   const result = (scenario) => ({ id: scenario.id, label: scenario.label, p95_ms: scenario.duration_ms.p95 });
   return {
     page_load: result(pageLoad),
@@ -107,10 +108,17 @@ export function summarize(raw) {
   }
   const budget = 1000 / raw.refresh_rate_hz;
   const rasterActionable = raw.environment.physical_device !== false;
+  const uniqueFrames = new Map();
   const scenarios = raw.scenarios.map((s) => {
     const duration = distribution(s.duration_ms, s.id);
     if (duration.count !== raw.samples || !Array.isArray(s.frames) || !s.frames.length) {
       throw new Error(`Incomplete measured actions/frames: ${s.id}`);
+    }
+    for (const frame of s.frames) {
+      if (!Number.isSafeInteger(frame.build_start_us) || frame.build_start_us < 0) {
+        throw new Error(`Invalid frame timestamp: ${s.id}`);
+      }
+      uniqueFrames.set(frame.build_start_us, frame);
     }
     const build = distribution(s.frames.map((f) => f.build_ms), `${s.id} build`);
     const raster = distribution(s.frames.map((f) => f.raster_ms), `${s.id} raster`);
@@ -126,7 +134,7 @@ export function summarize(raw) {
   });
   return { schema_version: 1, commit: raw.commit, generated_at: raw.generated_at,
     compatibility: compatibility(raw), machine: raw.machine, frame_budget_ms: budget,
-    highlights: performanceHighlights(scenarios, budget, rasterActionable), scenarios };
+    highlights: performanceHighlights(scenarios, [...uniqueFrames.values()], budget, rasterActionable), scenarios };
 }
 
 export function compare(current, baseline) {

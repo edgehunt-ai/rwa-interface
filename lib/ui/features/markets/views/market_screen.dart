@@ -60,6 +60,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           ),
           child: CustomScrollView(
             slivers: [
+              const SliverToBoxAdapter(child: _ActiveMarketRefresh()),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
                 sliver: SliverList.list(
@@ -219,6 +220,19 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
         ),
       ),
     );
+  }
+}
+
+/// Keeps route notifications from rebuilding the product list during a push.
+class _ActiveMarketRefresh extends ConsumerWidget {
+  const _ActiveMarketRefresh();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (ModalRoute.of(context)?.isCurrent ?? true) {
+      ref.watch(marketListRefreshProvider);
+    }
+    return const SizedBox.shrink();
   }
 }
 

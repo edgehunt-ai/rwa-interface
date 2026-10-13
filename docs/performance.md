@@ -88,15 +88,17 @@ npm run perf:report -- --baseline-dir /path/to/unpacked-main-artifact
 图片生成需要 Chrome/Chromium，可通过 `PERF_BROWSER` 指定可执行路径；
 它只打开本地报告 HTML，使用页面真实高度完整截图，不启动 Flutter Web。
 
-详情页诊断可单独执行，不覆盖常规报告：
+关键慢场景诊断可单独执行，不覆盖常规报告：
 
 ```bash
-PERF_TRACE_DETAILS=true PERF_SAMPLES=5 PERF_OUTPUT_DIR=build/performance-diagnostic npm run perf:run -- --device DEVICE_ID
+PERF_TRACE_SCENARIOS=true PERF_SAMPLES=5 PERF_OUTPUT_DIR=build/performance-diagnostic npm run perf:run -- --device DEVICE_ID
 npm run perf:report -- --input build/performance-diagnostic/raw.json --output build/performance-diagnostic
 ```
 
-`details-timeline.json` 包含首次测量导航的 Dart/引擎/GC timeline，以及 build/layout/paint
-事件，可导入 DevTools 的 Performance 页面分析。启用 tracing 的结果有额外开销，
+诊断目录会生成 `markets-load-timeline.json`、`details-load-timeline.json`、
+`market-buy-preview-timeline.json` 和 `limit-buy-submit-timeline.json`，分别包含首次测量的
+Dart/引擎/GC timeline 以及 build/layout/paint 事件，可导入 DevTools 的 Performance 页面分析。
+启用 tracing 的结果有额外开销，
 会标注为诊断数据，不能与常规数据比较。常规 CI 不启用 tracing。
 报价输入保留 200ms 防抖来合并连续输入，旧请求结果由 generation 检查丢弃。
 
@@ -106,6 +108,8 @@ npm run perf:report -- --input build/performance-diagnostic/raw.json --output bu
 - UI / 光栅帧：Flutter 引擎 `FrameTiming` 的 build/raster 耗时，按操作窗口的 buildStart 时间归属。
 - 慢帧：真机按 UI 或光栅耗时超过 `1000 / refreshRate` 毫秒计算，同一帧只计一次。
   模拟器使用软件 GPU，慢帧只按 UI 耗时计算；光栅数据仍保留用于诊断，但不参与退化提示或门禁。
+- 场景表保留每个操作窗口内的帧；顶部帧健康按 buildStart 全局去重，避免可交互与动画完成的
+  累计窗口重复计算同一帧。
 - `total_ms` 保留帧总跨度，供原始数据分析，不作为 UI/光栅慢帧的判定依据。
 
 性能 CI 不自动运行或维护 `main` 基线，因此报告默认显示“未比较”，重点展示本次绝对指标。

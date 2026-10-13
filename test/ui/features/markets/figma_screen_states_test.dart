@@ -297,6 +297,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('market polling pauses behind another route and resumes', (
+    tester,
+  ) async {
+    final refreshEvents = <String>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketListRefreshProvider.overrideWith((ref) {
+            refreshEvents.add('start');
+            ref.onCancel(() => refreshEvents.add('stop'));
+            ref.onResume(() => refreshEvents.add('start'));
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(refreshEvents, ['start']);
+
+    Navigator.of(tester.element(find.byType(MarketScreen))).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const Scaffold(body: Text('Trade details')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(refreshEvents, ['start', 'stop']);
+
+    Navigator.of(tester.element(find.text('Trade details'))).pop();
+    await tester.pumpAndSettle();
+    expect(refreshEvents, ['start', 'stop', 'start']);
+  });
+
   testWidgets('market product rows are built lazily and remain scrollable', (
     tester,
   ) async {

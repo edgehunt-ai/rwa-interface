@@ -17,8 +17,10 @@ void main() {
     if (!kProfileMode) fail('Run performance tests with --profile');
     const samples = int.fromEnvironment('PERF_SAMPLES', defaultValue: 30);
     const warmups = int.fromEnvironment('PERF_WARMUPS', defaultValue: 2);
-    const traceDetails = bool.fromEnvironment('PERF_TRACE_DETAILS');
-    if (traceDetails) {
+    const traceScenarios =
+        bool.fromEnvironment('PERF_TRACE_SCENARIOS') ||
+        bool.fromEnvironment('PERF_TRACE_DETAILS');
+    if (traceScenarios) {
       debugProfileBuildsEnabled = true;
       debugProfileLayoutsEnabled = true;
       debugProfilePaintsEnabled = true;
@@ -34,10 +36,10 @@ void main() {
         recorder,
         samples: samples,
         warmups: warmups,
-        traceDetails: traceDetails
-            ? (action) => binding.traceAction(
+        traceScenario: traceScenarios
+            ? (scenarioId, action) => binding.traceAction(
                 action,
-                reportKey: 'details_timeline',
+                reportKey: '${scenarioId}_timeline',
                 streams: ['Dart', 'Embedder', 'GC'],
               )
             : null,
@@ -61,7 +63,7 @@ void main() {
         'mode': 'profile',
         'samples': samples,
         'warmups': warmups,
-        'diagnostic_tracing': traceDetails,
+        'diagnostic_tracing': traceScenarios,
         'fixture': 'controlled-repositories-no-network-no-wallet',
         'logical_size': {
           'width':

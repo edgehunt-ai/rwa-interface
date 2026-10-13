@@ -12,9 +12,25 @@ void main() {
       // viewport/font rendering and frame metrics are measured on the device.
       await configureDisplay(tester, size: const Size(800, 1000));
       final recorder = PerformanceRecorder(recordFrames: false);
-      await runPerformanceScenarios(tester, recorder, samples: 1, warmups: 0);
+      final tracedScenarios = <String>[];
+      await runPerformanceScenarios(
+        tester,
+        recorder,
+        samples: 1,
+        warmups: 0,
+        traceScenario: (scenarioId, action) async {
+          tracedScenarios.add(scenarioId);
+          await action();
+        },
+      );
       final results = recorder.results();
       expect(results, hasLength(26));
+      expect(tracedScenarios, [
+        'markets_load',
+        'details_load',
+        'market_buy_preview',
+        'limit_buy_submit',
+      ]);
       for (final row in results) {
         expect(row['duration_ms'], hasLength(1));
       }

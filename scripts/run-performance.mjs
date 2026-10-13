@@ -33,6 +33,8 @@ const flutter = JSON.parse(capture('flutter', ['--version', '--machine']));
 const samples = Number(process.env.PERF_SAMPLES ?? 30);
 const warmups = Number(process.env.PERF_WARMUPS ?? 2);
 const output = process.env.PERF_OUTPUT_DIR ?? 'build/performance';
+const diagnosticTracing = process.env.PERF_TRACE_SCENARIOS === 'true' ||
+  process.env.PERF_TRACE_DETAILS === 'true';
 if (!Number.isInteger(samples) || samples < 5 || !Number.isInteger(warmups) || warmups < 1) {
   throw new Error('PERF_SAMPLES must be >= 5 and PERF_WARMUPS must be >= 1');
 }
@@ -78,7 +80,15 @@ const machine = {
 await mkdir(output, { recursive: true });
 const { rm } = await import('node:fs/promises');
 await rm(`${output}/raw.json`, { force: true });
-await rm(`${output}/details-timeline.json`, { force: true });
+for (const scenario of [
+  'details',
+  'markets-load',
+  'details-load',
+  'market-buy-preview',
+  'limit-buy-submit',
+]) {
+  await rm(`${output}/${scenario}-timeline.json`, { force: true });
+}
 const result = spawnSync('flutter', [
   'drive', '--profile', '--no-pub', '-d', device.id,
   '--driver=test_driver/performance_driver.dart',
@@ -86,8 +96,8 @@ const result = spawnSync('flutter', [
   `--dart-define=PERF_SAMPLES=${samples}`,
   `--dart-define=PERF_WARMUPS=${warmups}`,
   `--dart-define=PERF_OUTPUT_DIR=${output}`,
-  `--dart-define=PERF_TRACE_DETAILS=${process.env.PERF_TRACE_DETAILS === 'true'}`,
-  ...(process.env.PERF_TRACE_DETAILS === 'true' ? ['--no-dds'] : []),
+  `--dart-define=PERF_TRACE_SCENARIOS=${diagnosticTracing}`,
+  ...(diagnosticTracing ? ['--no-dds'] : []),
   '--timeout=900',
 ], { stdio: 'inherit' });
 if (result.error || result.status !== 0) process.exit(result.status || 1);
