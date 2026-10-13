@@ -27,9 +27,11 @@ void main() {
 
     final surface = tester.widget<ColoredBox>(find.byKey(launchSurfaceKey));
     final finalFrame = tester.widget<SvgPicture>(find.byType(SvgPicture));
+    final frameLoader = finalFrame.bytesLoader as SvgAssetLoader;
 
     expect(surface.color, launchBackgroundColor);
     expect(finalFrame.fit, BoxFit.contain);
+    expect(frameLoader.theme?.currentColor, launchForegroundColor);
     expect(find.byKey(launchAnimationKey), findsNothing);
   });
 

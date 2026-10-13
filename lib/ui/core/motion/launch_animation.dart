@@ -15,6 +15,12 @@ const _launchAnimationDuration = Duration(milliseconds: 4217);
 const launchSurfaceKey = Key('launch-surface');
 const launchAnimationKey = Key('launch-animation');
 
+Widget _launchSvgFrame(String asset) => SvgPicture.asset(
+  asset,
+  fit: BoxFit.contain,
+  theme: const SvgTheme(currentColor: launchForegroundColor),
+);
+
 /// Keeps the application alive beneath a one-shot cold-start animation.
 class LaunchAnimationGate extends StatefulWidget {
   const LaunchAnimationGate({
@@ -215,8 +221,7 @@ class _LaunchAnimationState extends State<LaunchAnimation> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (!_animationLoaded)
-          SvgPicture.asset(launchFirstFrameAsset, fit: BoxFit.contain),
+        if (!_animationLoaded) _launchSvgFrame(launchFirstFrameAsset),
         if (controller != null)
           rive.RiveWidget(
             key: launchAnimationKey,
@@ -233,7 +238,7 @@ class _LaunchAnimationState extends State<LaunchAnimation> {
     color: launchBackgroundColor,
     child: ExcludeSemantics(
       child: _reduceMotion
-          ? SvgPicture.asset(launchFinalFrameAsset, fit: BoxFit.contain)
+          ? _launchSvgFrame(launchFinalFrameAsset)
           : _buildAnimatedLaunch(),
     ),
   );
