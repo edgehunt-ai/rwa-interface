@@ -1487,7 +1487,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   title: _reduceOnly
                       ? l10n.closePosition
                       : '${_side == TradingSide.long ? l10n.long : l10n.short} ${widget.symbol}',
-                  leverage: _leverage,
+                  maximumLeverage: _context?.maximumLeverage,
+                  productId: _context?.productId ?? widget.productId,
                   color: actionColor,
                   onClose: () => Navigator.of(context).pop(),
                 ),
@@ -1575,7 +1576,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   showSettings: currentPosition == null,
                   marginMode: _marginMode,
                   leverage: _leverage,
-                  maximumLeverage: _context?.maximumLeverage,
                   minimumAmount: _minimumOrderNotional?.value,
                   amountBounds: _amountBounds(availableBalance),
                   limitPrice: null,
@@ -2310,59 +2310,111 @@ class _Hip3RiskSummary extends StatelessWidget {
 class _Hip3SheetHeader extends StatelessWidget {
   const _Hip3SheetHeader({
     required this.title,
-    required this.leverage,
+    required this.maximumLeverage,
+    required this.productId,
     required this.color,
     required this.onClose,
   });
 
   final String title;
-  final int leverage;
+  final int? maximumLeverage;
+  final String? productId;
   final Color color;
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      ),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-      ),
-      const SizedBox(width: 4),
-      _Hip3Badge('$leverage×'),
-      const SizedBox(width: 4),
-      _Hip3Badge(AppLocalizations.of(context).hip3Perps),
-      IconButton(
-        tooltip: AppLocalizations.of(context).close,
-        onPressed: onClose,
-        icon: const Icon(Icons.keyboard_double_arrow_down, size: 24),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 24, height: 24),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final venue = _hip3Venue(productId);
+    return Row(
+      key: const Key('hip3-sheet-header'),
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        if (maximumLeverage != null) ...[
+          const SizedBox(width: 4),
+          _Hip3Badge(
+            AppLocalizations.of(context)
+                .hip3MaximumLeverageHint('$maximumLeverage'),
+            key: const Key('hip3-maximum-leverage'),
+          ),
+        ],
+        const SizedBox(width: 4),
+        _Hip3Badge(
+          venue == null ? 'HIP-3' : 'HIP-3 · $venue',
+          key: const Key('hip3-product-source'),
+          maxWidth: 112,
+          leading: SvgPicture.asset(
+            'assets/figma/home_markets/venue_hyperliquid.svg',
+            width: 14,
+            height: 14,
+            fit: BoxFit.contain,
+          ),
+        ),
+        IconButton(
+          tooltip: AppLocalizations.of(context).close,
+          onPressed: onClose,
+          icon: const Icon(Icons.keyboard_double_arrow_down, size: 24),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+        ),
+      ],
+    );
+  }
+}
+
+String? _hip3Venue(String? productId) {
+  if (productId == null) return null;
+  final separator = productId.indexOf(':');
+  if (separator <= 0) return null;
+  final venue = productId.substring(0, separator).trim();
+  return venue.isEmpty ? null : venue.toUpperCase();
 }
 
 class _Hip3Badge extends StatelessWidget {
-  const _Hip3Badge(this.label);
+  const _Hip3Badge(this.label, {super.key, this.leading, this.maxWidth});
 
   final String label;
+  final Widget? leading;
+  final double? maxWidth;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final labelText = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 12, height: 16 / 12),
+    );
     return Container(
+      constraints: maxWidth == null
+          ? null
+          : BoxConstraints(maxWidth: maxWidth!),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: colors.subtleSurface,
         border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(label, style: const TextStyle(fontSize: 12, height: 16 / 12)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (leading != null) ...[leading!, const SizedBox(width: 2)],
+          if (maxWidth == null) labelText else Flexible(child: labelText),
+        ],
+      ),
     );
   }
 }
@@ -2426,7 +2478,6 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     this.showSettings = true,
     required this.marginMode,
     required this.leverage,
-    this.maximumLeverage,
     this.minimumAmount,
     this.amountBounds,
     this.limitPrice,
@@ -2449,7 +2500,6 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   final bool showSettings;
   final TradingMarginMode? marginMode;
   final int leverage;
-  final int? maximumLeverage;
   final String? minimumAmount;
   final (double, double)? amountBounds;
 
@@ -2537,18 +2587,6 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                                   : colors.tertiaryText,
                             ),
                           ),
-                          if (settingsEnabled && maximumLeverage != null) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              AppLocalizations.of(context)
-                                  .hip3MaximumLeverageHint('$maximumLeverage'),
-                              key: const Key('hip3-maximum-leverage'),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colors.secondaryText,
-                              ),
-                            ),
-                          ],
                           Icon(
                             Icons.keyboard_arrow_down,
                             size: 18,

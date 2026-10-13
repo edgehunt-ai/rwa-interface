@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
@@ -1080,8 +1081,33 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(const Hip3OrderPanel()));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('hip3-maximum-leverage')), findsOneWidget);
+    final header = find.byKey(const Key('hip3-sheet-header'));
+    final modeCard = find.byKey(const Key('hip3-mode-leverage-card'));
+    final maximumLeverage = find.byKey(const Key('hip3-maximum-leverage'));
+    final productSource = find.byKey(const Key('hip3-product-source'));
+
+    expect(maximumLeverage, findsOneWidget);
+    expect(
+      find.descendant(of: header, matching: maximumLeverage),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: modeCard, matching: maximumLeverage),
+      findsNothing,
+    );
     expect(find.text('Max 20x'), findsOneWidget);
+    expect(find.text('10×'), findsOneWidget);
+    expect(
+      find.descendant(of: header, matching: productSource),
+      findsOneWidget,
+    );
+    expect(find.text('HIP-3 · XYZ'), findsOneWidget);
+    final venueIcon = find.descendant(
+      of: productSource,
+      matching: find.byType(SvgPicture),
+    );
+    expect(venueIcon, findsOneWidget);
+    expect(tester.getSize(venueIcon), const Size.square(14));
     expect(find.text('Min 12'), findsOneWidget);
     expect(find.byKey(const Key('hip3-order-value-range')), findsNothing);
   });
