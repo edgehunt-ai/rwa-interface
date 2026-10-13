@@ -29,6 +29,7 @@ final class MarketProduct {
     this.logoText,
     this.change24hPercent,
     this.volume24h,
+    this.turnover24h,
     this.isFavorite = false,
   });
 
@@ -44,5 +45,6 @@ final class MarketProduct {
   final String? logoText;
   final DecimalValue? change24hPercent;
   final DecimalValue? volume24h;
+  final DecimalValue? turnover24h;
   final bool isFavorite;
 }

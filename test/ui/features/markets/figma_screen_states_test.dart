@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/services/market_search_history_service.dart';
@@ -43,7 +41,7 @@ void main() {
   testWidgets('market ranking tabs remain usable at 200% text scale', (
     tester,
   ) async {
-    await configureDisplay(tester, textScale: 2);
+    await configureDisplay(tester, size: const Size(393, 852), textScale: 2);
     await tester.pumpWidget(
       buildTestApp(MarketRankingTabs(active: 'Favorites', onSelected: (_) {})),
     );
@@ -69,6 +67,128 @@ void main() {
 
     expect(find.text('Favorites'), findsNothing);
     expect(find.text('Popular'), findsOneWidget);
+  });
+
+  testWidgets('product and ranking filters match the market design', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    await tester.pumpWidget(
+      buildTestApp(
+        Column(
+          children: [
+            MarketProductFilter(value: null, onChanged: (_) {}),
+            const SizedBox(height: 12),
+            MarketRankingTabs(active: 'Popular', onSelected: (_) {}),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('All products'), findsOneWidget);
+    expect(find.text('Spot'), findsOneWidget);
+    expect(find.text('Perps'), findsOneWidget);
+    expect(tester.getRect(find.byType(MarketProductFilter)).height, 32);
+    expect(
+      tester.getRect(find.byKey(const Key('market-ranking-popular'))).height,
+      24,
+    );
+    final popular = tester.widget<TextButton>(
+      find.descendant(
+        of: find.byKey(const Key('market-ranking-popular')),
+        matching: find.byType(TextButton),
+      ),
+    );
+    expect(popular.style?.shape?.resolve({}), isA<StadiumBorder>());
+    expect(
+      popular.style?.backgroundColor?.resolve({}),
+      AppTheme.light.extension<AppRwaColors>()!.subtleSurface,
+    );
+  });
+
+  testWidgets('product tabs request Spot and Perps products', (tester) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    final requestedKinds = <MarketProductKind?>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith((ref, query) async {
+            requestedKinds.add(query.productType);
+            return _MarketsRepository().listProducts();
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('market-product-bstock')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('market-product-perp')));
+    await tester.pumpAndSettle();
+
+    expect(
+      requestedKinds,
+      containsAllInOrder([
+        null,
+        MarketProductKind.bstock,
+        MarketProductKind.perp,
+      ]),
+    );
+  });
+
+  testWidgets('volume ranking shows USD turnover instead of price change', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await configureDisplay(tester, size: const Size(393, 852));
+    final requestedGroups = <String?>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketRankingTabProvider.overrideWithBuild((_, _) => 'Popular'),
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith((ref, query) async {
+            requestedGroups.add(query.group);
+            return DomainPage(
+              items: [
+                MarketProduct(
+                  symbol: 'NVDA',
+                  name: 'NVIDIA',
+                  kind: MarketProductKind.bstock,
+                  price: DecimalValue('120', asset: 'USD', unit: 'price'),
+                  settlementAsset: 'USDC',
+                  network: 'BSC',
+                  tradable: true,
+                  change24hPercent: DecimalValue('2.5', unit: 'percent'),
+                  turnover24h: DecimalValue(
+                    '1234567',
+                    asset: 'USD',
+                    unit: 'turnover',
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('+2.5%'), findsOneWidget);
+    expect(find.text(r'Vol $1.23M'), findsNothing);
+
+    await tester.drag(find.text('Popular'), const Offset(-80, 0));
+    await tester.pump();
+    await tester.tap(find.text('Volume'));
+    await tester.pumpAndSettle();
+
+    expect(requestedGroups, contains('volume'));
+    expect(find.text('+2.5%'), findsNothing);
+    expect(find.text(r'Vol $1.23M'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('empty favorites show the illustration and explore Popular', (
@@ -122,43 +242,60 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'market stock cards fill two columns and open supported product',
-    (tester) async {
-      final router = GoRouter(
-        routes: [
-          GoRoute(path: '/', builder: (_, _) => const MarketScreen()),
-          GoRoute(path: '/trade', builder: (_, state) => Text(state.uri.query)),
+  testWidgets('market starts with product filters and omits stock browse', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    var stockLoads = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketStocksProvider.overrideWith((ref) async {
+            stockLoads++;
+            return const DomainPage<Stock>(items: []);
+          }),
         ],
-      );
-      addTearDown(router.dispose);
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
-          ],
-          child: MaterialApp.router(
-            theme: AppTheme.light,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            routerConfig: router,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text('bStocks'), findsWidgets);
-      expect(find.text('HIP-3'), findsNWidgets(2));
-      final nvda = tester.getSize(find.byKey(const Key('stock-tile-NVDA')));
-      final tsla = tester.getSize(find.byKey(const Key('stock-tile-TSLA')));
-      expect(nvda.width, tsla.width);
-      expect(nvda.height, 92);
+    expect(find.text('Stocks'), findsNothing);
+    expect(find.text('Browse all'), findsNothing);
+    expect(find.byKey(const Key('stock-tile-NVDA')), findsNothing);
+    expect(stockLoads, 0);
 
-      await tester.tap(find.byKey(const Key('stock-tile-TSLA')));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('symbol=TSLA&kind=perp'), findsOneWidget);
-    },
-  );
+    final filter = tester.getRect(find.byType(MarketProductFilter));
+    final tabs = tester.getRect(find.byType(MarketRankingTabs));
+    final firstProduct = tester.getRect(find.byType(MarketProductRow).first);
+    expect(filter.height, 32);
+    expect(filter.width, 353);
+    expect(tabs.top - filter.bottom, 12);
+    expect(firstProduct.top - tabs.bottom, 12);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('product filters fit a compact market viewport', (tester) async {
+    await configureDisplay(tester, size: const Size(320, 700));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final filter = tester.getRect(find.byType(MarketProductFilter));
+    expect(filter.right, lessThanOrEqualTo(300));
+    expect(find.text('Products'), findsNothing);
+    expect(find.text('All products'), findsOneWidget);
+    expect(find.text('Spot'), findsOneWidget);
+    expect(find.text('Perps'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('market product rows are built lazily and remain scrollable', (
     tester,
@@ -223,6 +360,7 @@ void main() {
 
     expect(find.text('Recent searches'), findsOneWidget);
     expect(find.text('No recent searches'), findsOneWidget);
+    expect(find.text('Browse all stocks'), findsNothing);
   });
 
   testWidgets('market discovery restores recent searches from history', (
@@ -279,68 +417,6 @@ void main() {
       expect(find.text('TSLA'), findsOneWidget);
     },
   );
-
-  testWidgets('all stocks filters stocks loaded from the stocks endpoint', (
-    tester,
-  ) async {
-    final repository = _ProgressiveMarketsRepository();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: _marketApp(const MarketSearchScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'nv');
-    await tester.pump();
-
-    expect(find.text('NVDA'), findsWidgets);
-    expect(find.text('TSLA'), findsNothing);
-  });
-
-  testWidgets('all stocks filters locally without requesting product search', (
-    tester,
-  ) async {
-    final repository = _ProgressiveMarketsRepository();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: _marketApp(const MarketSearchScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'ts');
-    await tester.pump();
-
-    expect(find.text('NVDA'), findsNothing);
-    expect(repository.productQueries, isEmpty);
-  });
-
-  testWidgets('all stocks marks every supported venue per stock', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
-        ],
-        child: _marketApp(const MarketSearchScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    Finder venue(String asset) => find.byWidgetPredicate(
-      (widget) =>
-          widget is SvgPicture && widget.bytesLoader.toString().contains(asset),
-    );
-
-    // NVDA trades as a bStock and a HIP-3 perp, TSLA only as a HIP-3 perp.
-    expect(venue('venue_bnb.svg'), findsOneWidget);
-    expect(venue('network_bsc.svg'), findsNothing);
-    expect(venue('venue_hyperliquid.svg'), findsNWidgets(2));
-  });
 
   testWidgets('MarketDiscoverySearchScreen debounces remote searches', (
     tester,

@@ -161,7 +161,10 @@ Future<void> runPerformanceScenarios(
     try {
       await recorder.measure('markets_load', '行情列表加载（60 项）', () async {
         await tester.pumpWidget(market.app);
-        await _waitFor(tester, find.byKey(const Key('stock-tile-NVDA')));
+        await _waitFor(
+          tester,
+          find.byKey(const Key('market-product-NVDAB-bstock')),
+        );
         await _waitFor(tester, find.text('NVDAB'));
       });
       final list = find.byType(CustomScrollView).first;
@@ -185,7 +188,9 @@ Future<void> runPerformanceScenarios(
         'details_load',
         '行情详情加载（240 根 K 线）',
         () async {
-          await tester.tap(find.byKey(const Key('stock-tile-NVDA')));
+          await tester.tap(
+            find.byKey(const Key('market-product-NVDAB-bstock')),
+          );
           await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
           await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
           expect(market.markets.snapshots, greaterThan(0));

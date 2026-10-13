@@ -264,6 +264,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     productId: value.hip3Market?.productId,
     change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
     volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
+    turnover24h: _decimal(value.turnover24hUsd, asset: 'USD', unit: 'turnover'),
     isFavorite: value.isFavorite ?? false,
   );
 

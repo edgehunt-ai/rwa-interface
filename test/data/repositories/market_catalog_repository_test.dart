@@ -12,6 +12,8 @@ void main() {
     expect(page.nextCursor, 'b');
     expect(page.items.single.kind, MarketProductKind.bstock);
     expect(page.items.single.price.value, '123.4500');
+    expect(page.items.single.turnover24h?.value, '9876543.2100');
+    expect(page.items.single.turnover24h?.asset, 'USD');
     expect(page.items.single.isFavorite, isTrue);
   });
 }
@@ -34,6 +36,7 @@ final class _Markets implements MarketsService {
             ..name = 'NVIDIA'
             ..kind = api.ProductKind.bstock
             ..price = '123.4500'
+            ..turnover24hUsd = '9876543.2100'
             ..isFavorite = true,
         ),
       ),

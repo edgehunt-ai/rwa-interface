@@ -114,7 +114,7 @@ class HomeScreen extends ConsumerWidget {
                       radius: 12,
                     )
                   : _LoginAction(onLogin: () => _openLogin(context)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 28),
               const _MarketPreview(),
             ],
           ),
@@ -496,25 +496,11 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              l10n.marketsTitle,
-              style: TextStyle(
-                color: colors.primaryText,
-                fontSize: 20,
-                height: 26 / 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            MarketProductFilter(
-              value: kind,
-              onChanged: (value) => setState(() => kind = value),
-            ),
-          ],
+        MarketProductFilter(
+          value: kind,
+          onChanged: (value) => setState(() => kind = value),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         MarketRankingTabs(
           active: selectedTab,
           showFavorites: authenticated,
@@ -578,6 +564,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                       child: MarketProductRow(
                         product: product,
                         dense: true,
+                        showVolume: selectedTab == 'Volume',
                         onTap: () => context.push(
                           AppRoutes.tradeLocation(
                             symbol: product.symbol,

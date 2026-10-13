@@ -9,8 +9,6 @@ abstract final class AppRoutes {
   static const marketsPath = '/markets';
   static const assetsName = 'assets';
   static const assetsPath = '/assets';
-  static const allStocksName = 'allStocks';
-  static const allStocksPath = '/markets/stocks';
   static const marketSearchName = 'marketSearch';
   static const marketSearchPath = '/markets/search';
   static const depositName = 'deposit';

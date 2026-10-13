@@ -51,11 +51,6 @@ abstract final class AppRouter {
           builder: (context, state) => const MarketDiscoverySearchScreen(),
         ),
         GoRoute(
-          name: AppRoutes.allStocksName,
-          path: AppRoutes.allStocksPath,
-          builder: (context, state) => const MarketSearchScreen(),
-        ),
-        GoRoute(
           name: AppRoutes.marketsName,
           path: AppRoutes.marketsPath,
           builder: (context, state) => const MarketScreen(),

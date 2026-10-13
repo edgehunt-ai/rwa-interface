@@ -7,20 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
-import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
-
-class MarketSearchScreen extends ConsumerStatefulWidget {
-  const MarketSearchScreen({super.key});
-
-  @override
-  ConsumerState<MarketSearchScreen> createState() => _MarketSearchScreenState();
-}
 
 class MarketDiscoverySearchScreen extends ConsumerStatefulWidget {
   const MarketDiscoverySearchScreen({super.key});
@@ -179,7 +171,6 @@ class _MarketDiscoverySearchScreenState
       return _marketResultList(
         title: AppLocalizations.of(context).recentSearches,
         products: visible,
-        showBrowseAll: true,
       );
     },
   );
@@ -232,8 +223,6 @@ class _MarketDiscoverySearchScreenState
           color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
         ),
       ),
-      const SizedBox(height: 12),
-      _browseAllButton(),
     ],
   );
 
@@ -241,7 +230,6 @@ class _MarketDiscoverySearchScreenState
     required String title,
     required List<MarketProduct> products,
     bool isLoadingMore = false,
-    bool showBrowseAll = false,
   }) => ListView(
     children: [
       Text(title, style: Theme.of(context).textTheme.titleMedium),
@@ -253,22 +241,7 @@ class _MarketDiscoverySearchScreenState
           rows: 2,
           padding: EdgeInsets.only(top: 12, bottom: 20),
         ),
-      if (showBrowseAll) ...[const SizedBox(height: 12), _browseAllButton()],
     ],
-  );
-
-  Widget _browseAllButton() => TextButton(
-    onPressed: () => context.pushNamed(AppRoutes.allStocksName),
-    style: TextButton.styleFrom(
-      padding: EdgeInsets.zero,
-      minimumSize: const Size(0, 44),
-      alignment: Alignment.centerLeft,
-    ),
-    child: Text(
-      '${AppLocalizations.of(context).browseAllStocks}  ›',
-      style: Theme.of(context).textTheme.labelLarge
-          ?.copyWith(fontWeight: FontWeight.w600),
-    ),
   );
 
   void _openProduct(MarketProduct product) {
@@ -334,222 +307,4 @@ List<MarketProduct> _mergeProducts(
     );
   }
   return unique.values.toList(growable: false);
-}
-
-class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
-  final _controller = TextEditingController();
-  String query = '';
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stocksState = ref.watch(marketStocksProvider);
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        tooltip: l10n.back,
-                        onPressed: () => context.pop(),
-                        icon: Transform.rotate(
-                          angle: 3.141592653589793,
-                          child: SvgPicture.asset(
-                            'assets/figma/home_markets/chevron_right.svg',
-                            width: 20,
-                            height: 20,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        l10n.allStocks,
-                        style: Theme.of(context).textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _controller,
-                    onChanged: (value) => setState(() => query = value),
-                    decoration: InputDecoration(
-                      fillColor: Theme.of(context)
-                          .extension<AppRwaColors>()!
-                          .subtleSurface,
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: SvgPicture.asset(
-                          'assets/figma/home_markets/search.svg',
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                      hintText: l10n.searchTickerOrCompany,
-                      suffixIcon: query.isEmpty
-                          ? null
-                          : IconButton(
-                              tooltip: l10n.clearSearch,
-                              onPressed: () {
-                                _controller.clear();
-                                setState(() => query = '');
-                              },
-                              icon: const Icon(Icons.close),
-                            ),
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(14)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: stocksState.when(
-                loading: () => DesignStateFeedback(
-                  state: DesignState.loading,
-                  title: l10n.loadingStocks,
-                ),
-                error: (_, _) => DesignStateFeedback(
-                  state: DesignState.failure,
-                  title: l10n.stocksUnavailable,
-                  message: l10n.marketCatalogUnavailable,
-                  onRetry: () => ref.refresh(marketStocksProvider.future),
-                ),
-                data: (page) {
-                  final stocks = _filterStocks(page.items, query);
-                  if (stocks.isEmpty) {
-                    return DesignStateFeedback(
-                      state: DesignState.empty,
-                      title: l10n.noStocksFound,
-                      message: l10n.tryAnotherTickerOrCompany,
-                    );
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: stocks.length,
-                    separatorBuilder: (_, _) => Divider(
-                      height: 1,
-                      color: Theme.of(context)
-                          .extension<AppRwaColors>()!
-                          .border,
-                    ),
-                    itemBuilder: (_, index) =>
-                        _StockBrowseRow(stock: stocks[index]),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-List<Stock> _filterStocks(List<Stock> stocks, String query) {
-  final normalizedQuery = query.trim().toLowerCase();
-  if (normalizedQuery.isEmpty) return stocks;
-  return stocks
-      .where(
-        (stock) =>
-            stock.symbol.toLowerCase().contains(normalizedQuery) ||
-            stock.name.toLowerCase().contains(normalizedQuery),
-      )
-      .toList(growable: false);
-}
-
-class _StockBrowseRow extends StatelessWidget {
-  const _StockBrowseRow({required this.stock});
-
-  final Stock stock;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final products = stock.products.toSet();
-    final kinds = {for (final product in products) product.kind};
-    final destination = products.firstWhere(
-      (product) => product.kind == MarketProductKind.bstock,
-      orElse: () => products.isNotEmpty
-          ? products.first
-          : MarketProductRef(
-              symbol: stock.symbol,
-              kind: MarketProductKind.bstock,
-            ),
-    );
-    return Semantics(
-      button: true,
-      label: '${stock.symbol}, ${stock.name}',
-      child: InkWell(
-        onTap: () => context.push(
-          AppRoutes.tradeLocation(
-            symbol: destination.symbol,
-            kind: destination.kind.name,
-          ),
-        ),
-        child: SizedBox(
-          height: 68,
-          child: Row(
-            children: [
-              MarketAssetMark(
-                symbol: stock.symbol,
-                logoUrl: stock.logoUrl,
-                logoText: stock.logoText,
-                borderRadius: 12,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      stock.symbol,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      stock.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: colors.secondaryText),
-                    ),
-                  ],
-                ),
-              ),
-              if (kinds.contains(MarketProductKind.bstock))
-                SvgPicture.asset(
-                  'assets/figma/home_markets/venue_bnb.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              if (kinds.length > 1) const SizedBox(width: 8),
-              if (kinds.contains(MarketProductKind.perp))
-                SvgPicture.asset(
-                  'assets/figma/home_markets/venue_hyperliquid.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              const SizedBox(width: 8),
-              SvgPicture.asset(
-                'assets/figma/home_markets/chevron_right.svg',
-                width: 20,
-                height: 20,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

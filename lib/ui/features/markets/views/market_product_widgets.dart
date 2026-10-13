@@ -8,8 +8,6 @@ import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 
-enum _ProductFilterChoice { all, bstock, perp }
-
 String marketProductGroupForTab(String tab) => switch (tab) {
   'Favorites' => 'favorites',
   'Gainers' => 'gainers',
@@ -40,52 +38,51 @@ class MarketRankingTabs extends StatelessWidget {
       'Volume',
     ];
     final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final scaledTextHeight = MediaQuery.textScalerOf(context).scale(14);
-    final tabHeight = scaledTextHeight > 16 ? scaledTextHeight + 16 : 32.0;
-    return SizedBox(
-      height: tabHeight,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: tabs.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 4),
-        itemBuilder: (context, index) {
-          final tab = tabs[index];
-          final selected = tab == active;
-          return TextButton(
-            onPressed: () => onSelected(tab),
-            style: TextButton.styleFrom(
-              foregroundColor: selected
-                  ? colors.primaryText
-                  : colors.secondaryText,
-              minimumSize: Size(0, tabHeight),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              shape: const RoundedRectangleBorder(),
-              textStyle: const TextStyle(
-                fontSize: 13,
-                height: 18 / 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final scaledLineHeight = MediaQuery.textScalerOf(context).scale(18);
+    final tabHeight = scaledLineHeight > 18 ? scaledLineHeight + 6 : 24.0;
+    final buttons = [
+      for (final tab in tabs)
+        _RankingTab(
+          key: ValueKey('market-ranking-${tab.toLowerCase()}'),
+          label: _label(l10n, tab),
+          selected: tab == active,
+          height: tabHeight,
+          onPressed: () => onSelected(tab),
+        ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 340 && scaledLineHeight <= 18) {
+          return SizedBox(
+            height: tabHeight,
+            child: Row(
               children: [
-                Text(_label(l10n, tab)),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  width: selected ? 24 : 0,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    color: selected ? colors.selected : Colors.transparent,
-                    borderRadius: BorderRadius.circular(1),
+                for (final button in buttons)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: button,
+                    ),
                   ),
-                ),
               ],
             ),
           );
-        },
-      ),
+        }
+        return SizedBox(
+          height: tabHeight,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (var index = 0; index < buttons.length; index++) ...[
+                  if (index > 0) const SizedBox(width: 8),
+                  buttons[index],
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -99,6 +96,48 @@ class MarketRankingTabs extends StatelessWidget {
   };
 }
 
+class _RankingTab extends StatelessWidget {
+  const _RankingTab({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.height,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool selected;
+  final double height;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: selected ? colors.primaryText : colors.secondaryText,
+        backgroundColor: selected ? colors.subtleSurface : Colors.transparent,
+        minimumSize: Size(0, height),
+        maximumSize: Size(double.infinity, height),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: selected ? Colors.transparent : colors.border,
+          ),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 13,
+          height: 18 / 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      child: Text(label),
+    );
+  }
+}
+
 class MarketProductFilter extends StatelessWidget {
   const MarketProductFilter({super.key, this.value, required this.onChanged});
 
@@ -109,103 +148,67 @@ class MarketProductFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    return PopupMenuButton<_ProductFilterChoice>(
-      tooltip: l10n.filterProducts,
-      color: colors.surface,
-      constraints: const BoxConstraints.tightFor(width: 168),
-      menuPadding: const EdgeInsets.all(4),
-      offset: const Offset(0, 40),
-      onSelected: (choice) => onChanged(switch (choice) {
-        _ProductFilterChoice.all => null,
-        _ProductFilterChoice.bstock => MarketProductKind.bstock,
-        _ProductFilterChoice.perp => MarketProductKind.perp,
-      }),
-      itemBuilder: (context) => [
-        _productItem(context, _ProductFilterChoice.all, null, l10n.allProducts),
-        _productItem(
-          context,
-          _ProductFilterChoice.bstock,
-          MarketProductKind.bstock,
-          'bStocks',
-        ),
-        _productItem(
-          context,
-          _ProductFilterChoice.perp,
-          MarketProductKind.perp,
-          l10n.hip3Perps,
-        ),
-      ],
-      child: SizedBox(
-        width: 135,
-        height: 36,
-        child: OutlinedButton(
-          onPressed: null,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(135, 36),
-            maximumSize: const Size(135, 36),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            backgroundColor: colors.surface,
-            disabledBackgroundColor: colors.surface,
-            disabledForegroundColor: colors.primaryText,
-            side: BorderSide(color: colors.border),
-            textStyle: const TextStyle(
-              fontSize: 13,
-              height: 18 / 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(_label(l10n), overflow: TextOverflow.ellipsis),
-              ),
-              SvgPicture.asset(
-                'assets/figma/home_markets/chevron_down.svg',
-                width: 20,
-                height: 20,
+    final scaledLineHeight = MediaQuery.textScalerOf(context).scale(20);
+    final tabHeight = scaledLineHeight > 20 ? scaledLineHeight + 12 : 32.0;
+    final tabs = <(String, MarketProductKind?)>[
+      (l10n.allProducts, null),
+      (l10n.spot, MarketProductKind.bstock),
+      (l10n.perps, MarketProductKind.perp),
+    ];
+    return SizedBox(
+      height: tabHeight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (var index = 0; index < tabs.length; index++) ...[
+              if (index > 0) const SizedBox(width: 20),
+              Builder(
+                builder: (context) {
+                  final (label, kind) = tabs[index];
+                  final selected = value == kind;
+                  return TextButton(
+                    key: ValueKey('market-product-${kind?.name ?? 'all'}'),
+                    onPressed: () => onChanged(kind),
+                    style: TextButton.styleFrom(
+                      foregroundColor: selected
+                          ? colors.primaryText
+                          : colors.secondaryText,
+                      minimumSize: Size(0, tabHeight),
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: const RoundedRectangleBorder(),
+                      textStyle: TextStyle(
+                        fontSize: 15,
+                        height: 20 / 15,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(label),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          width: selected ? 24 : 0,
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? colors.selected
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _label(AppLocalizations l10n) => switch (value) {
-    null => l10n.allProducts,
-    MarketProductKind.bstock => 'bStocks',
-    MarketProductKind.perp => l10n.hip3Perps,
-  };
-
-  PopupMenuItem<_ProductFilterChoice> _productItem(
-    BuildContext context,
-    _ProductFilterChoice choice,
-    MarketProductKind? itemValue,
-    String label,
-  ) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final selected = value == itemValue;
-    return PopupMenuItem<_ProductFilterChoice>(
-      value: choice,
-      height: 40,
-      padding: EdgeInsets.zero,
-      child: Container(
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? colors.selectedSoft : null,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? colors.primaryText : colors.secondaryText,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-          ),
+          ],
         ),
       ),
     );
@@ -217,11 +220,13 @@ class MarketProductRow extends StatelessWidget {
     super.key,
     required this.product,
     this.dense = false,
+    this.showVolume = false,
     this.onTap,
   });
 
   final MarketProduct product;
   final bool dense;
+  final bool showVolume;
   final VoidCallback? onTap;
 
   @override
@@ -231,6 +236,10 @@ class MarketProductRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final positive =
         !(product.change24hPercent?.value.startsWith('-') ?? false);
+    final turnover = product.turnover24h;
+    final volumeLabel = turnover == null
+        ? 'Vol —'
+        : 'Vol ${TokenAmountFormatter.formatCompact(turnover, usd: true)}';
     final row = SizedBox(
       height: dense ? 70 : 72,
       child: Row(
@@ -294,7 +303,15 @@ class MarketProductRow extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyLarge
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
-              if (product.change24hPercent != null)
+              if (showVolume)
+                AnimatedNumberText(
+                  volumeLabel,
+                  key: ValueKey('market-volume-${product.symbol}'),
+                  comparisonValue: turnover?.value,
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: colors.secondaryText),
+                )
+              else if (product.change24hPercent != null)
                 AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(product.change24hPercent!),
                   key: ValueKey('market-change-${product.symbol}'),

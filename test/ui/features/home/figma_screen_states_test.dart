@@ -256,7 +256,14 @@ void main() {
     expect(find.text(r'+$248.32 (+2.01%) Today'), findsOneWidget);
     expect(find.text('Deposit'), findsOneWidget);
     expect(find.text('Withdraw'), findsOneWidget);
-    expect(find.text('Markets'), findsWidgets);
+    // The only Markets label belongs to bottom navigation, not this preview.
+    expect(find.text('Markets'), findsOneWidget);
+    final depositButton = find.widgetWithText(FilledButton, 'Deposit');
+    final productFilter = find.byType(MarketProductFilter);
+    expect(
+      tester.getRect(productFilter).top - tester.getRect(depositButton).bottom,
+      28,
+    );
     expect(find.text('NVDA'), findsWidgets);
     await tester.tap(find.text('Gainers'));
     await tester.pump();
