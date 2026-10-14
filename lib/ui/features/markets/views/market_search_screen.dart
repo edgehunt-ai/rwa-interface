@@ -123,13 +123,7 @@ class _MarketDiscoverySearchScreenState
               Expanded(
                 child: query.isEmpty
                     ? _recentSearches(catalog, recentSearches)
-                    : _searchResults(
-                        localProducts: _localSearch(
-                          catalog.asData?.value.items ?? const [],
-                          query,
-                        ),
-                        remoteProducts: searchResults!,
-                      ),
+                    : _searchResults(searchResults!),
               ),
             ],
           ),
@@ -178,40 +172,32 @@ class _MarketDiscoverySearchScreenState
     },
   );
 
-  Widget _searchResults({
-    required List<MarketProduct> localProducts,
-    required AsyncValue<DomainPage<MarketProduct>> remoteProducts,
-  }) => remoteProducts.when(
-    loading: () => _marketResultList(
-      title: AppLocalizations.of(context).results,
-      products: localProducts,
-      isLoadingMore: true,
-    ),
-    error: (_, _) => localProducts.isNotEmpty
-        ? _marketResultList(
+  Widget _searchResults(AsyncValue<DomainPage<MarketProduct>> remoteProducts) =>
+      remoteProducts.when(
+        loading: () => _marketResultList(
+          title: AppLocalizations.of(context).results,
+          products: const [],
+          isLoadingMore: true,
+        ),
+        error: (_, _) => DesignStateFeedback(
+          state: DesignState.failure,
+          title: AppLocalizations.of(context).marketsUnavailable,
+          message: AppLocalizations.of(context).marketCatalogUnavailable,
+        ),
+        data: (page) {
+          if (page.items.isEmpty) {
+            return DesignStateFeedback(
+              state: DesignState.empty,
+              title: AppLocalizations.of(context).noMatchingMarkets,
+              message: AppLocalizations.of(context).tryAnotherTickerOrCompany,
+            );
+          }
+          return _marketResultList(
             title: AppLocalizations.of(context).results,
-            products: localProducts,
-          )
-        : DesignStateFeedback(
-            state: DesignState.failure,
-            title: AppLocalizations.of(context).marketsUnavailable,
-            message: AppLocalizations.of(context).marketCatalogUnavailable,
-          ),
-    data: (page) {
-      final products = _mergeProducts(localProducts, page.items);
-      if (products.isEmpty) {
-        return DesignStateFeedback(
-          state: DesignState.empty,
-          title: AppLocalizations.of(context).noMatchingMarkets,
-          message: AppLocalizations.of(context).tryAnotherTickerOrCompany,
-        );
-      }
-      return _marketResultList(
-        title: AppLocalizations.of(context).results,
-        products: products,
+            products: page.items,
+          );
+        },
       );
-    },
-  );
 
   Widget _emptyRecentSearches() => ListView(
     children: [
@@ -285,29 +271,4 @@ List<MarketProduct> _recentProducts(
       MarketProductRef(symbol: product.symbol, kind: product.kind): product,
   };
   return [for (final reference in recentSearches) ?byReference[reference]];
-}
-
-List<MarketProduct> _localSearch(List<MarketProduct> products, String query) {
-  final normalizedQuery = query.trim().toLowerCase();
-  if (normalizedQuery.isEmpty) return const [];
-  return [
-    for (final product in products)
-      if (product.symbol.toLowerCase().contains(normalizedQuery) ||
-          product.name.toLowerCase().contains(normalizedQuery))
-        product,
-  ];
-}
-
-List<MarketProduct> _mergeProducts(
-  List<MarketProduct> localProducts,
-  List<MarketProduct> remoteProducts,
-) {
-  final unique = <MarketProductRef, MarketProduct>{};
-  for (final product in [...localProducts, ...remoteProducts]) {
-    unique.putIfAbsent(
-      MarketProductRef(symbol: product.symbol, kind: product.kind),
-      () => product,
-    );
-  }
-  return unique.values.toList(growable: false);
 }

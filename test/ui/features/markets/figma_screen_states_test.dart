@@ -423,7 +423,7 @@ void main() {
   });
 
   testWidgets(
-    'market search shows remote results after its debounced query resolves',
+    'market search preserves the remote result order after its debounced query resolves',
     (tester) async {
       final repository = _ProgressiveMarketsRepository();
       await tester.pumpWidget(
@@ -446,8 +446,12 @@ void main() {
       repository.completeSearch();
       await tester.pumpAndSettle();
 
-      expect(find.text('NVDA'), findsWidgets);
-      expect(find.text('TSLA'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+            .map((row) => row.product.symbol),
+        ['TSLA', 'NVDA'],
+      );
     },
   );
 
@@ -577,7 +581,7 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
   }
 
   void completeSearch() => _searchResults.complete(
-    DomainPage(items: [_product('NVDA', 'NVIDIA'), _product('TSLA', 'Tesla')]),
+    DomainPage(items: [_product('TSLA', 'Tesla'), _product('NVDA', 'NVIDIA')]),
   );
 
   @override
