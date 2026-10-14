@@ -216,6 +216,10 @@ void main() {
       closeTo(tester.getRect(symbol).center.dy, 1),
     );
     expect(
+      tester.getRect(maximumLeverage).left - tester.getRect(symbol).right,
+      closeTo(4, 0.01),
+    );
+    expect(
       tester.getRect(metadata).top,
       greaterThan(tester.getRect(symbol).top),
     );
