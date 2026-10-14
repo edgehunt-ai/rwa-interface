@@ -375,6 +375,98 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('market list loads and appends the next cursor page on scroll', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 700));
+    final cursors = <String?>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith((ref, query) async {
+            cursors.add(query.cursor);
+            if (query.cursor == null) {
+              return DomainPage(
+                items: List.generate(
+                  18,
+                  (index) => _testProduct('MARKET-$index'),
+                ),
+                nextCursor: 'market-page-2',
+                hasMore: true,
+              );
+            }
+            return DomainPage(items: [_testProduct('MARKET-PAGE-2')]);
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(cursors, [null]);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -2400));
+    await tester.pumpAndSettle();
+
+    expect(cursors, [null, 'market-page-2']);
+    expect(
+      tester
+          .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+          .map((row) => row.product.symbol),
+      contains('MARKET-PAGE-2'),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('market list keeps existing rows during a background reload', (
+    tester,
+  ) async {
+    final reload = Completer<DomainPage<MarketProduct>>();
+    var requests = 0;
+    final container = ProviderContainer(
+      overrides: [
+        marketRankingTabProvider.overrideWithBuild((_, _) => 'Popular'),
+        marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+        marketProductsProvider.overrideWith((ref, query) {
+          requests++;
+          if (requests == 1) {
+            return Future.value(DomainPage(items: [_testProduct('NVDA')]));
+          }
+          return reload.future;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDA'), findsWidgets);
+
+    container.invalidate(
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      )),
+    );
+    await tester.pump();
+
+    expect(requests, 2);
+    expect(find.text('NVDA'), findsWidgets);
+
+    reload.complete(DomainPage(items: [_testProduct('TSLA')]));
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDA'), findsNothing);
+    expect(find.text('TSLA'), findsWidgets);
+  });
+
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {
@@ -423,7 +515,7 @@ void main() {
   });
 
   testWidgets(
-    'market search shows remote results after its debounced query resolves',
+    'market search preserves the remote result order after its debounced query resolves',
     (tester) async {
       final repository = _ProgressiveMarketsRepository();
       await tester.pumpWidget(
@@ -446,8 +538,66 @@ void main() {
       repository.completeSearch();
       await tester.pumpAndSettle();
 
-      expect(find.text('NVDA'), findsWidgets);
-      expect(find.text('TSLA'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+            .map((row) => row.product.symbol),
+        ['TSLA', 'NVDA'],
+      );
+    },
+  );
+
+  testWidgets(
+    'market search loads and appends the next cursor page on scroll',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 700));
+      final searchCursors = <String?>[];
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+            marketSearchHistoryServiceProvider.overrideWithValue(
+              _MarketSearchHistoryService(),
+            ),
+            marketProductsProvider.overrideWith((ref, query) async {
+              if (query.query == null) {
+                return DomainPage(items: [_testProduct('CATALOG')]);
+              }
+              searchCursors.add(query.cursor);
+              if (query.cursor == null) {
+                return DomainPage(
+                  items: List.generate(
+                    18,
+                    (index) => _testProduct('SEARCH-$index'),
+                  ),
+                  nextCursor: 'search-page-2',
+                  hasMore: true,
+                );
+              }
+              return DomainPage(items: [_testProduct('SEARCH-PAGE-2')]);
+            }),
+          ],
+          child: _marketApp(const MarketDiscoverySearchScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'search');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      expect(searchCursors, [null]);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -2400));
+      await tester.pumpAndSettle();
+
+      expect(searchCursors, [null, 'search-page-2']);
+      expect(
+        tester
+            .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+            .map((row) => row.product.symbol),
+        contains('SEARCH-PAGE-2'),
+      );
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -489,6 +639,16 @@ Widget _marketApp(Widget home) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: home,
+);
+
+MarketProduct _testProduct(String symbol) => MarketProduct(
+  symbol: symbol,
+  name: symbol,
+  kind: MarketProductKind.bstock,
+  price: DecimalValue('100', asset: 'USD', unit: 'price'),
+  settlementAsset: 'USDC',
+  network: 'BSC',
+  tradable: true,
 );
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {
@@ -577,7 +737,7 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
   }
 
   void completeSearch() => _searchResults.complete(
-    DomainPage(items: [_product('NVDA', 'NVIDIA'), _product('TSLA', 'Tesla')]),
+    DomainPage(items: [_product('TSLA', 'Tesla'), _product('NVDA', 'NVIDIA')]),
   );
 
   @override

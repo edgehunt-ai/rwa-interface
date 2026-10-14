@@ -57,8 +57,8 @@ test('emulator reports keep raster timings diagnostic-only', () => {
   next.scenarios[0].raster_ms.p95 += 100;
   const comparison = compare(next, report);
   assert.ok(!comparison.rows.some((row) => row.metric === 'raster_ms'));
-  assert.match(markdown(next, comparison), /软件 GPU 光栅耗时仅保留用于诊断/);
-  assert.match(html(next, comparison, raw, [report, next]), /UI 慢帧/);
+  assert.match(markdown(next, comparison), /Software-GPU raster times are diagnostic only/);
+  assert.match(html(next, comparison, raw, [report, next]), /UI slow frames/);
 });
 
 test('summary highlights user workflows and frame health', () => {
@@ -149,8 +149,8 @@ test('HTML is self-contained, escaped and contains valid interactive JavaScript'
   assert.ok(!document.includes(raw.commit));
   assert.ok(!document.includes('src="https://'));
   assert.match(document, /Test CPU/);
-  assert.match(document, /页面加载 P95/);
-  assert.match(document, /测试机器/);
+  assert.match(document, /Page load P95/);
+  assert.match(document, /Test Environment/);
   const script = document.match(/<script>\n([\s\S]*?)<\/script>/)[1];
   assert.doesNotThrow(() => new vm.Script(script));
   const embedded = document.match(/type="application\/json">([\s\S]*?)<\/script>/)[1];
@@ -176,14 +176,14 @@ test('report controls render both action samples and native frame samples', () =
     document: { getElementById: getNode, createElement: () => ({}) },
   });
   assert.equal(getNode('scenario').options.length, 26);
-  assert.match(getNode('distribution').innerHTML, /样本数 10/);
+  assert.match(getNode('distribution').innerHTML, /Samples 10/);
   assert.match(getNode('bars').innerHTML, /main/);
   assert.match(getNode('trend').innerHTML, /previous/);
   getNode('metric').value = 'raster_ms';
   getNode('scenario').value = 'limit_sell_cancel';
   getNode('scenario').onchange();
-  assert.match(getNode('distribution').innerHTML, /样本数 2/);
-  assert.match(getNode('distribution').innerHTML, /帧预算 16.67 ms/);
+  assert.match(getNode('distribution').innerHTML, /Samples 2/);
+  assert.match(getNode('distribution').innerHTML, /Frame budget 16.67 ms/);
   assert.match(getNode('bars').innerHTML, /20.00/);
 });
 

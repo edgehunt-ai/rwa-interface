@@ -29,13 +29,53 @@ class _MarketDiscoverySearchScreenState
   String query = '';
   String _remoteQuery = '';
   final _controller = TextEditingController();
+  late final ScrollController _scrollController;
   Timer? _searchDebounce;
+  MarketProductFeedQuery? _activeFeedQuery;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_loadMoreIfNeeded);
+  }
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     _controller.dispose();
+    _scrollController
+      ..removeListener(_loadMoreIfNeeded)
+      ..dispose();
     super.dispose();
+  }
+
+  void _loadMoreIfNeeded() {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.extentAfter > 240) {
+      return;
+    }
+    final feedQuery = _activeFeedQuery;
+    if (feedQuery == null) return;
+    if (ref.read(marketProductFeedProvider(feedQuery)).value?.loadMoreFailed ??
+        false) {
+      return;
+    }
+    unawaited(
+      ref.read(marketProductFeedProvider(feedQuery).notifier).loadMore(),
+    );
+  }
+
+  Future<void> _retrySearch(MarketProductFeedQuery feedQuery) async {
+    ref.invalidate(
+      marketProductsProvider((
+        query: feedQuery.query,
+        cursor: null,
+        group: feedQuery.group,
+        productType: feedQuery.productType,
+      )),
+    );
+    ref.invalidate(marketProductFeedProvider(feedQuery));
+    await ref.read(marketProductFeedProvider(feedQuery).future);
   }
 
   @override
@@ -51,18 +91,18 @@ class _MarketDiscoverySearchScreenState
         productType: null,
       )),
     );
-    final AsyncValue<DomainPage<MarketProduct>>? searchResults = query.isEmpty
-        ? null
-        : _searchDebounce?.isActive ?? false
-        ? const AsyncLoading()
-        : ref.watch(
-            marketProductsProvider((
-              query: _remoteQuery,
-              cursor: null,
-              group: 'hot',
-              productType: null,
-            )),
-          );
+    MarketProductFeedQuery? feedQuery;
+    AsyncValue<MarketProductFeed>? searchResults;
+    if (query.isNotEmpty && !(_searchDebounce?.isActive ?? false)) {
+      feedQuery = (query: _remoteQuery, group: 'hot', productType: null);
+      searchResults = ref.watch(marketProductFeedProvider(feedQuery));
+    } else if (query.isNotEmpty) {
+      searchResults = const AsyncLoading();
+    }
+    _activeFeedQuery = feedQuery;
+    if (feedQuery != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadMoreIfNeeded());
+    }
     final recentSearches = ref.watch(recentMarketSearchesProvider);
     final l10n = AppLocalizations.of(context);
     return Scaffold(
@@ -123,13 +163,7 @@ class _MarketDiscoverySearchScreenState
               Expanded(
                 child: query.isEmpty
                     ? _recentSearches(catalog, recentSearches)
-                    : _searchResults(
-                        localProducts: _localSearch(
-                          catalog.asData?.value.items ?? const [],
-                          query,
-                        ),
-                        remoteProducts: searchResults!,
-                      ),
+                    : _searchResults(searchResults!, feedQuery),
               ),
             ],
           ),
@@ -176,30 +210,26 @@ class _MarketDiscoverySearchScreenState
         products: visible,
       );
     },
+    skipLoadingOnReload: true,
   );
 
-  Widget _searchResults({
-    required List<MarketProduct> localProducts,
-    required AsyncValue<DomainPage<MarketProduct>> remoteProducts,
-  }) => remoteProducts.when(
+  Widget _searchResults(
+    AsyncValue<MarketProductFeed> remoteProducts,
+    MarketProductFeedQuery? feedQuery,
+  ) => remoteProducts.when(
     loading: () => _marketResultList(
       title: AppLocalizations.of(context).results,
-      products: localProducts,
+      products: const [],
       isLoadingMore: true,
     ),
-    error: (_, _) => localProducts.isNotEmpty
-        ? _marketResultList(
-            title: AppLocalizations.of(context).results,
-            products: localProducts,
-          )
-        : DesignStateFeedback(
-            state: DesignState.failure,
-            title: AppLocalizations.of(context).marketsUnavailable,
-            message: AppLocalizations.of(context).marketCatalogUnavailable,
-          ),
-    data: (page) {
-      final products = _mergeProducts(localProducts, page.items);
-      if (products.isEmpty) {
+    error: (_, _) => DesignStateFeedback(
+      state: DesignState.failure,
+      title: AppLocalizations.of(context).marketsUnavailable,
+      message: AppLocalizations.of(context).marketCatalogUnavailable,
+      onRetry: feedQuery == null ? null : () => _retrySearch(feedQuery),
+    ),
+    data: (feed) {
+      if (feed.items.isEmpty) {
         return DesignStateFeedback(
           state: DesignState.empty,
           title: AppLocalizations.of(context).noMatchingMarkets,
@@ -208,12 +238,21 @@ class _MarketDiscoverySearchScreenState
       }
       return _marketResultList(
         title: AppLocalizations.of(context).results,
-        products: products,
+        products: feed.items,
+        isLoadingMore: feed.isLoadingMore,
+        loadMoreFailed: feed.loadMoreFailed,
+        onRetryLoadMore: feedQuery == null
+            ? null
+            : () => ref
+                  .read(marketProductFeedProvider(feedQuery).notifier)
+                  .loadMore(),
       );
     },
+    skipLoadingOnReload: true,
   );
 
   Widget _emptyRecentSearches() => ListView(
+    controller: _scrollController,
     children: [
       Text(
         AppLocalizations.of(context).recentSearches,
@@ -233,16 +272,22 @@ class _MarketDiscoverySearchScreenState
     required String title,
     required List<MarketProduct> products,
     bool isLoadingMore = false,
+    bool loadMoreFailed = false,
+    VoidCallback? onRetryLoadMore,
   }) => ListView(
+    controller: _scrollController,
     children: [
       Text(title, style: Theme.of(context).textTheme.titleMedium),
       const SizedBox(height: 8),
       for (final product in products)
         MarketProductRow(product: product, onTap: () => _openProduct(product)),
-      if (isLoadingMore)
-        const LoadingSkeleton(
-          rows: 2,
-          padding: EdgeInsets.only(top: 12, bottom: 20),
+      if (isLoadingMore && products.isEmpty)
+        const LoadingSkeleton(rows: 2, padding: EdgeInsets.only(top: 12)),
+      if (products.isNotEmpty)
+        MarketProductPageFooter(
+          isLoading: isLoadingMore,
+          hasError: loadMoreFailed,
+          onRetry: onRetryLoadMore ?? () {},
         ),
     ],
   );
@@ -262,6 +307,7 @@ class _MarketDiscoverySearchScreenState
     if (value == query) return;
     _searchDebounce?.cancel();
     if (value.isEmpty) {
+      if (_scrollController.hasClients) _scrollController.jumpTo(0);
       setState(() {
         query = '';
         _remoteQuery = '';
@@ -271,6 +317,7 @@ class _MarketDiscoverySearchScreenState
     setState(() => query = value);
     _searchDebounce = Timer(_searchDebounceDuration, () {
       if (!mounted) return;
+      if (_scrollController.hasClients) _scrollController.jumpTo(0);
       setState(() => _remoteQuery = query);
     });
   }
@@ -285,29 +332,4 @@ List<MarketProduct> _recentProducts(
       MarketProductRef(symbol: product.symbol, kind: product.kind): product,
   };
   return [for (final reference in recentSearches) ?byReference[reference]];
-}
-
-List<MarketProduct> _localSearch(List<MarketProduct> products, String query) {
-  final normalizedQuery = query.trim().toLowerCase();
-  if (normalizedQuery.isEmpty) return const [];
-  return [
-    for (final product in products)
-      if (product.symbol.toLowerCase().contains(normalizedQuery) ||
-          product.name.toLowerCase().contains(normalizedQuery))
-        product,
-  ];
-}
-
-List<MarketProduct> _mergeProducts(
-  List<MarketProduct> localProducts,
-  List<MarketProduct> remoteProducts,
-) {
-  final unique = <MarketProductRef, MarketProduct>{};
-  for (final product in [...localProducts, ...remoteProducts]) {
-    unique.putIfAbsent(
-      MarketProductRef(symbol: product.symbol, kind: product.kind),
-      () => product,
-    );
-  }
-  return unique.values.toList(growable: false);
 }

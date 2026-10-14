@@ -17,6 +17,28 @@ typedef MarketQuery = ({
   MarketProductKind? productType,
 });
 
+typedef MarketProductFeedQuery = ({
+  String? query,
+  String? group,
+  MarketProductKind? productType,
+});
+
+final class MarketProductFeed {
+  const MarketProductFeed({
+    required this.items,
+    required this.nextCursor,
+    required this.hasMore,
+    this.isLoadingMore = false,
+    this.loadMoreFailed = false,
+  });
+
+  final List<MarketProduct> items;
+  final String? nextCursor;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final bool loadMoreFailed;
+}
+
 const _marketRankingTabKey = 'market_ranking_tab';
 
 final marketRankingTabProvider =
@@ -69,6 +91,130 @@ final marketProductsProvider = FutureProvider.autoDispose
       _cacheMarketList(ref);
       return _listMarketProducts(ref, query);
     });
+
+final marketProductFeedProvider = AsyncNotifierProvider.autoDispose
+    .family<
+      MarketProductFeedNotifier,
+      MarketProductFeed,
+      MarketProductFeedQuery
+    >((query) => MarketProductFeedNotifier(query));
+
+final class MarketProductFeedNotifier extends AsyncNotifier<MarketProductFeed> {
+  MarketProductFeedNotifier(this.query);
+
+  final MarketProductFeedQuery query;
+  final _pages = <String?, DomainPage<MarketProduct>>{};
+  final _loadedCursors = <String>{};
+  String? _loadingCursor;
+  var _generation = 0;
+
+  MarketQuery _pageQuery(String? cursor) => (
+    query: query.query,
+    cursor: cursor,
+    group: query.group,
+    productType: query.productType,
+  );
+
+  @override
+  Future<MarketProductFeed> build() async {
+    _generation++;
+    _loadingCursor = null;
+    final page = await ref.watch(
+      marketProductsProvider(_pageQuery(null)).future,
+    );
+    final firstLoadedCursor = _pages.keys.whereType<String>().firstOrNull;
+    final canPreserveLoadedPages =
+        firstLoadedCursor != null &&
+        page.hasMore &&
+        page.nextCursor == firstLoadedCursor;
+    if (!canPreserveLoadedPages) _pages.clear();
+    _pages[null] = page;
+    _loadedCursors
+      ..clear()
+      ..addAll(_pages.keys.whereType<String>());
+    return _feedFromPages();
+  }
+
+  Future<void> loadMore() async {
+    final current = state.asData?.value;
+    final cursor = current?.nextCursor;
+    if (current == null ||
+        current.isLoadingMore ||
+        !current.hasMore ||
+        cursor == null ||
+        cursor.isEmpty ||
+        _loadingCursor != null ||
+        _loadedCursors.contains(cursor)) {
+      return;
+    }
+
+    final generation = _generation;
+    _loadingCursor = cursor;
+    _loadedCursors.add(cursor);
+    state = AsyncData(
+      MarketProductFeed(
+        items: current.items,
+        nextCursor: current.nextCursor,
+        hasMore: current.hasMore,
+        isLoadingMore: true,
+      ),
+    );
+
+    try {
+      final pageProvider = marketProductsProvider(_pageQuery(cursor));
+      if (current.loadMoreFailed) ref.invalidate(pageProvider);
+      final page = await ref.read(pageProvider.future);
+      if (!ref.mounted || generation != _generation) return;
+      _pages[cursor] = page;
+      state = AsyncData(_feedFromPages());
+    } catch (_) {
+      if (!ref.mounted || generation != _generation) return;
+      _loadedCursors.remove(cursor);
+      state = AsyncData(
+        MarketProductFeed(
+          items: current.items,
+          nextCursor: current.nextCursor,
+          hasMore: current.hasMore,
+          loadMoreFailed: true,
+        ),
+      );
+    } finally {
+      if (generation == _generation) _loadingCursor = null;
+    }
+  }
+
+  MarketProductFeed _feedFromPages() {
+    final references = <MarketProductRef>{};
+    final items = <MarketProduct>[];
+    for (final page in _pages.values) {
+      for (final product in page.items) {
+        final reference = MarketProductRef(
+          symbol: product.symbol,
+          kind: product.kind,
+        );
+        if (references.add(reference)) items.add(product);
+      }
+    }
+    final lastPage = _pages.values.last;
+    return _feed(items, lastPage.nextCursor, lastPage.hasMore);
+  }
+
+  MarketProductFeed _feed(
+    List<MarketProduct> items,
+    String? nextCursor,
+    bool hasMore,
+  ) {
+    final validCursor =
+        nextCursor != null &&
+        nextCursor.isNotEmpty &&
+        !_loadedCursors.contains(nextCursor);
+    return MarketProductFeed(
+      items: List.unmodifiable(items),
+      nextCursor: validCursor ? nextCursor : null,
+      hasMore: hasMore && validCursor,
+    );
+  }
+}
 
 // Detail screens only need the matching products to resolve the active kind.
 // They must not inherit the list-page polling cadence.

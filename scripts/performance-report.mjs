@@ -138,16 +138,16 @@ export function summarize(raw) {
 }
 
 export function compare(current, baseline) {
-  if (!baseline) return { comparable: false, reason: '首次运行或没有可用的 main 基线', rows: [] };
+  if (!baseline) return { comparable: false, reason: 'first run or no main baseline is available', rows: [] };
   if (JSON.stringify(stable(current.compatibility)) !== JSON.stringify(stable(baseline.compatibility))) {
-    return { comparable: false, reason: '设备、Flutter、采样配置或场景版本与基线不同', rows: [] };
+    return { comparable: false, reason: 'device, Flutter, sampling configuration, or scenario version differs from the baseline', rows: [] };
   }
   const rows = [];
   for (const scenario of current.scenarios) {
     const old = baseline.scenarios.find((s) => s.id === scenario.id);
-    if (!old) return { comparable: false, reason: '基线场景不完整', rows: [] };
-    const metrics = [['duration_ms', '操作 P95', 20], ['build_ms', 'UI 帧 P95', 3]];
-    if (current.highlights.frames.raster_actionable) metrics.push(['raster_ms', '光栅帧 P95', 3]);
+    if (!old) return { comparable: false, reason: 'baseline scenarios are incomplete', rows: [] };
+    const metrics = [['duration_ms', 'Action P95', 20], ['build_ms', 'UI frame P95', 3]];
+    if (current.highlights.frames.raster_actionable) metrics.push(['raster_ms', 'Raster frame P95', 3]);
     for (const [metric, label, floor] of metrics) {
       const value = scenario[metric].p95;
       const before = old[metric].p95;
@@ -156,7 +156,7 @@ export function compare(current, baseline) {
         delta, percent: before > 0 ? delta / before * 100 : null,
         regression: delta > Math.max(before * .2, floor) });
     }
-    rows.push({ id: scenario.id, label: scenario.label, metric: 'slow_frames_percent', metric_label: '慢帧比例',
+    rows.push({ id: scenario.id, label: scenario.label, metric: 'slow_frames_percent', metric_label: 'Slow-frame rate',
       before: old.slow_frames_percent, value: scenario.slow_frames_percent,
       delta: scenario.slow_frames_percent - old.slow_frames_percent,
       regression: scenario.slow_frames_percent - old.slow_frames_percent > 5 });
@@ -175,34 +175,34 @@ export function markdown(report, comparison) {
   const machine = report.machine;
   const highlights = report.highlights;
   const rasterActionable = highlights.frames.raster_actionable;
-  const slowLabel = rasterActionable ? '慢帧' : 'UI 慢帧';
+  const slowLabel = rasterActionable ? 'slow frames' : 'UI slow frames';
   const warnings = comparison.rows.filter((r) => r.regression);
-  const lines = ['## 原生 Flutter 性能报告', '',
-    `平台：${markdownText(report.compatibility.platform)} · ${markdownText(env.device_model)} · profile · Flutter ${markdownText(env.flutter_version)}`,
-    `每场景 ${report.compatibility.samples} 次采样，排除 ${report.compatibility.warmups} 次预热；刷新率 ${fmt(report.compatibility.refresh_rate_hz)} Hz。`,
-    '', `固定仓库数据，不含网络、钱包签名或链上确认；页面加载不代表冷启动。${rasterActionable ? '慢帧指 UI 或光栅耗时超过设备帧预算。' : '模拟器慢帧只按 UI 耗时是否超过设备帧预算计算。'}`, '',
-    ...(env.physical_device === false ? ['当前为模拟器数据；软件 GPU 光栅耗时仅保留用于诊断，不参与慢帧、退化提示或门禁。真机性能需在固定真机上复测。', ''] : []),
-    ...(report.compatibility.diagnostic_tracing ? ['已启用诊断 tracing，数值包含追踪开销，不用于常规性能基线。', ''] : []),
-    comparison.comparable ? `基线：\`${markdownText(comparison.baseline_commit)}\`；${warnings.length} 项退化提示。` : `未比较：${comparison.reason}。`, '',
-    '### 总结', '',
-    '| 维度 | P95 / 状态 | 场景 |', '|---|---:|---|',
-    `| 页面加载 | ${fmt(highlights.page_load.p95_ms)} ms | ${markdownText(highlights.page_load.label)} |`,
-    `| 面板可交互 | ${fmt(highlights.interaction_ready.p95_ms)} ms | ${markdownText(highlights.interaction_ready.label)} |`,
-    `| 报价更新 | ${fmt(highlights.quote.p95_ms)} ms | ${markdownText(highlights.quote.label)} |`,
-    `| 确认 / 提交 / 撤单 | ${fmt(highlights.command.p95_ms)} ms | ${markdownText(highlights.command.label)} |`,
-    `| 帧健康 | ${fmt(highlights.frames.slow_percent)}% ${slowLabel} (${highlights.frames.slow_count}/${highlights.frames.count}) | UI ${fmt(highlights.frames.worst_build.p95_ms)} ms / 光栅 ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : '（诊断）'} |`,
-    '', '### 测试机器', '',
-    '| 项目 | 参数 |', '|---|---|',
+  const lines = ['## Native Flutter Performance Report', '',
+    `Platform: ${markdownText(report.compatibility.platform)} · ${markdownText(env.device_model)} · profile · Flutter ${markdownText(env.flutter_version)}`,
+    `${report.compatibility.samples} samples per scenario after ${report.compatibility.warmups} warmups; ${fmt(report.compatibility.refresh_rate_hz)} Hz refresh rate.`,
+    '', `Controlled repository data without network requests, wallet signatures, or on-chain confirmation; page load does not represent a cold app start. ${rasterActionable ? 'A slow frame exceeds the device frame budget in either UI or raster time.' : 'On emulators, slow frames are based only on UI time exceeding the device frame budget.'}`, '',
+    ...(env.physical_device === false ? ['This report uses emulator data. Software-GPU raster times are diagnostic only and do not affect slow-frame counts, regression warnings, or gates. Re-test on a fixed physical device for device performance.', ''] : []),
+    ...(report.compatibility.diagnostic_tracing ? ['Diagnostic tracing is enabled. Values include tracing overhead and are not suitable for the normal performance baseline.', ''] : []),
+    comparison.comparable ? `Baseline: \`${markdownText(comparison.baseline_commit)}\`; ${warnings.length} regression warning(s).` : `Not compared: ${comparison.reason}.`, '',
+    '### Summary', '',
+    '| Dimension | P95 / status | Scenario |', '|---|---:|---|',
+    `| Page load | ${fmt(highlights.page_load.p95_ms)} ms | ${markdownText(highlights.page_load.label)} |`,
+    `| Panel interactive | ${fmt(highlights.interaction_ready.p95_ms)} ms | ${markdownText(highlights.interaction_ready.label)} |`,
+    `| Quote update | ${fmt(highlights.quote.p95_ms)} ms | ${markdownText(highlights.quote.label)} |`,
+    `| Confirm / submit / cancel | ${fmt(highlights.command.p95_ms)} ms | ${markdownText(highlights.command.label)} |`,
+    `| Frame health | ${fmt(highlights.frames.slow_percent)}% ${slowLabel} (${highlights.frames.slow_count}/${highlights.frames.count}) | UI ${fmt(highlights.frames.worst_build.p95_ms)} ms / raster ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : ' (diagnostic)'} |`,
+    '', '### Test Environment', '',
+    '| Item | Value |', '|---|---|',
     `| Runner | ${markdownText(env.runner)} |`,
-    `| 主机 | ${markdownText(machine.host.os)} · ${markdownText(machine.host.arch)} |`,
-    `| 主机 CPU | ${markdownText(machine.host.cpu_model)} · ${machine.host.logical_cores} 逻辑核 |`,
-    `| 主机内存 | ${gib(machine.host.memory_bytes)} |`,
-    `| 移动设备 | ${markdownText(machine.device.manufacturer)} ${markdownText(machine.device.model)} · ${markdownText(env.os_version)} |`,
-    `| 设备 CPU / 内存 | ${markdownText(machine.device.cpu_abi ?? '未知')} · ${machine.device.cpu_cores ?? '未知'} 核 · ${machine.device.memory_bytes ? gib(machine.device.memory_bytes) : '未知'} |`,
-    `| 屏幕 | ${machine.device.display_width_px && machine.device.display_height_px ? `${machine.device.display_width_px}×${machine.device.display_height_px}px` : '未知'} · ${fmt(report.compatibility.logical_size.width)}×${fmt(report.compatibility.logical_size.height)}dp · ${machine.device.density_dpi ?? '未知'} dpi · ${fmt(report.compatibility.refresh_rate_hz)} Hz |`,
+    `| Host | ${markdownText(machine.host.os)} · ${markdownText(machine.host.arch)} |`,
+    `| Host CPU | ${markdownText(machine.host.cpu_model)} · ${machine.host.logical_cores} logical cores |`,
+    `| Host memory | ${gib(machine.host.memory_bytes)} |`,
+    `| Mobile device | ${markdownText(machine.device.manufacturer)} ${markdownText(machine.device.model)} · ${markdownText(env.os_version)} |`,
+    `| Device CPU / memory | ${markdownText(machine.device.cpu_abi ?? 'unknown')} · ${machine.device.cpu_cores ?? 'unknown'} cores · ${machine.device.memory_bytes ? gib(machine.device.memory_bytes) : 'unknown'} |`,
+    `| Display | ${machine.device.display_width_px && machine.device.display_height_px ? `${machine.device.display_width_px}×${machine.device.display_height_px}px` : 'unknown'} · ${fmt(report.compatibility.logical_size.width)}×${fmt(report.compatibility.logical_size.height)}dp · ${machine.device.density_dpi ?? 'unknown'} dpi · ${fmt(report.compatibility.refresh_rate_hz)} Hz |`,
     `| Flutter | ${markdownText(env.flutter_version)} · ${markdownText(shortRevision(env.flutter_revision))} |`, '',
-    '### 全部操作', '',
-    `| 场景 | 操作 P50 / P95 (ms) | UI P95 (ms) | 光栅 P95 (ms) | ${slowLabel} | 操作 P95 对比 |`,
+    '### All Operations', '',
+    `| Scenario | Action P50 / P95 (ms) | UI P95 (ms) | Raster P95 (ms) | ${slowLabel} | Action P95 change |`,
     '|---|---:|---:|---:|---:|---:|'];
   for (const s of report.scenarios) {
     const delta = comparison.rows.find((r) => r.id === s.id && r.metric === 'duration_ms');
@@ -210,10 +210,10 @@ export function markdown(report, comparison) {
     lines.push(`| ${markdownText(s.label)} | ${fmt(s.duration_ms.p50)} / ${fmt(s.duration_ms.p95)} | ${fmt(s.build_ms.p95)} | ${fmt(s.raster_ms.p95)} | ${fmt(s.slow_frames_percent)}% (${s.slow_frame_count}/${s.frame_count}) | ${change} |`);
   }
   if (warnings.length) {
-    lines.push('', '### 退化提示', '', ...warnings.map((r) => `- ${markdownText(r.label)} / ${r.metric_label}：${fmt(r.before)} → ${fmt(r.value)} ${r.metric === 'slow_frames_percent' ? '%' : 'ms'}`));
+    lines.push('', '### Regression Warnings', '', ...warnings.map((r) => `- ${markdownText(r.label)} / ${r.metric_label}: ${fmt(r.before)} → ${fmt(r.value)} ${r.metric === 'slow_frames_percent' ? '%' : 'ms'}`));
   }
-  lines.push('', '下载 `native-performance` 附件，打开 `report.html` 查看交互对比、分布及趋势；`raw.json` 保留逐次耗时和逐帧数据。',
-    '', `提示阈值：耗时增加超过 max(20%, 20ms)，UI${rasterActionable ? '/光栅' : ''} P95 增加超过 max(20%, 3ms)，${slowLabel}比例增加超过 5 个百分点。默认仅提示，固定设备可启用严格门禁。`);
+  lines.push('', 'Download the `native-performance` artifact and open `report.html` for interactive comparisons, distributions, and trends. `raw.json` contains per-action timings and frame data.',
+    '', `Warning thresholds: duration increase above max(20%, 20ms), UI${rasterActionable ? '/raster' : ''} P95 increase above max(20%, 3ms), or ${slowLabel} increase above 5 percentage points. Warnings are informational by default; strict gating can be enabled on a fixed device.`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -224,55 +224,55 @@ export function html(report, comparison, raw, history) {
   const machine = report.machine;
   const highlights = report.highlights;
   const rasterActionable = highlights.frames.raster_actionable;
-  const slowLabel = rasterActionable ? '慢帧' : 'UI 慢帧';
+  const slowLabel = rasterActionable ? 'slow frames' : 'UI slow frames';
   const comparisonText = comparison.comparable
-    ? `与 main ${comparison.baseline_commit.slice(0, 12)} 比较；${comparison.rows.filter((r) => r.regression).length} 项退化提示。`
-    : `未比较：${comparison.reason}。`;
+    ? `Compared with main ${comparison.baseline_commit.slice(0, 12)}; ${comparison.rows.filter((r) => r.regression).length} regression warning(s).`
+    : `Not compared: ${comparison.reason}.`;
   const overview = [
-    ['页面加载 P95', highlights.page_load.p95_ms, highlights.page_load.label],
-    ['面板可交互 P95', highlights.interaction_ready.p95_ms, highlights.interaction_ready.label],
-    ['报价更新 P95', highlights.quote.p95_ms, highlights.quote.label],
-    ['命令操作 P95', highlights.command.p95_ms, highlights.command.label],
+    ['Page load P95', highlights.page_load.p95_ms, highlights.page_load.label],
+    ['Panel interactive P95', highlights.interaction_ready.p95_ms, highlights.interaction_ready.label],
+    ['Quote update P95', highlights.quote.p95_ms, highlights.quote.label],
+    ['Command P95', highlights.command.p95_ms, highlights.command.label],
   ].map(([label, value, detail]) => `<div class="metric"><span>${esc(label)}</span><strong>${fmt(value)} ms</strong><small>${esc(detail)}</small></div>`).join('');
   const display = machine.device.display_width_px && machine.device.display_height_px
     ? `${machine.device.display_width_px}×${machine.device.display_height_px}px`
-    : '未知';
+    : 'unknown';
   const machineRows = [
     ['Runner', env.runner],
-    ['主机', `${machine.host.os} · ${machine.host.arch}`],
-    ['主机 CPU', `${machine.host.cpu_model} · ${machine.host.logical_cores} 逻辑核`],
-    ['主机内存', gib(machine.host.memory_bytes)],
-    ['移动设备', `${machine.device.manufacturer} ${machine.device.model} · ${env.os_version}`],
-    ['设备 CPU / 内存', `${machine.device.cpu_abi ?? '未知'} · ${machine.device.cpu_cores ?? '未知'} 核 · ${machine.device.memory_bytes ? gib(machine.device.memory_bytes) : '未知'}`],
-    ['屏幕', `${display} · ${fmt(report.compatibility.logical_size.width)}×${fmt(report.compatibility.logical_size.height)}dp · ${machine.device.density_dpi ?? '未知'} dpi · ${fmt(report.compatibility.refresh_rate_hz)} Hz`],
+    ['Host', `${machine.host.os} · ${machine.host.arch}`],
+    ['Host CPU', `${machine.host.cpu_model} · ${machine.host.logical_cores} logical cores`],
+    ['Host memory', gib(machine.host.memory_bytes)],
+    ['Mobile device', `${machine.device.manufacturer} ${machine.device.model} · ${env.os_version}`],
+    ['Device CPU / memory', `${machine.device.cpu_abi ?? 'unknown'} · ${machine.device.cpu_cores ?? 'unknown'} cores · ${machine.device.memory_bytes ? gib(machine.device.memory_bytes) : 'unknown'}`],
+    ['Display', `${display} · ${fmt(report.compatibility.logical_size.width)}×${fmt(report.compatibility.logical_size.height)}dp · ${machine.device.density_dpi ?? 'unknown'} dpi · ${fmt(report.compatibility.refresh_rate_hz)} Hz`],
     ['Flutter', `${env.flutter_version} · ${shortRevision(env.flutter_revision)}`],
   ].map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
   return `<!doctype html>
-<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nobell 原生性能报告</title>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nobell Native Performance Report</title>
 <style>
 body{font:15px system-ui;margin:0;background:#f3f5f8;color:#182538}main{max-width:1180px;margin:auto;padding:28px}h1{font-size:26px}h2{font-size:18px}section{background:white;padding:22px;border-radius:8px;margin:18px 0}select{padding:8px;max-width:100%;margin:4px 12px 4px 0}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e7ebf0}tr.warn{background:#fff0ee}.scroll{overflow:auto}svg{width:100%;height:auto}p{line-height:1.65;color:#536176}.legend{color:#2563eb}.baseline{color:#8895a7}#tip{min-height:24px}svg circle:hover{r:6;cursor:pointer}.overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #e7ebf0;border-radius:6px}.metric{display:grid;gap:5px;padding:16px;border-right:1px solid #e7ebf0}.metric:last-child{border:0}.metric span,.metric small,dt{color:#69778a}.metric strong{font-size:20px}.metric small{font-size:12px}.frame-health{margin:16px 0 0}.specs{display:grid;grid-template-columns:1fr 1fr;margin:0}.specs div{display:grid;grid-template-columns:120px 1fr;padding:9px 0;border-bottom:1px solid #e7ebf0}.specs div:nth-child(odd){margin-right:24px}.specs dt,.specs dd{margin:0}.specs dd{overflow-wrap:anywhere}@media(max-width:760px){main{padding:16px}.overview,.specs{grid-template-columns:1fr}.metric{border-right:0;border-bottom:1px solid #e7ebf0}.specs div:nth-child(odd){margin-right:0}}
 </style>
-<main><h1>Nobell · 原生 Flutter 性能报告</h1><p id="meta"></p><p>固定仓库数据；不含真实网络、钱包签名或链上确认。页面加载为进入页面到数据就绪，不代表 App 冷启动。${rasterActionable ? '慢帧表示 UI 或光栅耗时超过设备刷新率预算。' : '模拟器慢帧只按 UI 耗时是否超过设备刷新率预算计算。'}</p>${report.compatibility.environment.physical_device === false ? '<p>当前为模拟器数据；软件 GPU 光栅耗时仅保留用于诊断，不参与慢帧、退化提示或门禁。真机性能需在固定真机上复测。</p>' : ''}
-${report.compatibility.diagnostic_tracing ? '<p><strong>诊断 tracing 已启用：</strong>本报告包含追踪开销，不用于常规性能基线。</p>' : ''}
-<section><h2>总结</h2><p>${esc(comparisonText)}</p><div class="overview">${overview}</div><p class="frame-health">帧健康：${fmt(highlights.frames.slow_percent)}% ${slowLabel}（${highlights.frames.slow_count}/${highlights.frames.count}）；最差 UI P95 ${fmt(highlights.frames.worst_build.p95_ms)} ms，最差光栅 P95 ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : '（诊断）'}，帧预算 ${fmt(highlights.frames.budget_ms)} ms。</p></section>
-<section><h2>测试机器</h2><dl class="specs">${machineRows}</dl></section>
-<section><h2>全部关键操作</h2><p id="comparison"></p><div class="scroll"><table id="summary"></table></div></section>
-<section><h2>场景分析</h2><label>场景 <select id="scenario"></select></label><label>指标 <select id="metric"><option value="duration_ms">操作耗时</option><option value="build_ms">UI 帧耗时</option><option value="raster_ms">光栅帧耗时</option></select></label>
-<p class="legend">蓝色：本次 <span class="baseline">灰色：main 基线</span></p><h2>P95 对比（ms）</h2><div id="bars"></div><h2>本次样本分布</h2><div id="distribution"></div><h2>历史趋势（P95，ms）</h2><p>相同设备和测试配置的最近 30 次 main 报告，加上本次运行。指向数据点查看 commit 和数值。</p><div id="trend"></div><p id="tip" aria-live="polite"></p></section>
-<p>Commit: ${esc(report.commit)} · ${esc(report.generated_at)}。原始数据：<a href="raw.json">raw.json</a>；汇总：<a href="report.json">report.json</a>；历史：<a href="history.json">history.json</a>。</p></main>
+<main><h1>Nobell · Native Flutter Performance Report</h1><p id="meta"></p><p>Controlled repository data without real network requests, wallet signatures, or on-chain confirmation. Page load measures navigation until data is ready and does not represent a cold app start. ${rasterActionable ? 'A slow frame exceeds the device refresh budget in either UI or raster time.' : 'On emulators, slow frames are based only on UI time exceeding the device refresh budget.'}</p>${report.compatibility.environment.physical_device === false ? '<p>This report uses emulator data. Software-GPU raster times are diagnostic only and do not affect slow-frame counts, regression warnings, or gates. Re-test on a fixed physical device for device performance.</p>' : ''}
+${report.compatibility.diagnostic_tracing ? '<p><strong>Diagnostic tracing is enabled:</strong> this report includes tracing overhead and is not suitable for the normal performance baseline.</p>' : ''}
+<section><h2>Summary</h2><p>${esc(comparisonText)}</p><div class="overview">${overview}</div><p class="frame-health">Frame health: ${fmt(highlights.frames.slow_percent)}% ${slowLabel} (${highlights.frames.slow_count}/${highlights.frames.count}); worst UI P95 ${fmt(highlights.frames.worst_build.p95_ms)} ms, worst raster P95 ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : ' (diagnostic)'}, frame budget ${fmt(highlights.frames.budget_ms)} ms.</p></section>
+<section><h2>Test Environment</h2><dl class="specs">${machineRows}</dl></section>
+<section><h2>All Key Operations</h2><p id="comparison"></p><div class="scroll"><table id="summary"></table></div></section>
+<section><h2>Scenario Analysis</h2><label>Scenario <select id="scenario"></select></label><label>Metric <select id="metric"><option value="duration_ms">Action duration</option><option value="build_ms">UI frame duration</option><option value="raster_ms">Raster frame duration</option></select></label>
+<p class="legend">Blue: current run <span class="baseline">Gray: main baseline</span></p><h2>P95 Comparison (ms)</h2><div id="bars"></div><h2>Current Sample Distribution</h2><div id="distribution"></div><h2>Historical Trend (P95, ms)</h2><p>The latest 30 compatible main reports for the same device and test configuration, plus the current run. Point to a data point to see its commit and value.</p><div id="trend"></div><p id="tip" aria-live="polite"></p></section>
+<p>Commit: ${esc(report.commit)} · ${esc(report.generated_at)}. Raw data: <a href="raw.json">raw.json</a>; summary: <a href="report.json">report.json</a>; history: <a href="history.json">history.json</a>.</p></main>
 <script id="data" type="application/json">${data}</script>
 <script>
 const {report,comparison,raw,history}=JSON.parse(document.getElementById('data').textContent);
 const $=id=>document.getElementById(id);const fmt=v=>Number(v).toFixed(2);const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-$('meta').textContent=report.compatibility.platform+' · '+report.compatibility.environment.device_model+' · '+report.compatibility.environment.os_version+' · profile · Flutter '+report.compatibility.environment.flutter_version+' · '+report.compatibility.samples+' 次采样 / '+report.compatibility.warmups+' 次预热 · '+fmt(report.compatibility.refresh_rate_hz)+' Hz';
-$('comparison').textContent=comparison.comparable?'与 main '+comparison.baseline_commit.slice(0,12)+' 比较；'+comparison.rows.filter(r=>r.regression).length+' 项退化提示。':'未比较：'+comparison.reason;
-$('summary').innerHTML='<tr><th>场景</th><th>操作 P50 / P95 ms</th><th>UI P95 ms</th><th>光栅 P95 ms</th><th>${slowLabel}比例</th><th>帧数</th></tr>'+report.scenarios.map(s=>'<tr class="'+(comparison.rows.some(r=>r.id===s.id&&r.regression)?'warn':'')+'"><td>'+escape(s.label)+'</td><td>'+fmt(s.duration_ms.p50)+' / '+fmt(s.duration_ms.p95)+'</td><td>'+fmt(s.build_ms.p95)+'</td><td>'+fmt(s.raster_ms.p95)+'</td><td>'+fmt(s.slow_frames_percent)+'%</td><td>'+s.frame_count+'</td></tr>').join('');
+$('meta').textContent=report.compatibility.platform+' · '+report.compatibility.environment.device_model+' · '+report.compatibility.environment.os_version+' · profile · Flutter '+report.compatibility.environment.flutter_version+' · '+report.compatibility.samples+' samples / '+report.compatibility.warmups+' warmups · '+fmt(report.compatibility.refresh_rate_hz)+' Hz';
+$('comparison').textContent=comparison.comparable?'Compared with main '+comparison.baseline_commit.slice(0,12)+'; '+comparison.rows.filter(r=>r.regression).length+' regression warning(s).':'Not compared: '+comparison.reason;
+$('summary').innerHTML='<tr><th>Scenario</th><th>Action P50 / P95 ms</th><th>UI P95 ms</th><th>Raster P95 ms</th><th>${slowLabel}</th><th>Frames</th></tr>'+report.scenarios.map(s=>'<tr class="'+(comparison.rows.some(r=>r.id===s.id&&r.regression)?'warn':'')+'"><td>'+escape(s.label)+'</td><td>'+fmt(s.duration_ms.p50)+' / '+fmt(s.duration_ms.p95)+'</td><td>'+fmt(s.build_ms.p95)+'</td><td>'+fmt(s.raster_ms.p95)+'</td><td>'+fmt(s.slow_frames_percent)+'%</td><td>'+s.frame_count+'</td></tr>').join('');
 report.scenarios.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.label;$('scenario').append(o)});
 function svg(body,h=200){return '<svg viewBox="0 0 1000 '+h+'" role="img">'+body+'</svg>'}
-function update(){const id=$('scenario').value,metric=$('metric').value,s=report.scenarios.find(s=>s.id===id),r=raw.scenarios.find(s=>s.id===id);const base=comparison.rows.find(r=>r.id===id&&r.metric===metric);const max=Math.max(s[metric].p95,base?.before??0,1);$('bars').innerHTML=svg([[s[metric].p95,'本次','#2563eb'],...(base?[[base.before,'main','#8895a7']]:[])].map(([v,l,c],i)=>'<text x="0" y="'+(32+i*62)+'">'+l+'</text><rect x="80" y="'+(12+i*62)+'" width="'+(v/max*800)+'" height="30" fill="'+c+'"/><text x="'+(90+v/max*800)+'" y="'+(32+i*62)+'">'+fmt(v)+'</text>').join(''),145);
-const values=metric==='duration_ms'?r.duration_ms:r.frames.map(f=>f[metric]);const upper=Math.max(...values,metric==='duration_ms'?0:report.frame_budget_ms,1);const bins=Array(20).fill(0);values.forEach(v=>bins[Math.min(19,Math.floor(v/upper*20))]++);const high=Math.max(...bins,1);let drawing=bins.map((n,i)=>'<rect x="'+(50+i*46)+'" y="'+(170-n/high*140)+'" width="40" height="'+(n/high*140)+'" fill="#2563eb"><title>'+fmt(i/20*upper)+'–'+fmt((i+1)/20*upper)+' ms: '+n+' 个样本</title></rect>').join('');drawing+='<text x="50" y="195">0 ms</text><text x="870" y="195">'+fmt(upper)+' ms</text><text x="50" y="20">样本数 '+values.length+'；最高柱 '+high+'</text>';if(metric!=='duration_ms'){const x=50+report.frame_budget_ms/upper*920;drawing+='<line x1="'+x+'" x2="'+x+'" y1="25" y2="175" stroke="#dc2626" stroke-dasharray="4"/><text x="'+Math.min(x,760)+'" y="20">帧预算 '+fmt(report.frame_budget_ms)+' ms</text>'}$('distribution').innerHTML=svg(drawing,210);
-const points=history.map(h=>({commit:h.commit,date:h.generated_at,value:h.scenarios.find(s=>s.id===id)?.[metric]?.p95})).filter(p=>Number.isFinite(p.value));const top=Math.max(...points.map(p=>p.value),1);const coords=points.map((p,i)=>({x:60+i/Math.max(points.length-1,1)*880,y:170-p.value/top*140,...p}));$('trend').innerHTML=svg('<text x="0" y="25">'+fmt(top)+'</text><text x="0" y="175">0</text><path d="'+coords.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2"/>'+coords.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#2563eb"><title>'+escape(p.commit.slice(0,12)+' · '+p.date+' · '+fmt(p.value)+' ms')+'</title></circle>').join('')+'<text x="60" y="200">'+(points[0]?.commit.slice(0,8)??'')+'</text><text x="860" y="200">'+(points.at(-1)?.commit.slice(0,8)??'')+'</text>',215);$('tip').textContent=points.length<2?'积累至少两次兼容报告后可查看趋势。':'';}
+function update(){const id=$('scenario').value,metric=$('metric').value,s=report.scenarios.find(s=>s.id===id),r=raw.scenarios.find(s=>s.id===id);const base=comparison.rows.find(r=>r.id===id&&r.metric===metric);const max=Math.max(s[metric].p95,base?.before??0,1);$('bars').innerHTML=svg([[s[metric].p95,'Current','#2563eb'],...(base?[[base.before,'main','#8895a7']]:[])].map(([v,l,c],i)=>'<text x="0" y="'+(32+i*62)+'">'+l+'</text><rect x="80" y="'+(12+i*62)+'" width="'+(v/max*800)+'" height="30" fill="'+c+'"/><text x="'+(90+v/max*800)+'" y="'+(32+i*62)+'">'+fmt(v)+'</text>').join(''),145);
+const values=metric==='duration_ms'?r.duration_ms:r.frames.map(f=>f[metric]);const upper=Math.max(...values,metric==='duration_ms'?0:report.frame_budget_ms,1);const bins=Array(20).fill(0);values.forEach(v=>bins[Math.min(19,Math.floor(v/upper*20))]++);const high=Math.max(...bins,1);let drawing=bins.map((n,i)=>'<rect x="'+(50+i*46)+'" y="'+(170-n/high*140)+'" width="40" height="'+(n/high*140)+'" fill="#2563eb"><title>'+fmt(i/20*upper)+'–'+fmt((i+1)/20*upper)+' ms: '+n+' samples</title></rect>').join('');drawing+='<text x="50" y="195">0 ms</text><text x="870" y="195">'+fmt(upper)+' ms</text><text x="50" y="20">Samples '+values.length+'; highest bin '+high+'</text>';if(metric!=='duration_ms'){const x=50+report.frame_budget_ms/upper*920;drawing+='<line x1="'+x+'" x2="'+x+'" y1="25" y2="175" stroke="#dc2626" stroke-dasharray="4"/><text x="'+Math.min(x,760)+'" y="20">Frame budget '+fmt(report.frame_budget_ms)+' ms</text>'}$('distribution').innerHTML=svg(drawing,210);
+const points=history.map(h=>({commit:h.commit,date:h.generated_at,value:h.scenarios.find(s=>s.id===id)?.[metric]?.p95})).filter(p=>Number.isFinite(p.value));const top=Math.max(...points.map(p=>p.value),1);const coords=points.map((p,i)=>({x:60+i/Math.max(points.length-1,1)*880,y:170-p.value/top*140,...p}));$('trend').innerHTML=svg('<text x="0" y="25">'+fmt(top)+'</text><text x="0" y="175">0</text><path d="'+coords.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2"/>'+coords.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#2563eb"><title>'+escape(p.commit.slice(0,12)+' · '+p.date+' · '+fmt(p.value)+' ms')+'</title></circle>').join('')+'<text x="60" y="200">'+(points[0]?.commit.slice(0,8)??'')+'</text><text x="860" y="200">'+(points.at(-1)?.commit.slice(0,8)??'')+'</text>',215);$('tip').textContent=points.length<2?'At least two compatible reports are required to show a trend.':'';}
 $('scenario').onchange=update;$('metric').onchange=update;update();
 </script></html>`;
 }
