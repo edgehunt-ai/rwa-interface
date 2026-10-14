@@ -30,5 +30,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          OPENAI.API_BASE: ${{ vars.OPENAI_API_BASE }}
           config.model: "gpt-5.6-sol"
           github_action_config.auto_review: "true"
