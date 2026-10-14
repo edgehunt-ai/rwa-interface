@@ -123,6 +123,12 @@ final positionLeverageContextProvider = FutureProvider.autoDispose
       return ref.watch(positionsRepositoryProvider).leverageContext(productId);
     }, retry: (_, _) => null);
 
+final positionSizeDecimalsProvider = FutureProvider.autoDispose
+    .family<int, String>((ref, productId) {
+      ref.watch(sessionGenerationProvider);
+      return ref.watch(positionsRepositoryProvider).sizeDecimals(productId);
+    }, retry: (_, _) => null);
+
 final positionProtectionOrdersProvider = FutureProvider.autoDispose
     .family<List<TradingOrder>, Position>((ref, position) async {
       ref.watch(sessionGenerationProvider);

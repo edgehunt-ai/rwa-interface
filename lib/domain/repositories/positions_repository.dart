@@ -9,6 +9,7 @@ import '../models/position_leverage_context.dart';
 import '../models/position_close_preview.dart';
 
 abstract interface class PositionsRepository {
+  Future<int> sizeDecimals(String productId);
   Future<PositionLeverageContext> leverageContext(String productId);
   Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({String? cursor});
 

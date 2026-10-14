@@ -498,6 +498,7 @@ void main() {
           child: buildTestApp(Hip3ClosePositionSheet(position: position)),
         ),
       );
+      await tester.pumpAndSettle();
       expect(find.text('Short TSLA'), findsOneWidget);
       final slider = tester.widget<Slider>(
         find.byKey(const Key('close-percentage-slider')),
@@ -687,6 +688,24 @@ void main() {
     expect(repo.previewRequests.last.type, TradingOrderType.limit);
     expect(repo.previewRequests.last.limitPrice, '110');
     expect(repo.closeCalls, 0);
+  });
+
+  testWidgets('close quantity uses the product size decimals', (tester) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final quantity = find.byKey(const Key('close-quantity'));
+    await tester.enterText(quantity, '0.1234');
+    await _settleClosePreview(tester);
+
+    expect(tester.widget<TextField>(quantity).controller!.text, '0.12');
+    expect(repo.previewRequests.single.quantity, '0.12');
   });
 
   testWidgets(
@@ -1776,6 +1795,26 @@ void main() {
     },
   );
 
+  testWidgets('protection quantity uses the product size decimals', (
+    tester,
+  ) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(PositionTpSlSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final quantity = find.byKey(const Key('protection-quantity'));
+    await tester.ensureVisible(quantity);
+    await tester.enterText(quantity, '0.1234');
+    await tester.pump();
+
+    expect(tester.widget<TextField>(quantity).controller!.text, '0.12');
+  });
+
   testWidgets(
     'open orders keep server filters on page two and show conditional progress',
     (tester) async {
@@ -1915,6 +1954,10 @@ TradingOrder _order(
 class _Positions implements PositionsRepository {
   Position currentPosition = _position();
   int getCalls = 0;
+  int sizeDecimalsValue = 8;
+
+  @override
+  Future<int> sizeDecimals(String productId) async => sizeDecimalsValue;
 
   @override
   Future<Position> get(String positionId) async {

@@ -547,6 +547,9 @@ final class AppReviewActivityRepository implements ActivityRepository {
 
 final class AppReviewPositionsRepository implements PositionsRepository {
   @override
+  Future<int> sizeDecimals(String productId) async => 4;
+
+  @override
   Future<PositionClosePreview> previewClose(
     Position position, {
     required String quantity,

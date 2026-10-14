@@ -168,7 +168,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     });
   }
 
-  void _setQuantityPercent(double value) {
+  void _setQuantityPercent(double value, int sizeDecimals) {
     setState(() {
       _quantityPercent = value.roundToDouble();
       _fixedQuantity = _quantityPercent < 100;
@@ -176,6 +176,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
           ? percentageQuantity(
               widget.position.quantity.value,
               _quantityPercent.round().toString(),
+              maxFractionDigits: sizeDecimals,
             )
           : absoluteQuantity(widget.position.quantity.value);
       _sizeChoiceRequired = false;
@@ -226,7 +227,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     return null;
   }
 
-  String? _inputError() {
+  String? _inputError(int sizeDecimals) {
     final l10n = AppLocalizations.of(context);
     final takeProfit = _takeProfitTrigger;
     final stopLoss = _stopLossTrigger;
@@ -253,6 +254,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         requireWithinPosition(
           _quantity.text.trim(),
           widget.position.quantity.value,
+          maxFractionDigits: sizeDecimals,
         );
       } on FormatException {
         return l10n.protectionInvalidQuantity;
@@ -263,7 +265,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     return null;
   }
 
-  Future<void> _save() async {
+  Future<void> _save(int sizeDecimals) async {
     if (_submitting ||
         _pending ||
         _loadingProtection ||
@@ -285,7 +287,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
       setState(() => _riskAccepted = true);
       return;
     }
-    if (_inputError() case final error?) {
+    if (_inputError(sizeDecimals) case final error?) {
       setState(() => _error = error);
       return;
     }
@@ -381,8 +383,30 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   Widget build(BuildContext context) {
     ref.watch(positionCommandProvider);
     final l10n = AppLocalizations.of(context);
+    final productId = widget.position.productId;
+    final sizeDecimalsState = productId == null
+        ? null
+        : ref.watch(positionSizeDecimalsProvider(productId));
+    if (productId != null) {
+      ref.listen(positionSizeDecimalsProvider(productId), (_, next) {
+        next.whenData((decimals) {
+          final truncated = truncateQuantity(_quantity.text, decimals);
+          if (truncated == _quantity.text) return;
+          setState(() {
+            _quantity.text = truncated;
+            _syncQuantityPercent();
+          });
+        });
+      });
+    }
+    final sizeDecimals = sizeDecimalsState?.hasError == true
+        ? null
+        : sizeDecimalsState?.value;
     final locked =
         _submitting || _pending || _loadingProtection || _protectionLoadFailed;
+    final rulesError = sizeDecimalsState?.hasError == true
+        ? l10n.hip3TradingContextUnavailable
+        : null;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -471,8 +495,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   controller: _quantity,
                   symbol: widget.position.symbol,
                   percentage: _quantityPercent,
+                  maxFractionDigits: sizeDecimals,
                   onQuantityChanged: locked ? null : _setQuantity,
-                  onPercentageChanged: locked ? null : _setQuantityPercent,
+                  onPercentageChanged: locked || sizeDecimals == null
+                      ? null
+                      : (value) => _setQuantityPercent(value, sizeDecimals),
                 ),
                 if (_takeProfitEnabled && _takeIsLimit)
                   TextField(
@@ -515,12 +542,15 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     }
                   },
                 ),
-                if (_sizeChoiceRequired || _error != null) ...[
+                if (_sizeChoiceRequired ||
+                    _error != null ||
+                    rulesError != null) ...[
                   const SizedBox(height: 20),
                   TpSlInlineError(
                     messages: [
                       if (_sizeChoiceRequired) l10n.protectionSizesDiffer,
                       ?_error,
+                      ?rulesError,
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -553,9 +583,10 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                                 _pending ||
                                 _loadingProtection ||
                                 _protectionLoadFailed ||
-                                _consentLoading
+                                _consentLoading ||
+                                sizeDecimals == null
                             ? null
-                            : _save,
+                            : () => _save(sizeDecimals),
                         child: Text(
                           _submitting ? l10n.loadingLabel : l10n.signAndConfirm,
                         ),
