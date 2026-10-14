@@ -39,5 +39,23 @@ void main() {
         );
       }
     });
+
+    test('rejects an overflowing insertion that would rewrite digits', () {
+      final formatter = DecimalTextInputFormatter(maxFractionDigits: 2);
+      const oldValue = TextEditingValue(
+        text: '1.23',
+        selection: TextSelection.collapsed(offset: 2),
+      );
+
+      final result = formatter.formatEditUpdate(
+        oldValue,
+        const TextEditingValue(
+          text: '1.923',
+          selection: TextSelection.collapsed(offset: 3),
+        ),
+      );
+
+      expect(result, oldValue);
+    });
   });
 }

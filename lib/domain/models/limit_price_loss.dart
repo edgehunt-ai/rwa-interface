@@ -32,12 +32,14 @@ LimitPriceLoss? assessLimitPriceLoss({
       : marketPrice - limitPrice;
   if (adverseDifference <= 0) return null;
 
-  final deviation = adverseDifference / marketPrice;
+  final deviationPercent = adverseDifference / marketPrice * 100;
+  final estimatedLoss = adverseDifference * quantity;
+  if (!deviationPercent.isFinite || !estimatedLoss.isFinite) return null;
   return LimitPriceLoss(
     direction: isBuy
         ? LimitPriceLossDirection.aboveMarket
         : LimitPriceLossDirection.belowMarket,
-    deviationPercent: deviation * 100,
-    estimatedLoss: adverseDifference * quantity,
+    deviationPercent: deviationPercent,
+    estimatedLoss: estimatedLoss,
   );
 }

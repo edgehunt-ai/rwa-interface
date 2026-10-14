@@ -72,5 +72,17 @@ void main() {
         isNull,
       );
     });
+
+    test('ignores calculations that overflow finite inputs', () {
+      expect(
+        assessLimitPriceLoss(
+          isBuy: true,
+          limitPrice: double.maxFinite,
+          marketPrice: double.minPositive,
+          quantity: double.maxFinite,
+        ),
+        isNull,
+      );
+    });
   });
 }

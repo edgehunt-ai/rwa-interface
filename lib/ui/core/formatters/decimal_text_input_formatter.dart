@@ -27,6 +27,17 @@ final class DecimalTextInputFormatter extends TextInputFormatter {
         : newValue.text.length <= end
         ? newValue.text
         : newValue.text.substring(0, end);
+    final selection = oldValue.selection;
+    final insertionOffset = selection.isValid && selection.isCollapsed
+        ? selection.start
+        : -1;
+    final insertsIntoExistingValue =
+        oldValue.text.isNotEmpty &&
+        insertionOffset >= 0 &&
+        newValue.text.length > oldValue.text.length &&
+        newValue.text.startsWith(oldValue.text.substring(0, insertionOffset)) &&
+        newValue.text.endsWith(oldValue.text.substring(insertionOffset));
+    if (insertsIntoExistingValue && text != newValue.text) return oldValue;
     return newValue.copyWith(
       text: text,
       selection: TextSelection.collapsed(

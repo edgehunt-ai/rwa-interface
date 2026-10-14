@@ -404,7 +404,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         : sizeDecimalsState?.value;
     final locked =
         _submitting || _pending || _loadingProtection || _protectionLoadFailed;
-    final rulesError = sizeDecimalsState?.hasError == true
+    final rulesError = productId == null || sizeDecimalsState?.hasError == true
         ? l10n.hip3TradingContextUnavailable
         : null;
     final colors = Theme.of(context).extension<AppRwaColors>()!;

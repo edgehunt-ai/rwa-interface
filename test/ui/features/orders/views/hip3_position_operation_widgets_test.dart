@@ -1391,6 +1391,60 @@ void main() {
     expect(repo.protectionCalls, 0);
   });
 
+  testWidgets('missing product context explains why protection is locked', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          PositionTpSlSheet(position: _position(productId: null)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Trading service is unavailable. Try again in a moment.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('missing product context explains why close is locked', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          Hip3ClosePositionSheet(position: _position(productId: null)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Trading service is unavailable. Try again in a moment.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('close-review')))
+          .onPressed,
+      isNull,
+    );
+  });
+
   for (final quantity in ['', '0', '2']) {
     testWidgets('invalid fixed protection quantity "$quantity" blocks submit', (
       tester,
@@ -1906,6 +1960,7 @@ PositionClosePreview _closePreview(
 );
 
 Position _position({
+  String? productId = 'xyz:TSLA',
   bool short = false,
   PositionSide? side,
   bool withProtection = true,
@@ -1916,7 +1971,7 @@ Position _position({
   List<String> protectionIds = const [],
 }) => Position(
   positionId: 'p-tsla',
-  productId: 'xyz:TSLA',
+  productId: productId,
   positionVersion: positionVersion,
   protectionOrderIds: protectionIds,
   symbol: 'TSLA',

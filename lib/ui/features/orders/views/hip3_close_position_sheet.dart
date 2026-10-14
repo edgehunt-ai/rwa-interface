@@ -304,7 +304,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
         : null;
     final errorMessage =
         _error ??
-        (sizeDecimalsState?.hasError == true
+        (productId == null || sizeDecimalsState?.hasError == true
             ? l10n.hip3TradingContextUnavailable
             : null) ??
         (previewError == null
