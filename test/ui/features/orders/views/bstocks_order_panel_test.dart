@@ -39,6 +39,82 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  testWidgets('bStocks warns for any loss-making buy or sell limit price', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    var sheetInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '100.01');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+    expect(find.text('+0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('above the market price'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('bstocks-side-tabs')),
+        matching: find.text('Sell'),
+      ),
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const Key('bstocks-limit-price-card')));
+    await tester.pumpAndSettle();
+    sheetInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '99.99');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+    expect(find.text('-0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('below the market price'), findsOneWidget);
+  });
+
   testWidgets('limit-order input layout matches HIP-3 for Buy and Sell', (
     tester,
   ) async {

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/models/limit_price_loss.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order.dart';
@@ -28,6 +29,7 @@ import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart'
 
 import 'order_funding_sheet.dart';
 import 'order_funding_confirmation_header.dart';
+import 'limit_price_loss_notice.dart';
 import 'slippage_controls.dart';
 import 'tp_sl_editor_card.dart';
 
@@ -928,6 +930,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ? limitPrice.text.trim()
               : marketPrice ?? '',
           marketPrice: marketPrice,
+          isBuy: side == TradingSide.buy,
         ),
       );
       if (!mounted || value == null) return;
@@ -956,6 +959,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       builder: (_) => _BstocksLimitPriceSheet(
         initialPrice: limitPrice.text.trim(),
         marketPrice: marketPrice,
+        isBuy: side == TradingSide.buy,
       ),
     );
     if (!mounted || value == null) return;
@@ -1073,6 +1077,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final fee = quotePreview?.fee;
     final showFee = _hasNonZeroValue(fee);
     final quoteLoading = _quoting && quotePreview == null;
+    final enteredLimitQuantity = double.tryParse(quantity.text.trim());
+    final limitPriceLoss =
+        type != TradingOrderType.limit ||
+            enteredLimitQuantity == null ||
+            enteredLimitQuantity <= 0
+        ? null
+        : assessLimitPriceLoss(
+            isBuy: isBuy,
+            limitPrice: double.tryParse(limitPrice.text.trim()) ?? 0,
+            marketPrice: double.tryParse(_currentMarketPrice ?? '') ?? 0,
+            quantity: enteredLimitQuantity,
+          );
     final formHeight =
         (type == TradingOrderType.limit ? 579.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
@@ -1319,6 +1335,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ],
           ],
           const Spacer(),
+          if (limitPriceLoss != null) ...[
+            LimitPriceLossNotice(
+              key: const Key('bstocks-limit-price-loss-warning'),
+              loss: limitPriceLoss,
+              settlementAsset: settlementAsset,
+            ),
+            const SizedBox(height: 8),
+          ],
           if (error case final error?) ...[
             InlineErrorNotice(
               key: const Key('bstocks-order-error'),
@@ -2353,9 +2377,14 @@ class _LimitInputState extends State<_LimitInput> {
 }
 
 class _BstocksLimitPriceSheet extends StatefulWidget {
-  const _BstocksLimitPriceSheet({required this.initialPrice, this.marketPrice});
+  const _BstocksLimitPriceSheet({
+    required this.initialPrice,
+    required this.isBuy,
+    this.marketPrice,
+  });
 
   final String initialPrice;
+  final bool isBuy;
   final String? marketPrice;
 
   @override
@@ -2421,6 +2450,12 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
     final market = _market;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final displayedPrice = _rulerPrice ?? price ?? market ?? 0;
+    final priceLoss = assessLimitPriceLoss(
+      isBuy: widget.isBuy,
+      limitPrice: price ?? 0,
+      marketPrice: market ?? 0,
+      quantity: 1,
+    );
 
     return SizedBox(
       height: 543 + bottomInset,
@@ -2521,12 +2556,12 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
                     value: market == null ? '-' : '\$${_formatDecimal(market)}',
                   ),
                   _LimitPriceFact(
-                    label: 'Price Deviation',
-                    value:
-                        '${_deviation >= 0 ? '+' : ''}${_deviation.toStringAsFixed(0)}%',
-                    valueColor: _deviation >= 0
-                        ? semantic.success
-                        : colors.primaryText,
+                    label: AppLocalizations.of(context).priceDeviation,
+                    value: formatLimitPriceDeviation(_deviation),
+                    showWarning: priceLoss != null,
+                    valueColor: priceLoss == null
+                        ? colors.primaryText
+                        : semantic.loss,
                   ),
                 ],
               ),
@@ -2625,11 +2660,13 @@ class _LimitPriceFact extends StatelessWidget {
     required this.label,
     required this.value,
     this.valueColor,
+    this.showWarning = false,
   });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final bool showWarning;
 
   @override
   Widget build(BuildContext context) {
@@ -2645,6 +2682,15 @@ class _LimitPriceFact extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
+        if (showWarning) ...[
+          Icon(
+            Icons.warning_amber_rounded,
+            key: const Key('bstocks-limit-price-loss-icon'),
+            size: 16,
+            color: valueColor,
+          ),
+          const SizedBox(width: 4),
+        ],
         Text(
           value,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(

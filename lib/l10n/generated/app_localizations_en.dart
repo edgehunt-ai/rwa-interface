@@ -789,6 +789,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get priceDeviation => 'Price deviation';
 
   @override
+  String limitPriceLossWarningAbove(
+    String deviation,
+    String loss,
+    String asset,
+  ) {
+    return 'Current price is $deviation above the market price, which may result in a loss of ~$loss $asset. Please set the price carefully.';
+  }
+
+  @override
+  String limitPriceLossWarningBelow(
+    String deviation,
+    String loss,
+    String asset,
+  ) {
+    return 'Current price is $deviation below the market price, which may result in a loss of ~$loss $asset. Please set the price carefully.';
+  }
+
+  @override
   String get confirm => 'Confirm';
 
   @override

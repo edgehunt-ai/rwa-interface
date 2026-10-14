@@ -60,6 +60,71 @@ import 'package:nobell/domain/repositories/wallets_repository.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('HIP-3 warns for any loss-making long or short limit price', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+            ),
+          ),
+        ],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    var sheetInput = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '100.01');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+    expect(find.text('+0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('above the market price'), findsOneWidget);
+
+    await tester.tap(find.text('Short').first);
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const Key('hip3-limit-price-card')));
+    await tester.pumpAndSettle();
+    sheetInput = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '99.99');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+    expect(find.text('-0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('below the market price'), findsOneWidget);
+  });
+
   testWidgets('HIP-3 amount rail has only 6px intermediate reference marks', (
     tester,
   ) async {

@@ -9,12 +9,14 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     required this.successSoft,
     required this.warning,
     required this.loss,
+    required this.lossSoft,
   });
 
   final Color success;
   final Color successSoft;
   final Color warning;
   final Color loss;
+  final Color lossSoft;
 
   @override
   AppSemanticColors copyWith({
@@ -22,12 +24,14 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     Color? successSoft,
     Color? warning,
     Color? loss,
+    Color? lossSoft,
   }) {
     return AppSemanticColors(
       success: success ?? this.success,
       successSoft: successSoft ?? this.successSoft,
       warning: warning ?? this.warning,
       loss: loss ?? this.loss,
+      lossSoft: lossSoft ?? this.lossSoft,
     );
   }
 
@@ -39,6 +43,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       successSoft: Color.lerp(successSoft, other.successSoft, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       loss: Color.lerp(loss, other.loss, t)!,
+      lossSoft: Color.lerp(lossSoft, other.lossSoft, t)!,
     );
   }
 }
@@ -283,6 +288,7 @@ abstract final class AppTheme {
               : const Color(0xFFE9F8F4),
           warning: isDark ? const Color(0xFFFFCB66) : const Color(0xFF8A5700),
           loss: isDark ? const Color(0xFFFF8A8A) : const Color(0xFFB3261E),
+          lossSoft: isDark ? const Color(0xFF482830) : const Color(0xFFFFF0F2),
         ),
         rwa,
       ],

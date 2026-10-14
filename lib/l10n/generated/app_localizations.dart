@@ -1568,6 +1568,26 @@ abstract class AppLocalizations {
   /// **'Price deviation'**
   String get priceDeviation;
 
+  /// No description provided for @limitPriceLossWarningAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Current price is {deviation} above the market price, which may result in a loss of ~{loss} {asset}. Please set the price carefully.'**
+  String limitPriceLossWarningAbove(
+    String deviation,
+    String loss,
+    String asset,
+  );
+
+  /// No description provided for @limitPriceLossWarningBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Current price is {deviation} below the market price, which may result in a loss of ~{loss} {asset}. Please set the price carefully.'**
+  String limitPriceLossWarningBelow(
+    String deviation,
+    String loss,
+    String asset,
+  );
+
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
