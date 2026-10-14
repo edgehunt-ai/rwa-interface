@@ -63,7 +63,7 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
                   label: l10n.amountNeeded,
                   value: TokenAmountFormatter.format(
                     amountNeeded,
-                    symbol: 'USDT',
+                    symbol: amountNeeded.asset ?? '',
                   ),
                 ),
               ),

@@ -394,11 +394,15 @@ class _AmountOverview extends StatelessWidget {
       children: [
         _AmountValue(
           label: AppLocalizations.of(context).amountNeeded,
-          value: TokenAmountFormatter.format(amount, symbol: 'USDT'),
+          value: TokenAmountFormatter.format(
+            amount,
+            symbol: amount.asset ?? '',
+          ),
         ),
         _AmountValue(
           label: AppLocalizations.of(context).transferAmount,
-          value: '~${TokenAmountFormatter.format(amount, symbol: 'USDT')}',
+          value:
+              '~${TokenAmountFormatter.format(amount, symbol: amount.asset ?? '')}',
         ),
       ],
     ),

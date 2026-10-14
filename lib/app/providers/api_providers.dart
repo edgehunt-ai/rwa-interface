@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/repositories/system_environment_repository_impl.dart';
+import '../../domain/repositories/system_environment_repository.dart';
+import '../../domain/models/deployment_environment.dart';
+
 import '../../data/api/api_environment.dart';
 import '../../data/api/privy_access_token_provider.dart';
 import '../../data/api/rwa_api_data_source.dart';
@@ -102,6 +106,27 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
     GeneratedAccountService(source.client.getAccountApi()),
   );
 });
+final systemEnvironmentRepositoryProvider =
+    Provider<SystemEnvironmentRepository>((ref) {
+      final source = ref.watch(apiDataSourceProvider);
+      return SystemEnvironmentRepositoryImpl(
+        GeneratedSystemService(source.client.getSystemApi()),
+      );
+    });
+
+// Deployment configuration is public and shared across accounts and markets.
+final deploymentEnvironmentProvider = FutureProvider<DeploymentEnvironment>(
+  (ref) => ref.watch(systemEnvironmentRepositoryProvider).getEnvironment(),
+  retry: (retryCount, error) => null,
+);
+
+final bstocksSettlementTokenProvider = FutureProvider<BstocksSettlementToken?>((
+  ref,
+) async {
+  final environment = await ref.watch(deploymentEnvironmentProvider.future);
+  return environment.bstocksSettlementToken;
+}, retry: (retryCount, error) => null);
+
 final appUpdateRepositoryProvider = Provider<AppUpdateRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return AppUpdateRepositoryImpl(

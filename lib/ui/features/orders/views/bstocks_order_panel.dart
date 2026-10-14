@@ -772,7 +772,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   String get _settlementAssetForInput =>
-      quotePreview?.settlementAsset ?? 'USDT';
+      ref.read(bstocksSettlementTokenProvider).requireValue!.symbol;
 
   Future<void> _submit() async {
     final current = preview;
@@ -968,6 +968,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final settlement = ref.watch(bstocksSettlementTokenProvider);
+    final l10n = AppLocalizations.of(context);
     final submittingOrder = reviewing && preview != null;
     return PopScope(
       canPop: !submittingOrder,
@@ -978,7 +980,29 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: SingleChildScrollView(
-              child: submittedOrder != null
+              child: settlement.isLoading && !settlement.hasError
+                  ? const LoadingSkeleton(rows: 3)
+                  : settlement.hasError
+                  ? Column(
+                      children: [
+                        InlineErrorNotice(
+                          message: settlement.error is ApiFailure
+                              ? apiFailureMessage(
+                                  settlement.error! as ApiFailure,
+                                  fallback: l10n.tradeBstocksUnavailable,
+                                )
+                              : l10n.tradeBstocksUnavailable,
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              ref.invalidate(deploymentEnvironmentProvider),
+                          child: Text(l10n.retry),
+                        ),
+                      ],
+                    )
+                  : settlement.value == null
+                  ? Text(l10n.tradeBstocksUnavailable)
+                  : submittedOrder != null
                   ? _submitted(context)
                   : _fundingRechecking
                   ? OrderFundingPendingContent(
@@ -1003,7 +1027,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
     final actionColor = isBuy ? success : kShortTradeColor;
-    final settlementAsset = quotePreview?.settlementAsset ?? 'USDT';
+    final settlementToken = ref
+        .watch(bstocksSettlementTokenProvider)
+        .requireValue!;
+    final settlementAsset = settlementToken.symbol;
     final snapshot = ref.watch(
       marketSnapshotProvider(
         MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.bstock),
@@ -1014,9 +1041,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final settlementBalance = ref.watch(
       bstocksSettlementBalanceProvider(settlementAsset),
     );
-    final settlementDecimals = ref.watch(
-      bstocksSettlementTokenDecimalsProvider(settlementAsset),
-    );
+    final settlementDecimals = settlementToken.decimals;
     final catalogBstockDecimals = ref
         .watch(bstocksTokenDecimalsProvider(widget.symbol))
         .value;
@@ -1171,7 +1196,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     cardKey: const Key('bstocks-limit-price-card'),
                     controller: limitPrice,
                     label: l10n.limitPrice,
-                    suffix: 'USDT',
+                    suffix: settlementAsset,
                     onTap: _editLimitPrice,
                     inputKey: const Key('bstocks-limit-price-input'),
                   ),
@@ -1385,8 +1410,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : isBuy
         ? semantic.success
         : kShortTradeColor;
-    final settlementAsset =
-        current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
+    final settlementAsset = _settlementAssetForInput;
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
     final fee = current.fee;
     final showFee = _hasNonZeroValue(fee);
