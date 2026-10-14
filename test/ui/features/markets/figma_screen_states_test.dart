@@ -418,6 +418,55 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('market list keeps existing rows during a background reload', (
+    tester,
+  ) async {
+    final reload = Completer<DomainPage<MarketProduct>>();
+    var requests = 0;
+    final container = ProviderContainer(
+      overrides: [
+        marketRankingTabProvider.overrideWithBuild((_, _) => 'Popular'),
+        marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+        marketProductsProvider.overrideWith((ref, query) {
+          requests++;
+          if (requests == 1) {
+            return Future.value(DomainPage(items: [_testProduct('NVDA')]));
+          }
+          return reload.future;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDA'), findsWidgets);
+
+    container.invalidate(
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      )),
+    );
+    await tester.pump();
+
+    expect(requests, 2);
+    expect(find.text('NVDA'), findsWidgets);
+
+    reload.complete(DomainPage(items: [_testProduct('TSLA')]));
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDA'), findsNothing);
+    expect(find.text('TSLA'), findsWidgets);
+  });
+
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {

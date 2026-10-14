@@ -256,6 +256,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     ),
                   );
                 },
+                skipLoadingOnReload: true,
                 skipLoadingOnRefresh: true,
               ),
               if (products.asData?.value case final feed?)

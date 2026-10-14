@@ -210,6 +210,7 @@ class _MarketDiscoverySearchScreenState
         products: visible,
       );
     },
+    skipLoadingOnReload: true,
   );
 
   Widget _searchResults(
@@ -247,6 +248,7 @@ class _MarketDiscoverySearchScreenState
                   .loadMore(),
       );
     },
+    skipLoadingOnReload: true,
   );
 
   Widget _emptyRecentSearches() => ListView(
