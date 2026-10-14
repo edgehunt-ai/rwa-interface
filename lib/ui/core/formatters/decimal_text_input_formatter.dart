@@ -18,7 +18,7 @@ final class DecimalTextInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (!RegExp(r'^\d*\.?\d*$').hasMatch(newValue.text)) return newValue;
+    if (!RegExp(r'^\d*\.?\d*$').hasMatch(newValue.text)) return oldValue;
     final separator = newValue.text.indexOf('.');
     if (separator == -1) return newValue;
     final end = separator + 1 + maxFractionDigits;

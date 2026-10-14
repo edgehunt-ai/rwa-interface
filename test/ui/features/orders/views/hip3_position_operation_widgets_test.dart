@@ -1369,7 +1369,29 @@ void main() {
     });
   }
 
-  for (final quantity in ['', 'abc', '0', '2']) {
+  testWidgets('malformed fixed protection quantity edit is rejected', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(PositionTpSlSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final quantity = find.byKey(const Key('protection-quantity'));
+    await tester.ensureVisible(quantity);
+    final initial = tester.widget<TextField>(quantity).controller!.text;
+
+    await tester.enterText(quantity, 'abc');
+    await tester.pump();
+
+    expect(tester.widget<TextField>(quantity).controller!.text, initial);
+    expect(repo.protectionCalls, 0);
+  });
+
+  for (final quantity in ['', '0', '2']) {
     testWidgets('invalid fixed protection quantity "$quantity" blocks submit', (
       tester,
     ) async {

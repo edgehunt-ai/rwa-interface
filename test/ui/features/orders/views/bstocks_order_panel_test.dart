@@ -30,6 +30,7 @@ import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/bstocks_order_panel.dart';
+import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
@@ -142,6 +143,23 @@ void main() {
     await tester.tap(find.text('Limit'));
     await tester.pumpAndSettle();
     var sheetInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    final ruler = find.byType(TpSlTickRuler);
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.4);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '100');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 100);
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsNothing,
+    );
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.6);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '101');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 101);
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
     await tester.enterText(sheetInput, '100.01');
     await tester.pump();
     expect(

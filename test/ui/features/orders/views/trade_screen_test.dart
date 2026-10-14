@@ -11,6 +11,7 @@ import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/repositories/bstocks_order_execution_repository_impl.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
@@ -931,13 +932,18 @@ void main() {
   ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authenticatedStateOverride],
+        overrides: [
+          authenticatedStateOverride,
+          bstocksSettlementTokenProvider.overrideWith(
+            (_) async => _testSettlementToken,
+          ),
+        ],
         child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Buy'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
 
     expect(find.text('Buy NVDAB'), findsWidgets);
     expect(
@@ -953,7 +959,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FilledButton, 'Sell'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
 
     expect(find.text('Sell NVDAB'), findsWidgets);
   });
@@ -1832,6 +1838,9 @@ Widget _tradeWithMarkets({
 }) => ProviderScope(
   overrides: [
     authenticatedStateOverride,
+    bstocksSettlementTokenProvider.overrideWith(
+      (_) async => _testSettlementToken,
+    ),
     marketStocksProvider.overrideWith((_) async => _nvdaStockPage),
     hip3AccountAbstractionProvider.overrideWith(
       (_) async => const Hip3AccountAbstractionStatus(
@@ -1921,6 +1930,14 @@ final class _UnifiedAccountRepository
 const _bstockProduct = MarketProductRef(
   symbol: 'NVDAB',
   kind: MarketProductKind.bstock,
+);
+
+const _testSettlementToken = BstocksSettlementToken(
+  environment: 'mainnet',
+  chainId: 56,
+  symbol: 'USDT',
+  contract: '0x55d398326f99059ff775485246999027b3197955',
+  decimals: 18,
 );
 
 const _perpProduct = MarketProductRef(

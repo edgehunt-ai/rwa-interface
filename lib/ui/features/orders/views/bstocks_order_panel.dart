@@ -2445,11 +2445,11 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
   }
 
   void _setLimitPriceFromRuler(double value) {
-    _rulerPrice = value;
     final formattedPrice = _formatDraggedLimitPrice(value);
     final nextPrice = double.parse(formattedPrice);
     setState(() {
       _controller.text = formattedPrice;
+      _rulerPrice = nextPrice;
       if (_market case final market? when market > 0) {
         _deviation = ((nextPrice / market) - 1) * 100;
       }
@@ -2476,7 +2476,7 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
     final displayedPrice = _rulerPrice ?? price ?? market ?? 0;
     final priceLoss = assessLimitPriceLoss(
       isBuy: widget.isBuy,
-      limitPrice: price ?? 0,
+      limitPrice: displayedPrice,
       marketPrice: market ?? 0,
       quantity: 1,
     );

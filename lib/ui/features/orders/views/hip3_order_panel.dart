@@ -3658,7 +3658,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
     final price = double.parse(text);
     setState(() {
       _controller.text = text;
-      _rulerPrice = value;
+      _rulerPrice = price;
       final market = _market;
       if (market != null && market > 0) {
         _deviation = (price / market - 1) * 100;
@@ -3675,7 +3675,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
     final current = _rulerPrice ?? price ?? market ?? 0;
     final priceLoss = assessLimitPriceLoss(
       isBuy: widget.isBuy,
-      limitPrice: price ?? 0,
+      limitPrice: current,
       marketPrice: market ?? 0,
       quantity: 1,
     );

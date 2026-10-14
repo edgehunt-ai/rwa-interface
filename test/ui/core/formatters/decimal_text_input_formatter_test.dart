@@ -1,0 +1,43 @@
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nobell/ui/core/formatters/decimal_text_input_formatter.dart';
+
+void main() {
+  group('DecimalTextInputFormatter', () {
+    test('truncates fractional digits and keeps the cursor in range', () {
+      final formatter = DecimalTextInputFormatter(maxFractionDigits: 2);
+
+      final result = formatter.formatEditUpdate(
+        const TextEditingValue(text: '1.23'),
+        const TextEditingValue(
+          text: '1.234',
+          selection: TextSelection.collapsed(offset: 5),
+        ),
+      );
+
+      expect(result.text, '1.23');
+      expect(result.selection, const TextSelection.collapsed(offset: 4));
+    });
+
+    test('rejects malformed decimal edits', () {
+      final formatter = DecimalTextInputFormatter(maxFractionDigits: 2);
+      const oldValue = TextEditingValue(
+        text: '1.2',
+        selection: TextSelection.collapsed(offset: 3),
+      );
+
+      for (final text in ['1.2.3', '1a', '-1']) {
+        expect(
+          formatter.formatEditUpdate(
+            oldValue,
+            TextEditingValue(
+              text: text,
+              selection: TextSelection.collapsed(offset: text.length),
+            ),
+          ),
+          oldValue,
+        );
+      }
+    });
+  });
+}
