@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/bstocks_support.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
@@ -94,6 +95,102 @@ void main() {
       ),
     ]);
   });
+
+  test(
+    'product feed appends cursor pages in API order without duplicates',
+    () async {
+      final repository = _PagedMarketsRepository();
+      final container = ProviderContainer(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      const query = (query: 'tech', group: 'hot', productType: null);
+      final subscription = container.listen(
+        marketProductFeedProvider(query),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
+
+      final first = await container.read(
+        marketProductFeedProvider(query).future,
+      );
+      expect(first.items.map((item) => item.symbol), ['NVDA', 'TSLA']);
+      expect(first.hasMore, isTrue);
+
+      await container
+          .read(marketProductFeedProvider(query).notifier)
+          .loadMore();
+
+      final complete = container
+          .read(marketProductFeedProvider(query))
+          .requireValue;
+      expect(complete.items.map((item) => item.symbol), [
+        'NVDA',
+        'TSLA',
+        'AAPL',
+      ]);
+      expect(complete.hasMore, isFalse);
+      expect(repository.cursors, [null, 'page-2']);
+
+      container.invalidate(
+        marketProductsProvider((
+          query: 'tech',
+          cursor: null,
+          group: 'hot',
+          productType: null,
+        )),
+      );
+      final refreshed = await container.read(
+        marketProductFeedProvider(query).future,
+      );
+      expect(refreshed.items.map((item) => item.symbol), [
+        'NVDA',
+        'TSLA',
+        'AAPL',
+      ]);
+      expect(repository.cursors, [null, 'page-2', null]);
+    },
+  );
+
+  test(
+    'product feed keeps loaded items and retries a failed next page',
+    () async {
+      final repository = _PagedMarketsRepository(failPage2Once: true);
+      final container = ProviderContainer(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      const query = (query: null, group: 'hot', productType: null);
+      final subscription = container.listen(
+        marketProductFeedProvider(query),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
+
+      await container.read(marketProductFeedProvider(query).future);
+      final notifier = container.read(
+        marketProductFeedProvider(query).notifier,
+      );
+      await notifier.loadMore();
+      final failed = container
+          .read(marketProductFeedProvider(query))
+          .requireValue;
+      expect(failed.items.map((item) => item.symbol), ['NVDA', 'TSLA']);
+      expect(failed.loadMoreFailed, isTrue);
+
+      await notifier.loadMore();
+      final retried = container
+          .read(marketProductFeedProvider(query))
+          .requireValue;
+      expect(retried.items.map((item) => item.symbol), [
+        'NVDA',
+        'TSLA',
+        'AAPL',
+      ]);
+      expect(retried.loadMoreFailed, isFalse);
+      expect(repository.cursors, [null, 'page-2', 'page-2']);
+    },
+  );
 
   test('updates recent searches after a market is opened', () async {
     final history = _MarketSearchHistoryService();
@@ -236,6 +333,51 @@ final class _MarketsRepository implements MarketsRepository {
       points: const [],
     );
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _PagedMarketsRepository implements MarketsRepository {
+  _PagedMarketsRepository({this.failPage2Once = false});
+
+  bool failPage2Once;
+  final cursors = <String?>[];
+
+  @override
+  Future<DomainPage<MarketProduct>> listProducts({
+    String? query,
+    String? cursor,
+    String? group,
+    MarketProductKind? productType,
+  }) async {
+    cursors.add(cursor);
+    if (cursor == null) {
+      return DomainPage(
+        items: [_product('NVDA'), _product('TSLA')],
+        nextCursor: 'page-2',
+        hasMore: true,
+      );
+    }
+    if (failPage2Once) {
+      failPage2Once = false;
+      throw StateError('page failed');
+    }
+    return DomainPage(
+      items: [_product('TSLA'), _product('AAPL')],
+      hasMore: false,
+    );
+  }
+
+  MarketProduct _product(String symbol) => MarketProduct(
+    symbol: symbol,
+    name: symbol,
+    kind: MarketProductKind.bstock,
+    price: DecimalValue('100', asset: 'USD', unit: 'price'),
+    settlementAsset: 'USDC',
+    network: 'BSC',
+    tradable: true,
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

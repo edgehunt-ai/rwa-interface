@@ -375,6 +375,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('market list loads and appends the next cursor page on scroll', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 700));
+    final cursors = <String?>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith((ref, query) async {
+            cursors.add(query.cursor);
+            if (query.cursor == null) {
+              return DomainPage(
+                items: List.generate(
+                  18,
+                  (index) => _testProduct('MARKET-$index'),
+                ),
+                nextCursor: 'market-page-2',
+                hasMore: true,
+              );
+            }
+            return DomainPage(items: [_testProduct('MARKET-PAGE-2')]);
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(cursors, [null]);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -2400));
+    await tester.pumpAndSettle();
+
+    expect(cursors, [null, 'market-page-2']);
+    expect(
+      tester
+          .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+          .map((row) => row.product.symbol),
+      contains('MARKET-PAGE-2'),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {
@@ -455,6 +498,60 @@ void main() {
     },
   );
 
+  testWidgets(
+    'market search loads and appends the next cursor page on scroll',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 700));
+      final searchCursors = <String?>[];
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+            marketSearchHistoryServiceProvider.overrideWithValue(
+              _MarketSearchHistoryService(),
+            ),
+            marketProductsProvider.overrideWith((ref, query) async {
+              if (query.query == null) {
+                return DomainPage(items: [_testProduct('CATALOG')]);
+              }
+              searchCursors.add(query.cursor);
+              if (query.cursor == null) {
+                return DomainPage(
+                  items: List.generate(
+                    18,
+                    (index) => _testProduct('SEARCH-$index'),
+                  ),
+                  nextCursor: 'search-page-2',
+                  hasMore: true,
+                );
+              }
+              return DomainPage(items: [_testProduct('SEARCH-PAGE-2')]);
+            }),
+          ],
+          child: _marketApp(const MarketDiscoverySearchScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'search');
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      expect(searchCursors, [null]);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -2400));
+      await tester.pumpAndSettle();
+
+      expect(searchCursors, [null, 'search-page-2']);
+      expect(
+        tester
+            .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+            .map((row) => row.product.symbol),
+        contains('SEARCH-PAGE-2'),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('MarketDiscoverySearchScreen debounces remote searches', (
     tester,
   ) async {
@@ -493,6 +590,16 @@ Widget _marketApp(Widget home) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: home,
+);
+
+MarketProduct _testProduct(String symbol) => MarketProduct(
+  symbol: symbol,
+  name: symbol,
+  kind: MarketProductKind.bstock,
+  price: DecimalValue('100', asset: 'USD', unit: 'price'),
+  settlementAsset: 'USDC',
+  network: 'BSC',
+  tradable: true,
 );
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {

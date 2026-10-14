@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,6 +27,53 @@ class MarketScreen extends ConsumerStatefulWidget {
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
   MarketProductKind? kind;
+  late final ScrollController _scrollController;
+  MarketProductFeedQuery? _activeFeedQuery;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_loadMoreIfNeeded);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_loadMoreIfNeeded)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _loadMoreIfNeeded() {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.extentAfter > 240) {
+      return;
+    }
+    final query = _activeFeedQuery;
+    if (query == null) return;
+    if (ref.read(marketProductFeedProvider(query)).value?.loadMoreFailed ??
+        false) {
+      return;
+    }
+    unawaited(ref.read(marketProductFeedProvider(query).notifier).loadMore());
+  }
+
+  Future<void> _refresh(MarketProductFeedQuery query) async {
+    ref.invalidate(
+      marketProductsProvider((
+        query: query.query,
+        cursor: null,
+        group: query.group,
+        productType: query.productType,
+      )),
+    );
+    ref.invalidate(marketProductFeedProvider(query));
+    await ref.read(marketProductFeedProvider(query).future);
+  }
+
+  void _resetScroll() {
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +83,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       authenticated: authenticated,
       storedTab: ref.watch(marketRankingTabProvider).value,
     );
-    final products = ref.watch(
-      marketProductsProvider((
-        query: null,
-        cursor: null,
-        group: marketProductGroupForTab(selectedTab),
-        productType: kind,
-      )),
+    final feedQuery = (
+      query: null,
+      group: marketProductGroupForTab(selectedTab),
+      productType: kind,
     );
+    _activeFeedQuery = feedQuery;
+    final products = ref.watch(marketProductFeedProvider(feedQuery));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadMoreIfNeeded());
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Scaffold(
@@ -50,15 +99,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.refresh(
-            marketProductsProvider((
-              query: null,
-              cursor: null,
-              group: marketProductGroupForTab(selectedTab),
-              productType: kind,
-            )).future,
-          ),
+          onRefresh: () => _refresh(feedQuery),
           child: CustomScrollView(
+            controller: _scrollController,
             slivers: [
               const SliverToBoxAdapter(child: _ActiveMarketRefresh()),
               SliverPadding(
@@ -116,15 +159,23 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     const SizedBox(height: 16),
                     MarketProductFilter(
                       value: kind,
-                      onChanged: (value) => setState(() => kind = value),
+                      onChanged: (value) {
+                        _resetScroll();
+                        setState(() => kind = value);
+                      },
                     ),
                     const SizedBox(height: 12),
                     MarketRankingTabs(
                       active: selectedTab,
                       showFavorites: authenticated,
-                      onSelected: (value) => ref
-                          .read(marketRankingTabProvider.notifier)
-                          .select(value),
+                      onSelected: (value) {
+                        _resetScroll();
+                        unawaited(
+                          ref
+                              .read(marketRankingTabProvider.notifier)
+                              .select(value),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -151,20 +202,13 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         state: DesignState.failure,
                         title: l10n.marketsUnavailable,
                         message: l10n.pullToRefreshRetry,
-                        onRetry: () => ref.refresh(
-                          marketProductsProvider((
-                            query: null,
-                            cursor: null,
-                            group: marketProductGroupForTab(selectedTab),
-                            productType: kind,
-                          )).future,
-                        ),
+                        onRetry: () => _refresh(feedQuery),
                       ),
                     ),
                   ),
                 ),
-                data: (page) {
-                  final items = page.items;
+                data: (feed) {
+                  final items = feed.items;
                   if (items.isEmpty) {
                     return SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -214,6 +258,16 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                 },
                 skipLoadingOnRefresh: true,
               ),
+              if (products.asData?.value case final feed?)
+                SliverToBoxAdapter(
+                  child: MarketProductPageFooter(
+                    isLoading: feed.isLoadingMore,
+                    hasError: feed.loadMoreFailed,
+                    onRetry: () => ref
+                        .read(marketProductFeedProvider(feedQuery).notifier)
+                        .loadMore(),
+                  ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),

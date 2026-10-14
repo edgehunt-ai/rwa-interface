@@ -16,6 +16,44 @@ String marketProductGroupForTab(String tab) => switch (tab) {
   _ => 'hot',
 };
 
+class MarketProductPageFooter extends StatelessWidget {
+  const MarketProductPageFooter({
+    super.key,
+    required this.isLoading,
+    required this.hasError,
+    required this.onRetry,
+  });
+
+  final bool isLoading;
+  final bool hasError;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const SizedBox(
+        key: Key('market-products-loading-more'),
+        height: 72,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (hasError) {
+      return SizedBox(
+        key: const Key('market-products-load-more-error'),
+        height: 72,
+        child: Center(
+          child: TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: Text(AppLocalizations.of(context).retry),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
 class MarketRankingTabs extends StatelessWidget {
   const MarketRankingTabs({
     super.key,
