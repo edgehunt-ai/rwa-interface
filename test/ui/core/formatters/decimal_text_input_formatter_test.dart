@@ -57,5 +57,23 @@ void main() {
 
       expect(result, oldValue);
     });
+
+    test('rejects an overflowing replacement that would rewrite a suffix', () {
+      final formatter = DecimalTextInputFormatter(maxFractionDigits: 2);
+      const oldValue = TextEditingValue(
+        text: '1.23',
+        selection: TextSelection(baseOffset: 2, extentOffset: 3),
+      );
+
+      final result = formatter.formatEditUpdate(
+        oldValue,
+        const TextEditingValue(
+          text: '1.453',
+          selection: TextSelection.collapsed(offset: 4),
+        ),
+      );
+
+      expect(result, oldValue);
+    });
   });
 }
