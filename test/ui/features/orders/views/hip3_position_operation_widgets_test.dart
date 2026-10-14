@@ -1891,6 +1891,38 @@ void main() {
     expect(tester.widget<TextField>(quantity).controller!.text, '0.12');
   });
 
+  testWidgets('100% protection keeps the product size decimals', (
+    tester,
+  ) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          PositionTpSlSheet(position: _position(quantity: '1.2345')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final slider = find.byKey(const Key('protection-percentage-slider'));
+    await tester.ensureVisible(slider);
+    final rect = tester.getRect(slider);
+    await tester.tapAt(Offset(rect.left + rect.width * 0.2, rect.center.dy));
+    await tester.pumpAndSettle();
+    await tester.tapAt(Offset(rect.right - 1, rect.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Slider>(slider).value, 100);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('protection-quantity')))
+          .controller!
+          .text,
+      '1.23',
+    );
+  });
+
   testWidgets(
     'open orders keep server filters on page two and show conditional progress',
     (tester) async {

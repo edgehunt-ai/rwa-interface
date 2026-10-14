@@ -172,13 +172,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     setState(() {
       _quantityPercent = value.roundToDouble();
       _fixedQuantity = _quantityPercent < 100;
-      _quantity.text = _fixedQuantity
-          ? percentageQuantity(
-              widget.position.quantity.value,
-              _quantityPercent.round().toString(),
-              maxFractionDigits: sizeDecimals,
-            )
-          : absoluteQuantity(widget.position.quantity.value);
+      _quantity.text = percentageQuantity(
+        widget.position.quantity.value,
+        _quantityPercent.round().toString(),
+        maxFractionDigits: sizeDecimals,
+      );
       _sizeChoiceRequired = false;
       _error = null;
     });
