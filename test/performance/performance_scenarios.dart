@@ -62,7 +62,7 @@ final class PerformanceRecorder {
     if (!warmingUp) {
       _windows.add((
         id: '${id}_ready',
-        label: '$label到可交互',
+        label: '$label to interactive',
         start: start,
         end: developer.Timeline.now,
         ms: watch.elapsedMicroseconds / 1000,
@@ -73,7 +73,7 @@ final class PerformanceRecorder {
     if (!warmingUp) {
       _windows.add((
         id: '${id}_settled',
-        label: '$label到动画完成',
+        label: '$label to animation complete',
         start: start,
         end: developer.Timeline.now,
         ms: watch.elapsedMicroseconds / 1000,
@@ -162,7 +162,7 @@ Future<void> runPerformanceScenarios(
 
     final home = PerformanceFixture();
     try {
-      await recorder.measure('home_load', '首页数据加载', () async {
+      await recorder.measure('home_load', 'Home data load', () async {
         await tester.pumpWidget(home.app);
         await _waitFor(tester, find.text(r'$12,580.40'));
         await _waitFor(tester, find.text('NVDAB'));
@@ -173,7 +173,7 @@ Future<void> runPerformanceScenarios(
 
     final market = PerformanceFixture(initialLocation: AppRoutes.marketsPath);
     try {
-      await measure('markets_load', '行情列表加载（60 项）', () async {
+      await measure('markets_load', 'Market list load (60 items)', () async {
         await tester.pumpWidget(market.app);
         await _waitFor(
           tester,
@@ -182,7 +182,7 @@ Future<void> runPerformanceScenarios(
         await _waitFor(tester, find.text('NVDAB'));
       }, trace: true);
       final list = find.byType(CustomScrollView).first;
-      await recorder.measure('markets_scroll', '行情列表滚动', () async {
+      await recorder.measure('markets_scroll', 'Market list scroll', () async {
         for (var i = 0; i < 4; i++) {
           await tester.timedDrag(
             list,
@@ -198,14 +198,21 @@ Future<void> runPerformanceScenarios(
       );
       scrollable.position.jumpTo(0);
       await tester.pumpAndSettle();
-      await measure('details_load', '行情详情加载（240 根 K 线）', () async {
-        await tester.tap(find.byKey(const Key('market-product-NVDAB-bstock')));
-        await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
-        await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
-        expect(market.markets.snapshots, greaterThan(0));
-        expect(market.markets.charts, greaterThan(0));
-        expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
-      }, trace: true);
+      await measure(
+        'details_load',
+        'Market details load (240 candles)',
+        () async {
+          await tester.tap(
+            find.byKey(const Key('market-product-NVDAB-bstock')),
+          );
+          await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
+          await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
+          expect(market.markets.snapshots, greaterThan(0));
+          expect(market.markets.charts, greaterThan(0));
+          expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
+        },
+        trace: true,
+      );
     } finally {
       await _unmount(tester, market);
     }
@@ -217,15 +224,15 @@ Future<void> runPerformanceScenarios(
         );
         final prefix = '${type.name}_${side.name}';
         final name =
-            '${type == TradingOrderType.market ? '市价' : '限价'}'
-            '${side == TradingSide.buy ? '买入' : '卖出'}';
+            '${type == TradingOrderType.market ? 'Market' : 'Limit'} '
+            '${side == TradingSide.buy ? 'buy' : 'sell'}';
         try {
           await tester.pumpWidget(fixture.app);
           await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
           await tester.pumpAndSettle();
           await recorder.measureMilestones(
             '${prefix}_open',
-            '$name面板打开',
+            '$name panel open',
             () async {
               await tester.tap(
                 find.widgetWithText(
@@ -266,50 +273,59 @@ Future<void> runPerformanceScenarios(
             await tester.pumpAndSettle();
           }
 
-          await recorder.measure('${prefix}_quote', '$name输入到报价更新', () async {
-            final input = type == TradingOrderType.limit
-                ? 'bstocks-limit-quantity-input'
-                : 'bstocks-market-amount-input';
-            final before = fixture.orders.previewedIntents.length;
-            await tester.enterText(
-              find.byKey(Key(input)),
-              side == TradingSide.buy && type == TradingOrderType.market
-                  ? '100'
-                  : '1',
-            );
-            await waitForPerformanceState(
-              tester,
-              () =>
-                  fixture.orders.previewedIntents.length > before &&
-                  find
-                      .byKey(const Key('bstocks-order-form-fee-value'))
-                      .evaluate()
-                      .isNotEmpty,
-              description: '$name live quote',
-            );
-            await tester.pump();
-          });
+          await recorder.measure(
+            '${prefix}_quote',
+            '$name input to quote update',
+            () async {
+              final input = type == TradingOrderType.limit
+                  ? 'bstocks-limit-quantity-input'
+                  : 'bstocks-market-amount-input';
+              final before = fixture.orders.previewedIntents.length;
+              await tester.enterText(
+                find.byKey(Key(input)),
+                side == TradingSide.buy && type == TradingOrderType.market
+                    ? '100'
+                    : '1',
+              );
+              await waitForPerformanceState(
+                tester,
+                () =>
+                    fixture.orders.previewedIntents.length > before &&
+                    find
+                        .byKey(const Key('bstocks-order-form-fee-value'))
+                        .evaluate()
+                        .isNotEmpty,
+                description: '$name live quote',
+              );
+              await tester.pump();
+            },
+          );
           final confirm = find.widgetWithText(
             FilledButton,
             side == TradingSide.buy ? 'Confirm Buy' : 'Confirm Sell',
           );
-          await measure('${prefix}_preview', '$name确认预览', () async {
-            final review = find.byKey(
-              const Key('bstocks-primary-order-action'),
-            );
-            await tester.ensureVisible(review);
-            await tester.tap(review);
-            await waitForPerformanceState(
-              tester,
-              () =>
-                  confirm.evaluate().isNotEmpty &&
-                  tester.widget<FilledButton>(confirm).onPressed != null,
-              description: '$name enabled confirmation',
-            );
-          }, trace: prefix == 'market_buy');
+          await measure(
+            '${prefix}_preview',
+            '$name confirmation preview',
+            () async {
+              final review = find.byKey(
+                const Key('bstocks-primary-order-action'),
+              );
+              await tester.ensureVisible(review);
+              await tester.tap(review);
+              await waitForPerformanceState(
+                tester,
+                () =>
+                    confirm.evaluate().isNotEmpty &&
+                    tester.widget<FilledButton>(confirm).onPressed != null,
+                description: '$name enabled confirmation',
+              );
+            },
+            trace: prefix == 'market_buy',
+          );
           await tester.ensureVisible(confirm);
           await tester.pumpAndSettle();
-          await measure('${prefix}_submit', '$name提交到结果展示', () async {
+          await measure('${prefix}_submit', '$name submit to result', () async {
             await tester.tap(confirm);
             await _waitFor(
               tester,
@@ -350,7 +366,7 @@ Future<void> runPerformanceScenarios(
             await tester.pumpAndSettle();
             await recorder.measure(
               '${prefix}_cancel',
-              '$name撤单到列表更新',
+              '$name cancellation to list update',
               () async {
                 await tester.tap(cancel);
                 await waitForPerformanceState(

@@ -73,8 +73,8 @@ jobs:
           if [ -f build/performance/raw.json ]; then
             node scripts/performance-report.mjs
           else
-            echo '## 原生性能测试未完成' >> "$GITHUB_STEP_SUMMARY"
-            echo '未生成完整原生采样数据，请查看测量步骤日志。此次运行没有有效性能报告。' >> "$GITHUB_STEP_SUMMARY"
+            echo '## Native performance test incomplete' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No complete native samples were generated. Check the measurement step logs; this run has no valid performance report.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Capture complete report image
@@ -129,15 +129,15 @@ jobs:
             const summary = fs.existsSync(process.env.PERFORMANCE_SUMMARY)
               ? fs.readFileSync(process.env.PERFORMANCE_SUMMARY, 'utf8').trim()
               : [
-                  '## 原生 Flutter 性能测试未完成',
+                  '## Native Flutter performance test incomplete',
                   '',
-                  '未生成有效报告，请查看本次 Actions 运行日志。',
+                  'No valid report was generated. Check the Actions logs for this run.',
                 ].join('\n');
             const body = [
               marker,
               summary,
               '',
-              '[查看 Actions 运行并下载完整报告](' + runUrl + '#artifacts)',
+              '[View the Actions run and download the full report](' + runUrl + '#artifacts)',
             ].join('\n');
             const comments = await github.paginate(
               github.rest.issues.listComments,
