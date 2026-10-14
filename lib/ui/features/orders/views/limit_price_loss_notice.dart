@@ -7,11 +7,25 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 
 String formatLimitPriceDeviation(double value, {bool signed = true}) =>
     TokenAmountFormatter.formatPercent(
-      DecimalValue(value.toStringAsFixed(8)),
+      _warningDecimal(value),
       signed: signed,
       maxFractionDigits: 2,
       preserveSmallValues: true,
     );
+
+DecimalValue _warningDecimal(double value) {
+  final text = value.toStringAsFixed(8);
+  // Dart uses exponential notation even for toStringAsFixed at |value| >= 1e21.
+  // DecimalValue requires plain decimal notation.
+  final parts = text.split('e');
+  if (parts.length == 1) return DecimalValue(text);
+  final mantissa = parts.first;
+  final separator = mantissa.indexOf('.');
+  final fractionDigits = separator == -1 ? 0 : mantissa.length - separator - 1;
+  final zeros = int.parse(parts.last) - fractionDigits;
+  final digits = mantissa.replaceAll('.', '');
+  return DecimalValue(digits.padRight(digits.length + zeros, '0'));
+}
 
 class LimitPriceLossNotice extends StatelessWidget {
   const LimitPriceLossNotice({
@@ -32,7 +46,7 @@ class LimitPriceLossNotice extends StatelessWidget {
       signed: false,
     );
     final estimatedLoss = TokenAmountFormatter.formatValue(
-      DecimalValue(loss.estimatedLoss.toStringAsFixed(8)),
+      _warningDecimal(loss.estimatedLoss),
     );
     final message = switch (loss.direction) {
       LimitPriceLossDirection.aboveMarket => l10n.limitPriceLossWarningAbove(

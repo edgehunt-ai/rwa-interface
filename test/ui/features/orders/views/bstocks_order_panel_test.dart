@@ -41,6 +41,42 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  testWidgets('bstocks large limit price keeps the editor rendered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(input, '1000000000000000000000');
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('+1,000,000,000,000,000,000,000%'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(input).controller!.text,
+      '1000000000000000000000',
+    );
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('testnet token is shown before any preview and in limit inputs', (
     tester,
   ) async {

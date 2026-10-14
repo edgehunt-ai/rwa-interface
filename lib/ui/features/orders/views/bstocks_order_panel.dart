@@ -2575,17 +2575,31 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _LimitPriceFact(
-                    label: AppLocalizations.of(context).market,
-                    value: market == null ? '-' : '\$${_formatDecimal(market)}',
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: _LimitPriceFact(
+                        label: AppLocalizations.of(context).market,
+                        value: market == null
+                            ? '-'
+                            : '\$${_formatDecimal(market)}',
+                      ),
+                    ),
                   ),
-                  _LimitPriceFact(
-                    label: AppLocalizations.of(context).priceDeviation,
-                    value: formatLimitPriceDeviation(_deviation),
-                    showWarning: priceLoss != null,
-                    valueColor: priceLoss == null
-                        ? colors.primaryText
-                        : semantic.loss,
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: _LimitPriceFact(
+                        label: AppLocalizations.of(context).priceDeviation,
+                        value: formatLimitPriceDeviation(_deviation),
+                        showWarning: priceLoss != null,
+                        valueColor: priceLoss == null
+                            ? colors.primaryText
+                            : semantic.loss,
+                      ),
+                    ),
                   ),
                 ],
               ),

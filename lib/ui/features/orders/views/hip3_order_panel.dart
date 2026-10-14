@@ -3754,54 +3754,70 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('${AppLocalizations.of(context).market}: '),
-                      if (_marketPriceLoading)
-                        const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 1.5),
-                        )
-                      else
-                        Text(
-                          market == null
-                              ? '—'
-                              : '\$${_formatHip3Price(market)}',
-                        ),
-                    ],
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${AppLocalizations.of(context).market}: '),
+                          if (_marketPriceLoading)
+                            const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                              ),
+                            )
+                          else
+                            Text(
+                              market == null
+                                  ? '—'
+                                  : '\$${_formatHip3Price(market)}',
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).priceDeviation,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.tertiaryText,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).priceDeviation,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: colors.tertiaryText,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                          const SizedBox(width: 4),
+                          if (priceLoss != null) ...[
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              key: const Key('hip3-limit-price-loss-icon'),
+                              size: 16,
+                              color: semantic.loss,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            formatLimitPriceDeviation(_deviation),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: priceLoss == null
+                                      ? colors.primaryText
+                                      : semantic.loss,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      if (priceLoss != null) ...[
-                        Icon(
-                          Icons.warning_amber_rounded,
-                          key: const Key('hip3-limit-price-loss-icon'),
-                          size: 16,
-                          color: semantic.loss,
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        formatLimitPriceDeviation(_deviation),
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: priceLoss == null
-                              ? colors.primaryText
-                              : semantic.loss,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),

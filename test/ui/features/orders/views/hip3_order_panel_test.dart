@@ -59,6 +59,36 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  testWidgets('hip3 large limit price keeps the editor rendered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    await tester.enterText(input, '1000000000000000000000');
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('+1,000,000,000,000,000,000,000%'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(input).controller!.text,
+      '1000000000000000000000',
+    );
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+  });
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('HIP-3 warns for any loss-making long or short limit price', (
