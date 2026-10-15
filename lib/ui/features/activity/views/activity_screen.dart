@@ -434,36 +434,43 @@ class _ActivityFilterMenu<T> extends StatelessWidget {
     // nullable filter option ("All") can never be selected directly. Use a
     // non-null option index for the menu value and forward the actual filter
     // value, including null, through onChanged.
-    return PopupMenuButton<int>(
-      tooltip: label,
-      color: colors.surface,
-      constraints: const BoxConstraints.tightFor(width: 168),
-      menuPadding: const EdgeInsets.all(4),
-      offset: const Offset(0, 40),
-      onSelected: (index) => onChanged(options[index].value),
-      itemBuilder: (context) => options
-          .asMap()
-          .entries
-          .map(
-            (entry) => PopupMenuItem<int>(
-              value: entry.key,
-              height: 40,
-              padding: EdgeInsets.zero,
-              child: Container(
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashFactory: NoSplash.splashFactory,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      ),
+      child: PopupMenuButton<int>(
+        tooltip: label,
+        color: colors.surface,
+        constraints: const BoxConstraints.tightFor(width: 168),
+        menuPadding: const EdgeInsets.all(4),
+        offset: const Offset(0, 40),
+        onSelected: (index) => onChanged(options[index].value),
+        itemBuilder: (context) => options
+            .asMap()
+            .entries
+            .map(
+              (entry) => PopupMenuItem<int>(
+                value: entry.key,
                 height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: entry.value.value == value
-                      ? colors.selectedSoft
-                      : null,
-                  borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: entry.value.value == value
+                        ? colors.selectedSoft
+                        : null,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(entry.value.label),
                 ),
-                child: Text(entry.value.label),
               ),
-            ),
-          )
-          .toList(growable: false),
-      child: _FilterButton(width: width, label: label),
+            )
+            .toList(growable: false),
+        child: _FilterButton(width: width, label: label),
+      ),
     );
   }
 }
