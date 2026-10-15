@@ -497,6 +497,13 @@ TradingOrder _mapBstockOrder(api.BstockOrder value) => TradingOrder(
 TradingOrder _mapPerpOrder(api.PerpOrder value) => TradingOrder(
   walletActionBlocker: value.walletActionBlocker.name,
   productId: value.productId,
+  tpSl: value.tpSl == null || value.tpSl!.enabled == false
+      ? null
+      : TakeProfitStopLoss(
+          takeProfit: _orderValue(value.tpSl!.takeProfitPrice, 'price'),
+          stopLoss: _orderValue(value.tpSl!.stopLossPrice, 'price'),
+          stopLimit: _orderValue(value.tpSl!.stopLimitPrice, 'price'),
+        ),
   conditional: value.conditional == null
       ? null
       : ConditionalOrder(

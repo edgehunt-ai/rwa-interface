@@ -2648,4 +2648,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get protectionPartialFailure => '部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。';
+
+  @override
+  String get openOrderTpSlPending => '止盈止损待生效';
+
+  @override
+  String get openOrderTpSlPendingTooltip => '这些止盈止损订单尚未提交，将在此限价单成交后自动提交。';
 }

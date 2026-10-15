@@ -169,11 +169,72 @@ void main() {
       ),
       findsNothing,
     );
-    final role = find.text('Limit');
+    final role = find.text('Long / Limit');
     final date = find.text('2026/01/01');
     expect(tester.getSize(role).height, tester.getSize(date).height);
     expect(tester.getCenter(role).dy, tester.getCenter(date).dy);
   });
+  for (final side in [TradingSide.long, TradingSide.short]) {
+    for (final legs in ['both', 'tp', 'sl', 'none']) {
+      testWidgets('limit $side displays $legs protection and tooltip', (
+        tester,
+      ) async {
+        await configureDisplay(tester, size: const Size(393, 852));
+        await tester.pumpWidget(
+          ProviderScope(
+            child: buildTestApp(
+              Hip3OpenOrderCard(
+                order: _order(
+                  'parent',
+                  side: side,
+                  tpSl: legs == 'none'
+                      ? null
+                      : TakeProfitStopLoss(
+                          takeProfit: legs != 'sl' ? DecimalValue('200') : null,
+                          stopLoss: legs != 'tp' ? DecimalValue('130') : null,
+                        ),
+                ),
+                onChanged: () {},
+              ),
+            ),
+          ),
+        );
+        final badge = tester.widget<Text>(
+          find.text('${side == TradingSide.long ? 'Long' : 'Short'} / Limit'),
+        );
+        expect(
+          badge.style!.color,
+          side == TradingSide.long ? const Color(0xFF04A08B) : kShortTradeColor,
+        );
+        if (legs == 'none') {
+          expect(find.text('TP/SL pending'), findsNothing);
+          expect(find.byIcon(Icons.help_outline), findsNothing);
+        } else {
+          expect(find.text('TP/SL pending'), findsOneWidget);
+          expect(
+            find.text(switch (legs) {
+              'both' => 'TP 200 / SL 130',
+              'tp' => 'TP 200',
+              _ => 'SL 130',
+            }),
+            findsOneWidget,
+          );
+          await tester.tap(find.byIcon(Icons.help_outline));
+          await tester.pump();
+          expect(
+            find.text(
+              'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.',
+              findRichText: true,
+            ),
+            findsOneWidget,
+          );
+          await tester.tap(find.byIcon(Icons.help_outline));
+          await tester.pump();
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
   testWidgets('successful parent cancellation shows a success toast', (
     tester,
   ) async {
@@ -2261,6 +2322,8 @@ Position _position({
 TradingOrder _order(
   String id, {
   bool conditional = false,
+  TradingSide side = TradingSide.long,
+  TakeProfitStopLoss? tpSl,
   String executionType = 'market',
   String activationStatus = 'unknown',
   String? warningCode,
@@ -2271,7 +2334,8 @@ TradingOrder _order(
   positionId: 'p-tsla',
   symbol: 'TSLA',
   kind: MarketProductKind.perp,
-  side: conditional ? TradingSide.short : TradingSide.long,
+  side: conditional ? TradingSide.short : side,
+  tpSl: tpSl,
   type: TradingOrderType.limit,
   status: status,
   createdAt: DateTime.utc(2026),

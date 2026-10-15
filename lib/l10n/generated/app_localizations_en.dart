@@ -2805,4 +2805,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get protectionPartialFailure =>
       'Some protection changes failed. Review each result; cancelled orders are not restored automatically.';
+
+  @override
+  String get openOrderTpSlPending => 'TP/SL pending';
+
+  @override
+  String get openOrderTpSlPendingTooltip =>
+      'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.';
 }

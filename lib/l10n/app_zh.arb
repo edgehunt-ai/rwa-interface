@@ -904,5 +904,7 @@
   "protectionBatchResults": "保护订单逐笔结果",
   "protectionNewOrder": "新增一笔订单",
   "protectionEditTarget": "选择要修改的订单",
-  "protectionPartialFailure": "部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。"
+  "protectionPartialFailure": "部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。",
+  "openOrderTpSlPending": "止盈止损待生效",
+  "openOrderTpSlPendingTooltip": "这些止盈止损订单尚未提交，将在此限价单成交后自动提交。"
 }

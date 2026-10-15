@@ -124,6 +124,7 @@ final class TradingOrder {
     this.clientOrderId,
     this.productId,
     this.conditional,
+    this.tpSl,
     this.quantity,
     this.filledQuantity,
     this.cancelledQuantity,
@@ -144,6 +145,7 @@ final class TradingOrder {
   final String orderId;
   final String? productId;
   final ConditionalOrder? conditional;
+  final TakeProfitStopLoss? tpSl;
   final String? clientOrderId;
   final String symbol;
   final MarketProductKind kind;

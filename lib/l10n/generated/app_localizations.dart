@@ -4986,6 +4986,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Some protection changes failed. Review each result; cancelled orders are not restored automatically.'**
   String get protectionPartialFailure;
+
+  /// No description provided for @openOrderTpSlPending.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL pending'**
+  String get openOrderTpSlPending;
+
+  /// No description provided for @openOrderTpSlPendingTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.'**
+  String get openOrderTpSlPendingTooltip;
 }
 
 class _AppLocalizationsDelegate
