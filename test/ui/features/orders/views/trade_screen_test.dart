@@ -467,11 +467,14 @@ void main() {
       returnContext: '/trade bStocks Details',
       finder: find.text('US Market Trading Hours'),
     );
-    // The sheet's lead paragraph is the fixed trading-hours disclaimer, so
+    // The sheet's lead paragraph explains how liquidity varies, so
     // 'Regular Market' appears once, as the row for that session.
     expect(find.text('Regular Market'), findsOneWidget);
     expect(
-      find.textContaining('Market closed indicates no-trading periods'),
+      find.text(
+        'Trading is available 24/7, but liquidity may vary depending on U.S. '
+        'market hours.',
+      ),
       findsOneWidget,
     );
     // The navigation badge pairs the session with its local start time.
