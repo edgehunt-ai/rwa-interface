@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/models/limit_price_loss.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order.dart';
@@ -28,6 +29,7 @@ import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart'
 
 import 'order_funding_sheet.dart';
 import 'order_funding_confirmation_header.dart';
+import 'limit_price_loss_notice.dart';
 import 'slippage_controls.dart';
 import 'tp_sl_editor_card.dart';
 
@@ -770,7 +772,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   String get _settlementAssetForInput =>
-      quotePreview?.settlementAsset ?? 'USDT';
+      ref.read(bstocksSettlementTokenProvider).requireValue!.symbol;
 
   Future<void> _submit() async {
     final current = preview;
@@ -928,6 +930,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ? limitPrice.text.trim()
               : marketPrice ?? '',
           marketPrice: marketPrice,
+          isBuy: side == TradingSide.buy,
         ),
       );
       if (!mounted || value == null) return;
@@ -956,6 +959,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       builder: (_) => _BstocksLimitPriceSheet(
         initialPrice: limitPrice.text.trim(),
         marketPrice: marketPrice,
+        isBuy: side == TradingSide.buy,
       ),
     );
     if (!mounted || value == null) return;
@@ -964,6 +968,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final settlement = ref.watch(bstocksSettlementTokenProvider);
+    final l10n = AppLocalizations.of(context);
     final submittingOrder = reviewing && preview != null;
     return PopScope(
       canPop: !submittingOrder,
@@ -974,7 +980,29 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: SingleChildScrollView(
-              child: submittedOrder != null
+              child: settlement.isLoading && !settlement.hasError
+                  ? const LoadingSkeleton(rows: 3)
+                  : settlement.hasError
+                  ? Column(
+                      children: [
+                        InlineErrorNotice(
+                          message: settlement.error is ApiFailure
+                              ? apiFailureMessage(
+                                  settlement.error! as ApiFailure,
+                                  fallback: l10n.tradeBstocksUnavailable,
+                                )
+                              : l10n.tradeBstocksUnavailable,
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              ref.invalidate(deploymentEnvironmentProvider),
+                          child: Text(l10n.retry),
+                        ),
+                      ],
+                    )
+                  : settlement.value == null
+                  ? Text(l10n.tradeBstocksUnavailable)
+                  : submittedOrder != null
                   ? _submitted(context)
                   : _fundingRechecking
                   ? OrderFundingPendingContent(
@@ -999,7 +1027,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
     final actionColor = isBuy ? success : kShortTradeColor;
-    final settlementAsset = quotePreview?.settlementAsset ?? 'USDT';
+    final settlementToken = ref
+        .watch(bstocksSettlementTokenProvider)
+        .requireValue!;
+    final settlementAsset = settlementToken.symbol;
     final snapshot = ref.watch(
       marketSnapshotProvider(
         MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.bstock),
@@ -1010,9 +1041,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final settlementBalance = ref.watch(
       bstocksSettlementBalanceProvider(settlementAsset),
     );
-    final settlementDecimals = ref.watch(
-      bstocksSettlementTokenDecimalsProvider(settlementAsset),
-    );
+    final settlementDecimals = settlementToken.decimals;
     final catalogBstockDecimals = ref
         .watch(bstocksTokenDecimalsProvider(widget.symbol))
         .value;
@@ -1073,6 +1102,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final fee = quotePreview?.fee;
     final showFee = _hasNonZeroValue(fee);
     final quoteLoading = _quoting && quotePreview == null;
+    final enteredLimitQuantity = double.tryParse(quantity.text.trim());
+    final limitPriceLoss =
+        type != TradingOrderType.limit ||
+            enteredLimitQuantity == null ||
+            enteredLimitQuantity <= 0
+        ? null
+        : assessLimitPriceLoss(
+            isBuy: isBuy,
+            limitPrice: double.tryParse(limitPrice.text.trim()) ?? 0,
+            marketPrice: double.tryParse(_currentMarketPrice ?? '') ?? 0,
+            quantity: enteredLimitQuantity,
+          );
     final formHeight =
         (type == TradingOrderType.limit ? 579.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
@@ -1155,7 +1196,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     cardKey: const Key('bstocks-limit-price-card'),
                     controller: limitPrice,
                     label: l10n.limitPrice,
-                    suffix: 'USDT',
+                    suffix: settlementAsset,
                     onTap: _editLimitPrice,
                     inputKey: const Key('bstocks-limit-price-input'),
                   ),
@@ -1319,6 +1360,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ],
           ],
           const Spacer(),
+          if (limitPriceLoss != null) ...[
+            LimitPriceLossNotice(
+              key: const Key('bstocks-limit-price-loss-warning'),
+              loss: limitPriceLoss,
+              settlementAsset: settlementAsset,
+            ),
+            const SizedBox(height: 8),
+          ],
           if (error case final error?) ...[
             InlineErrorNotice(
               key: const Key('bstocks-order-error'),
@@ -1361,8 +1410,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : isBuy
         ? semantic.success
         : kShortTradeColor;
-    final settlementAsset =
-        current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
+    final settlementAsset = _settlementAssetForInput;
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
     final fee = current.fee;
     final showFee = _hasNonZeroValue(fee);
@@ -2353,9 +2401,14 @@ class _LimitInputState extends State<_LimitInput> {
 }
 
 class _BstocksLimitPriceSheet extends StatefulWidget {
-  const _BstocksLimitPriceSheet({required this.initialPrice, this.marketPrice});
+  const _BstocksLimitPriceSheet({
+    required this.initialPrice,
+    required this.isBuy,
+    this.marketPrice,
+  });
 
   final String initialPrice;
+  final bool isBuy;
   final String? marketPrice;
 
   @override
@@ -2392,11 +2445,11 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
   }
 
   void _setLimitPriceFromRuler(double value) {
-    _rulerPrice = value;
     final formattedPrice = _formatDraggedLimitPrice(value);
     final nextPrice = double.parse(formattedPrice);
     setState(() {
       _controller.text = formattedPrice;
+      _rulerPrice = nextPrice;
       if (_market case final market? when market > 0) {
         _deviation = ((nextPrice / market) - 1) * 100;
       }
@@ -2421,6 +2474,12 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
     final market = _market;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final displayedPrice = _rulerPrice ?? price ?? market ?? 0;
+    final priceLoss = assessLimitPriceLoss(
+      isBuy: widget.isBuy,
+      limitPrice: displayedPrice,
+      marketPrice: market ?? 0,
+      quantity: 1,
+    );
 
     return SizedBox(
       height: 543 + bottomInset,
@@ -2516,17 +2575,31 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _LimitPriceFact(
-                    label: AppLocalizations.of(context).market,
-                    value: market == null ? '-' : '\$${_formatDecimal(market)}',
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: _LimitPriceFact(
+                        label: AppLocalizations.of(context).market,
+                        value: market == null
+                            ? '-'
+                            : '\$${_formatDecimal(market)}',
+                      ),
+                    ),
                   ),
-                  _LimitPriceFact(
-                    label: 'Price Deviation',
-                    value:
-                        '${_deviation >= 0 ? '+' : ''}${_deviation.toStringAsFixed(0)}%',
-                    valueColor: _deviation >= 0
-                        ? semantic.success
-                        : colors.primaryText,
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: _LimitPriceFact(
+                        label: AppLocalizations.of(context).priceDeviation,
+                        value: formatLimitPriceDeviation(_deviation),
+                        showWarning: priceLoss != null,
+                        valueColor: priceLoss == null
+                            ? colors.primaryText
+                            : semantic.loss,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -2625,11 +2698,13 @@ class _LimitPriceFact extends StatelessWidget {
     required this.label,
     required this.value,
     this.valueColor,
+    this.showWarning = false,
   });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final bool showWarning;
 
   @override
   Widget build(BuildContext context) {
@@ -2645,6 +2720,15 @@ class _LimitPriceFact extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
+        if (showWarning) ...[
+          Icon(
+            Icons.warning_amber_rounded,
+            key: const Key('bstocks-limit-price-loss-icon'),
+            size: 16,
+            color: valueColor,
+          ),
+          const SizedBox(width: 4),
+        ],
         Text(
           value,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(

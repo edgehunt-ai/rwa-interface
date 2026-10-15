@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/formatters/decimal_text_input_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 
 class PositionProtectionQuantityCard extends StatelessWidget {
@@ -11,11 +12,13 @@ class PositionProtectionQuantityCard extends StatelessWidget {
     required this.percentage,
     required this.onQuantityChanged,
     required this.onPercentageChanged,
+    this.maxFractionDigits,
   });
 
   final TextEditingController controller;
   final String symbol;
   final double percentage;
+  final int? maxFractionDigits;
   final ValueChanged<String>? onQuantityChanged;
   final ValueChanged<double>? onPercentageChanged;
 
@@ -54,6 +57,13 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: maxFractionDigits == null
+                        ? null
+                        : [
+                            DecimalTextInputFormatter(
+                              maxFractionDigits: maxFractionDigits!,
+                            ),
+                          ],
                     style: style,
                     decoration: InputDecoration(
                       hintText: l10n.quantity,

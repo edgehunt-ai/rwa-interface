@@ -761,7 +761,8 @@ class _ProductHeader extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (maximumLeverage != null)
+                            if (maximumLeverage != null) ...[
+                              const SizedBox(width: 4),
                               Container(
                                 key: const Key(
                                   'trade-product-maximum-leverage',
@@ -792,6 +793,7 @@ class _ProductHeader extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                            ],
                             SvgPicture.asset(
                               'assets/figma/trade/chevron_down_18.svg',
                               key: const Key('trade-product-chevron'),

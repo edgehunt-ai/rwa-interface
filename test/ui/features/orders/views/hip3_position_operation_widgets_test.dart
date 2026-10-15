@@ -498,6 +498,7 @@ void main() {
           child: buildTestApp(Hip3ClosePositionSheet(position: position)),
         ),
       );
+      await tester.pumpAndSettle();
       expect(find.text('Short TSLA'), findsOneWidget);
       final slider = tester.widget<Slider>(
         find.byKey(const Key('close-percentage-slider')),
@@ -687,6 +688,24 @@ void main() {
     expect(repo.previewRequests.last.type, TradingOrderType.limit);
     expect(repo.previewRequests.last.limitPrice, '110');
     expect(repo.closeCalls, 0);
+  });
+
+  testWidgets('close quantity uses the product size decimals', (tester) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final quantity = find.byKey(const Key('close-quantity'));
+    await tester.enterText(quantity, '0.1234');
+    await _settleClosePreview(tester);
+
+    expect(tester.widget<TextField>(quantity).controller!.text, '0.12');
+    expect(repo.previewRequests.single.quantity, '0.12');
   });
 
   testWidgets(
@@ -1350,7 +1369,83 @@ void main() {
     });
   }
 
-  for (final quantity in ['', 'abc', '0', '2']) {
+  testWidgets('malformed fixed protection quantity edit is rejected', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(PositionTpSlSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final quantity = find.byKey(const Key('protection-quantity'));
+    await tester.ensureVisible(quantity);
+    final initial = tester.widget<TextField>(quantity).controller!.text;
+
+    await tester.enterText(quantity, 'abc');
+    await tester.pump();
+
+    expect(tester.widget<TextField>(quantity).controller!.text, initial);
+    expect(repo.protectionCalls, 0);
+  });
+
+  testWidgets('missing product context explains why protection is locked', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          PositionTpSlSheet(position: _position(productId: null)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Trading service is unavailable. Try again in a moment.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('missing product context explains why close is locked', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          Hip3ClosePositionSheet(position: _position(productId: null)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Trading service is unavailable. Try again in a moment.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('close-review')))
+          .onPressed,
+      isNull,
+    );
+  });
+
+  for (final quantity in ['', '0', '2']) {
     testWidgets('invalid fixed protection quantity "$quantity" blocks submit', (
       tester,
     ) async {
@@ -1776,6 +1871,58 @@ void main() {
     },
   );
 
+  testWidgets('protection quantity uses the product size decimals', (
+    tester,
+  ) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(PositionTpSlSheet(position: _position())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final quantity = find.byKey(const Key('protection-quantity'));
+    await tester.ensureVisible(quantity);
+    await tester.enterText(quantity, '0.1234');
+    await tester.pump();
+
+    expect(tester.widget<TextField>(quantity).controller!.text, '0.12');
+  });
+
+  testWidgets('100% protection keeps the product size decimals', (
+    tester,
+  ) async {
+    final repo = _Positions()..sizeDecimalsValue = 2;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          PositionTpSlSheet(position: _position(quantity: '1.2345')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final slider = find.byKey(const Key('protection-percentage-slider'));
+    await tester.ensureVisible(slider);
+    final rect = tester.getRect(slider);
+    await tester.tapAt(Offset(rect.left + rect.width * 0.2, rect.center.dy));
+    await tester.pumpAndSettle();
+    await tester.tapAt(Offset(rect.right - 1, rect.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Slider>(slider).value, 100);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('protection-quantity')))
+          .controller!
+          .text,
+      '1.23',
+    );
+  });
+
   testWidgets(
     'open orders keep server filters on page two and show conditional progress',
     (tester) async {
@@ -1845,6 +1992,7 @@ PositionClosePreview _closePreview(
 );
 
 Position _position({
+  String? productId = 'xyz:TSLA',
   bool short = false,
   PositionSide? side,
   bool withProtection = true,
@@ -1855,7 +2003,7 @@ Position _position({
   List<String> protectionIds = const [],
 }) => Position(
   positionId: 'p-tsla',
-  productId: 'xyz:TSLA',
+  productId: productId,
   positionVersion: positionVersion,
   protectionOrderIds: protectionIds,
   symbol: 'TSLA',
@@ -1915,6 +2063,10 @@ TradingOrder _order(
 class _Positions implements PositionsRepository {
   Position currentPosition = _position();
   int getCalls = 0;
+  int sizeDecimalsValue = 8;
+
+  @override
+  Future<int> sizeDecimals(String productId) async => sizeDecimalsValue;
 
   @override
   Future<Position> get(String positionId) async {

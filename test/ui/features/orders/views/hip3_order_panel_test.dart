@@ -27,6 +27,7 @@ import 'package:nobell/domain/repositories/orders_repository.dart';
 import 'package:nobell/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:nobell/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
+import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
@@ -58,7 +59,113 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  testWidgets('hip3 large limit price keeps the editor rendered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    await tester.enterText(input, '1000000000000000000000');
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('+1,000,000,000,000,000,000,000%'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(input).controller!.text,
+      '1000000000000000000000',
+    );
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+  });
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('HIP-3 warns for any loss-making long or short limit price', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+            ),
+          ),
+        ],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    var sheetInput = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    final ruler = find.byType(TpSlTickRuler);
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.4);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '100');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 100);
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsNothing);
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.6);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '101');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 101);
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+    await tester.enterText(sheetInput, '100.01');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+    expect(find.text('+0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('above the market price'), findsOneWidget);
+
+    await tester.tap(find.text('Short').first);
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const Key('hip3-limit-price-card')));
+    await tester.pumpAndSettle();
+    sheetInput = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '99.99');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-limit-price-loss-icon')), findsOneWidget);
+    expect(find.text('-0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('hip3-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('below the market price'), findsOneWidget);
+  });
 
   testWidgets('HIP-3 amount rail has only 6px intermediate reference marks', (
     tester,

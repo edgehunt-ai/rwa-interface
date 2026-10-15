@@ -8,6 +8,7 @@ import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/bstocks_support.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
@@ -63,6 +64,9 @@ final class PerformanceFixture {
     container = ProviderContainer(
       overrides: [
         authenticatedStateOverride,
+        bstocksSettlementTokenProvider.overrideWith(
+          (_) async => _performanceSettlementToken,
+        ),
         apiDataSourceProvider.overrideWith(
           (_) => throw StateError('Live API access in performance suite'),
         ),
@@ -109,6 +113,14 @@ final class PerformanceFixture {
     container.dispose();
   }
 }
+
+const _performanceSettlementToken = BstocksSettlementToken(
+  environment: 'mainnet',
+  chainId: 56,
+  symbol: 'USDT',
+  contract: '0x55d398326f99059ff775485246999027b3197955',
+  decimals: 18,
+);
 
 final class _Markets implements MarketsRepository {
   int snapshots = 0;

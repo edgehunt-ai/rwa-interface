@@ -14,6 +14,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/feedback/loading_skeleton.dart';
+import '../../../core/formatters/decimal_text_input_formatter.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../positions/providers/position_providers.dart';
@@ -39,9 +40,14 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   bool _pending = false;
   String? _error;
 
-  bool get _hasValidInputs {
+  bool _hasValidInputs(int? sizeDecimals) {
+    if (sizeDecimals == null) return false;
     try {
-      requireWithinPosition(_quantity.text.trim(), _position.quantity.value);
+      requireWithinPosition(
+        _quantity.text.trim(),
+        _position.quantity.value,
+        maxFractionDigits: sizeDecimals,
+      );
       if (_type == TradingOrderType.limit) {
         requirePositiveDecimal(_limitPrice.text.trim());
       }
@@ -53,8 +59,8 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     }
   }
 
-  PositionClosePreviewRequest? get _previewRequest {
-    if (!_hasValidInputs ||
+  PositionClosePreviewRequest? _previewRequest(int? sizeDecimals) {
+    if (!_hasValidInputs(sizeDecimals) ||
         _position.productId == null ||
         _position.side == PositionSide.none) {
       return null;
@@ -102,8 +108,12 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   Future<void> _submit(
     PositionClosePreview preview,
     PositionClosePreviewRequest request,
+    int sizeDecimals,
   ) async {
-    if (_busy || _pending || preview.isExpired || _previewRequest != request) {
+    if (_busy ||
+        _pending ||
+        preview.isExpired ||
+        _previewRequest(sizeDecimals) != request) {
       return;
     }
     setState(() {
@@ -112,7 +122,11 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     });
     try {
       final quantity = _quantity.text.trim();
-      requireWithinPosition(quantity, _position.quantity.value);
+      requireWithinPosition(
+        quantity,
+        _position.quantity.value,
+        maxFractionDigits: sizeDecimals,
+      );
       final limitPrice = _type == TradingOrderType.limit
           ? _limitPrice.text.trim()
           : null;
@@ -227,12 +241,16 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     return l10n.closeFailed;
   }
 
-  void _setPercent(double value) {
+  void _setPercent(double value, int sizeDecimals) {
     setState(() {
       _error = null;
       _percent = value;
       _quantity.text = _trimDecimal(
-        percentageQuantity(_position.quantity.value, value.round().toString()),
+        percentageQuantity(
+          _position.quantity.value,
+          value.round().toString(),
+          maxFractionDigits: sizeDecimals,
+        ),
       );
     });
   }
@@ -254,9 +272,28 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   Widget build(BuildContext context) {
     ref.watch(positionCommandProvider);
     final position = _position;
+    final productId = position.productId;
+    final sizeDecimalsState = productId == null
+        ? null
+        : ref.watch(positionSizeDecimalsProvider(productId));
+    if (productId != null) {
+      ref.listen(positionSizeDecimalsProvider(productId), (_, next) {
+        next.whenData((decimals) {
+          final truncated = truncateQuantity(_quantity.text, decimals);
+          if (truncated == _quantity.text) return;
+          setState(() {
+            _quantity.text = truncated;
+            _syncPercentToPosition();
+          });
+        });
+      });
+    }
+    final sizeDecimals = sizeDecimalsState?.hasError == true
+        ? null
+        : sizeDecimalsState?.value;
     final locked = _busy || _pending;
     final l10n = AppLocalizations.of(context);
-    final previewRequest = _previewRequest;
+    final previewRequest = _previewRequest(sizeDecimals);
     final previewState = previewRequest == null
         ? null
         : ref.watch(positionClosePreviewProvider(previewRequest));
@@ -267,6 +304,9 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
         : null;
     final errorMessage =
         _error ??
+        (productId == null || sizeDecimalsState?.hasError == true
+            ? l10n.hip3TradingContextUnavailable
+            : null) ??
         (previewError == null
             ? null
             : previewError is ApiFailure
@@ -503,6 +543,13 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      inputFormatters: sizeDecimals == null
+                          ? null
+                          : [
+                              DecimalTextInputFormatter(
+                                maxFractionDigits: sizeDecimals,
+                              ),
+                            ],
                       onChanged: _setQuantity,
                       style: TextStyle(
                         fontSize: 20,
@@ -533,8 +580,8 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                     const SizedBox(height: 8),
                     _ClosePercentageSlider(
                       value: _percent,
-                      enabled: !locked,
-                      onChanged: _setPercent,
+                      enabled: !locked && sizeDecimals != null,
+                      onChanged: (value) => _setPercent(value, sizeDecimals!),
                     ),
                   ],
                 ),
@@ -598,12 +645,16 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                       key: const Key('close-review'),
                       onPressed:
                           locked ||
-                              !_hasValidInputs ||
+                              !_hasValidInputs(sizeDecimals) ||
                               preview == null ||
                               position.productId == null ||
                               position.side == PositionSide.none
                           ? null
-                          : () => _submit(preview, previewRequest!),
+                          : () => _submit(
+                              preview,
+                              previewRequest!,
+                              sizeDecimals!,
+                            ),
                       child: Text(_busy ? l10n.preparing : l10n.signAndConfirm),
                     ),
                   ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
@@ -29,6 +30,7 @@ import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/bstocks_order_panel.dart';
+import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
@@ -39,11 +41,229 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  testWidgets('bstocks large limit price keeps the editor rendered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(input, '1000000000000000000000');
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('+1,000,000,000,000,000,000,000%'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(input).controller!.text,
+      '1000000000000000000000',
+    );
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('testnet token is shown before any preview and in limit inputs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(
+            (ref) async => _environment(symbol: 'TUSDT', decimals: 6),
+          ),
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('TUSDT'), findsWidgets);
+    expect(find.text('USDT'), findsNothing);
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byKey(const Key('bstocks-limit-price-sheet-input'))),
+    ).pop('100');
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('bstocks-limit-price-card')),
+        matching: find.text('TUSDT'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('USDT'), findsNothing);
+  });
+
+  testWidgets('environment failure blocks inputs and can be retried', (
+    tester,
+  ) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith((ref) async {
+            if (++calls == 1) throw const NetworkFailure();
+            return _environment(symbol: 'TUSDT');
+          }),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNothing);
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(calls, 2);
+    expect(find.byType(TextField), findsWidgets);
+    expect(find.text('TUSDT'), findsWidgets);
+  });
+
+  testWidgets('unconfigured bStocks does not expose order inputs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(
+            (ref) async => const DeploymentEnvironment(
+              environment: 'testnet',
+              hip3Environment: 'testnet',
+              bstocksConfigured: false,
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No bStocks market'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets('bStocks warns for any loss-making buy or sell limit price', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    var sheetInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    final ruler = find.byType(TpSlTickRuler);
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.4);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '100');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 100);
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsNothing,
+    );
+    tester.widget<TpSlTickRuler>(ruler).onChanged(100.6);
+    await tester.pump();
+    expect(tester.widget<TextField>(sheetInput).controller?.text, '101');
+    expect(tester.widget<TpSlTickRuler>(ruler).value, 101);
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+    await tester.enterText(sheetInput, '100.01');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+    expect(find.text('+0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('above the market price'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('bstocks-side-tabs')),
+        matching: find.text('Sell'),
+      ),
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const Key('bstocks-limit-price-card')));
+    await tester.pumpAndSettle();
+    sheetInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(sheetInput, '99.99');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-icon')),
+      findsOneWidget,
+    );
+    expect(find.text('-0.01%'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '2',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('bstocks-limit-price-loss-warning')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('below the market price'), findsOneWidget);
+  });
+
   testWidgets('limit-order input layout matches HIP-3 for Buy and Sell', (
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Limit'));
@@ -119,6 +339,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _CapturingOrdersRepository(),
@@ -166,6 +389,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(funding),
             walletsRepositoryProvider.overrideWithValue(wallets),
             transferOptionsProvider.overrideWith(
@@ -227,6 +453,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             transferOptionsProvider.overrideWith(
               (ref) async => _transferOptions('1000'),
             ),
@@ -274,6 +503,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(funding),
             walletsRepositoryProvider.overrideWithValue(
               _FundingWalletsRepository(),
@@ -321,6 +553,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith(
             (ref) async => _transferOptions('99.99'),
           ),
@@ -349,6 +584,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             transferOptionsProvider.overrideWith(
               (ref) async => _transferOptions('1000'),
             ),
@@ -379,6 +617,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith((ref) => options.future),
         ],
         child: buildTestApp(
@@ -415,6 +656,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith(
             (ref) async => _transferOptions(
               '100',
@@ -491,6 +735,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith(
             (ref) async => _transferOptions('100'),
           ),
@@ -526,6 +773,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith(
             (ref) async => _transferOptions(
               '100',
@@ -576,6 +826,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(
             _RejectedFundingTransferRepository(),
           ),
@@ -613,6 +866,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           transferOptionsProvider.overrideWith(
             (ref) async => _transferOptions('100'),
           ),
@@ -646,7 +902,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
     );
 
     expect(
@@ -667,6 +930,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             bstocksOrderAvailableBalanceProvider.overrideWith(
               (_) => balance.future,
             ),
@@ -694,6 +960,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
@@ -723,7 +992,7 @@ void main() {
     );
     expect(tester.widget<AnimatedNumberText>(fee).animateFirstChange, isTrue);
     expect(find.text('NVDAB'), findsOneWidget);
-    expect(find.text('USDC'), findsWidgets);
+    expect(find.text('USDT'), findsWidgets);
     expect(
       tester.getRect(find.text('Estimated Fee')).top -
           tester.getRect(find.text('Slippage')).bottom,
@@ -737,7 +1006,12 @@ void main() {
     final orders = _ControlledQuoteOrdersRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          ordersRepositoryProvider.overrideWithValue(orders),
+        ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
@@ -762,7 +1036,12 @@ void main() {
     final orders = _ControlledQuoteOrdersRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          ordersRepositoryProvider.overrideWithValue(orders),
+        ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
@@ -789,6 +1068,9 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _RecoveringQuoteOrdersRepository(),
@@ -826,6 +1108,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(
             _FailingFundingRepository(),
           ),
@@ -862,7 +1147,12 @@ void main() {
     final orders = _RefreshingFormQuoteOrdersRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+          ordersRepositoryProvider.overrideWithValue(orders),
+        ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
@@ -909,6 +1199,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           ordersRepositoryProvider.overrideWithValue(
             _DelayedOrdersRepository(),
           ),
@@ -934,6 +1227,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _ZeroFeeOrdersRepository(),
@@ -963,6 +1259,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(
               _SettlementFeeOrdersRepository(),
@@ -991,7 +1290,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.descendant(of: fee, matching: find.text('USDC')),
+        find.descendant(of: fee, matching: find.text('USDT')),
         findsOneWidget,
       );
 
@@ -1022,6 +1321,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _DelayedOrdersRepository(),
@@ -1055,6 +1357,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _DelayedOrdersRepository(),
@@ -1098,6 +1403,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _CapturingOrdersRepository(),
@@ -1154,6 +1462,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(orders),
           ],
@@ -1229,6 +1540,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           ordersRepositoryProvider.overrideWithValue(
             _DelayedOrdersRepository(),
           ),
@@ -1292,6 +1606,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              bstocksSettlementTokenProvider.overrideWith(
+                (ref) => _environment().bstocksSettlementToken,
+              ),
               ordersRepositoryProvider.overrideWithValue(orders),
               fundingRepositoryProvider.overrideWithValue(funding),
               walletsRepositoryProvider.overrideWithValue(
@@ -1393,6 +1710,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
@@ -1424,11 +1744,13 @@ void main() {
 
     await tester.enterText(input, '-1');
     await tester.pump();
-    expect(tester.widget<Slider>(slider).value, 0);
+    expect(tester.widget<TextField>(input).controller!.text, '999');
+    expect(tester.widget<Slider>(slider).value, 100);
 
     await tester.enterText(input, 'invalid');
     await tester.pump();
-    expect(tester.widget<Slider>(slider).value, 0);
+    expect(tester.widget<TextField>(input).controller!.text, '999');
+    expect(tester.widget<Slider>(slider).value, 100);
   });
 
   testWidgets('zero amount disables review and skips order preview', (
@@ -1438,6 +1760,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(orders),
           bstocksOrderAvailableBalanceProvider.overrideWith(
@@ -1476,6 +1801,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
@@ -1513,6 +1841,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              bstocksSettlementTokenProvider.overrideWith(
+                (ref) => _environment().bstocksSettlementToken,
+              ),
               fundingRepositoryProvider.overrideWithValue(funding),
               ordersRepositoryProvider.overrideWithValue(orders),
               bstocksOrderExecutionRepositoryProvider.overrideWithValue(
@@ -1641,6 +1972,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(orders),
             bstocksOrderExecutionRepositoryProvider.overrideWithValue(
@@ -1701,6 +2035,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(orders),
           bstocksOrderExecutionRepositoryProvider.overrideWithValue(execution),
@@ -1756,6 +2093,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(orders),
         ],
@@ -1800,6 +2140,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(orders),
             bstocksOrderExecutionRepositoryProvider.overrideWithValue(
@@ -1843,6 +2186,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(orders),
             bstocksOrderExecutionRepositoryProvider.overrideWithValue(
@@ -1887,6 +2233,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              bstocksSettlementTokenProvider.overrideWith(
+                (ref) => _environment().bstocksSettlementToken,
+              ),
               fundingRepositoryProvider.overrideWithValue(FundedRepository()),
               ordersRepositoryProvider.overrideWithValue(orders),
               bstocksOrderExecutionRepositoryProvider.overrideWithValue(
@@ -1947,6 +2296,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             bstocksOrderAvailableBalanceProvider.overrideWith(
               (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
@@ -1992,6 +2344,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           portfolioRepositoryProvider.overrideWithValue(repository),
         ],
@@ -2038,6 +2393,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
             (ref) async => BstocksSellAvailability(
@@ -2101,8 +2459,9 @@ void main() {
             (ref) async =>
                 DecimalValue('1.123456789', asset: 'USDT', unit: 'token'),
           ),
-          bstocksSettlementTokenDecimalsProvider('USDT')
-              .overrideWith((ref) => 6),
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) async => _environment(decimals: 6).bstocksSettlementToken,
+          ),
           bstocksTokenDecimalsProvider('NVDAB').overrideWith((ref) async => 8),
         ],
         child: buildTestApp(const BstocksOrderPanel()),
@@ -2146,6 +2505,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (_) => balance.future,
@@ -2171,6 +2533,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             tradingAccountsProvider.overrideWith((_) => accounts.future),
           ],
           child: buildTestApp(const BstocksOrderPanel()),
@@ -2192,6 +2557,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
         ],
         child: buildTestApp(
@@ -2223,7 +2591,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
     );
 
     expect(find.text('Buy NVDAB'), findsWidgets);
@@ -2240,6 +2615,11 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
+          ],
           child: buildTestApp(
             const BstocksOrderPanel(initialSide: TradingSide.sell),
           ),
@@ -2259,6 +2639,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(repository),
         ],
@@ -2287,7 +2670,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
     );
 
     await tester.tap(find.byKey(const Key('bstocks-edit-slippage')));
@@ -2310,6 +2700,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(repository),
         ],
@@ -2349,6 +2742,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(repository),
         ],
@@ -2415,6 +2811,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             bstocksOrderAvailableBalanceProvider.overrideWith(
               (ref) async => DecimalValue('100000', asset: 'USD', unit: 'fiat'),
             ),
@@ -2451,6 +2850,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             ordersRepositoryProvider.overrideWithValue(
               _DelayedOrdersRepository(executionReady: false),
             ),
@@ -2481,6 +2883,11 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
+          ],
           child: buildTestApp(
             BstocksTransferFlowSheet(
               amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
@@ -2604,6 +3011,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             ordersRepositoryProvider.overrideWithValue(orders),
             fundingRepositoryProvider.overrideWithValue(funding),
             walletsRepositoryProvider.overrideWithValue(wallets),
@@ -2675,6 +3085,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             ordersRepositoryProvider.overrideWithValue(
               _FilledOrdersRepository(),
             ),
@@ -2717,6 +3130,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment().bstocksSettlementToken,
+          ),
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(_FilledOrdersRepository()),
         ],
@@ -2760,6 +3176,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (ref) => _environment().bstocksSettlementToken,
+            ),
             fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(
               _RejectedOrdersRepository(),
@@ -3798,3 +4217,19 @@ class _PendingFundingRepository implements FundingRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+DeploymentEnvironment _environment({
+  String symbol = 'USDT',
+  int decimals = 18,
+}) => DeploymentEnvironment(
+  environment: symbol == 'TUSDT' ? 'testnet' : 'mainnet',
+  hip3Environment: 'testnet',
+  bstocksConfigured: true,
+  bstocksSettlementToken: BstocksSettlementToken(
+    environment: symbol == 'TUSDT' ? 'testnet' : 'mainnet',
+    chainId: symbol == 'TUSDT' ? 97 : 56,
+    symbol: symbol,
+    contract: '0x55d398326f99059ff775485246999027b3197955',
+    decimals: decimals,
+  ),
+);

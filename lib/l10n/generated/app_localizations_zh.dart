@@ -766,6 +766,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get priceDeviation => '价格偏差';
 
   @override
+  String limitPriceLossWarningAbove(
+    String deviation,
+    String loss,
+    String asset,
+  ) {
+    return '当前价格高于市场价 $deviation，可能导致约 $loss $asset 的损失。请谨慎设置价格。';
+  }
+
+  @override
+  String limitPriceLossWarningBelow(
+    String deviation,
+    String loss,
+    String asset,
+  ) {
+    return '当前价格低于市场价 $deviation，可能导致约 $loss $asset 的损失。请谨慎设置价格。';
+  }
+
+  @override
   String get confirm => '确认';
 
   @override

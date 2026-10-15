@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/limit_price_loss.dart';
 import 'package:nobell/domain/models/order.dart';
 import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order_preview.dart';
@@ -34,6 +35,7 @@ import 'hip3_confirm_sheet.dart';
 import 'hip3_segmented_control.dart';
 import 'hip3_cross_liquidation_impacts_card.dart';
 import 'order_funding_sheet.dart';
+import 'limit_price_loss_notice.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
 import '../providers/hip3_account_abstraction_providers.dart';
@@ -196,6 +198,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       backgroundColor: Colors.transparent,
       builder: (_) => _Hip3LimitPriceSheet(
         initialPrice: _limitPrice.text,
+        isBuy: _side == TradingSide.long,
         marketPrice: snapshotPrice,
         marketPriceFuture: quoteRequest,
       ),
@@ -1471,6 +1474,22 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         : reference == null
         ? null
         : enteredAmount * reference;
+    final marketPrice =
+        _quotePreview?.marketPrice ??
+        ref.watch(marketSnapshotProvider(_marketProductRef)).value?.price;
+    final limitQuantity = double.tryParse(_amount.text.trim());
+    final limitPriceLoss =
+        _type != TradingOrderType.limit ||
+            _reduceOnly ||
+            limitQuantity == null ||
+            limitQuantity <= 0
+        ? null
+        : assessLimitPriceLoss(
+            isBuy: _side == TradingSide.long,
+            limitPrice: double.tryParse(_limitPrice.text.trim()) ?? 0,
+            marketPrice: double.tryParse(marketPrice?.value ?? '') ?? 0,
+            quantity: limitQuantity,
+          );
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1718,16 +1737,36 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     message: l10n.hip3TradingSettingsLocked,
                   ),
                 ],
+                if (limitPriceLoss != null) ...[
+                  SizedBox(height: tradingSettingsEnabled ? 16 : 8),
+                  LimitPriceLossNotice(
+                    key: const Key('hip3-limit-price-loss-warning'),
+                    loss: limitPriceLoss,
+                    settlementAsset: settlementAsset,
+                  ),
+                ],
                 if ((visibleError ?? visibleDisabledReason)
                     case final error?) ...[
-                  SizedBox(height: tradingSettingsEnabled ? 16 : 8),
+                  SizedBox(
+                    height: limitPriceLoss != null
+                        ? 8
+                        : tradingSettingsEnabled
+                        ? 16
+                        : 8,
+                  ),
                   InlineErrorNotice(
                     key: const Key('hip3-form-error'),
                     message: error,
                   ),
                   const SizedBox(height: 8),
                 ] else
-                  SizedBox(height: tradingSettingsEnabled ? 24 : 8),
+                  SizedBox(
+                    height: limitPriceLoss != null
+                        ? 8
+                        : tradingSettingsEnabled
+                        ? 24
+                        : 8,
+                  ),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -3526,10 +3565,12 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
 class _Hip3LimitPriceSheet extends StatefulWidget {
   const _Hip3LimitPriceSheet({
     required this.initialPrice,
+    required this.isBuy,
     this.marketPrice,
     this.marketPriceFuture,
   });
   final String initialPrice;
+  final bool isBuy;
 
   /// Market price already known when the sheet opens, so the ruler renders
   /// without a loading state.
@@ -3617,7 +3658,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
     final price = double.parse(text);
     setState(() {
       _controller.text = text;
-      _rulerPrice = value;
+      _rulerPrice = price;
       final market = _market;
       if (market != null && market > 0) {
         _deviation = (price / market - 1) * 100;
@@ -3628,9 +3669,16 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final market = _market;
     final price = double.tryParse(_controller.text);
     final current = _rulerPrice ?? price ?? market ?? 0;
+    final priceLoss = assessLimitPriceLoss(
+      isBuy: widget.isBuy,
+      limitPrice: current,
+      marketPrice: market ?? 0,
+      quantity: 1,
+    );
     return SizedBox(
       height: 543 + MediaQuery.viewPaddingOf(context).bottom,
       child: Material(
@@ -3706,26 +3754,70 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('${AppLocalizations.of(context).market}: '),
-                      if (_marketPriceLoading)
-                        const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 1.5),
-                        )
-                      else
-                        Text(
-                          market == null
-                              ? '—'
-                              : '\$${_formatHip3Price(market)}',
-                        ),
-                    ],
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${AppLocalizations.of(context).market}: '),
+                          if (_marketPriceLoading)
+                            const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                              ),
+                            )
+                          else
+                            Text(
+                              market == null
+                                  ? '—'
+                                  : '\$${_formatHip3Price(market)}',
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Price Deviation ${_deviation >= 0 ? '+' : ' '}${_deviation.toStringAsFixed(0)}%',
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).priceDeviation,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: colors.tertiaryText,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                          const SizedBox(width: 4),
+                          if (priceLoss != null) ...[
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              key: const Key('hip3-limit-price-loss-icon'),
+                              size: 16,
+                              color: semantic.loss,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            formatLimitPriceDeviation(_deviation),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: priceLoss == null
+                                      ? colors.primaryText
+                                      : semantic.loss,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

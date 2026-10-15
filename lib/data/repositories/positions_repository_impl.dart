@@ -40,6 +40,15 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   final Hip3PreparationCache _preparations = Hip3PreparationCache();
 
   @override
+  Future<int> sizeDecimals(String productId) async {
+    final context = await _actions.context(productId);
+    if (context.productId != productId) {
+      throw const FormatException('Trading context binding mismatch');
+    }
+    return context.rules.sizeDecimals;
+  }
+
+  @override
   Future<PositionLeverageContext> leverageContext(String productId) async {
     final context = await _actions.context(productId);
     if (context.productId != productId) {

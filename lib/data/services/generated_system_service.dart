@@ -12,6 +12,28 @@ final class GeneratedSystemService implements SystemService {
   final ApiFailureMapper _mapper;
 
   @override
+  Future<api.SystemEnvironment> getEnvironment() async {
+    try {
+      final response = await _api.getSystemEnvironment();
+      final data = response.data;
+      if (data == null) {
+        throw _mapper.fromMissingBody(
+          response,
+          apiOperation: 'system.get_environment',
+          responseModel: 'SystemEnvironment',
+        );
+      }
+      return data;
+    } on DioException catch (error) {
+      throw _mapper.fromDio(
+        error,
+        apiOperation: 'system.get_environment',
+        responseModel: 'SystemEnvironment',
+      );
+    }
+  }
+
+  @override
   Future<List<api.AppVersionInfo>> listAppVersions({String? platform}) async {
     try {
       final response = await _api.listAppVersions(platform: platform);

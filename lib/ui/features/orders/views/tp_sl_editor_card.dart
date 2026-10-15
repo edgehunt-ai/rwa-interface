@@ -514,8 +514,14 @@ class _TpSlRulerPainter extends CustomPainter {
     // the center indicator, including when the ruler has no upper bound.
     final tickSpacing = trackWidth / divisions;
     final interval = (maximum - minimum) / divisions;
-    final position = (value - minimum) / interval;
     final halfTicks = tickCount ~/ 2;
+    final rawPosition = (value - minimum) / interval;
+    // Only the visible tick phase is needed far from the lower bound. Avoid
+    // converting large prices to integers, which can overflow on native Dart.
+    final position = unbounded && rawPosition > halfTicks
+        ? (value - minimum) % (interval * 5) / interval +
+              ((halfTicks + 4) ~/ 5) * 5
+        : rawPosition;
     final firstIndex = (position.floor() - halfTicks).clamp(
       0,
       unbounded ? position.ceil() + halfTicks : divisions,

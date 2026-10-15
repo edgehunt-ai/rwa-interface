@@ -19,6 +19,20 @@ import 'package:nobell/domain/repositories/positions_repository.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 
 void main() {
+  test('position size decimals come from the repository', () async {
+    final repository = _PositionsRepository()..sizeDecimalsValue = 3;
+    final container = ProviderContainer(
+      overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      await container.read(positionSizeDecimalsProvider('xyz:NVDA').future),
+      3,
+    );
+    expect(repository.sizeDecimalsProducts, ['xyz:NVDA']);
+  });
+
   test(
     'closing the preview subscription during debounce makes no request',
     () async {
@@ -346,6 +360,15 @@ Position _position() => Position(
 );
 
 final class _PositionsRepository implements PositionsRepository {
+  int sizeDecimalsValue = 8;
+  final sizeDecimalsProducts = <String>[];
+
+  @override
+  Future<int> sizeDecimals(String productId) async {
+    sizeDecimalsProducts.add(productId);
+    return sizeDecimalsValue;
+  }
+
   final previewKeys = <String>[];
   final previewRequests = <PositionClosePreviewRequest>[];
   final previewCompletions = <int, Completer<PositionClosePreview>>{};
