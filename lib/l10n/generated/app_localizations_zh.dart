@@ -1318,7 +1318,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get depositAssets => '充值资产';
 
   @override
-  String get depositReceived => '充值已到账';
+  String get depositReceived => '充值已到账！';
+
+  @override
+  String depositReceivedTitle(Object amount, Object network) {
+    return '$network 已收到 $amount！';
+  }
+
+  @override
+  String get depositReceivedDescription =>
+      '资金已进入你的 Spot 账户。转入 Perps 账户后即可交易 HIP-3。';
+
+  @override
+  String get transferToPerpsAccount => '转入 Perps 账户';
 
   @override
   String get maybeLater => '稍后再说';

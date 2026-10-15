@@ -2623,8 +2623,26 @@ abstract class AppLocalizations {
   /// No description provided for @depositReceived.
   ///
   /// In en, this message translates to:
-  /// **'Deposit received'**
+  /// **'Deposit received !'**
   String get depositReceived;
+
+  /// No description provided for @depositReceivedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} received\non {network}!'**
+  String depositReceivedTitle(Object amount, Object network);
+
+  /// No description provided for @depositReceivedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.'**
+  String get depositReceivedDescription;
+
+  /// No description provided for @transferToPerpsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to perps account'**
+  String get transferToPerpsAccount;
 
   /// No description provided for @maybeLater.
   ///

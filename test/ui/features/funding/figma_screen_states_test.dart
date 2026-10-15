@@ -398,15 +398,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Deposit assets'), findsOneWidget);
-    expect(find.text('Deposit received'), findsOneWidget);
-    expect(find.text('+ 1,000 USDC (Arbitrum)'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Transfer'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Maybe later'), findsOneWidget);
+    expect(find.text('1000 USDC received\non Arbitrum!'), findsOneWidget);
+    expect(find.text('+ 1,000 USDC (Arbitrum)'), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Transfer to perps account'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(OutlinedButton, 'Maybe later'), findsOneWidget);
+    expect(
+      find.text(
+        'Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.',
+      ),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(FilledButton, 'Got it'), findsNothing);
 
-    await tester.tap(find.widgetWithText(TextButton, 'Maybe later'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Maybe later'));
     await tester.pumpAndSettle();
-    expect(find.text('Deposit received'), findsNothing);
+    expect(find.text('1000 USDC received\non Arbitrum!'), findsNothing);
   });
 
   testWidgets('Arbitrum USDC receipt opens a Spot to Perps transfer', (
@@ -445,6 +455,13 @@ void main() {
                 calculatedAt: DateTime.utc(2026),
                 positions: [
                   FundingSourcePosition(
+                    positionId: 'usdt-arbitrum',
+                    token: 'USDT',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDT'),
+                    eligible: true,
+                  ),
+                  FundingSourcePosition(
                     positionId: 'usdc-arbitrum',
                     token: 'USDC',
                     network: 'Arbitrum',
@@ -466,6 +483,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TransferScreen), findsOneWidget);
+    final transferScreen = tester.widget<TransferScreen>(
+      find.byType(TransferScreen),
+    );
+    expect(transferScreen.initialToken, 'USDC');
+    expect(transferScreen.initialNetwork, 'Arbitrum');
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('send-token-card')),
+        matching: find.text('USDC'),
+      ),
+      findsOneWidget,
+    );
     final spot = find.text('Spot');
     final perps = find.text('Perps');
     expect(spot, findsOneWidget);

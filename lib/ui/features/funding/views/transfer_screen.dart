@@ -34,7 +34,10 @@ import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_c
 ///
 /// Quotes and executes an internal Spot-to-Perps transfer through Riverpod.
 class TransferScreen extends ConsumerStatefulWidget {
-  const TransferScreen({super.key});
+  const TransferScreen({super.key, this.initialToken, this.initialNetwork});
+
+  final String? initialToken;
+  final String? initialNetwork;
 
   @override
   ConsumerState<TransferScreen> createState() => _TransferScreenState();
@@ -87,6 +90,20 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _eligiblePositionIds = positions
         .map((position) => position.positionId)
         .toSet();
+    if (_selectedPositionId == null &&
+        widget.initialToken != null &&
+        widget.initialNetwork != null) {
+      final requestedToken = widget.initialToken!.trim().toUpperCase();
+      final requestedNetwork = widget.initialNetwork!.trim().toLowerCase();
+      _selectedPositionId = positions
+          .where(
+            (position) =>
+                position.token.trim().toUpperCase() == requestedToken &&
+                position.network.trim().toLowerCase() == requestedNetwork,
+          )
+          .firstOrNull
+          ?.positionId;
+    }
     if (!_eligiblePositionIds.contains(_selectedPositionId)) {
       _selectedPositionId = positions.firstOrNull?.positionId;
     }

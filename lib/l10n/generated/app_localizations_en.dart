@@ -1372,7 +1372,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get depositAssets => 'Deposit assets';
 
   @override
-  String get depositReceived => 'Deposit received';
+  String get depositReceived => 'Deposit received !';
+
+  @override
+  String depositReceivedTitle(Object amount, Object network) {
+    return '$amount received\non $network!';
+  }
+
+  @override
+  String get depositReceivedDescription =>
+      'Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.';
+
+  @override
+  String get transferToPerpsAccount => 'Transfer to perps account';
 
   @override
   String get maybeLater => 'Maybe later';

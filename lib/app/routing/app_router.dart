@@ -35,7 +35,10 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.transferName,
           path: AppRoutes.transferPath,
-          builder: (context, state) => const TransferScreen(),
+          builder: (context, state) => TransferScreen(
+            initialToken: state.uri.queryParameters['token'],
+            initialNetwork: state.uri.queryParameters['network'],
+          ),
         ),
         GoRoute(
           name: AppRoutes.loginName,
