@@ -185,23 +185,26 @@ final class FundingRepositoryImpl implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) async {
     final value = await _service.updateFundingSessionSelection(
       fundingSessionId,
-      api.FundingSessionSelectionRequest(
-        (request) => request
-          ..version = version
-          ..allocations.addAll(
-            allocations.entries.map(
-              (entry) => api.FundingSessionSourceAllocationInput(
-                (allocation) => allocation
-                  ..sourcePositionId = entry.key
-                  ..inputAmount = entry.value,
-              ),
+      api.FundingSessionSelectionRequest((request) {
+        request.version = version;
+        // Standalone account_transfer sessions must retarget the top-up
+        // requirement; the server rejects a selection without it.
+        if (amount != null) request.amount = amount;
+        request.allocations.addAll(
+          allocations.entries.map(
+            (entry) => api.FundingSessionSourceAllocationInput(
+              (allocation) => allocation
+                ..sourcePositionId = entry.key
+                ..inputAmount = entry.value,
             ),
           ),
-      ),
+        );
+      }),
       idempotencyKey: idempotencyKey,
     );
     return _session(value);

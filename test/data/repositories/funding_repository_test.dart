@@ -101,6 +101,55 @@ void main() {
     },
   );
 
+  test('standalone transfer selection restates the intended top-up', () async {
+    final service = _CaptureFunding();
+    final repository = FundingRepositoryImpl(service);
+
+    await expectLater(
+      repository.updateFundingSessionSelection(
+        fundingSessionId: 'session-1',
+        version: 3,
+        allocations: const {'position-1': '5'},
+        amount: '5',
+        idempotencyKey: 'selection-key',
+      ),
+      throwsStateError,
+    );
+
+    expect(service.selection, {
+      'version': 3,
+      'amount': '5',
+      'allocations': [
+        {'source_position_id': 'position-1', 'input_amount': '5'},
+      ],
+    });
+  });
+
+  test(
+    'order-driven selection omits the frozen requirement override',
+    () async {
+      final service = _CaptureFunding();
+      final repository = FundingRepositoryImpl(service);
+
+      await expectLater(
+        repository.updateFundingSessionSelection(
+          fundingSessionId: 'session-1',
+          version: 3,
+          allocations: const {'position-1': '5'},
+          idempotencyKey: 'selection-key',
+        ),
+        throwsStateError,
+      );
+
+      expect(service.selection, {
+        'version': 3,
+        'allocations': [
+          {'source_position_id': 'position-1', 'input_amount': '5'},
+        ],
+      });
+    },
+  );
+
   test(
     'generated request type update preserves multi-source funding wire',
     () async {
@@ -389,6 +438,7 @@ Map<String, Object?> _fundingSessionBody(String id) => {
 final class _CaptureFunding implements FundingService {
   Object? session;
   Object? plan;
+  Object? selection;
   Object? transfer;
   Object? selfCustodialWithdrawal;
 
@@ -411,6 +461,19 @@ final class _CaptureFunding implements FundingService {
   }) async {
     plan = api.standardSerializers.serializeWith(
       api.FundingPlanRequest.serializer,
+      request,
+    );
+    throw StateError('captured without sending');
+  }
+
+  @override
+  Future<api.FundingSession> updateFundingSessionSelection(
+    String id,
+    api.FundingSessionSelectionRequest request, {
+    required String idempotencyKey,
+  }) async {
+    selection = api.standardSerializers.serializeWith(
+      api.FundingSessionSelectionRequest.serializer,
       request,
     );
     throw StateError('captured without sending');

@@ -1003,6 +1003,7 @@ final class AppReviewFundingRepository implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) async => FundingSessionSummary(
     sessionId: fundingSessionId,
