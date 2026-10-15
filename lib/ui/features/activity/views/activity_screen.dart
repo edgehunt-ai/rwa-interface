@@ -914,13 +914,13 @@ class _TypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final isSell =
-        label.toLowerCase().startsWith('sell') ||
-        label.toLowerCase().startsWith('short');
+    final l10n = AppLocalizations.of(context);
+    final direction = label.split(' / ').first;
+    final isSell = direction == l10n.sell || direction == l10n.short;
     final badgeColor = order
         ? (positive == true
               ? const Color(0xFF04A08B)
-              : (isSell ? const Color(0xFFDE596E) : const Color(0xFF04A08B)))
+              : (isSell ? kShortTradeColor : const Color(0xFF04A08B)))
         : colors.secondaryText;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
