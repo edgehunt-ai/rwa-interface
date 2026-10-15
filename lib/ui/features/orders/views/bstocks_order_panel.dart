@@ -461,7 +461,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               plan: plan,
               kind: intent.kind,
               canConfirmTransfer: funding.canConfirmTransfer,
-              slippage: intent.slippage,
             ),
           );
           if (!mounted || funded != true) return;

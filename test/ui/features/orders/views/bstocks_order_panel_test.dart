@@ -796,7 +796,6 @@ void main() {
             plan: _readyFundingPlan,
             kind: MarketProductKind.bstock,
             canConfirmTransfer: true,
-            slippage: DecimalValue('0.12', unit: 'percent'),
           ),
         ),
       ),
@@ -814,8 +813,8 @@ void main() {
     expect(find.text('100'), findsOneWidget);
     expect(find.byIcon(Icons.check_box), findsNothing);
     expect(find.text('Add token'), findsNothing);
-    expect(find.text('Slippage'), findsOneWidget);
-    expect(find.text('0.12%'), findsOneWidget);
+    expect(find.text('Slippage'), findsNothing);
+    expect(find.text('0.12%'), findsNothing);
     expect(find.text('Amount needed'), findsNothing);
     expect(find.text('Transfer amount'), findsNothing);
   });

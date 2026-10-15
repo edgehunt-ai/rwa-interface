@@ -24,12 +24,10 @@ class OrderFundingSheet extends ConsumerStatefulWidget {
     required this.plan,
     required this.kind,
     required this.canConfirmTransfer,
-    this.slippage,
   });
   final FundingPlan plan;
   final MarketProductKind kind;
   final bool canConfirmTransfer;
-  final DecimalValue? slippage;
 
   @override
   ConsumerState<OrderFundingSheet> createState() => _OrderFundingSheetState();
@@ -206,7 +204,6 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     AsyncData(:final value) => _TransferContent(
                       plan: _plan,
                       fallbackTargetAsset: _targetAsset,
-                      slippage: widget.slippage,
                       busy: _busy,
                       pending: _pending,
                       error: _error,
@@ -221,7 +218,6 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     _ => _TransferContent(
                       plan: _plan,
                       fallbackTargetAsset: _targetAsset,
-                      slippage: widget.slippage,
                       busy: _busy,
                       pending: _pending,
                       error: _error,
@@ -805,7 +801,6 @@ class _TransferContent extends StatelessWidget {
   const _TransferContent({
     required this.plan,
     required this.fallbackTargetAsset,
-    required this.slippage,
     required this.busy,
     required this.pending,
     required this.error,
@@ -816,7 +811,6 @@ class _TransferContent extends StatelessWidget {
   });
   final FundingPlan plan;
   final String fallbackTargetAsset;
-  final DecimalValue? slippage;
   final bool busy, pending;
   final String? error;
   final VoidCallback onBack, onConfirm, onRetry;
@@ -846,7 +840,7 @@ class _TransferContent extends StatelessWidget {
           targetAmount: _outputAmount(plan),
         ),
         const SizedBox(height: 16),
-        _RouteRows(leg: leg, slippage: slippage),
+        _RouteRows(leg: leg),
         const SizedBox(height: 28),
         if (error != null) ...[
           InlineErrorNotice(
@@ -1375,9 +1369,8 @@ String? _networkAssetPath(String? network) =>
     networkIconAssetPath(network, variant: NetworkIconVariant.mark);
 
 class _RouteRows extends StatelessWidget {
-  const _RouteRows({required this.leg, required this.slippage});
+  const _RouteRows({required this.leg});
   final FundingLeg? leg;
-  final DecimalValue? slippage;
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1394,14 +1387,6 @@ class _RouteRows extends StatelessWidget {
           label: l10n.networkFee,
           value: _fee(leg?.networkFee, leg?.feeAsset),
         ),
-        if (slippage != null) ...[
-          const SizedBox(height: 8),
-          _InfoRow(
-            label: l10n.slippage,
-            labelIcon: 'assets/figma/trade/order_slippage_edit.svg',
-            value: '${TokenAmountFormatter.formatValue(slippage!)}%',
-          ),
-        ],
       ],
     );
   }
@@ -1421,9 +1406,8 @@ class _RouteRows extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value, this.labelIcon});
+  const _InfoRow({required this.label, required this.value});
   final String label, value;
-  final String? labelIcon;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -1441,10 +1425,6 @@ class _InfoRow extends StatelessWidget {
                 color: colors.secondaryText,
               ),
             ),
-            if (labelIcon != null) ...[
-              const SizedBox(width: 4),
-              SvgPicture.asset(labelIcon!, width: 12, height: 12),
-            ],
           ],
         ),
         Text(

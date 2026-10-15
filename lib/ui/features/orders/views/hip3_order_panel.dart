@@ -1196,7 +1196,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             plan: plan,
             kind: intent.kind,
             canConfirmTransfer: funding.canConfirmTransfer,
-            slippage: intent.slippage,
           ),
         );
         _setProcessingStep('reconciling funding result');
