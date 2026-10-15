@@ -216,7 +216,6 @@ import 'package:rwa_api_client/src/model/hip3_candle_provenance.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
-import 'package:rwa_api_client/src/model/hip3_clear_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview_request.dart';
@@ -238,6 +237,7 @@ import 'package:rwa_api_client/src/model/hip3_liquidation_history_coverage.dart'
 import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
 import 'package:rwa_api_client/src/model/hip3_liquidation_position.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
+import 'package:rwa_api_client/src/model/hip3_manage_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_market_order_minimum.dart';
 import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
@@ -248,8 +248,14 @@ import 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';
 import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_order_protection_spec_not.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_position_protection_order.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_cancel_change.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_change.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_create_change.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_modify_change.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_step_order.dart';
 import 'package:rwa_api_client/src/model/hip3_public_market.dart';
 import 'package:rwa_api_client/src/model/hip3_realtime_balance.dart';
 import 'package:rwa_api_client/src/model/hip3_realtime_balance_event.dart';
@@ -268,7 +274,7 @@ import 'package:rwa_api_client/src/model/hip3_realtime_snapshot.dart';
 import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_event.dart';
 import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_item.dart';
 import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
-import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_single_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
@@ -707,7 +713,6 @@ part 'serializers.g.dart';
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
-  Hip3ClearTpSlActionRequest,
   Hip3CloseActionRequest,
   Hip3ClosePreview,
   Hip3ClosePreviewRequest,
@@ -729,6 +734,7 @@ part 'serializers.g.dart';
   Hip3LiquidationPage,
   Hip3LiquidationPosition,
   Hip3MainnetProduct,
+  Hip3ManageTpSlActionRequest,
   Hip3MarketOrderMinimum,
   Hip3MarketOrderMinimums,
   Hip3OpeningProtectionConfirmation,
@@ -739,8 +745,14 @@ part 'serializers.g.dart';
   Hip3OrderProtectionSpec,
   Hip3OrderProtectionSpecNot,
   Hip3PlaceOrderActionRequest,
+  Hip3PositionProtectionOrder,
   Hip3PreviewExecution,
+  Hip3ProtectionCancelChange,
+  Hip3ProtectionChange,
+  Hip3ProtectionCreateChange,
+  Hip3ProtectionModifyChange,
   Hip3ProtectionSpec,
+  Hip3ProtectionStepOrder,
   Hip3PublicMarket,$Hip3PublicMarket,
   Hip3RealtimeBalance,
   Hip3RealtimeBalanceEvent,
@@ -759,7 +771,7 @@ part 'serializers.g.dart';
   Hip3RealtimeSnapshotEvent,
   Hip3RealtimeSnapshotItem,
   Hip3SetLeverageActionRequest,
-  Hip3SetTpSlActionRequest,
+  Hip3SingleProtectionSpec,
   Hip3StepSigningPayload,
   Hip3TimeInForce,
   Hip3TradingContext,
@@ -1103,6 +1115,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<AppVersionInfo>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3ProtectionStepOrder)]),
+        () => ListBuilder<Hip3ProtectionStepOrder>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TradeIntentFundingLegBinding)]),
         () => ListBuilder<TradeIntentFundingLegBinding>(),
       )
@@ -1141,6 +1157,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(BstocksSupportedToken)]),
         () => ListBuilder<BstocksSupportedToken>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3ProtectionChange)]),
+        () => ListBuilder<Hip3ProtectionChange>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(HoldingGroup)]),
@@ -1213,6 +1233,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Chain)]),
         () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3PositionProtectionOrder)]),
+        () => ListBuilder<Hip3PositionProtectionOrder>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3RealtimeSnapshotItem)]),

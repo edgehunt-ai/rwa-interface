@@ -1,6 +1,7 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/hip3_step_confirmation.dart';
+import 'hip3_action_mapper.dart';
 
 Hip3StepConfirmation mapHip3StepConfirmation(
   api.Hip3Action action,
@@ -25,7 +26,7 @@ Hip3StepConfirmation mapHip3StepConfirmation(
   flatten(
     api.standardSerializers.serializeWith(
       api.Hip3ActionCreateRequest.serializer,
-      action.intent,
+      hip3CurrentIntent(action),
     ),
     'intent',
   );
@@ -51,9 +52,12 @@ Hip3StepConfirmation mapHip3StepConfirmation(
     actionId: action.actionId,
     stepId: step.stepId,
     productId: action.productId,
-    operation: action.operation.name,
+    operation: hip3OperationName(action.operation),
     stepKind: step.kind.name,
     validUntil: step.signing!.validUntil.toUtc(),
     details: Map.unmodifiable(details),
+    protectionOrders: mapHip3ProtectionResults(
+      action.rebuild((b) => b.steps.replace([step])),
+    ),
   );
 }

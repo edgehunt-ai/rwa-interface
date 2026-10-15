@@ -8,6 +8,7 @@ import '../../domain/models/portfolio_asset.dart';
 import '../../domain/models/portfolio_allocation.dart';
 import '../../domain/models/portfolio_history.dart' as domain;
 import '../../domain/models/position.dart';
+import '../../domain/models/hip3_protection.dart';
 import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../services/portfolio_service.dart';
@@ -218,9 +219,28 @@ Position mapPosition(api.Position value) => Position(
   productId: value.productId,
   positionVersion: value.positionVersion,
   hip3ActionId: value.hip3ActionId,
-  protectionOrderIds: List.unmodifiable(
-    value.protectionOrderIds?.toList() ?? const [],
-  ),
+  protectionOrderIds: List.unmodifiable({
+    ...?value.protectionOrderIds,
+    ...?value.protectionOrders?.map((order) => order.orderId),
+  }),
+  protectionOrders: List.unmodifiable([
+    for (final order
+        in value.protectionOrders ?? <api.Hip3PositionProtectionOrder>[])
+      Hip3PositionProtectionOrder(
+        orderId: order.orderId,
+        protection: Hip3ProtectionParameters(
+          role: order.role.name,
+          triggerPrice: DecimalValue(order.triggerPrice),
+          triggerReference: order.triggerReference.name,
+          quantity: order.sizeMode.name == 'quantity'
+              ? DecimalValue(order.quantity)
+              : null,
+          limitPrice: order.limitPrice == null
+              ? null
+              : DecimalValue(order.limitPrice!),
+        ),
+      ),
+  ]),
   marginMode: switch (value.marginMode) {
     api.MarginMode.isolated => PositionMarginMode.isolated,
     api.MarginMode.cross => PositionMarginMode.cross,

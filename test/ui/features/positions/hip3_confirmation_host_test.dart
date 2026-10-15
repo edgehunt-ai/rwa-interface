@@ -31,7 +31,7 @@ void main() {
               actionId: 'a-zh',
               stepId: 's-zh',
               productId: 'xyz:TSLA',
-              operation: 'setTpsl',
+              operation: 'manageTpsl',
               stepKind: 'placeStopLoss',
               validUntil: DateTime.now().toUtc().add(
                 const Duration(minutes: 1),
@@ -113,7 +113,7 @@ void main() {
               actionId: 'a1',
               stepId: 's1',
               productId: 'xyz:TSLA',
-              operation: 'setTpsl',
+              operation: 'manageTpsl',
               stepKind: example.$1,
               validUntil: DateTime.now().toUtc().add(
                 const Duration(minutes: 1),
@@ -155,7 +155,7 @@ void main() {
             actionId: 'a1',
             stepId: 's1',
             productId: 'xyz:TSLA',
-            operation: 'setTpsl',
+            operation: 'manageTpsl',
             stepKind: 'placeStopLoss',
             validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
             details: const {

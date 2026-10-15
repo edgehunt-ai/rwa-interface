@@ -2768,4 +2768,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String hip3SignAndConfirm(String direction) {
     return 'Sign & Confirm $direction';
   }
+
+  @override
+  String get protectionManageTitle => 'Manage TP/SL';
+
+  @override
+  String get protectionCreate => 'Add order';
+
+  @override
+  String get protectionModify => 'Modify order';
+
+  @override
+  String get protectionCancel => 'Cancel order';
+
+  @override
+  String get protectionConfirmed => 'Confirmed';
+
+  @override
+  String get protectionCancelConfirmed => 'Cancellation confirmed';
+
+  @override
+  String get protectionWaitingConfirmation => 'Waiting for confirmation';
+
+  @override
+  String get protectionFailed => 'Failed';
+
+  @override
+  String get protectionBatchResults => 'Protection order results';
+
+  @override
+  String get protectionNewOrder => 'Add new order';
+
+  @override
+  String get protectionEditTarget => 'Order to edit';
+
+  @override
+  String get protectionPartialFailure =>
+      'Some protection changes failed. Review each result; cancelled orders are not restored automatically.';
 }

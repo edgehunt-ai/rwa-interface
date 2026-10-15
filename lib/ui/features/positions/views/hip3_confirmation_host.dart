@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/providers/hip3_confirmation_provider.dart';
 import '../../../../domain/models/hip3_step_confirmation.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import 'hip3_protection_order_results.dart';
 
 /// Local extension of the existing transaction flow: inherited theme, protected
 /// focus, readable frozen business values, and explicit consent per step.
@@ -50,6 +51,7 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 16),
+                  Hip3ProtectionOrderResults(orders: summary.protectionOrders),
                   for (final field in _fields(summary, l10n))
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -94,6 +96,7 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
 }
 
 String _kind(String kind, AppLocalizations l10n) => switch (kind) {
+  'placeProtection' || 'cancelProtection' => l10n.protectionManageTitle,
   'placeTakeProfit' => l10n.hip3ConfirmSetTp,
   'placeStopLoss' => l10n.hip3ConfirmSetSl,
   'cancelTakeProfit' => l10n.hip3ConfirmCancelTp,

@@ -5,11 +5,10 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_action_step.dart';
-import 'package:rwa_api_client/src/model/hip3_action_create_request.dart';
-import 'package:rwa_api_client/src/model/hip3_operation.dart';
 import 'package:rwa_api_client/src/model/hip3_action_status.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
+import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,10 +17,10 @@ part 'hip3_action.g.dart';
 /// 服务器持久化工作流。每个步骤关联同一账户/环境/产品；只有当前步骤可签名。 effects_applied 表示至少一个步骤已产生 Provider 副作用，即使动作最终失败也不能清除。 异常后的恢复只能读取相同资源；未决动作阻止相同业务对象的冲突修改。 succeeded 后，挂单的后续成交、撤销和强平继续通过订单/仓位查询和 events 同步。 
 ///
 /// Properties:
-/// * [intent] - 冻结的已接受业务意图，供重启恢复展示；百分比保护须同时在步骤释放前展示规范化 trigger_price/quantity，不得让用户盲签变化后的条件。
+/// * [intent] - 冻结的已接受业务意图，当前动作遵循Hip3ActionCreateRequest；历史记录保留创建时的原始字段，不能作为新请求重发。百分比保护须同时在步骤释放前展示规范化trigger_price/quantity。
 /// * [closePreview] - close_position 动作必须返回其冻结预览，避免重启后丢失金额和损益确认信息。其他动作省略。
 /// * [actionId] 
-/// * [operation] 
+/// * [operation] - 创建时的操作名称；当前可创建值见Hip3Operation。历史记录可返回已退役的名称，仅供查询和已广播事实对账。
 /// * [environment] 
 /// * [productId] 
 /// * [status] 
@@ -38,9 +37,9 @@ part 'hip3_action.g.dart';
 /// * [updatedAt] 
 @BuiltValue()
 abstract class Hip3Action implements Built<Hip3Action, Hip3ActionBuilder> {
-  /// 冻结的已接受业务意图，供重启恢复展示；百分比保护须同时在步骤释放前展示规范化 trigger_price/quantity，不得让用户盲签变化后的条件。
+  /// 冻结的已接受业务意图，当前动作遵循Hip3ActionCreateRequest；历史记录保留创建时的原始字段，不能作为新请求重发。百分比保护须同时在步骤释放前展示规范化trigger_price/quantity。
   @BuiltValueField(wireName: r'intent')
-  Hip3ActionCreateRequest get intent;
+  BuiltMap<String, JsonObject?> get intent;
 
   /// close_position 动作必须返回其冻结预览，避免重启后丢失金额和损益确认信息。其他动作省略。
   @BuiltValueField(wireName: r'close_preview')
@@ -49,9 +48,9 @@ abstract class Hip3Action implements Built<Hip3Action, Hip3ActionBuilder> {
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 
+  /// 创建时的操作名称；当前可创建值见Hip3Operation。历史记录可返回已退役的名称，仅供查询和已广播事实对账。
   @BuiltValueField(wireName: r'operation')
-  Hip3Operation get operation;
-  // enum operationEnum {  place_order,  cancel_order,  close_position,  set_tpsl,  clear_tpsl,  set_leverage,  };
+  String get operation;
 
   @BuiltValueField(wireName: r'environment')
   Hip3Environment get environment;
@@ -126,7 +125,7 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
     yield r'intent';
     yield serializers.serialize(
       object.intent,
-      specifiedType: const FullType(Hip3ActionCreateRequest),
+      specifiedType: const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
     );
     if (object.closePreview != null) {
       yield r'close_preview';
@@ -143,7 +142,7 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
     yield r'operation';
     yield serializers.serialize(
       object.operation,
-      specifiedType: const FullType(Hip3Operation),
+      specifiedType: const FullType(String),
     );
     yield r'environment';
     yield serializers.serialize(
@@ -245,8 +244,8 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
         case r'intent':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(Hip3ActionCreateRequest),
-          ) as Hip3ActionCreateRequest;
+            specifiedType: const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+          ) as BuiltMap<String, JsonObject?>;
           result.intent.replace(valueDes);
           break;
         case r'close_preview':
@@ -267,8 +266,8 @@ class _$Hip3ActionSerializer implements PrimitiveSerializer<Hip3Action> {
         case r'operation':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(Hip3Operation),
-          ) as Hip3Operation;
+            specifiedType: const FullType(String),
+          ) as String;
           result.operation = valueDes;
           break;
         case r'environment':

@@ -1,3 +1,5 @@
+import 'package:built_value/json_object.dart';
+import 'package:nobell/data/services/hip3_action_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:nobell/data/services/hip3_action_binding.dart';
@@ -27,7 +29,7 @@ api.Hip3Action action() =>
 void main() {
   final original = action();
   final binding = Hip3ActionBinding(
-    intent: original.intent,
+    intent: hip3CurrentIntent(original),
     operation: api.Hip3Operation.setLeverage,
     productId: 'xyz:TSLA',
     environment: api.Hip3Environment.testnet,
@@ -43,18 +45,8 @@ void main() {
     'product': (b) => b.productId = 'xyz:NVDA',
     'position': (b) => b.positionId = 'other',
     'network': (b) => b.environment = api.Hip3Environment.mainnet,
-    'operation': (b) => b.operation = api.Hip3Operation.closePosition,
-    'intent': (b) => b.intent.replace(
-      api.standardSerializers.deserializeWith(
-        api.Hip3ActionCreateRequest.serializer,
-        {
-          'operation': 'set_leverage',
-          'context_id': 'context-1',
-          'leverage': '10',
-          'margin_mode': 'cross',
-        },
-      )!,
-    ),
+    'operation': (b) => b.operation = 'close_position',
+    'intent': (b) => b.intent['leverage'] = JsonObject('10'),
   }.entries) {
     test('rejects changed ${mutation.key} before signing', () {
       expect(

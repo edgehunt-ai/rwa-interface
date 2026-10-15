@@ -244,18 +244,47 @@ api.Hip3Action _recovered() => api.standardSerializers.deserializeWith(
   api.Hip3Action.serializer,
   <String, Object?>{
     'action_id': 'action-1',
-    'operation': 'clear_tpsl',
+    'operation': 'manage_tpsl',
     'intent': {
-      'operation': 'clear_tpsl',
+      'operation': 'manage_tpsl',
       'position_id': 'position-1',
       'position_version': 'v1',
-      'scope': 'both',
+      'changes': [
+        {'operation': 'cancel', 'order_id': 'tp-1'},
+      ],
     },
     'position_id': 'position-1',
     'product_id': 'xyz:XYZ',
     'environment': 'testnet',
     'status': 'succeeded',
-    'steps': <Object?>[],
+    'steps': [
+      {
+        'step_id': 'cancel-1',
+        'sequence': 1,
+        'kind': 'cancel_protection',
+        'status': 'succeeded',
+        'signing': null,
+        'failure_reason': null,
+        'protection_orders': [
+          {
+            'change_index': 0,
+            'order_id': 'tp-1',
+            'replaced_order_id': null,
+            'role': 'take_profit',
+            'status': 'confirmed',
+            'failure_reason': null,
+            'protection': {
+              'size_mode': 'entire_position',
+              'take_profit': {
+                'trigger_price': '110',
+                'trigger_reference': 'mark',
+                'execution_type': 'market',
+              },
+            },
+          },
+        ],
+      },
+    ],
     'affected_order_ids': <String>[],
     'effects_applied': true,
     'created_at': '2026-09-10T00:00:00Z',

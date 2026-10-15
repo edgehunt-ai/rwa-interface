@@ -7,6 +7,7 @@ import '../models/order_intent.dart';
 import '../models/hip3_action_summary.dart';
 import '../models/position_leverage_context.dart';
 import '../models/position_close_preview.dart';
+import '../models/hip3_protection.dart';
 
 abstract interface class PositionsRepository {
   Future<int> sizeDecimals(String productId);
@@ -15,6 +16,13 @@ abstract interface class PositionsRepository {
 
   /// Recover a server-persisted HIP3 workflow without creating another action.
   Future<void> resumeHip3Action(String actionId);
+  Future<Hip3ActionSummary> hip3Action(String actionId);
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  });
   Future<DomainPage<Position>> list({
     String? symbol,
     MarketProductKind? kind,

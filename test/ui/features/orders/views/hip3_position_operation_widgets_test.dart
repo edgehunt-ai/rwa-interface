@@ -1,3 +1,6 @@
+import 'package:nobell/domain/models/hip3_protection.dart';
+import 'package:nobell/domain/models/hip3_action_summary.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -209,6 +212,160 @@ void main() {
       findsNothing,
     );
   });
+
+  for (final initiallyPending in [false, true]) {
+    testWidgets(
+      'protection success closes the sheet and uses the existing toast, initiallyPending=$initiallyPending',
+      (tester) async {
+        addTearDown(AppToast.dismiss);
+        final parameters = Hip3ProtectionParameters(
+          role: 'takeProfit',
+          triggerPrice: DecimalValue('111'),
+        );
+        Hip3ActionSummary result(String status) => Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: status == 'confirmed' ? 'succeeded' : 'reconciling',
+          effectsApplied: status == 'confirmed',
+          canResumePositionAction: status != 'confirmed',
+          protectionResultsComplete: status == 'confirmed',
+          protectionOrders: [
+            Hip3ProtectionOrderResult(
+              stepId: 'place',
+              changeIndex: 0,
+              orderId: 'new-tp',
+              protection: parameters,
+              status: status,
+              isCancellation: false,
+            ),
+          ],
+        );
+        final completed = result('confirmed');
+        final repo = _Positions()
+          ..protectionResult = initiallyPending
+              ? result('acknowledged')
+              : completed;
+        final refreshed = Completer<Hip3ActionSummary>();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              positionsRepositoryProvider.overrideWithValue(repo),
+              hip3ProtectionActionProvider('protection-result')
+                  .overrideWith((_) => refreshed.future),
+            ],
+            child: buildTestApp(
+              Builder(
+                builder: (context) => FilledButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => PositionTpSlSheet(
+                      position: _position(withProtection: false),
+                    ),
+                  ),
+                  child: const Text('Open protection'),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open protection'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('position-protection-take-profit')),
+          '111',
+        );
+        final submit = find.widgetWithText(FilledButton, 'Sign and confirm');
+        await tester.ensureVisible(submit);
+        await tester.tap(submit);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+
+        expect(repo.protectionCalls, 1);
+        expect(repo.protectionConfirmBeforeSigning, isFalse);
+        expect(find.byType(AlertDialog), findsNothing);
+        if (initiallyPending) {
+          expect(find.byType(PositionTpSlSheet), findsOneWidget);
+          expect(find.text('Protection order results'), findsOneWidget);
+          expect(find.text('Waiting for confirmation'), findsWidgets);
+          expect(find.text('Confirmed'), findsNothing);
+          refreshed.complete(completed);
+          await tester.pump();
+          for (
+            var frame = 0;
+            frame < 10 && find.byType(PositionTpSlSheet).evaluate().isNotEmpty;
+            frame++
+          ) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
+        }
+
+        expect(find.byType(PositionTpSlSheet), findsNothing);
+        expect(find.text('Protection order results'), findsNothing);
+        expect(find.text('Confirmed'), findsOneWidget);
+        expect(find.text('Open protection'), findsOneWidget);
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pump();
+        expect(find.text('Confirmed'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'multiple TP orders use one whole-position setting without a selector',
+    (tester) async {
+      final repo = _Positions();
+      final position = _position(
+        withProtection: false,
+        protectionOrders: [
+          for (final (id, price) in [('tp-first', '110'), ('tp-second', '120')])
+            Hip3PositionProtectionOrder(
+              orderId: id,
+              protection: Hip3ProtectionParameters(
+                role: 'takeProfit',
+                triggerPrice: DecimalValue(price),
+              ),
+            ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(PositionTpSlSheet(position: position)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(DropdownButtonFormField<String>), findsNothing);
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '130',
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+      expect(repo.protectionChanges, hasLength(3));
+      expect(
+        repo.protectionChanges
+            .where(
+              (change) => change.operation == ProtectionChangeOperation.cancel,
+            )
+            .map((change) => change.orderId),
+        containsAll(<String>['tp-first', 'tp-second']),
+      );
+      final create = repo.protectionChanges.singleWhere(
+        (change) => change.operation == ProtectionChangeOperation.create,
+      );
+      expect(create.orderId, isNull);
+      expect(create.protection!.triggerPrice.value, '130');
+      expect(create.protection!.quantity, isNull);
+    },
+  );
+
   testWidgets('existing fixed protection keeps its quantity when reopened', (
     tester,
   ) async {
@@ -226,6 +383,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Take Profit & stop loss'), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
     expect(
       find.textContaining('Fixed quantity will not adjust automatically'),
       findsNothing,
@@ -241,14 +399,24 @@ void main() {
           .value,
       100,
     );
+    await tester.enterText(
+      find.byKey(const Key('position-protection-take-profit')),
+      '131',
+    );
     await tester.ensureVisible(
       find.widgetWithText(FilledButton, 'Sign and confirm'),
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
     await tester.pumpAndSettle();
     expect(repo.quantity, '1');
-    expect(repo.takeProfit, '130');
+    expect(repo.takeProfit, '131');
     expect(repo.stopLoss, isNull);
+    expect(repo.protectionChanges, hasLength(1));
+    expect(
+      repo.protectionChanges.single.operation,
+      ProtectionChangeOperation.modify,
+    );
+    expect(repo.protectionChanges.single.orderId, 'tp-1');
   });
 
   testWidgets(
@@ -1093,7 +1261,7 @@ void main() {
         both ? ProtectionClearScope.both : ProtectionClearScope.takeProfit,
       );
       expect(repo.takeProfit, isNull);
-      expect(repo.stopLoss, both ? null : '90');
+      expect(repo.stopLoss, isNull);
     });
   }
 
@@ -1130,14 +1298,8 @@ void main() {
 
         expect(repo.protectionCalls, 1);
         expect(repo.clearScope, scope);
-        expect(
-          repo.takeProfit,
-          scope == ProtectionClearScope.stopLoss ? '110' : null,
-        );
-        expect(
-          repo.stopLoss,
-          scope == ProtectionClearScope.takeProfit ? '90' : null,
-        );
+        expect(repo.takeProfit, null);
+        expect(repo.stopLoss, null);
         expect(find.byType(TpSlInlineError), findsNothing);
       });
     }
@@ -1367,6 +1529,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('position-protection-take-profit')),
+      '111',
+    );
     await tester.ensureVisible(find.widgetWithText(FilledButton, '签名并确认'));
     await tester.tap(find.widgetWithText(FilledButton, '签名并确认'));
     await tester.pumpAndSettle();
@@ -1663,6 +1829,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '111',
+      );
       await tester.ensureVisible(
         find.widgetWithText(FilledButton, 'Sign and confirm'),
       );
@@ -1705,6 +1875,7 @@ void main() {
     );
     expect(find.byKey(const Key('position-stop-loss-ruler')), findsOneWidget);
     expect(find.byType(DropdownButton<bool>), findsNothing);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
     expect(find.byKey(const Key('tpsl-risk-checkbox')), findsOneWidget);
     expect(find.byKey(const Key('tpsl-risk-details')), findsOneWidget);
     expect(find.textContaining('position size at trigger time'), findsNothing);
@@ -1865,7 +2036,7 @@ void main() {
         );
         await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
         await tester.pumpAndSettle();
-        expect(repo.protectionCalls, 1);
+        expect(repo.protectionCalls, percentage == 100 ? 0 : 1);
         if (percentage == 100) {
           expect(repo.quantity, isNull);
         } else {
@@ -2047,11 +2218,28 @@ Position _position({
   String positionVersion = 'v1',
   String quantity = '1',
   List<String> protectionIds = const [],
+  List<Hip3PositionProtectionOrder>? protectionOrders,
 }) => Position(
   positionId: 'p-tsla',
   productId: productId,
   positionVersion: positionVersion,
   protectionOrderIds: protectionIds,
+  protectionOrders:
+      protectionOrders ??
+      (withProtection && protectionIds.isEmpty
+          ? [
+              for (final role in ['takeProfit', 'stopLoss'])
+                Hip3PositionProtectionOrder(
+                  orderId: role == 'takeProfit' ? 'tp-1' : 'sl-1',
+                  protection: Hip3ProtectionParameters(
+                    role: role,
+                    triggerPrice: DecimalValue(
+                      (role == 'takeProfit') != short ? '110' : '90',
+                    ),
+                  ),
+                ),
+            ]
+          : const []),
   symbol: 'TSLA',
   kind: MarketProductKind.perp,
   side: side ?? (short ? PositionSide.short : PositionSide.long),
@@ -2171,7 +2359,10 @@ class _Positions implements PositionsRepository {
   Object? leverageError;
   ProtectionClearScope? clearScope;
   int protectionCalls = 0;
+  List<Hip3ProtectionChange> protectionChanges = const [];
   Object? protectionError;
+  Hip3ActionSummary? protectionResult;
+  bool? protectionConfirmBeforeSigning;
   @override
   Future<TradingOrder> close(
     String positionId, {
@@ -2195,6 +2386,65 @@ class _Positions implements PositionsRepository {
     this.type = type;
     this.limitPrice = limitPrice;
     return _order('close');
+  }
+
+  @override
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  }) async {
+    protectionConfirmBeforeSigning = confirmBeforeSigning;
+    String? take, stop, takeLimit, stopLimit, quantity;
+    final cancelled = <String>[];
+    protectionChanges = List.unmodifiable(changes);
+    for (final change in changes) {
+      if (change.operation == ProtectionChangeOperation.cancel) {
+        final order = position.protectionOrders
+            .where((order) => order.orderId == change.orderId)
+            .firstOrNull;
+        cancelled.add(
+          order?.protection.role ??
+              (change.orderId!.startsWith('tp') ? 'takeProfit' : 'stopLoss'),
+        );
+      } else {
+        final parameters = change.protection!;
+        quantity = parameters.quantity?.value;
+        if (parameters.role == 'takeProfit') {
+          take = parameters.triggerPrice.value;
+          takeLimit = parameters.limitPrice?.value;
+        } else {
+          stop = parameters.triggerPrice.value;
+          stopLimit = parameters.limitPrice?.value;
+        }
+      }
+    }
+    await updateTpSl(
+      position,
+      takeProfit: take,
+      takeLimit: takeLimit,
+      stopLoss: stop,
+      stopLimit: stopLimit,
+      quantity: quantity,
+      clearScope: cancelled.length == 2
+          ? ProtectionClearScope.both
+          : cancelled.contains('takeProfit')
+          ? ProtectionClearScope.takeProfit
+          : cancelled.contains('stopLoss')
+          ? ProtectionClearScope.stopLoss
+          : null,
+      idempotencyKey: idempotencyKey,
+    );
+    return protectionResult ??
+        Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: position.productId!,
+          operation: 'manageTpsl',
+          status: 'succeeded',
+          effectsApplied: true,
+          canResumePositionAction: false,
+        );
   }
 
   @override

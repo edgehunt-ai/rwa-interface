@@ -162,7 +162,7 @@ Hip3ActionSummary _action(String id, {bool review = false}) =>
     Hip3ActionSummary(
       actionId: id,
       productId: 'xyz:TSLA',
-      operation: 'setTpsl',
+      operation: 'manageTpsl',
       status: review ? 'manualReview' : 'awaitingSignature',
       effectsApplied: false,
       canResumePositionAction: !review,

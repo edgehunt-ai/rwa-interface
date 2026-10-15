@@ -1,3 +1,6 @@
+import 'package:nobell/domain/models/hip3_protection.dart';
+import 'package:nobell/domain/models/hip3_action_summary.dart';
+
 import 'dart:async';
 import 'dart:ui' show PointerDeviceKind;
 
@@ -2113,6 +2116,62 @@ final class _PositionsRepository implements PositionsRepository {
   final String bstockPnl;
   final String bstockPnlPercent;
   var listCalls = 0;
+
+  @override
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  }) async {
+    String? take, stop, takeLimit, stopLimit, quantity;
+    final cancelled = <String>[];
+    for (final change in changes) {
+      if (change.operation == ProtectionChangeOperation.cancel) {
+        final order = position.protectionOrders
+            .where((order) => order.orderId == change.orderId)
+            .firstOrNull;
+        cancelled.add(
+          order?.protection.role ??
+              (change.orderId!.startsWith('tp') ? 'takeProfit' : 'stopLoss'),
+        );
+      } else {
+        final parameters = change.protection!;
+        quantity = parameters.quantity?.value;
+        if (parameters.role == 'takeProfit') {
+          take = parameters.triggerPrice.value;
+          takeLimit = parameters.limitPrice?.value;
+        } else {
+          stop = parameters.triggerPrice.value;
+          stopLimit = parameters.limitPrice?.value;
+        }
+      }
+    }
+    await updateTpSl(
+      position,
+      takeProfit: take,
+      takeLimit: takeLimit,
+      stopLoss: stop,
+      stopLimit: stopLimit,
+      quantity: quantity,
+      clearScope: cancelled.length == 2
+          ? ProtectionClearScope.both
+          : cancelled.contains('takeProfit')
+          ? ProtectionClearScope.takeProfit
+          : cancelled.contains('stopLoss')
+          ? ProtectionClearScope.stopLoss
+          : null,
+      idempotencyKey: idempotencyKey,
+    );
+    return Hip3ActionSummary(
+      actionId: 'protection-result',
+      productId: position.productId!,
+      operation: 'manageTpsl',
+      status: 'succeeded',
+      effectsApplied: true,
+      canResumePositionAction: false,
+    );
+  }
 
   @override
   Future<Position> updateTpSl(

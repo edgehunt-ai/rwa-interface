@@ -8,13 +8,13 @@ part of 'hip3_action.dart';
 
 class _$Hip3Action extends Hip3Action {
   @override
-  final Hip3ActionCreateRequest intent;
+  final BuiltMap<String, JsonObject?> intent;
   @override
   final Hip3ClosePreview? closePreview;
   @override
   final String actionId;
   @override
-  final Hip3Operation operation;
+  final String operation;
   @override
   final Hip3Environment environment;
   @override
@@ -151,10 +151,11 @@ class _$Hip3Action extends Hip3Action {
 class Hip3ActionBuilder implements Builder<Hip3Action, Hip3ActionBuilder> {
   _$Hip3Action? _$v;
 
-  Hip3ActionCreateRequestBuilder? _intent;
-  Hip3ActionCreateRequestBuilder get intent =>
-      _$this._intent ??= Hip3ActionCreateRequestBuilder();
-  set intent(Hip3ActionCreateRequestBuilder? intent) => _$this._intent = intent;
+  MapBuilder<String, JsonObject?>? _intent;
+  MapBuilder<String, JsonObject?> get intent =>
+      _$this._intent ??= MapBuilder<String, JsonObject?>();
+  set intent(MapBuilder<String, JsonObject?>? intent) =>
+      _$this._intent = intent;
 
   Hip3ClosePreviewBuilder? _closePreview;
   Hip3ClosePreviewBuilder get closePreview =>
@@ -166,9 +167,9 @@ class Hip3ActionBuilder implements Builder<Hip3Action, Hip3ActionBuilder> {
   String? get actionId => _$this._actionId;
   set actionId(String? actionId) => _$this._actionId = actionId;
 
-  Hip3Operation? _operation;
-  Hip3Operation? get operation => _$this._operation;
-  set operation(Hip3Operation? operation) => _$this._operation = operation;
+  String? _operation;
+  String? get operation => _$this._operation;
+  set operation(String? operation) => _$this._operation = operation;
 
   Hip3Environment? _environment;
   Hip3Environment? get environment => _$this._environment;

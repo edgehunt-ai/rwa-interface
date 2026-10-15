@@ -1,3 +1,5 @@
+import 'package:nobell/domain/models/hip3_protection.dart';
+
 import 'dart:convert';
 
 import 'package:nobell/data/services/hip3_position_action_service.dart';
@@ -26,6 +28,84 @@ import '../helpers/controlled_api_adapter.dart';
 import '../helpers/trading_provider_harness.dart';
 
 void main() {
+  for (final resuming in [false, true]) {
+    test(
+      'explicit TP/SL button signs and submits without another app confirmation, resuming=$resuming',
+      () async {
+        final workflow = _workflow('manage_tpsl', _setIntent, suffix: 'create');
+        final adapter = ControlledApiAdapter([
+          _json('GET', '/v1/positions/position-1', 200, _positionJson),
+          if (resuming) workflow[1] else workflow[0],
+          workflow[1],
+          workflow[2],
+        ]);
+        final source = _source(adapter);
+        final actions = GeneratedHip3PositionActionService(
+          source.client.getOrdersApi(),
+        );
+        final signer = _Signer();
+        var confirmations = 0;
+        final repository = PositionsRepositoryImpl(
+          GeneratedPositionsService(source.client.getPositionsApi()),
+          actions: actions,
+          executor: Hip3PositionActionExecutor(actions, signer),
+          confirm: (_) async {
+            confirmations++;
+            return false;
+          },
+        );
+        final container = ProviderContainer(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          positionCommandProvider,
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+        final position = await repository.get('position-1');
+        final commands = container.read(positionCommandProvider);
+        if (resuming) {
+          await commands.resumeHip3Action('a-manage_tpsl-create');
+        } else {
+          final result = await commands.manageTpSl(position, [
+            Hip3ProtectionChange.create(
+              Hip3ProtectionParameters(
+                role: 'takeProfit',
+                triggerPrice: DecimalValue('120'),
+              ),
+            ),
+            Hip3ProtectionChange.create(
+              Hip3ProtectionParameters(
+                role: 'stopLoss',
+                triggerPrice: DecimalValue('90'),
+              ),
+            ),
+          ], confirmBeforeSigning: false);
+          expect(result.isSuccessful, isTrue);
+          expect(result.protectionOrders, hasLength(2));
+        }
+        expect(confirmations, 0);
+        expect(signer.calls, 1);
+        expect(
+          adapter.requests.where(
+            (request) => request.path.endsWith('/submissions'),
+          ),
+          hasLength(1),
+        );
+        expect(
+          adapter.requests.where(
+            (request) =>
+                request.method == 'POST' && request.path == '/v1/hip3/actions',
+          ),
+          hasLength(resuming ? 0 : 1),
+        );
+      },
+    );
+  }
+
   test(
     'order and position commands traverse the complete controlled boundary',
     () async {
@@ -41,10 +121,10 @@ void main() {
           _orderJson(status: 'cancelled'),
         ),
         _json('GET', '/v1/positions/position-1', 200, _positionJson),
-        ..._workflow('set_tpsl', _setIntent),
+        ..._workflow('manage_tpsl', _setIntent, suffix: 'create'),
         _json('GET', '/v1/positions/position-1', 200, _protectedPosition),
         _json('GET', '/v1/positions/position-1', 200, _protectedPosition),
-        ..._workflow('clear_tpsl', _clearIntent),
+        ..._workflow('manage_tpsl', _clearIntent, suffix: 'cancel'),
         _json('GET', '/v1/positions/position-1', 200, _positionJson),
         _json(
           'GET',
@@ -183,8 +263,8 @@ void main() {
 
       expect(signer.calls, 4);
       expect(confirmations, [
-        'a-set_tpsl',
-        'a-clear_tpsl',
+        'a-manage_tpsl-create',
+        'a-manage_tpsl-cancel',
         'a-set_leverage',
         'a-close_position',
       ]);
@@ -290,28 +370,42 @@ const _positionJson = {
 };
 
 const _setIntent = <String, Object?>{
-  'operation': 'set_tpsl',
+  'operation': 'manage_tpsl',
   'position_id': 'position-1',
   'position_version': 'v1',
-  'protection': {
-    'size_mode': 'entire_position',
-    'take_profit': {
-      'trigger_price': '120',
-      'trigger_reference': 'mark',
-      'execution_type': 'market',
+  'changes': [
+    {
+      'operation': 'create',
+      'protection': {
+        'size_mode': 'entire_position',
+        'take_profit': {
+          'trigger_price': '120',
+          'trigger_reference': 'mark',
+          'execution_type': 'market',
+        },
+      },
     },
-    'stop_loss': {
-      'trigger_price': '90',
-      'trigger_reference': 'mark',
-      'execution_type': 'market',
+    {
+      'operation': 'create',
+      'protection': {
+        'size_mode': 'entire_position',
+        'stop_loss': {
+          'trigger_price': '90',
+          'trigger_reference': 'mark',
+          'execution_type': 'market',
+        },
+      },
     },
-  },
+  ],
 };
 const _clearIntent = <String, Object?>{
-  'operation': 'clear_tpsl',
+  'operation': 'manage_tpsl',
   'position_id': 'position-1',
   'position_version': 'v1',
-  'scope': 'both',
+  'changes': [
+    {'operation': 'cancel', 'order_id': 'tp-1'},
+    {'operation': 'cancel', 'order_id': 'sl-1'},
+  ],
 };
 const _leverageIntent = <String, Object?>{
   'operation': 'set_leverage',
@@ -319,10 +413,24 @@ const _leverageIntent = <String, Object?>{
   'leverage': '3',
   'margin_mode': 'cross',
 };
-const _protectedPosition = {
+final _protectedPosition = {
   ..._positionJson,
   'take_profit_price': '120',
   'stop_loss_price': '90',
+  'protection_orders': [
+    for (final role in ['take_profit', 'stop_loss'])
+      {
+        'order_id': role == 'take_profit' ? 'tp-1' : 'sl-1',
+        'role': role,
+        'size_mode': 'entire_position',
+        'quantity': '1',
+        'trigger_price': role == 'take_profit' ? '120' : '90',
+        'trigger_reference': 'mark',
+        'execution_type': 'market',
+        'limit_price': null,
+        'activation_status': 'active',
+      },
+  ],
 };
 const _context = <String, Object?>{
   'context_id': 'ctx1',
@@ -378,10 +486,12 @@ const _closePreview = <String, Object?>{
 
 List<ControlledResponse> _workflow(
   String operation,
-  Map<String, Object?> intent,
-) {
+  Map<String, Object?> intent, {
+  String? suffix,
+}) {
+  final actionId = 'a-$operation${suffix == null ? '' : '-$suffix'}';
   Map<String, Object?> action(bool done) => {
-    'action_id': 'a-$operation',
+    'action_id': actionId,
     'intent': intent,
     'operation': operation,
     'environment': 'testnet',
@@ -395,27 +505,25 @@ List<ControlledResponse> _workflow(
       {
         'step_id': 's1',
         'sequence': 1,
-        'kind': switch (operation) {
-          'set_tpsl' => 'place_take_profit',
-          'clear_tpsl' => 'cancel_take_profit',
-          _ => operation,
-        },
+        'kind': operation == 'manage_tpsl'
+            ? suffix == 'cancel'
+                  ? 'cancel_protection'
+                  : 'place_protection'
+            : operation,
         'status': done ? 'succeeded' : 'prepared',
-        if (operation == 'set_tpsl')
-          'normalized_protection': {
-            'size_mode': 'quantity',
-            'quantity': '1',
-            'take_profit': {
-              'trigger_price': '120',
-              'trigger_reference': 'mark',
-              'execution_type': 'market',
-            },
-            'stop_loss': {
-              'trigger_price': '90',
-              'trigger_reference': 'mark',
-              'execution_type': 'market',
-            },
-          },
+        if (operation == 'manage_tpsl')
+          'protection_orders': [
+            for (var i = 0; i < 2; i++)
+              {
+                'change_index': i,
+                'order_id': i == 0 ? 'tp-1' : 'sl-1',
+                'replaced_order_id': null,
+                'role': i == 0 ? 'take_profit' : 'stop_loss',
+                'protection': (_setIntent['changes'] as List)[i]['protection'],
+                'status': done ? 'confirmed' : 'prepared',
+                'failure_reason': null,
+              },
+          ],
         if (!done)
           'signing': {
             'expected_signer': '0x0000000000000000000000000000000000000001',
@@ -452,10 +560,10 @@ List<ControlledResponse> _workflow(
   };
   return [
     _json('POST', '/v1/hip3/actions', 201, action(false)),
-    _json('GET', '/v1/hip3/actions/a-$operation', 200, action(false)),
+    _json('GET', '/v1/hip3/actions/$actionId', 200, action(false)),
     _json(
       'POST',
-      '/v1/hip3/actions/a-$operation/steps/s1/submissions',
+      '/v1/hip3/actions/$actionId/steps/s1/submissions',
       200,
       action(true),
     ),

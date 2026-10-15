@@ -930,5 +930,17 @@
             "type": "String"
         }
     }
-}
+},
+  "protectionManageTitle": "Manage TP/SL",
+  "protectionCreate": "Add order",
+  "protectionModify": "Modify order",
+  "protectionCancel": "Cancel order",
+  "protectionConfirmed": "Confirmed",
+  "protectionCancelConfirmed": "Cancellation confirmed",
+  "protectionWaitingConfirmation": "Waiting for confirmation",
+  "protectionFailed": "Failed",
+  "protectionBatchResults": "Protection order results",
+  "protectionNewOrder": "Add new order",
+  "protectionEditTarget": "Order to edit",
+  "protectionPartialFailure": "Some protection changes failed. Review each result; cancelled orders are not restored automatically."
 }

@@ -12,6 +12,9 @@ import '../services/hip3_preparation_cache.dart';
 import '../services/hip3_step_confirmation_mapper.dart';
 import '../../domain/models/hip3_step_confirmation.dart';
 import '../../domain/models/hip3_action_summary.dart';
+import '../../domain/models/hip3_action_pending.dart';
+import '../../domain/models/hip3_protection.dart';
+import '../services/hip3_action_mapper.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
@@ -93,52 +96,22 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     return DomainPage(
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
-      items: page.items
-          .map(
-            (action) => Hip3ActionSummary(
-              actionId: action.actionId,
-              productId: action.productId,
-              operation: action.operation.name,
-              status: action.status.name,
-              positionId: action.positionId,
-              orderId: action.orderId,
-              failureCode: action.failureCode,
-              userAction: action.userAction,
-              effectsApplied: action.effectsApplied,
-              canResumePositionAction:
-                  const [
-                    api.Hip3Operation.setTpsl,
-                    api.Hip3Operation.clearTpsl,
-                    api.Hip3Operation.setLeverage,
-                    api.Hip3Operation.closePosition,
-                  ].contains(action.operation) &&
-                  const [
-                    api.Hip3ActionStatus.awaitingSignature,
-                    api.Hip3ActionStatus.submitting,
-                    api.Hip3ActionStatus.reconciling,
-                    api.Hip3ActionStatus.ambiguous,
-                  ].contains(action.status),
-            ),
-          )
-          .toList(growable: false),
+      items: page.items.map(mapHip3ActionSummary).toList(growable: false),
     );
   }
 
   @override
   Future<void> resumeHip3Action(String actionId) async {
     final action = await _actions.get(actionId);
-    final intent = action.intent.oneOf.value;
+    final request = hip3CurrentIntent(action);
+    final intent = request.oneOf.value;
     final matches = switch (intent) {
-      api.Hip3SetTpSlActionRequest value =>
-        action.operation == api.Hip3Operation.setTpsl &&
+      api.Hip3ManageTpSlActionRequest value =>
+        action.operation == 'manage_tpsl' &&
             action.positionId == value.positionId,
-      api.Hip3ClearTpSlActionRequest value =>
-        action.operation == api.Hip3Operation.clearTpsl &&
-            action.positionId == value.positionId,
-      api.Hip3SetLeverageActionRequest _ =>
-        action.operation == api.Hip3Operation.setLeverage,
+      api.Hip3SetLeverageActionRequest _ => action.operation == 'set_leverage',
       api.Hip3CloseActionRequest value =>
-        action.operation == api.Hip3Operation.closePosition &&
+        action.operation == 'close_position' &&
             action.closePreview?.previewId == value.previewId &&
             action.closePreview?.positionId == action.positionId &&
             action.closePreview?.productId == action.productId &&
@@ -151,8 +124,11 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     await _executor.resume(
       actionId: actionId,
       binding: Hip3ActionBinding(
-        intent: action.intent,
-        operation: action.operation,
+        intent: request,
+        operation: api.standardSerializers.deserializeWith(
+          api.Hip3Operation.serializer,
+          action.operation,
+        )!,
         productId: action.productId,
         environment: action.environment,
         positionId: action.positionId,
@@ -195,98 +171,45 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
+    final changes = <Hip3ProtectionChange>[];
     if (clearScope != null) {
-      // Freeze the complete desired edit before any signed side effect. Retry
-      // each persisted action with its own stable key; never silently skip a
-      // pending cancellation and proceed to creating protection.
-      final initial = await _preparations.get(
-        '$idempotencyKey-edit',
-        jsonEncode([
-          position.positionId,
-          position.productId,
-          position.positionVersion,
-          takeProfit,
-          takeLimit,
-          stopLoss,
-          stopLimit,
-          quantity,
-          clearScope.name,
-        ]),
-        () async {
-          if (takeProfit != null || stopLoss != null) {
-            Hip3PositionIntents.setProtection(
-              position,
-              takeProfit: takeProfit,
-              takeLimit: takeLimit,
-              stopLoss: stopLoss,
-              stopLimit: stopLimit,
-              quantity: quantity,
-            );
-          }
-          return position;
-        },
-      );
-      await _run(
-        initial,
-        Hip3PositionIntents.clearProtection(initial, scope: clearScope),
-        api.Hip3Operation.clearTpsl,
-        scopedIdempotencyKey('$idempotencyKey-clear'),
-        confirmBeforeSigning: confirmBeforeSigning,
-      );
-      if (takeProfit == null && stopLoss == null) {
-        return get(position.positionId);
+      final existing = await _protectionOrders(position);
+      for (final order in existing) {
+        if (clearScope == ProtectionClearScope.both ||
+            (clearScope == ProtectionClearScope.takeProfit &&
+                order.protection.role == 'takeProfit') ||
+            (clearScope == ProtectionClearScope.stopLoss &&
+                order.protection.role == 'stopLoss')) {
+          changes.add(Hip3ProtectionChange.cancel(order.orderId));
+        }
       }
-      final refreshed = await _preparations.get(
-        '$idempotencyKey-after-clear',
-        position.positionId,
-        () => get(position.positionId),
-      );
-      if (refreshed.productId != initial.productId ||
-          refreshed.side != initial.side) {
-        throw const FormatException(
-          'Position changed; refresh before editing protection',
-        );
+    }
+    for (final (role, trigger, limit) in [
+      ('takeProfit', takeProfit, takeLimit),
+      ('stopLoss', stopLoss, stopLimit),
+    ]) {
+      if (trigger == null) {
+        if (limit != null) throw ArgumentError('A limit requires its trigger');
+        continue;
       }
-      return updateTpSl(
-        refreshed,
-        takeProfit: takeProfit,
-        takeLimit: takeLimit,
-        stopLoss: stopLoss,
-        stopLimit: stopLimit,
-        quantity: quantity,
-        confirmBeforeSigning: confirmBeforeSigning,
-        idempotencyKey: scopedIdempotencyKey('$idempotencyKey-set'),
+      changes.add(
+        Hip3ProtectionChange.create(
+          Hip3ProtectionParameters(
+            role: role,
+            triggerPrice: DecimalValue(trigger),
+            limitPrice: limit == null ? null : DecimalValue(limit),
+            quantity: quantity == null ? null : DecimalValue(quantity),
+          ),
+        ),
       );
     }
-    final intent = await _preparations.get(
-      idempotencyKey,
-      jsonEncode([
-        'set_tpsl',
-        position.positionId,
-        position.productId,
-        takeProfit,
-        takeLimit,
-        stopLoss,
-        stopLimit,
-        quantity,
-        position.positionVersion,
-      ]),
-      () async => Hip3PositionIntents.setProtection(
-        position,
-        takeProfit: takeProfit,
-        takeLimit: takeLimit,
-        stopLoss: stopLoss,
-        stopLimit: stopLimit,
-        quantity: quantity,
-      ),
-    );
-    await _run(
+    final result = await _manageTpSl(
       position,
-      intent,
-      api.Hip3Operation.setTpsl,
+      changes,
       idempotencyKey,
       confirmBeforeSigning: confirmBeforeSigning,
     );
+    _requireProtectionSuccess(result);
     return get(position.positionId);
   }
 
@@ -297,17 +220,149 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     required String idempotencyKey,
   }) async {
     final position = await _preparations.get(
-      idempotencyKey,
-      jsonEncode(['clear_tpsl', positionId, scope.name]),
+      '$idempotencyKey-position',
+      jsonEncode([positionId, scope.name]),
       () => get(positionId),
     );
-    await _run(
-      position,
-      Hip3PositionIntents.clearProtection(position, scope: scope),
-      api.Hip3Operation.clearTpsl,
-      idempotencyKey,
-    );
+    final orders = await _protectionOrders(position);
+    final changes = [
+      for (final order in orders)
+        if (scope == ProtectionClearScope.both ||
+            (scope == ProtectionClearScope.takeProfit &&
+                order.protection.role == 'takeProfit') ||
+            (scope == ProtectionClearScope.stopLoss &&
+                order.protection.role == 'stopLoss'))
+          Hip3ProtectionChange.cancel(order.orderId),
+    ];
+    final result = await _manageTpSl(position, changes, idempotencyKey);
+    _requireProtectionSuccess(result);
     return get(positionId);
+  }
+
+  Future<List<Hip3PositionProtectionOrder>> _protectionOrders(
+    Position position,
+  ) async {
+    if (position.protectionOrders.isNotEmpty) return position.protectionOrders;
+    return Future.wait(
+      position.protectionOrderIds.map((id) async {
+        final order = mapOrder(await _actions.order(id));
+        final leg = order.conditional;
+        if (order.positionId != position.positionId ||
+            order.productId != position.productId ||
+            leg == null) {
+          throw const FormatException('Protection order binding mismatch');
+        }
+        return Hip3PositionProtectionOrder(
+          orderId: id,
+          protection: Hip3ProtectionParameters(
+            role: leg.role,
+            triggerPrice: leg.triggerPrice,
+            quantity: leg.sizeMode == 'entirePosition'
+                ? null
+                : DecimalValue(leg.quantity),
+            limitPrice: leg.executionType == 'limit' ? order.limitPrice : null,
+          ),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Hip3ActionSummary> hip3Action(String actionId) async {
+    final action = await _actions.get(actionId);
+    if (action.actionId != actionId) {
+      throw const FormatException('Action binding mismatch');
+    }
+    return mapHip3ActionSummary(action);
+  }
+
+  @override
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  }) => _manageTpSl(
+    position,
+    changes,
+    idempotencyKey,
+    confirmBeforeSigning: confirmBeforeSigning,
+  );
+
+  Future<Hip3ActionSummary> _manageTpSl(
+    Position position,
+    List<Hip3ProtectionChange> changes,
+    String key, {
+    bool confirmBeforeSigning = true,
+  }) async {
+    final request = Hip3PositionIntents.manageProtection(position, changes);
+    if (changes.any((change) => change.orderId != null)) {
+      final existing = await _protectionOrders(position);
+      for (final change in changes.where((change) => change.orderId != null)) {
+        final targets = existing.where(
+          (order) => order.orderId == change.orderId,
+        );
+        if (targets.length != 1 ||
+            (change.protection != null &&
+                targets.single.protection.role != change.protection!.role)) {
+          throw const FormatException(
+            'Protection order binding or role mismatch',
+          );
+        }
+      }
+    }
+    final frozen = await _preparations.get(
+      key,
+      jsonEncode(
+        api.standardSerializers.serializeWith(
+          api.Hip3ActionCreateRequest.serializer,
+          request,
+        ),
+      ),
+      () async => request,
+    );
+    api.Hip3Action? latest;
+    try {
+      final completed = await _run(
+        position,
+        frozen,
+        api.Hip3Operation.manageTpsl,
+        key,
+        confirmBeforeSigning: confirmBeforeSigning,
+        onUpdate: (value) => latest = value,
+      );
+      return mapHip3ActionSummary(completed);
+    } on Hip3ActionPending {
+      if (latest == null) rethrow;
+      return mapHip3ActionSummary(latest!);
+    } on Hip3SigningFailure {
+      if (latest == null ||
+          !const {
+            'failed',
+            'cancelled',
+            'expired',
+          }.contains(latest!.status.name)) {
+        rethrow;
+      }
+      final result = mapHip3ActionSummary(latest!);
+      if (result.protectionOrders.isEmpty) rethrow;
+      return result;
+    }
+  }
+
+  void _requireProtectionSuccess(Hip3ActionSummary result) {
+    if (result.isSuccessful) return;
+    if (const {'failed', 'cancelled', 'expired'}.contains(result.status)) {
+      throw Hip3SigningFailure(
+        Hip3SigningFailureCode.invalidPayload,
+        reason: result.failureReason,
+        failureCode: result.failureCode,
+      );
+    }
+    throw Hip3ActionPending(
+      result.actionId,
+      requiresReview: result.status == 'manualReview',
+    );
   }
 
   @override
@@ -562,6 +617,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     bool bindPosition = true,
     api.Hip3Environment? environment,
     bool confirmBeforeSigning = true,
+    void Function(api.Hip3Action)? onUpdate,
   }) async {
     _requireProduct(position);
     final binding = Hip3ActionBinding(
@@ -573,9 +629,11 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     );
     final created = await _actions.create(intent, key);
     binding.validate(created);
+    onUpdate?.call(created);
     return _executor.resume(
       actionId: created.actionId,
       binding: binding,
+      onUpdate: onUpdate,
       confirm: confirmBeforeSigning
           ? (action, step) => _confirm(mapHip3StepConfirmation(action, step))
           : (_, _) async => true,

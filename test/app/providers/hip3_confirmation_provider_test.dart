@@ -8,7 +8,7 @@ Hip3StepConfirmation summary() => Hip3StepConfirmation(
   actionId: 'a1',
   stepId: 's1',
   productId: 'xyz:TSLA',
-  operation: 'setTpsl',
+  operation: 'manageTpsl',
   stepKind: 'placeStopLoss',
   validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
   details: const {'normalized_protection.stop_loss.trigger_price': '110'},

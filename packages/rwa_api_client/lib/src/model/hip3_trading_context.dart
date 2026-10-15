@@ -18,6 +18,7 @@ part 'hip3_trading_context.g.dart';
 /// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是普通抵押资产额度扣除本地尚未被 HL 确认的预留后的余额，与 withdrawable_usdc 分开； 已被 HL 确认、且已反映在当前 HL 观测中的订单不再重复扣除本地预留； 包括部分成交或已成交、但本地成交结算尚未完成的订单。 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 百分比下单应使用 order_capacity 对应方向，而不是顶层 available_margin_usdc。 给定当前设置下的数量上限 Q、方向可用额度 A、下单价格 P、杠杆 L、taker 费率 r、预留系数 k： Q0 = min(Q, A × L / P, rules.maximum_notional_usdc / P)； F = ceil(Q0 × P × r, 6)，R = ceil(F × k, 6)，B = floor(max(A - R, 0), 6)； 最大数量 = floor(min(Q, B × L / P, rules.maximum_notional_usdc / P), rules.size_decimals)。 P 使用限价单价格或市价单按方向和精度生成的滑点保护限价；全程使用十进制定点计算。 Q 是 HL 原始数量上限，不是平台最终最大量，也不承诺某一明确的手续费扣减方式。 配置/行情变化会改变可执行容量，最终以最新 preview 为准。调整杠杆或保证金模式后先完成设置并重新获取 context； 不得将旧设置下的 Q/A 按杠杆比例换算。补款后保留原订单参数重新 preview，不自动重新拉满。 
 ///
 /// Properties:
+/// * [protectionManagementSupported] - true时可使用manage_tpsl；缺失视为不支持。supported_operations同时列出manage_tpsl。
 /// * [contextId] 
 /// * [environment] 
 /// * [productId] 
@@ -39,6 +40,10 @@ part 'hip3_trading_context.g.dart';
 /// * [validUntil] 
 @BuiltValue()
 abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3TradingContextBuilder> {
+  /// true时可使用manage_tpsl；缺失视为不支持。supported_operations同时列出manage_tpsl。
+  @BuiltValueField(wireName: r'protection_management_supported')
+  bool? get protectionManagementSupported;
+
   @BuiltValueField(wireName: r'context_id')
   String get contextId;
 
@@ -129,6 +134,13 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
     Hip3TradingContext object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.protectionManagementSupported != null) {
+      yield r'protection_management_supported';
+      yield serializers.serialize(
+        object.protectionManagementSupported,
+        specifiedType: const FullType(bool),
+      );
+    }
     yield r'context_id';
     yield serializers.serialize(
       object.contextId,
@@ -253,6 +265,14 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'protection_management_supported':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.protectionManagementSupported = valueDes;
+          break;
         case r'context_id':
           final valueDes = serializers.deserialize(
             value,

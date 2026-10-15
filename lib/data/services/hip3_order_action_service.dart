@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../api/api_failure_mapper.dart';
@@ -55,25 +54,10 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
   }) => _body(
     () => _api.createHip3Action(
       idempotencyKey: idempotencyKey,
-      hip3ActionCreateRequest: api.Hip3ActionCreateRequest(
-        (builder) => builder.oneOf = OneOfDynamic(
-          typeIndex: 3,
-          types: const [
-            api.Hip3CancelOrderActionRequest,
-            api.Hip3ClearTpSlActionRequest,
-            api.Hip3CloseActionRequest,
-            api.Hip3PlaceOrderActionRequest,
-            api.Hip3SetLeverageActionRequest,
-            api.Hip3SetTpSlActionRequest,
-          ],
-          value: api.Hip3PlaceOrderActionRequest(
-            (request) => request
-              ..operation =
-                  api.Hip3PlaceOrderActionRequestOperationEnum.placeOrder
-              ..orderId = orderId,
-          ),
-        ),
-      ),
+      hip3ActionCreateRequest: api.standardSerializers.deserializeWith(
+        api.Hip3ActionCreateRequest.serializer,
+        {'operation': 'place_order', 'order_id': orderId},
+      )!,
     ),
   );
 
@@ -103,25 +87,10 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
   }) => _body(
     () => _api.createHip3Action(
       idempotencyKey: idempotencyKey,
-      hip3ActionCreateRequest: api.Hip3ActionCreateRequest(
-        (b) => b.oneOf = OneOfDynamic(
-          typeIndex: 0,
-          types: const [
-            api.Hip3CancelOrderActionRequest,
-            api.Hip3ClearTpSlActionRequest,
-            api.Hip3CloseActionRequest,
-            api.Hip3PlaceOrderActionRequest,
-            api.Hip3SetLeverageActionRequest,
-            api.Hip3SetTpSlActionRequest,
-          ],
-          value: api.Hip3CancelOrderActionRequest(
-            (r) => r
-              ..operation =
-                  api.Hip3CancelOrderActionRequestOperationEnum.cancelOrder
-              ..orderId = orderId,
-          ),
-        ),
-      ),
+      hip3ActionCreateRequest: api.standardSerializers.deserializeWith(
+        api.Hip3ActionCreateRequest.serializer,
+        {'operation': 'cancel_order', 'order_id': orderId},
+      )!,
     ),
   );
 

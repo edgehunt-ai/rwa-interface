@@ -10,6 +10,7 @@ import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
 import '../domain/models/hip3_action_summary.dart';
+import '../domain/models/hip3_protection.dart';
 import '../domain/models/position_leverage_context.dart';
 import '../domain/models/position_operation.dart';
 import '../domain/models/market_product.dart';
@@ -546,6 +547,46 @@ final class AppReviewActivityRepository implements ActivityRepository {
 }
 
 final class AppReviewPositionsRepository implements PositionsRepository {
+  final _protectionActions = <String, Hip3ActionSummary>{};
+  @override
+  Future<Hip3ActionSummary> hip3Action(String actionId) async =>
+      _protectionActions[actionId]!;
+  @override
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  }) async {
+    final result = Hip3ActionSummary(
+      actionId: 'review-$idempotencyKey',
+      productId: position.productId!,
+      operation: 'manageTpsl',
+      status: 'succeeded',
+      effectsApplied: true,
+      canResumePositionAction: false,
+      positionId: position.positionId,
+      protectionOrders: [
+        for (var i = 0; i < changes.length; i++)
+          Hip3ProtectionOrderResult(
+            stepId: 'review-protection',
+            changeIndex: i,
+            orderId: changes[i].orderId ?? 'review-order-$i',
+            protection:
+                changes[i].protection ??
+                position.protectionOrders
+                    .firstWhere((order) => order.orderId == changes[i].orderId)
+                    .protection,
+            status: 'confirmed',
+            isCancellation:
+                changes[i].operation == ProtectionChangeOperation.cancel,
+          ),
+      ],
+    );
+    _protectionActions[result.actionId] = result;
+    return result;
+  }
+
   @override
   Future<int> sizeDecimals(String productId) async => 4;
 

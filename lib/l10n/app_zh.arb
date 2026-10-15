@@ -892,5 +892,17 @@
             "type": "String"
         }
     }
-}
+},
+  "protectionManageTitle": "管理止盈止损",
+  "protectionCreate": "新增订单",
+  "protectionModify": "修改订单",
+  "protectionCancel": "取消订单",
+  "protectionConfirmed": "已确认成功",
+  "protectionCancelConfirmed": "已确认取消",
+  "protectionWaitingConfirmation": "等待确认",
+  "protectionFailed": "失败",
+  "protectionBatchResults": "保护订单逐笔结果",
+  "protectionNewOrder": "新增一笔订单",
+  "protectionEditTarget": "选择要修改的订单",
+  "protectionPartialFailure": "部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。"
 }

@@ -1,3 +1,5 @@
+import 'package:nobell/data/services/hip3_step_confirmation_mapper.dart';
+import 'package:nobell/data/services/hip3_action_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:nobell/data/api/idempotency_key.dart';
@@ -28,12 +30,83 @@ void main() {
   Future<api.Hip3Action> run({bool accepted = true}) => executor.resume(
     actionId: 'action-1',
     binding: Hip3ActionBinding(
-      intent: _action().intent,
+      intent: hip3CurrentIntent(_action()),
       operation: api.Hip3Operation.setLeverage,
       productId: 'xyz:TSLA',
       environment: api.Hip3Environment.testnet,
     ),
     confirm: (_, _) async => accepted,
+  );
+  Future<api.Hip3Action> runBatch() => executor.resume(
+    actionId: 'action-1',
+    binding: Hip3ActionBinding(
+      intent: hip3CurrentIntent(_batch()),
+      operation: api.Hip3Operation.manageTpsl,
+      productId: 'xyz:TSLA',
+      environment: api.Hip3Environment.testnet,
+      positionId: 'p1',
+    ),
+    confirm: (action, step) async {
+      final summary = mapHip3StepConfirmation(action, step);
+      expect(summary.protectionOrders.map((order) => order.protection.role), [
+        'takeProfit',
+        'stopLoss',
+      ]);
+      expect(
+        summary.protectionOrders.map(
+          (order) => order.protection.quantity?.value,
+        ),
+        ['0.25', '0.25'],
+      );
+      return true;
+    },
+  );
+  test('a batch reviews both normalized orders and signs only once', () async {
+    service.initialAction = _batch();
+    service.afterSubmit = _batch(done: true);
+    final result = await runBatch();
+    expect(mapHip3ActionSummary(result).isSuccessful, isTrue);
+    expect(signer.calls, 1);
+    expect(service.submits, 1);
+  });
+  test('an acknowledged order never counts as confirmed success', () async {
+    service.initialAction = _batch();
+    service.afterSubmit = _batch(done: true, acknowledged: true);
+    await expectLater(runBatch(), throwsA(isA<Hip3ActionPending>()));
+    expect(signer.calls, 1);
+    expect(service.submits, 1);
+  });
+  test('batch signing rejects missing per-order parameters', () async {
+    service.initialAction = _batch(omitOrders: true);
+    await expectLater(runBatch(), throwsA(isA<Hip3SigningFailure>()));
+    expect(signer.calls, 0);
+    expect(service.submits, 0);
+  });
+  test('missing one batch result cannot be reported as success', () async {
+    service.initialAction = _batch();
+    service.afterSubmit = _batch(done: true).rebuild((b) {
+      b.steps[0] = b.steps[0].rebuild(
+        (step) => step.protectionOrders.removeLast(),
+      );
+    });
+    await expectLater(runBatch(), throwsA(isA<Hip3ActionPending>()));
+    expect(mapHip3ActionSummary(service.afterSubmit!).isSuccessful, isFalse);
+    expect(signer.calls, 1);
+  });
+  test(
+    'an unrequested change index is rejected before batch signing',
+    () async {
+      service.initialAction = _batch().rebuild((b) {
+        b.steps[0] = b.steps[0].rebuild((step) {
+          step.protectionOrders[0] = step.protectionOrders[0].rebuild(
+            (order) => order.changeIndex = 3,
+          );
+        });
+      });
+      await expectLater(runBatch(), throwsA(isA<Hip3SigningFailure>()));
+      expect(signer.calls, 0);
+      expect(service.submits, 0);
+    },
   );
   test('signs once and submits signature only', () async {
     expect((await run()).status, api.Hip3ActionStatus.succeeded);
@@ -164,7 +237,7 @@ void main() {
       await executor.resume(
         actionId: 'action-1',
         binding: Hip3ActionBinding(
-          intent: _action().intent,
+          intent: hip3CurrentIntent(_action()),
           operation: api.Hip3Operation.setLeverage,
           productId: 'xyz:TSLA',
           environment: api.Hip3Environment.testnet,
@@ -249,6 +322,68 @@ api.Hip3Action _action({
   },
 )!;
 
+api.Hip3Action _batch({
+  bool done = false,
+  bool acknowledged = false,
+  bool omitOrders = false,
+}) {
+  final raw = Map<String, Object?>.from(
+    api.standardSerializers.serializeWith(
+          api.Hip3Action.serializer,
+          _action(done: done),
+        )!
+        as Map,
+  );
+  raw['operation'] = 'manage_tpsl';
+  raw['position_id'] = 'p1';
+  final protections = [
+    for (final role in ['take_profit', 'stop_loss'])
+      {
+        'size_mode': 'quantity',
+        'quantity': '0.25',
+        role: {
+          'trigger_price': role == 'take_profit' ? '130' : '90',
+          'trigger_reference': 'mark',
+          'execution_type': 'market',
+        },
+      },
+  ];
+  raw['intent'] = {
+    'operation': 'manage_tpsl',
+    'position_id': 'p1',
+    'position_version': 'v1',
+    'changes': [
+      for (final protection in protections)
+        {'operation': 'create', 'protection': protection},
+    ],
+  };
+  final step = Map<String, Object?>.from((raw['steps'] as List).single as Map);
+  step['kind'] = 'place_protection';
+  if (!omitOrders) {
+    step['protection_orders'] = [
+      for (var i = 0; i < 2; i++)
+        {
+          'change_index': i,
+          'order_id': 'child-$i',
+          'replaced_order_id': null,
+          'role': i == 0 ? 'take_profit' : 'stop_loss',
+          'protection': protections[i],
+          'status': done
+              ? acknowledged && i == 1
+                    ? 'acknowledged'
+                    : 'confirmed'
+              : 'prepared',
+          'failure_reason': null,
+        },
+    ];
+  }
+  raw['steps'] = [step];
+  return api.standardSerializers.deserializeWith(
+    api.Hip3Action.serializer,
+    raw,
+  )!;
+}
+
 final class _Signer implements Hip3TypedDataSigner {
   int calls = 0;
   void Function()? onSign;
@@ -272,6 +407,7 @@ final class _Service implements Hip3PositionActionService {
   bool multiStep = false;
   bool stayPending = false;
   api.Hip3Action? initialAction;
+  api.Hip3Action? afterSubmit;
   String? key;
   api.Hip3ActionSubmissionRequest? request;
   @override
@@ -279,6 +415,7 @@ final class _Service implements Hip3PositionActionService {
     reads++;
     if (reads > 1 && failRecovery) throw const TimeoutFailure();
     if (initialAction != null && submits == 0) return initialAction!;
+    if (afterSubmit != null && submits > 0) return afterSubmit!;
     final result = stayPending
         ? _action().rebuild(
             (b) => b
@@ -307,6 +444,7 @@ final class _Service implements Hip3PositionActionService {
     this.request = request;
     key = idempotencyKey;
     if (loseResponse) throw const TimeoutFailure();
+    if (afterSubmit != null) return afterSubmit!;
     if (multiStep && submits == 1) {
       return _action().rebuild((b) {
         b.currentStepId = 'step-2';

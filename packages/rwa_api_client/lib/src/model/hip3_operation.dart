@@ -17,12 +17,10 @@ class Hip3Operation extends EnumClass {
   static const Hip3Operation cancelOrder = _$cancelOrder;
   @BuiltValueEnumConst(wireName: r'close_position')
   static const Hip3Operation closePosition = _$closePosition;
-  @BuiltValueEnumConst(wireName: r'set_tpsl')
-  static const Hip3Operation setTpsl = _$setTpsl;
-  @BuiltValueEnumConst(wireName: r'clear_tpsl')
-  static const Hip3Operation clearTpsl = _$clearTpsl;
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3Operation setLeverage = _$setLeverage;
+  @BuiltValueEnumConst(wireName: r'manage_tpsl')
+  static const Hip3Operation manageTpsl = _$manageTpsl;
 
   static Serializer<Hip3Operation> get serializer => _$hip3OperationSerializer;
 

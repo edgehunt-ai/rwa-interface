@@ -2612,4 +2612,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String hip3SignAndConfirm(String direction) {
     return '签名并确认$direction';
   }
+
+  @override
+  String get protectionManageTitle => '管理止盈止损';
+
+  @override
+  String get protectionCreate => '新增订单';
+
+  @override
+  String get protectionModify => '修改订单';
+
+  @override
+  String get protectionCancel => '取消订单';
+
+  @override
+  String get protectionConfirmed => '已确认成功';
+
+  @override
+  String get protectionCancelConfirmed => '已确认取消';
+
+  @override
+  String get protectionWaitingConfirmation => '等待确认';
+
+  @override
+  String get protectionFailed => '失败';
+
+  @override
+  String get protectionBatchResults => '保护订单逐笔结果';
+
+  @override
+  String get protectionNewOrder => '新增一笔订单';
+
+  @override
+  String get protectionEditTarget => '选择要修改的订单';
+
+  @override
+  String get protectionPartialFailure => '部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。';
 }

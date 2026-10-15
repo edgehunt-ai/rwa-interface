@@ -18,6 +18,7 @@ import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../orders/providers/order_providers.dart';
 import '../../../../domain/models/hip3_action_summary.dart';
+import '../../../../domain/models/hip3_protection.dart';
 
 final activeHip3ActionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
@@ -25,6 +26,29 @@ final activeHip3ActionsProvider = FutureProvider.autoDispose
       return ref
           .watch(positionsRepositoryProvider)
           .activeHip3Actions(cursor: cursor);
+    });
+
+final hip3ProtectionActionProvider = FutureProvider.autoDispose
+    .family<Hip3ActionSummary, String>((ref, actionId) async {
+      ref.watch(sessionGenerationProvider);
+      final result = await ref
+          .watch(positionsRepositoryProvider)
+          .hip3Action(actionId);
+      final pendingOrders = result.protectionOrders.any(
+        (order) => !order.isConfirmed && !order.isFailed,
+      );
+      if (pendingOrders ||
+          (result.status == 'succeeded' && !result.protectionResultsComplete) ||
+          const {
+            'awaitingSignature',
+            'submitting',
+            'reconciling',
+            'ambiguous',
+          }.contains(result.status)) {
+        final refresh = Timer(const Duration(seconds: 2), ref.invalidateSelf);
+        ref.onDispose(refresh.cancel);
+      }
+      return result;
     });
 
 typedef PositionFilter = ({
@@ -267,6 +291,35 @@ final class PositionCommands {
     );
     _ref.invalidate(positionProvider(position.positionId));
     _ref.invalidate(positionsProvider);
+    return result;
+  }
+
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position,
+    List<Hip3ProtectionChange> changes, {
+    bool confirmBeforeSigning = true,
+  }) async {
+    final result = await _run(
+      operation: 'manage-tp-sl',
+      context: {'position_id': position.positionId},
+      fingerprint: [
+        position.positionId,
+        position.productId,
+        position.positionVersion,
+        for (final change in changes)
+          '${change.operation.name}|${change.orderId}|${change.protection?.role}|${change.protection?.triggerPrice}|${change.protection?.quantity}|${change.protection?.percent}|${change.protection?.limitPrice}',
+      ].join('|'),
+      command: (key) => _ref
+          .read(positionsRepositoryProvider)
+          .manageTpSl(
+            position,
+            changes: changes,
+            idempotencyKey: key,
+            confirmBeforeSigning: confirmBeforeSigning,
+          ),
+    );
+    _ref.invalidate(positionProvider(position.positionId));
+    _ref.invalidate(positionProtectionOrdersProvider);
     return result;
   }
 

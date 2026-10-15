@@ -21,8 +21,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   double _quantityPercent = 100;
   bool _loadingProtection = false;
   bool _protectionLoadFailed = false;
-  bool _sizeChoiceRequired = false;
   bool _pending = false;
+  List<Hip3PositionProtectionOrder> _existingOrders = const [];
+  final _multipleProtectionRoles = <String>{};
+  Hip3ActionSummary? _result;
+  var _closingSuccessfulResult = false;
   bool _hadTakeProfit = false;
   bool _hadStopLoss = false;
   var _takeProfitEnabled = true;
@@ -65,7 +68,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
       _takeProfitEnabled = _hadTakeProfit;
       _stopLossEnabled = _hadStopLoss;
     }
-    if (widget.position.protectionOrderIds.isNotEmpty) {
+    if (widget.position.protectionOrderIds.isNotEmpty ||
+        widget.position.protectionOrders.isNotEmpty) {
       _loadingProtection = true;
       _loadProtection();
     }
@@ -79,53 +83,65 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
 
   Future<void> _loadProtection() async {
     try {
-      final orders = await ref.read(
-        positionProtectionOrdersProvider(widget.position).future,
-      );
-      if (!mounted) return;
-      final legs = orders.map((o) => o.conditional!).toList();
-      if (legs.map((leg) => leg.role).toSet().length != legs.length ||
-          legs.any(
-            (leg) =>
-                leg.triggerReference != 'mark' ||
-                !const ['market', 'limit'].contains(leg.executionType) ||
-                !const [
-                  'entirePosition',
-                  'quantity',
-                  'percent',
-                ].contains(leg.sizeMode),
-          )) {
-        throw const FormatException(
-          'Unsupported or ambiguous existing protection',
+      var orders = widget.position.protectionOrders;
+      if (orders.isEmpty) {
+        final legacy = await ref.read(
+          positionProtectionOrdersProvider(widget.position).future,
         );
+        orders = [
+          for (final order in legacy)
+            Hip3PositionProtectionOrder(
+              orderId: order.orderId,
+              protection: Hip3ProtectionParameters(
+                role: order.conditional!.role,
+                triggerPrice: order.conditional!.triggerPrice,
+                triggerReference: order.conditional!.triggerReference,
+                quantity: order.conditional!.sizeMode == 'entirePosition'
+                    ? null
+                    : DecimalValue(order.conditional!.quantity),
+                limitPrice: order.conditional!.executionType == 'limit'
+                    ? order.limitPrice
+                    : null,
+              ),
+            ),
+        ];
       }
-      for (final order in orders) {
-        final leg = order.conditional!;
-        if (leg.role == 'takeProfit') {
-          _takeProfit.text = leg.triggerPrice.value;
-          _takeIsLimit = leg.executionType == 'limit';
-          _takeLimit.text = _takeIsLimit ? order.limitPrice?.value ?? '' : '';
-        } else if (leg.role == 'stopLoss') {
-          _stopLoss.text = leg.triggerPrice.value;
-          _stopLimit.text = leg.executionType == 'limit'
-              ? order.limitPrice?.value ?? ''
-              : '';
-          _stopIsLimit = leg.executionType == 'limit';
-        } else {
-          throw const FormatException('Unknown protection type');
-        }
+      if (!mounted) return;
+      if (orders.any(
+        (order) =>
+            order.protection.triggerReference != 'mark' ||
+            !const {'takeProfit', 'stopLoss'}.contains(order.protection.role),
+      )) {
+        throw const FormatException('Unsupported existing protection');
       }
-      final sizes = legs
-          .map(
-            (leg) => leg.sizeMode == 'entirePosition' ? 'entire' : leg.quantity,
-          )
-          .toSet();
       setState(() {
-        _hadTakeProfit = legs.any((leg) => leg.role == 'takeProfit');
-        _hadStopLoss = legs.any((leg) => leg.role == 'stopLoss');
-        _takeProfitEnabled = _hadTakeProfit;
-        _stopLossEnabled = _hadStopLoss;
-        _sizeChoiceRequired = sizes.length > 1;
+        _existingOrders = orders;
+        for (final role in ['takeProfit', 'stopLoss']) {
+          final matching = orders
+              .where((order) => order.protection.role == role)
+              .toList();
+          if (matching.length == 1) {
+            _applyProtection(role, matching.single.protection);
+          } else if (matching.length > 1) {
+            _multipleProtectionRoles.add(role);
+            if (role == 'takeProfit') {
+              _hadTakeProfit = true;
+              _takeProfitEnabled = true;
+            } else {
+              _hadStopLoss = true;
+              _stopLossEnabled = true;
+            }
+          } else {
+            _clearProtection(role);
+          }
+        }
+        final sizes = orders
+            .where(
+              (order) =>
+                  !_multipleProtectionRoles.contains(order.protection.role),
+            )
+            .map((order) => order.protection.quantity?.value ?? 'entire')
+            .toSet();
         if (sizes.length == 1 && sizes.single != 'entire') {
           _fixedQuantity = true;
           _quantity.text = sizes.single;
@@ -141,6 +157,43 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
           _error = AppLocalizations.of(context).protectionSizesUnavailable;
         });
       }
+    }
+  }
+
+  void _applyProtection(String role, Hip3ProtectionParameters parameters) {
+    if (role == 'takeProfit') {
+      _hadTakeProfit = true;
+      _takeProfitEnabled = true;
+      _takeProfit.text = parameters.triggerPrice.value;
+      _takeIsLimit = parameters.limitPrice != null;
+      _takeLimit.text = parameters.limitPrice?.value ?? '';
+    } else {
+      _hadStopLoss = true;
+      _stopLossEnabled = true;
+      _stopLoss.text = parameters.triggerPrice.value;
+      _stopLimit.text = parameters.limitPrice?.value ?? '';
+      _stopIsLimit = parameters.limitPrice != null;
+    }
+    if (parameters.quantity case final quantity?) {
+      _fixedQuantity = true;
+      _quantity.text = quantity.value;
+      _syncQuantityPercent();
+    }
+  }
+
+  void _clearProtection(String role) {
+    if (role == 'takeProfit') {
+      _hadTakeProfit = false;
+      _takeProfitEnabled = false;
+      _takeProfit.clear();
+      _takeIsLimit = false;
+      _takeLimit.clear();
+    } else {
+      _hadStopLoss = false;
+      _stopLossEnabled = false;
+      _stopLoss.clear();
+      _stopIsLimit = false;
+      _stopLimit.clear();
     }
   }
 
@@ -167,7 +220,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   void _setQuantity(String value) {
     setState(() {
       _fixedQuantity = true;
-      _sizeChoiceRequired = false;
       _syncQuantityPercent();
       _error = null;
     });
@@ -182,7 +234,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         _quantityPercent.round().toString(),
         maxFractionDigits: sizeDecimals,
       );
-      _sizeChoiceRequired = false;
       _error = null;
     });
   }
@@ -303,40 +354,89 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     try {
       final takeProfit = _takeProfitTrigger;
       final stopLoss = _stopLossTrigger;
-      final hasSet = takeProfit != null || stopLoss != null;
-      if (hasSet && _sizeChoiceRequired) {
-        throw ArgumentError(AppLocalizations.of(context).protectionSizesDiffer);
+      final changes = <Hip3ProtectionChange>[];
+      for (final (role, trigger, limit, enabled, rawValue) in [
+        (
+          'takeProfit',
+          takeProfit,
+          _takeIsLimit ? _takeLimit.text.trim() : null,
+          _takeProfitEnabled,
+          _takeProfit.text.trim(),
+        ),
+        (
+          'stopLoss',
+          stopLoss,
+          _stopIsLimit ? _stopLimit.text.trim() : null,
+          _stopLossEnabled,
+          _stopLoss.text.trim(),
+        ),
+      ]) {
+        final existing = _existingOrders
+            .where((order) => order.protection.role == role)
+            .toList(growable: false);
+        if (trigger == null) {
+          final untouchedAmbiguousRole =
+              _multipleProtectionRoles.contains(role) &&
+              enabled &&
+              rawValue.isEmpty;
+          if (!untouchedAmbiguousRole) {
+            changes.addAll(
+              existing.map(
+                (order) => Hip3ProtectionChange.cancel(order.orderId),
+              ),
+            );
+          }
+          continue;
+        }
+        final parameters = Hip3ProtectionParameters(
+          role: role,
+          triggerPrice: DecimalValue(trigger),
+          limitPrice: limit == null ? null : DecimalValue(limit),
+          quantity: _fixedQuantity ? DecimalValue(_quantity.text.trim()) : null,
+        );
+        if (existing.length == 1) {
+          final orderId = existing.single.orderId;
+          final previous = existing.single.protection;
+          if (previous.triggerPrice.value == trigger &&
+              previous.limitPrice?.value == limit &&
+              previous.quantity?.value == parameters.quantity?.value) {
+            continue;
+          }
+          changes.add(
+            Hip3ProtectionChange.modify(
+              orderId: orderId,
+              protection: parameters,
+            ),
+          );
+        } else if (existing.length > 1) {
+          changes.addAll(
+            existing.map((order) => Hip3ProtectionChange.cancel(order.orderId)),
+          );
+          changes.add(Hip3ProtectionChange.create(parameters));
+        } else {
+          changes.add(Hip3ProtectionChange.create(parameters));
+        }
       }
-      final clearTake = _hadTakeProfit && takeProfit == null;
-      final clearStop = _hadStopLoss && stopLoss == null;
-      final clearScope = clearTake && clearStop
-          ? ProtectionClearScope.both
-          : clearTake
-          ? ProtectionClearScope.takeProfit
-          : clearStop
-          ? ProtectionClearScope.stopLoss
-          : null;
-      if (!hasSet && clearScope == null) {
-        Navigator.of(context).pop();
+      if (changes.isEmpty) {
+        if (mounted) Navigator.of(context).pop();
         return;
       }
-      await ref
+      final result = await ref
           .read(positionCommandProvider)
-          .updateTpSl(
-            widget.position,
-            takeProfit: takeProfit,
-            stopLoss: stopLoss,
-            stopLimit: stopLoss != null && _stopIsLimit
-                ? _stopLimit.text.trim()
-                : null,
-            quantity: hasSet && _fixedQuantity ? _quantity.text.trim() : null,
-            clearScope: clearScope,
-            confirmBeforeSigning: false,
-            takeLimit: takeProfit != null && _takeIsLimit
-                ? _takeLimit.text.trim()
-                : null,
-          );
-      if (mounted) Navigator.of(context).pop();
+          .manageTpSl(widget.position, changes, confirmBeforeSigning: false);
+      if (!mounted) return;
+      if (result.isSuccessful) {
+        AppToast.showSuccess(
+          context,
+          AppLocalizations.of(context).protectionConfirmed,
+        );
+        Navigator.of(context).pop();
+      } else {
+        setState(() {
+          _result = result;
+          _pending = !result.isSuccessful;
+        });
+      }
     } on Hip3ActionPending catch (error) {
       if (mounted) {
         setState(() {
@@ -384,10 +484,81 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     return fallback;
   }
 
+  void _closeSuccessfulResult(Hip3ActionSummary result) {
+    if (_closingSuccessfulResult) return;
+    _closingSuccessfulResult = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _result?.actionId != result.actionId) return;
+      AppToast.showSuccess(
+        context,
+        AppLocalizations.of(context).protectionConfirmed,
+      );
+      Navigator.of(context).pop();
+    });
+  }
+
+  Widget _inlineResults(
+    Hip3ActionSummary result,
+    AsyncValue<Hip3ActionSummary>? refreshed,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: 28),
+        Text(
+          l10n.protectionBatchResults,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Hip3ProtectionOrderResults(orders: result.protectionOrders),
+        if (result.status == 'failed' ||
+            result.protectionOrders.any((order) => order.isFailed))
+          Text(l10n.protectionPartialFailure),
+        if (!result.protectionResultsComplete)
+          Text(l10n.protectionWaitingConfirmation),
+        if (result.status == 'manualReview') Text(l10n.hip3PendingReview),
+        if (result.failureReason case final reason?) Text(reason),
+        if (refreshed?.hasError == true) Text(l10n.hip3PendingError),
+        if (result.canResumePositionAction)
+          OutlinedButton(
+            onPressed: _submitting
+                ? null
+                : () async {
+                    setState(() => _submitting = true);
+                    try {
+                      await ref
+                          .read(positionCommandProvider)
+                          .resumeHip3Action(result.actionId);
+                    } on Object catch (error) {
+                      if (mounted) {
+                        setState(() => _error = _specificErrorMessage(error));
+                      }
+                    } finally {
+                      if (mounted) {
+                        ref.invalidate(
+                          hip3ProtectionActionProvider(result.actionId),
+                        );
+                        setState(() => _submitting = false);
+                      }
+                    }
+                  },
+            child: Text(l10n.hip3PendingCheck),
+          ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(positionCommandProvider);
     final l10n = AppLocalizations.of(context);
+    final initialResult = _result;
+    final refreshedResult = initialResult == null
+        ? null
+        : ref.watch(hip3ProtectionActionProvider(initialResult.actionId));
+    final result = refreshedResult?.value ?? initialResult;
+    if (result?.isSuccessful == true) _closeSuccessfulResult(result!);
     final productId = widget.position.productId;
     final sizeDecimalsState = productId == null
         ? null
@@ -471,6 +642,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   ),
                 ),
                 if (_loadingProtection) const LinearProgressIndicator(),
+                if (result != null && !result.isSuccessful)
+                  _inlineResults(result, refreshedResult),
                 const SizedBox(height: 16),
                 TpSlEditorCard(
                   title: l10n.takeProfit,
@@ -546,17 +719,9 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     }
                   },
                 ),
-                if (_sizeChoiceRequired ||
-                    _error != null ||
-                    rulesError != null) ...[
+                if (_error != null || rulesError != null) ...[
                   const SizedBox(height: 20),
-                  TpSlInlineError(
-                    messages: [
-                      if (_sizeChoiceRequired) l10n.protectionSizesDiffer,
-                      ?_error,
-                      ?rulesError,
-                    ],
-                  ),
+                  TpSlInlineError(messages: [?_error, ?rulesError]),
                   const SizedBox(height: 8),
                 ] else
                   const SizedBox(height: 20),
