@@ -152,14 +152,16 @@ export function compare(current, baseline) {
       const value = scenario[metric].p95;
       const before = old[metric].p95;
       const delta = value - before;
+      const threshold = Math.max(before * .2, floor);
       rows.push({ id: scenario.id, label: scenario.label, metric, metric_label: label, before, value,
-        delta, percent: before > 0 ? delta / before * 100 : null,
-        regression: delta > Math.max(before * .2, floor) });
+        delta, percent: before > 0 ? delta / before * 100 : null, threshold,
+        regression: delta > threshold });
     }
+    const slowDelta = scenario.slow_frames_percent - old.slow_frames_percent;
     rows.push({ id: scenario.id, label: scenario.label, metric: 'slow_frames_percent', metric_label: 'Slow-frame rate',
       before: old.slow_frames_percent, value: scenario.slow_frames_percent,
-      delta: scenario.slow_frames_percent - old.slow_frames_percent,
-      regression: scenario.slow_frames_percent - old.slow_frames_percent > 5 });
+      delta: slowDelta, threshold: 5,
+      regression: slowDelta > 5 });
   }
   return { comparable: true, baseline_commit: baseline.commit, rows };
 }
@@ -214,6 +216,29 @@ export function markdown(report, comparison) {
   }
   lines.push('', 'Download the `native-performance` artifact and open `report.html` for interactive comparisons, distributions, and trends. `raw.json` contains per-action timings and frame data.',
     '', `Warning thresholds: duration increase above max(20%, 20ms), UI${rasterActionable ? '/raster' : ''} P95 increase above max(20%, 3ms), or ${slowLabel} increase above 5 percentage points. Warnings are informational by default; strict gating can be enabled on a fixed device.`);
+  return `${lines.join('\n')}\n`;
+}
+
+export function markdownChanges(report, comparison) {
+  const lines = ['## Native Flutter performance changes', ''];
+  if (!comparison.comparable) {
+    lines.push(`No compatible main baseline is available: ${comparison.reason}.`);
+    return `${lines.join('\n')}\n`;
+  }
+  const changes = comparison.rows
+    .filter((row) => Math.abs(row.delta) > row.threshold)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  lines.push(`Compared with main \`${markdownText(comparison.baseline_commit)}\`; ${changes.length} significant change(s).`, '');
+  if (!changes.length) {
+    lines.push('No significant performance changes were detected.');
+    return `${lines.join('\n')}\n`;
+  }
+  lines.push('| Scenario | Metric | Previous | Current | Change |', '|---|---|---:|---:|---:|');
+  for (const row of changes) {
+    const unit = row.metric === 'slow_frames_percent' ? '%' : 'ms';
+    const sign = row.delta >= 0 ? '+' : '';
+    lines.push(`| ${markdownText(row.label)} | ${row.metric_label} | ${fmt(row.before)}${unit} | ${fmt(row.value)}${unit} | ${sign}${fmt(row.delta)}${unit} |`);
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -292,11 +317,13 @@ export async function generate({ input = 'build/performance/raw.json', output = 
   const history = previous.filter((h) => h.commit !== report.commit && JSON.stringify(stable(h.compatibility)) === signature).slice(-29);
   history.push(report);
   const summary = markdown(report, comparison);
+  const changes = markdownChanges(report, comparison);
   await mkdir(output, { recursive: true });
   await Promise.all([
     writeFile(`${output}/report.json`, `${JSON.stringify({ ...report, comparison }, null, 2)}\n`),
     writeFile(`${output}/history.json`, `${JSON.stringify(history, null, 2)}\n`),
     writeFile(`${output}/summary.md`, summary),
+    writeFile(`${output}/changes.md`, changes),
     writeFile(`${output}/report.html`, html(report, comparison, raw, history)),
     ...(resolve(input) !== resolve(`${output}/raw.json`) ? [writeFile(`${output}/raw.json`, `${JSON.stringify(raw, null, 2)}\n`)] : []),
   ]);

@@ -1,11 +1,14 @@
 name: Native Performance
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: native-performance-${{ github.event.pull_request.number || github.ref }}
@@ -48,6 +51,47 @@ jobs:
           dart analyze --fatal-infos test/performance integration_test test_driver
           node --test scripts/performance-report.test.mjs
           flutter test test/performance/performance_scenarios_test.dart
+
+      - name: Find latest main baseline
+        id: baseline
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRuns,
+              {
+                owner,
+                repo,
+                workflow_id: 'performance.yml',
+                branch: 'main',
+                event: 'push',
+                status: 'success',
+                per_page: 20,
+              },
+            );
+            for (const run of runs) {
+              if (run.id === context.runId) continue;
+              const artifacts = await github.paginate(
+                github.rest.actions.listWorkflowRunArtifacts,
+                { owner, repo, run_id: run.id, per_page: 100 },
+              );
+              if (artifacts.some((artifact) =>
+                artifact.name === 'native-performance' && !artifact.expired,
+              )) {
+                core.setOutput('run_id', String(run.id));
+                return;
+              }
+            }
+
+      - name: Download main baseline
+        if: steps.baseline.outputs.run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: native-performance
+          path: build/performance-baseline
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
 
       - name: Enable Android acceleration
         run: |
@@ -118,7 +162,7 @@ jobs:
       - name: Comment performance result on pull request
         uses: actions/github-script@v7
         env:
-          PERFORMANCE_SUMMARY: build/performance/summary.md
+          PERFORMANCE_CHANGES: build/performance/changes.md
         with:
           script: |
             const fs = require('fs');
@@ -126,16 +170,16 @@ jobs:
             const runUrl = process.env.GITHUB_SERVER_URL + '/' +
               process.env.GITHUB_REPOSITORY + '/actions/runs/' +
               process.env.GITHUB_RUN_ID;
-            const summary = fs.existsSync(process.env.PERFORMANCE_SUMMARY)
-              ? fs.readFileSync(process.env.PERFORMANCE_SUMMARY, 'utf8').trim()
+            const changes = fs.existsSync(process.env.PERFORMANCE_CHANGES)
+              ? fs.readFileSync(process.env.PERFORMANCE_CHANGES, 'utf8').trim()
               : [
                   '## Native Flutter performance test incomplete',
                   '',
-                  'No valid report was generated. Check the Actions logs for this run.',
+                  'No comparison report was generated. Check the Actions logs for this run.',
                 ].join('\n');
             const body = [
               marker,
-              summary,
+              changes,
               '',
               '[View the Actions run and download the full report](' + runUrl + '#artifacts)',
             ].join('\n');
