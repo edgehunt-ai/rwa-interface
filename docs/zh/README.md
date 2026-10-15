@@ -61,8 +61,9 @@ flutter pub get
 cp .env.example .env
 ```
 
-在 `.env` 中填写公开客户端配置。本地开发至少需要 API 地址、Privy App/Client ID
-和 Reown Project ID。密钥、访问令牌或服务端凭据不得写入 `.env`、源码或 Dart
+在 `.env` 中填写公开客户端配置。本地开发至少需要 API 地址、Privy App/Client ID、
+导出站点地址和 Reown Project ID。`PRIVY_EXPORT_URL` 同时提供 Passkey 的 RP origin，
+原生域名关联见 [Passkey 配置](../passkeys.md)。密钥、访问令牌或服务端凭据不得写入 `.env`、源码或 Dart
 构建参数。
 
 ### 运行
@@ -163,6 +164,7 @@ HTML、完整 PNG 长截图、机器参数、原生帧耗时、可选基线对�
 
 ## 相关文档
 
+- [Passkey 配置](../passkeys.md)
 - [原生性能测试](../performance.md)
 - [推送通知配置](../push-notifications.md)（英文）
 - [Flutter 文档](https://docs.flutter.dev/)

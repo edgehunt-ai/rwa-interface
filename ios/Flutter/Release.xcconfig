@@ -1,2 +1,3 @@
 #include "Generated.xcconfig"
 #include "PrivyUrlScheme.xcconfig"
+#include? "PrivyPasskey.xcconfig"

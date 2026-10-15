@@ -15,6 +15,7 @@
     "perf:test": "node --test scripts/performance-report.test.mjs && flutter test test/performance/performance_scenarios_test.dart",
     "staging:preflight": "node scripts/check-staging-readiness.mjs",
     "privy:web:build": "vite build --config tool/privy-auth/vite.config.mjs",
+    "privy:passkey:associations": "node scripts/generate-passkey-association-files.mjs",
     "privy:export:build": "vite build --mode export --config tool/privy-auth/vite.config.mjs && cp private-key-export/index.production.html private-key-export/dist/index.html",
     "privy:export:dev": "vite --mode export --config tool/privy-auth/vite.config.mjs --host 0.0.0.0 --port 5174"
   },

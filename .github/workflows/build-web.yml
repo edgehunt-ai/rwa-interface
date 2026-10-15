@@ -20,7 +20,6 @@ env:
   PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
   PRIVY_EXPORT_URL: ${{ vars.PRIVY_EXPORT_URL }}
   PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
-  PRIVY_RELYING_PARTY: ${{ vars.PRIVY_RELYING_PARTY || 'https://rwa.dxd.ink' }}
   REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   APP_REVIEW_ENABLED: ${{ vars.APP_REVIEW_ENABLED || 'false' }}
   APP_REVIEW_USERS: ${{ vars.APP_REVIEW_USERS || '' }}
@@ -85,7 +84,6 @@ jobs:
         run: >-
           flutter build web --release
           --dart-define-from-file=.env.ci
-          --dart-define=PRIVY_RELYING_PARTY="$PRIVY_RELYING_PARTY"
           --dart-define=SENTRY_DSN="$SENTRY_DSN"
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"

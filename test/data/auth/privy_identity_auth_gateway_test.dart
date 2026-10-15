@@ -10,6 +10,7 @@ import 'package:privy_flutter/src/logging/privy_logger.dart';
 import 'package:privy_flutter/src/modules/email/login_with_email.dart';
 import 'package:privy_flutter/src/modules/login_with_siwe/login_with_siwe.dart';
 import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
+import 'package:privy_flutter/src/modules/passkey/login_with_passkey.dart';
 import 'package:nobell/data/auth/privy_identity_auth_gateway.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/auth/identity_auth_gateway.dart';
@@ -26,6 +27,7 @@ void main() {
     appId: 'app-id',
     clientId: 'client-id',
   );
+  const exportUrl = 'https://keys.example.test/export?source=app#ready';
 
   group('direct wallet broadcast recovery', () {
     final action = BstocksOrderAction(
@@ -414,6 +416,58 @@ void main() {
     );
   });
 
+  test('Passkey login and binding use the export site origin', () async {
+    final user = _FakeUser(
+      id: 'did:privy:passkey',
+      token: 'passkey-token',
+      accounts: [
+        PasskeyAccount(
+          credentialId: 'credential-1',
+          enrolledInMfa: false,
+          verifiedAt: 0,
+        ),
+      ],
+    );
+    final passkey = _FakePasskey(user: user);
+    final gateway = PrivyIdentityAuthGateway(
+      exportUrl: exportUrl,
+      createPrivy: (_) =>
+          _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
+    );
+    await gateway.initialize(configuration);
+
+    expect((await gateway.loginWithPasskey()).id, 'did:privy:passkey');
+    expect(passkey.loginRelyingParty, 'https://keys.example.test');
+    expect(await gateway.getAccessToken(), 'passkey-token');
+    expect((await gateway.linkPasskey()).id, 'credential-1');
+    expect(passkey.linkRelyingParty, 'https://keys.example.test');
+  });
+
+  test('missing export URL fails before a Passkey SDK call', () async {
+    final passkey = _FakePasskey();
+    final gateway = PrivyIdentityAuthGateway(
+      exportUrl: '',
+      createPrivy: (_) =>
+          _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
+    );
+    await gateway.initialize(configuration);
+
+    for (final operation in [gateway.loginWithPasskey, gateway.linkPasskey]) {
+      await expectLater(
+        operation(),
+        throwsA(
+          isA<IdentityFailure>().having(
+            (failure) => failure.code,
+            'code',
+            AuthenticationFailureCode.configuration,
+          ),
+        ),
+      );
+    }
+    expect(passkey.loginRelyingParty, isNull);
+    expect(passkey.linkRelyingParty, isNull);
+  });
+
   test('refreshes user before returning replacement token', () async {
     final user = _FakeUser(id: 'did:privy:1', token: 'fresh');
     final gateway = PrivyIdentityAuthGateway(
@@ -442,6 +496,7 @@ void main() {
     final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
     final siwe = _FakeSiwe(loginResult: Success(user));
     final gateway = PrivyIdentityAuthGateway(
+      exportUrl: exportUrl,
       createPrivy: (_) =>
           _FakePrivy(authState: const Unauthenticated(), siwe: siwe),
     );
@@ -451,8 +506,8 @@ void main() {
     final principal = await gateway.loginWithWallet(wallet);
 
     expect(principal.id, 'did:privy:wallet');
-    expect(siwe.generatedParams?.appDomain, 'rwa.dxd.ink');
-    expect(siwe.generatedParams?.appUri, 'https://rwa.dxd.ink');
+    expect(siwe.generatedParams?.appDomain, 'keys.example.test');
+    expect(siwe.generatedParams?.appUri, 'https://keys.example.test');
     expect(siwe.generatedParams?.chainId, '1');
     expect(siwe.generatedParams?.walletAddress, wallet.address);
     expect(wallet.signedMessage, 'Sign in with Ethereum');
@@ -463,6 +518,7 @@ void main() {
   test('uses the authenticated external wallet for HIP-3 typed data', () async {
     final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
     final gateway = PrivyIdentityAuthGateway(
+      exportUrl: exportUrl,
       createPrivy: (_) => _FakePrivy(
         authState: const Unauthenticated(),
         siwe: _FakeSiwe(loginResult: Success(user)),
@@ -715,6 +771,7 @@ void main() {
     test('external wallets cannot produce authorization signatures', () async {
       final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
       final gateway = PrivyIdentityAuthGateway(
+        exportUrl: exportUrl,
         createPrivy: (_) => _FakePrivy(
           authState: const Unauthenticated(),
           siwe: _FakeSiwe(loginResult: Success(user)),
@@ -760,15 +817,18 @@ final class _FakePrivy implements Privy {
     LoginWithEmail? email,
     LoginWithSiwe? siwe,
     LoginWithOAuth? oauth,
+    LoginWithPasskey? passkey,
     this.logoutError,
   }) : _email = email ?? _FakeEmail(),
        _siwe = siwe ?? _FakeSiwe(),
-       _oauth = oauth ?? _FakeOAuth();
+       _oauth = oauth ?? _FakeOAuth(),
+       _passkey = passkey ?? _FakePasskey();
 
   final AuthState authState;
   final LoginWithEmail _email;
   final LoginWithSiwe _siwe;
   final LoginWithOAuth _oauth;
+  final LoginWithPasskey _passkey;
   final Object? logoutError;
 
   @override
@@ -779,6 +839,9 @@ final class _FakePrivy implements Privy {
 
   @override
   LoginWithOAuth get oAuth => _oauth;
+
+  @override
+  LoginWithPasskey get passkey => _passkey;
 
   @override
   Future<AuthState> getAuthState() async => authState;
@@ -834,24 +897,53 @@ final class _FakeOAuth implements LoginWithOAuth {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+final class _FakePasskey implements LoginWithPasskey {
+  _FakePasskey({PrivyUser? user})
+    : user = user ?? _FakeUser(id: 'user', token: 'token');
+
+  final PrivyUser user;
+  String? loginRelyingParty;
+  String? linkRelyingParty;
+
+  @override
+  Future<Result<PrivyUser>> login({required String relyingParty}) async {
+    loginRelyingParty = relyingParty;
+    return Success(user);
+  }
+
+  @override
+  Future<Result<PrivyUser>> link({
+    required String relyingParty,
+    String? displayName,
+  }) async {
+    linkRelyingParty = relyingParty;
+    return Success(user);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 final class _FakeUser implements PrivyUser {
   _FakeUser({
     required this.id,
     required this.token,
     this.ethereumWallets = const [],
+    this.accounts = const [],
   });
 
   @override
   final String id;
   final String token;
   final List<EmbeddedEthereumWallet> ethereumWallets;
+  final List<LinkedAccounts> accounts;
   int refreshCalls = 0;
 
   @override
   List<EmbeddedEthereumWallet> get embeddedEthereumWallets => ethereumWallets;
 
   @override
-  List<LinkedAccounts> get linkedAccounts => const [];
+  List<LinkedAccounts> get linkedAccounts => accounts;
 
   @override
   Future<Result<String>> getAccessToken() async => Success(token);

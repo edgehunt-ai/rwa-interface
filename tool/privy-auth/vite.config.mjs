@@ -1,15 +1,23 @@
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
+import { generatePasskeyAssociationFiles } from '../../scripts/generate-passkey-association-files.mjs';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const exportBuild = mode === 'export';
+  if (exportBuild) {
+    const result = await generatePasskeyAssociationFiles({ environment: env });
+    console.log('Passkey associations for ' + result.origin + ': ' +
+      (result.files.join(', ') || 'no native application identifiers configured'));
+  }
   return {
     root: exportBuild
       ? resolve(import.meta.dirname, '../../private-key-export')
       : process.cwd(),
-    publicDir: false,
+    publicDir: exportBuild
+      ? resolve(import.meta.dirname, '../../private-key-export/public')
+      : false,
     server: exportBuild ? { strictPort: true } : undefined,
     plugins: [react()],
     // Privy's browser bundle contains optional dependencies that read

@@ -22,10 +22,10 @@ final class ReownWalletConnector implements WalletConnector {
     final modal = _modal ??= ReownAppKitModal(
       context: context,
       projectId: _configuration.validate(),
-      metadata: const PairingMetadata(
+      metadata: PairingMetadata(
         name: 'Nobell',
         description: 'Nobell wallet sign-in',
-        url: 'https://rwa.dxd.ink',
+        url: PrivyConfiguration.relyingParty,
         redirect: Redirect(native: PrivyConfiguration.nativeAppRedirect),
       ),
       optionalNamespaces: const {

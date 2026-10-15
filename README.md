@@ -64,7 +64,9 @@ cp .env.example .env
 ```
 
 Fill in the public client configuration in `.env`. At minimum, local
-development requires the API URL, Privy App/Client IDs, and Reown Project ID.
+development requires the API URL, Privy App/Client IDs, export site URL, and
+Reown Project ID. `PRIVY_EXPORT_URL` also supplies the Passkey relying-party
+origin; see [Passkey configuration](docs/passkeys.md) for native domain associations.
 Never place secrets, access tokens, or server credentials in `.env`, source
 files, or Dart build arguments.
 
@@ -173,6 +175,7 @@ automatic summary. The result is also updated in a single PR comment. See
 
 ## Documentation
 
+- [Passkey configuration](docs/passkeys.md)
 - [Native performance testing](docs/performance.md) (Chinese)
 - [Push notification setup](docs/push-notifications.md)
 - [Flutter documentation](https://docs.flutter.dev/)

@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "overrides": {
+    ".well-known/apple-app-site-association": {
+      "contentType": "application/json"
+    },
+    ".well-known/assetlinks.json": {
+      "contentType": "application/json"
+    }
+  },
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/\\.well-known/.*", "status": 404 },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
