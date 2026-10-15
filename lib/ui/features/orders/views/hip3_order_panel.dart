@@ -1924,6 +1924,11 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _setRiskAccepted(bool value) async {
+    setState(() => _riskAccepted = value);
+    if (value) await _consentService.record();
+  }
+
   Future<void> _loadConsent() async {
     final accepted = await _consentService.read();
     if (!mounted) return;
@@ -2014,6 +2019,8 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
       context: context,
       isScrollControlled: true,
       builder: (_) => TpSlRiskAgreementSheet(
+        initialAccepted: _riskAccepted,
+        onChanged: _setRiskAccepted,
         onAccepted: () => Navigator.of(context).pop(true),
       ),
     );
@@ -2099,10 +2106,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                 const SizedBox(height: 16),
                 TpSlConsentRow(
                   accepted: _riskAccepted,
-                  onChanged: (value) async {
-                    setState(() => _riskAccepted = value);
-                    if (value) await _consentService.record();
-                  },
+                  onChanged: _setRiskAccepted,
                   onOpenDetails: _showRiskAgreement,
                 ),
                 if (_error != null || errors.isNotEmpty) ...[

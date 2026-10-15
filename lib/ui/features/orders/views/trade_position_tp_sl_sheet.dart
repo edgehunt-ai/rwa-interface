@@ -33,6 +33,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   var _consentLoading = true;
   final _consentService = const TpSlRiskConsentService();
 
+  Future<void> _setRiskAccepted(bool value) async {
+    setState(() => _riskAccepted = value);
+    if (value) await _consentService.record();
+  }
+
   Future<void> _loadConsent() async {
     final accepted = await _consentService.read();
     if (!mounted) return;
@@ -276,6 +281,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         context: context,
         isScrollControlled: true,
         builder: (_) => TpSlRiskAgreementSheet(
+          initialAccepted: _riskAccepted,
+          onChanged: _setRiskAccepted,
           onAccepted: () => Navigator.of(context).pop(true),
         ),
       );
@@ -522,15 +529,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                 const SizedBox(height: 12),
                 TpSlConsentRow(
                   accepted: _riskAccepted,
-                  onChanged: (value) async {
-                    setState(() => _riskAccepted = value);
-                    if (value) await _consentService.record();
-                  },
+                  onChanged: _setRiskAccepted,
                   onOpenDetails: () async {
                     final accepted = await showModalBottomSheet<bool>(
                       context: context,
                       isScrollControlled: true,
                       builder: (_) => TpSlRiskAgreementSheet(
+                        initialAccepted: _riskAccepted,
+                        onChanged: _setRiskAccepted,
                         onAccepted: () => Navigator.of(context).pop(true),
                       ),
                     );

@@ -36,6 +36,7 @@ import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 
+import '../../../../helpers/display_config.dart';
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/funded_repository.dart';
 
@@ -59,6 +60,47 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  testWidgets('opening TP/SL risk consent stays synchronized with details', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(600, 1200));
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+    await tester.pumpAndSettle();
+    final outer = find.byKey(const Key('tpsl-risk-checkbox'));
+    final details = find.byKey(const Key('tpsl-risk-details'));
+    final inner = find.byKey(const Key('tpsl-risk-agreement-checkbox'));
+    final confirm = find.byKey(const Key('tpsl-risk-confirm'));
+    expect(tester.widget<Checkbox>(outer).value, isFalse);
+    await tester.ensureVisible(outer);
+    await tester.tap(outer);
+    await tester.pumpAndSettle();
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(inner).value, isTrue);
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
+
+    await tester.tap(inner);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('tpsl-risk-close')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(outer).value, isFalse);
+
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(inner).value, isFalse);
+    await tester.tap(inner);
+    await tester.pumpAndSettle();
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
+    expect(inner, findsNothing);
+    expect(tester.widget<Checkbox>(outer).value, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('hip3 large limit price keeps the editor rendered', (
     tester,
   ) async {
