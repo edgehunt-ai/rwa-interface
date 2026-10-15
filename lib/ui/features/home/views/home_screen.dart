@@ -220,7 +220,7 @@ class _PortfolioCard extends StatelessWidget {
         !((pnl?.value ?? pnlPercent?.value)?.startsWith('-') ?? false);
     return Container(
       height: 142,
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(24),
@@ -237,7 +237,7 @@ class _PortfolioCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           SizedBox(
             height: 38,
             width: double.infinity,
@@ -255,7 +255,7 @@ class _PortfolioCard extends StatelessWidget {
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 12),
           if (isEmpty)
             Text('—', style: TextStyle(color: colors.secondaryText))
           else if (pnl != null || pnlPercent != null)
