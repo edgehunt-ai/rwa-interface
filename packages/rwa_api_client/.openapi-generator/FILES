@@ -374,6 +374,7 @@ lib/src/model/portfolio_asset_page.dart
 lib/src/model/portfolio_asset_source_kind.dart
 lib/src/model/portfolio_availability_status.dart
 lib/src/model/portfolio_cross_liquidation_risk.dart
+lib/src/model/portfolio_cross_margin_pool.dart
 lib/src/model/portfolio_data_status.dart
 lib/src/model/portfolio_freshness.dart
 lib/src/model/portfolio_history.dart

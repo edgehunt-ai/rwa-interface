@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/portfolio_cross_liquidation_risk.dart';
+import 'package:rwa_api_client/src/model/portfolio_cross_margin_pool.dart';
 import 'package:rwa_api_client/src/model/portfolio_open_order_margin_estimate.dart';
 import 'package:rwa_api_client/src/model/portfolio_allocation_value.dart';
 import 'package:built_value/built_value.dart';
@@ -16,6 +17,7 @@ part 'portfolio_account_allocation_breakdown.g.dart';
 /// Properties:
 /// * [cash] 
 /// * [bstocks] 
+/// * [crossMarginPool] 
 /// * [crossMarginUsedUsd] - 所有 HIP-3 Cross 仓位 position.marginUsed 之和。
 /// * [isolatedMarginUsedUsd] - 所有 HIP-3 Isolated 仓位 position.marginUsed 之和。
 /// * [openOrderMarginEstimate] 
@@ -28,6 +30,9 @@ abstract class PortfolioAccountAllocationBreakdown implements Built<PortfolioAcc
 
   @BuiltValueField(wireName: r'bstocks')
   PortfolioAllocationValue? get bstocks;
+
+  @BuiltValueField(wireName: r'cross_margin_pool')
+  PortfolioCrossMarginPool? get crossMarginPool;
 
   /// 所有 HIP-3 Cross 仓位 position.marginUsed 之和。
   @BuiltValueField(wireName: r'cross_margin_used_usd')
@@ -82,6 +87,13 @@ class _$PortfolioAccountAllocationBreakdownSerializer implements PrimitiveSerial
       yield serializers.serialize(
         object.bstocks,
         specifiedType: const FullType(PortfolioAllocationValue),
+      );
+    }
+    if (object.crossMarginPool != null) {
+      yield r'cross_margin_pool';
+      yield serializers.serialize(
+        object.crossMarginPool,
+        specifiedType: const FullType(PortfolioCrossMarginPool),
       );
     }
     if (object.crossMarginUsedUsd != null) {
@@ -157,6 +169,14 @@ class _$PortfolioAccountAllocationBreakdownSerializer implements PrimitiveSerial
           ) as PortfolioAllocationValue?;
           if (valueDes == null) continue;
           result.bstocks.replace(valueDes);
+          break;
+        case r'cross_margin_pool':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioCrossMarginPool),
+          ) as PortfolioCrossMarginPool?;
+          if (valueDes == null) continue;
+          result.crossMarginPool.replace(valueDes);
           break;
         case r'cross_margin_used_usd':
           final valueDes = serializers.deserialize(

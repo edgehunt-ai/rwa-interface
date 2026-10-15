@@ -874,14 +874,15 @@ class _AllocationValues extends StatelessWidget {
                   _AllocationAccountRow(label: l10n.perps, account: perps),
                   if (perpsBreakdown != null) ...[
                     const SizedBox(height: 8),
-                    if (perpsBreakdown.crossMargin case final amount?) ...[
-                      _AllocationDetailRow(
-                        label: l10n.crossMargin,
-                        amount: amount,
-                        color: colors.selected,
-                      ),
-                      const SizedBox(height: 4),
-                    ],
+                    _AllocationDetailRow(
+                      label: l10n.crossMargin,
+                      amount: perpsBreakdown.crossMarginPool,
+                      showPercent:
+                          allocation.hasCompleteValuation &&
+                          perps.percent != null,
+                      color: colors.selected,
+                    ),
+                    const SizedBox(height: 4),
                     if (perpsBreakdown.estimatedWithdrawable
                         case final amount?) ...[
                       _AllocationDetailRow(
@@ -922,10 +923,9 @@ class _AllocationValues extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   [
-                    if (spot != null)
-                      '${l10n.spot} ${_formatAllocationPercent(spot.percent)}',
+                    if (spot != null) _accountAllocationLabel(l10n.spot, spot),
                     if (perps != null)
-                      '${l10n.perps} ${_formatAllocationPercent(perps.percent)}',
+                      _accountAllocationLabel(l10n.perps, perps),
                   ].join(' · '),
                   style: TextStyle(
                     fontSize: 12,
@@ -1018,7 +1018,7 @@ class _PerpsAllocationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final segments = [
-      (breakdown?.crossMargin, color),
+      (breakdown?.crossMarginPool, color),
       (breakdown?.isolatedMargin, color.withValues(alpha: .5)),
       (breakdown?.openOrderMargin, color.withValues(alpha: .3)),
     ].where((entry) => entry.$1 != null).toList(growable: false);
@@ -1074,7 +1074,7 @@ class _AllocationAccountRow extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            '$label ${_formatAllocationPercent(account.percent)}',
+            _accountAllocationLabel(label, account),
             style: TextStyle(
               color: colors.secondaryText,
               fontSize: 12,
@@ -1102,6 +1102,7 @@ class _AllocationDetailRow extends StatelessWidget {
     required this.amount,
     this.color,
     this.indent = false,
+    this.showPercent = true,
     this.tooltip,
     this.tooltipKey,
     this.tooltipTriggerKey,
@@ -1109,9 +1110,10 @@ class _AllocationDetailRow extends StatelessWidget {
   });
 
   final String label;
-  final PortfolioAllocationAmount amount;
+  final PortfolioAllocationAmount? amount;
   final Color? color;
   final bool indent;
+  final bool showPercent;
   final InlineSpan? tooltip;
   final Key? tooltipKey;
   final Key? tooltipTriggerKey;
@@ -1146,7 +1148,9 @@ class _AllocationDetailRow extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    '$label · ${_formatAllocationPercent(amount.percent)}',
+                    amount == null || !showPercent
+                        ? label
+                        : '$label · ${_formatAllocationPercent(amount!.percent)}',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: colors.secondaryText,
@@ -1181,7 +1185,9 @@ class _AllocationDetailRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             key: Key('allocation-detail-value-$label'),
-            _formatUsdFixed2(amount.valueUsd),
+            amount == null
+                ? AppLocalizations.of(context).unavailable
+                : _formatUsdFixed2(amount!.valueUsd),
             style: TextStyle(
               color: colors.primaryText,
               fontSize: 13,
@@ -1361,6 +1367,13 @@ int _allocationRailOrder(String rail) => switch (rail) {
   'perp' => 3,
   _ => 4,
 };
+
+String _accountAllocationLabel(
+  String label,
+  PortfolioAccountAllocation account,
+) => account.percent == null
+    ? label
+    : '$label ${_formatAllocationPercent(account.percent!)}';
 
 String _formatAllocationPercent(DecimalValue percent) =>
     TokenAmountFormatter.formatPercent(
@@ -2634,7 +2647,8 @@ class _PerpsBalances extends ConsumerWidget {
     openOrders.sort(
       (left, right) => _compareUsdDescending(left.orderValue, right.orderValue),
     );
-    final crossAmount = breakdown?.crossMargin;
+    final crossAmount = breakdown?.crossMarginPool;
+    final crossQuantity = breakdown?.crossMarginPoolQuantity;
     final isolatedAmount = breakdown?.isolatedMargin;
     final openOrderAmount = breakdown?.openOrderMargin;
     final total = perps?.valueUsd ?? _hip3Total(accountItems);
@@ -2647,9 +2661,11 @@ class _PerpsBalances extends ConsumerWidget {
               key: const Key('perps-cross-margin'),
               label: l10n.crossMargin,
               amount: crossAmount?.valueUsd,
-              quantity:
-                  _hip3UsdcQuantity(accountItems) ??
-                  _marginQuantity(crossAmount),
+              quantity: crossQuantity == null
+                  ? null
+                  : '${TokenAmountFormatter.formatDecimal(crossQuantity)} ${crossQuantity.asset}',
+              unavailableLabel: l10n.unavailable,
+              asset: breakdown?.crossMarginPoolQuantity?.asset ?? 'USDC',
               children: [
                 if (breakdown?.estimatedWithdrawable case final withdrawable?)
                   _PerpsBalanceDetail(
@@ -2754,18 +2770,6 @@ DecimalValue? _hip3Total(List<TradingAccount> accounts) {
   return null;
 }
 
-String? _hip3UsdcQuantity(List<TradingAccount> accounts) {
-  for (final account in accounts) {
-    if (account.kind != TradingAccountKind.hip3) continue;
-    for (final balance in account.balances) {
-      if (balance.symbol.toUpperCase() == 'USDC') {
-        return _formatBalanceQuantity(balance);
-      }
-    }
-  }
-  return null;
-}
-
 String? _marginQuantity(PortfolioAllocationAmount? amount) {
   if (amount == null) return null;
   return '${_formatUsdFixed2(amount.valueUsd).substring(1)} USDC';
@@ -2786,8 +2790,12 @@ class _PerpsMarginGroup extends StatefulWidget {
     required this.amount,
     required this.quantity,
     required this.children,
+    this.unavailableLabel = '—',
+    this.asset = 'USDC',
   });
 
+  final String unavailableLabel;
+  final String asset;
   final String label;
   final DecimalValue? amount;
   final String? quantity;
@@ -2827,17 +2835,22 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          const _TokenIcon(symbol: 'USDC'),
+          _TokenIcon(symbol: widget.asset),
           const SizedBox(width: 12),
           Expanded(
-            child: _PerpsBalanceLabel(title: 'USDC', subtitle: widget.label),
+            child: _PerpsBalanceLabel(
+              title: widget.asset,
+              subtitle: widget.label,
+            ),
           ),
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                widget.amount == null ? '—' : _formatUsdFixed2(widget.amount!),
+                widget.amount == null
+                    ? widget.unavailableLabel
+                    : _formatUsdFixed2(widget.amount!),
                 maxLines: 1,
                 style: const TextStyle(
                   fontSize: 15,
@@ -2847,7 +2860,7 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
               ),
               const SizedBox(height: 2),
               Text(
-                widget.quantity ?? '—',
+                widget.quantity ?? widget.unavailableLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -3165,12 +3178,11 @@ class _PerpsVenueBadge extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       height: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(6),
       ),
-      alignment: Alignment.center,
       child: Text(
         label,
         maxLines: 1,
@@ -3548,7 +3560,8 @@ PortfolioRailAllocation _allocationPreviewData() => PortfolioRailAllocation(
     valueUsd: DecimalValue('5610.22', asset: 'USD', unit: 'fiat'),
     percent: DecimalValue('40', unit: 'percent'),
     perpsBreakdown: PortfolioPerpsAllocationBreakdown(
-      crossMargin: PortfolioAllocationAmount(
+      crossMarginPoolQuantity: DecimalValue('2264.48', asset: 'USDC'),
+      crossMarginPool: PortfolioAllocationAmount(
         valueUsd: DecimalValue('2264.48', asset: 'USD', unit: 'fiat'),
         percent: DecimalValue('18', unit: 'percent'),
       ),

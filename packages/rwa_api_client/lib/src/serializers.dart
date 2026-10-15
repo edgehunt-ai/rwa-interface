@@ -365,6 +365,7 @@ import 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_availability_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_cross_liquidation_risk.dart';
+import 'package:rwa_api_client/src/model/portfolio_cross_margin_pool.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_history.dart';
@@ -862,6 +863,7 @@ part 'serializers.g.dart';
   PortfolioAssetSourceKind,
   PortfolioAvailabilityStatus,
   PortfolioCrossLiquidationRisk,
+  PortfolioCrossMarginPool,
   PortfolioDataStatus,
   PortfolioFreshness,
   PortfolioHistory,

@@ -324,6 +324,9 @@ PortfolioRailAllocation mapRailPortfolioAllocation(
     }
   }
   return PortfolioRailAllocation(
+    hasCompleteValuation:
+        value.dataStatus == api.PortfolioDataStatus.complete &&
+        value.unvaluedAssetCount == 0,
     items: List.unmodifiable(items),
     valuedTotalUsd: _usdValue(value.valuedTotalUsd),
     unvaluedAssetCount: value.unvaluedAssetCount,
@@ -338,10 +341,10 @@ PortfolioAccountAllocation? _accountAllocation(
 }) {
   final valueUsd = item.valueUsd;
   final percent = item.percent;
-  if (valueUsd == null || percent == null) return null;
+  if (valueUsd == null) return null;
   return PortfolioAccountAllocation(
     valueUsd: _usdValue(valueUsd),
-    percent: DecimalValue(percent, unit: 'percent'),
+    percent: percent == null ? null : DecimalValue(percent, unit: 'percent'),
     perpsBreakdown: perpsBreakdown,
   );
 }
@@ -353,6 +356,21 @@ PortfolioPerpsAllocationBreakdown? _perpsBreakdown(
   if (value == null) return null;
   return PortfolioPerpsAllocationBreakdown(
     crossMargin: _allocationAmount(value.crossMarginUsedUsd, valuedTotalUsd),
+    crossMarginPool:
+        value.crossMarginPool?.status ==
+            api.PortfolioCrossMarginPoolStatusEnum.available
+        ? _allocationAmount(value.crossMarginPool?.valueUsd, valuedTotalUsd)
+        : null,
+    crossMarginPoolQuantity:
+        value.crossMarginPool?.status ==
+                api.PortfolioCrossMarginPoolStatusEnum.available &&
+            value.crossMarginPool?.quantity != null
+        ? DecimalValue(
+            value.crossMarginPool!.quantity!,
+            asset: value.crossMarginPool!.asset.name,
+            unit: 'quantity',
+          )
+        : null,
     isolatedMargin: _allocationAmount(
       value.isolatedMarginUsedUsd,
       valuedTotalUsd,

@@ -373,6 +373,7 @@ export 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
 export 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 export 'package:rwa_api_client/src/model/portfolio_availability_status.dart';
 export 'package:rwa_api_client/src/model/portfolio_cross_liquidation_risk.dart';
+export 'package:rwa_api_client/src/model/portfolio_cross_margin_pool.dart';
 export 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 export 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 export 'package:rwa_api_client/src/model/portfolio_history.dart';

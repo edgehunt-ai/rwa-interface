@@ -553,6 +553,7 @@ Class | Method | HTTP request | Description
  - [PortfolioAssetSourceKind](doc/PortfolioAssetSourceKind.md)
  - [PortfolioAvailabilityStatus](doc/PortfolioAvailabilityStatus.md)
  - [PortfolioCrossLiquidationRisk](doc/PortfolioCrossLiquidationRisk.md)
+ - [PortfolioCrossMarginPool](doc/PortfolioCrossMarginPool.md)
  - [PortfolioDataStatus](doc/PortfolioDataStatus.md)
  - [PortfolioFreshness](doc/PortfolioFreshness.md)
  - [PortfolioHistory](doc/PortfolioHistory.md)
