@@ -2387,6 +2387,62 @@ void main() {
     expect(find.text('10.25 NVDAB'), findsOneWidget);
   });
 
+  testWidgets('bStocks calculated limit fields trim zeros after truncation', (
+    tester,
+  ) async {
+    final orders = _CapturingOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bstocksSettlementTokenProvider.overrideWith(
+            (ref) => _environment(decimals: 3).bstocksSettlementToken,
+          ),
+          bstocksTokenDecimalsProvider('NVDAB').overrideWith((ref) async => 3),
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byKey(const Key('bstocks-limit-price-sheet-input'))),
+    ).pop('10.0001');
+    await tester.pumpAndSettle();
+
+    final orderValue = find.byKey(const Key('bstocks-limit-order-value-input'));
+    final quantity = find.byKey(const Key('bstocks-limit-quantity-input'));
+    for (final (entered, expected) in [
+      ('12.001', '1.2'),
+      ('10.001', '1'),
+      ('100.001', '10'),
+      ('0.001', '0'),
+    ]) {
+      await tester.enterText(orderValue, entered);
+      await tester.pump(const Duration(milliseconds: 201));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(quantity).controller?.text, expected);
+      expect(tester.widget<TextField>(orderValue).controller?.text, entered);
+      if (expected != '0') {
+        expect(orders.previewIntent?.quantity?.value, expected);
+      }
+    }
+
+    for (final (entered, expected) in [('1.200', '12'), ('1.001', '10.01')]) {
+      await tester.enterText(quantity, entered);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(orderValue).controller?.text, expected);
+      expect(tester.widget<TextField>(quantity).controller?.text, entered);
+    }
+    await tester.enterText(quantity, '1.');
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(quantity).controller?.text, '1.');
+  });
+
   testWidgets('bStock quantity input and slider use the asset decimals', (
     tester,
   ) async {

@@ -2749,8 +2749,12 @@ String _formatDecimal(double value) {
 bool _hasNonZeroValue(DecimalValue? value) =>
     value != null && RegExp(r'[1-9]').hasMatch(value.value);
 
-String _formatDecimalForToken(double value, int? decimals) =>
-    _truncateDecimal(_formatDecimal(value), decimals);
+String _formatDecimalForToken(double value, int? decimals) {
+  final truncated = _truncateDecimal(_formatDecimal(value), decimals);
+  return truncated.contains('.')
+      ? truncated.replaceFirst(RegExp(r'\.?0+$'), '')
+      : truncated;
+}
 
 TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
     TextInputFormatter.withFunction((oldValue, newValue) {
