@@ -280,6 +280,9 @@ abstract final class AppTheme {
         foregroundColor: rwa.primaryText,
         elevation: 0,
       ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: Color(0xFF676776),
+      ),
       extensions: [
         AppSemanticColors(
           success: isDark ? const Color(0xFF6DDB8A) : const Color(0xFF04A08B),

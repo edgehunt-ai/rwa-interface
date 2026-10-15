@@ -1580,7 +1580,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           child: CircularProgressIndicator(
                             key: Key('bstocks-approval-loading'),
                             strokeWidth: 2,
-                            color: Colors.white,
                           ),
                         )
                       : Text(
