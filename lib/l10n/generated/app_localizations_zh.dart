@@ -865,7 +865,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get tradeMarketHoursDisclaimer => '休市表示不可交易的时段，包括周末、美国节假日以及每日结算窗口。';
+  String get tradeMarketHoursDisclaimer => '交易全天候开放，但流动性可能因美国市场交易时段而有所不同。';
 
   @override
   String get tradeMarketHoursDescription => '市场关闭表示不可交易时段，包括周末、美国节假日和每日结算窗口。';

@@ -289,7 +289,7 @@
   "tradeBstocksUnavailable": "暂无 bStocks 市场",
   "tradePerpUnavailable": "暂无 HIP-3 永续市场",
   "tradeProductUnavailableDescription": "{symbol} 尚未上线该产品，可切回另一个标签继续交易。",
-  "tradeMarketHoursDisclaimer": "休市表示不可交易的时段，包括周末、美国节假日以及每日结算窗口。",
+  "tradeMarketHoursDisclaimer": "交易全天候开放，但流动性可能因美国市场交易时段而有所不同。",
   "tradeMarketHoursDescription": "市场关闭表示不可交易时段，包括周末、美国节假日和每日结算窗口。",
   "tradePreMarket": "盘前",
   "tradeRegularMarket": "常规交易时段",

@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeMarketHoursDisclaimer.
   ///
   /// In en, this message translates to:
-  /// **'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.'**
+  /// **'Trading is available 24/7, but liquidity may vary depending on U.S. market hours.'**
   String get tradeMarketHoursDisclaimer;
 
   /// No description provided for @tradeMarketHoursDescription.
