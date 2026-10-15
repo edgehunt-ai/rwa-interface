@@ -26,7 +26,7 @@ class PortfolioApi {
   const PortfolioApi(this._dio, this._serializers);
 
   /// 获取资产组合配置分布
-  /// 按且只按一个 &#x60;dimension&#x60; 返回资产组合配置。响应是由 &#x60;dimension&#x60; 标记的互斥 oneOf：asset、product、rail、network 各有独立 item shape，客户端不得把不同 维度混合或跨响应累加。未估值资产不会伪装为零或分配到任一 bucket；结果通过 &#x60;unvalued_asset_count&#x60;、&#x60;data_status&#x60;、&#x60;freshness&#x60; 和 warnings 暴露证据缺口。  dimension&#x3D;rail 使用与 summary 相同的当前全账户余额快照及来源缓存，独立读取，不要求先调用 summary。 items 固定按 account&#x3D;spot、perps 返回账户金额、占总资产的比例和 breakdown。 Spot 展开 Cash/bStocks；Perps 展开 Cross/Isolated 保证金、挂单保证金估算、可转出估算及强平风险。 此模式不读写历史存储；局部来源失败时返回 200 partial，未知组金额和相关占比为 null； 全部必要余额来源不可用且无合格缓存时返回503。无已验证钱包返回200 empty。 asset/product/network 维度继续读取数据库中最新保存的配置快照。 本次前期开发接口调整移除了 summary.allocation，并用 account 分组替换了旧 rail&#x3D;cash/bstock/perp 列表； 客户端需使用本接口的新 items 结构，不得将新 Perps 账户总额与旧仓位保证金口径混用。 
+  /// 按且只按一个 &#x60;dimension&#x60; 返回资产组合配置。响应是由 &#x60;dimension&#x60; 标记的互斥 oneOf：asset、product、rail、network 各有独立 item shape，客户端不得把不同 维度混合或跨响应累加。未估值资产不会伪装为零或分配到任一 bucket；结果通过 &#x60;unvalued_asset_count&#x60;、&#x60;data_status&#x60;、&#x60;freshness&#x60; 和 warnings 暴露证据缺口。  dimension&#x3D;rail 使用与 summary 相同的当前全账户余额快照及来源缓存，独立读取，不要求先调用 summary。 items 固定按 account&#x3D;spot、perps 返回账户金额、占总资产的比例和 breakdown。 Spot 展开 Cash/bStocks；Perps 返回全仓资金池 cross_margin_pool（数量及估值），并保留 Cross/Isolated 已用保证金、挂单保证金估算、可转出估算及强平风险。 此模式不读写历史存储；局部来源失败时返回 200 partial，未知组金额和相关占比为 null； 全部必要余额来源不可用且无合格缓存时返回503。无已验证钱包返回200 empty。 asset/product/network 维度继续读取数据库中最新保存的配置快照。 本次前期开发接口调整移除了 summary.allocation，并用 account 分组替换了旧 rail&#x3D;cash/bstock/perp 列表； 客户端需使用本接口的新 items 结构，不得将新 Perps 账户总额与旧仓位保证金口径混用。 
   ///
   /// Parameters:
   /// * [dimension] 

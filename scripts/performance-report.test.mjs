@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
-import { compare, generate, html, markdown, percentile, scenarioIds, summarize } from './performance-report.mjs';
+import { compare, generate, html, markdown, markdownChanges, percentile, scenarioIds, summarize } from './performance-report.mjs';
 
 function fixture() {
   return {
@@ -139,6 +139,24 @@ test('regression thresholds combine relative and absolute tolerances', () => {
   assert.equal(zero.regression, true);
 });
 
+test('change markdown lists significant improvements and regressions against the baseline', () => {
+  const baseline = summarize(fixture());
+  const current = structuredClone(baseline);
+  current.commit = 'current';
+  current.scenarios[0].duration_ms.p95 = 130;
+  current.scenarios[1].duration_ms.p95 = 50;
+  const changes = markdownChanges(current, compare(current, baseline));
+  assert.match(changes, /Compared with main `abc123`/);
+  assert.match(changes, /home_load/);
+  assert.match(changes, /markets_load/);
+  assert.match(changes, /\+30\.00ms/);
+  assert.match(changes, /-50\.00ms/);
+});
+
+test('change markdown explains when no compatible baseline is available', () => {
+  assert.match(markdownChanges(summarize(fixture()), compare(summarize(fixture()), null)), /No compatible main baseline is available/);
+});
+
 test('HTML is self-contained, escaped and contains valid interactive JavaScript', () => {
   const raw = fixture();
   raw.scenarios[0].label = '</script><script>alert(1)</script>';
@@ -207,7 +225,7 @@ test('report generation writes all artifacts, keeps compatible history, and appl
     const result = await generate({ input, output, baselineDir, gate: false });
     assert.equal(result.comparison.comparable, true);
     assert.deepEqual(result.history.map((h) => h.commit), ['abc123', 'def456']);
-    for (const file of ['raw.json', 'report.json', 'history.json', 'report.html', 'summary.md']) {
+    for (const file of ['raw.json', 'report.json', 'history.json', 'report.html', 'summary.md', 'changes.md']) {
       assert.ok((await readFile(join(output, file), 'utf8')).length > 0);
     }
     await generate({ input, output, baselineDir, gate: true });

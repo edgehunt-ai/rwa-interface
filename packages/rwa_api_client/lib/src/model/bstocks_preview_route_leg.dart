@@ -21,7 +21,7 @@ part 'bstocks_preview_route_leg.g.dart';
 abstract class BstocksPreviewRouteLeg implements Built<BstocksPreviewRouteLeg, BstocksPreviewRouteLegBuilder> {
   @BuiltValueField(wireName: r'venue')
   BstocksPreviewRouteLegVenueEnum get venue;
-  // enum venueEnum {  propamm,  pancake_v3,  };
+  // enum venueEnum {  propamm,  pancake_v3,  liquidmesh,  };
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount_in_raw')
@@ -179,6 +179,8 @@ class BstocksPreviewRouteLegVenueEnum extends EnumClass {
   static const BstocksPreviewRouteLegVenueEnum propamm = _$bstocksPreviewRouteLegVenueEnum_propamm;
   @BuiltValueEnumConst(wireName: r'pancake_v3')
   static const BstocksPreviewRouteLegVenueEnum pancakeV3 = _$bstocksPreviewRouteLegVenueEnum_pancakeV3;
+  @BuiltValueEnumConst(wireName: r'liquidmesh')
+  static const BstocksPreviewRouteLegVenueEnum liquidmesh = _$bstocksPreviewRouteLegVenueEnum_liquidmesh;
 
   static Serializer<BstocksPreviewRouteLegVenueEnum> get serializer => _$bstocksPreviewRouteLegVenueEnumSerializer;
 

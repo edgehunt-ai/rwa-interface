@@ -45,6 +45,55 @@ void main() {
       );
       expect(PrivyConfiguration.appUrlScheme, 'nobell');
     });
+
+    test('uses the export URL build variable without a fallback domain', () {
+      const exportUrl = String.fromEnvironment('PRIVY_EXPORT_URL');
+      expect(PrivyConfiguration.privateKeyExportUrl, exportUrl);
+      if (exportUrl.isEmpty) {
+        expect(
+          () => PrivyConfiguration.relyingParty,
+          throwsA(isA<IdentityFailure>()),
+        );
+      } else {
+        expect(PrivyConfiguration.relyingParty, Uri.parse(exportUrl).origin);
+      }
+    });
+
+    test('derives the RP origin from an export page URL', () {
+      expect(
+        PrivyConfiguration.relyingPartyFor(
+          ' https://keys.example.test:8443/export?flow=verify#ready ',
+        ),
+        'https://keys.example.test:8443',
+      );
+      expect(
+        PrivyConfiguration.relyingPartyFor('https://another.example.test/'),
+        'https://another.example.test',
+      );
+    });
+
+    test('rejects missing or invalid export origins', () {
+      for (final url in [
+        '',
+        '   ',
+        '/export',
+        'http://keys.example.test',
+        'https://',
+        'https://user:password@keys.example.test/export',
+      ]) {
+        expect(
+          () => PrivyConfiguration.relyingPartyFor(url),
+          throwsA(
+            isA<IdentityFailure>().having(
+              (failure) => failure.code,
+              'code',
+              AuthenticationFailureCode.configuration,
+            ),
+          ),
+          reason: url,
+        );
+      }
+    });
   });
 
   group('ReownConfiguration', () {

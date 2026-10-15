@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_step_order.dart';
 import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -14,6 +15,7 @@ part 'hip3_action_step.g.dart';
 /// waiting 步骤不得包含 signing；prepared 仅当前可签步骤包含 signing。 Provider 响应不完整或超时进入 ambiguous；后台依据步骤类型独立查询 orderStatus/fills 或账户设置并验证证据，不能只凭 HTTP 200 判成功。 后续步骤在实际释放时才冻结 nonce、有效期和 payload；冻结后不可改写。 
 ///
 /// Properties:
+/// * [protectionOrders] - manage_tpsl 批量步骤必传，包含本次签名涉及的全部订单及逐笔结果。
 /// * [normalizedProtection] - 保护单步骤 prepared 时必须提供；固定数量或比例保护归一为 size_mode=quantity，quantity 为冻结绝对值；全仓保护保留 size_mode=entire_position 且禁止 quantity/percent，表示触发时整个仓位而非准备时数量。各腿 trigger_price 为冻结绝对值，不再包含 price_change_percent。与签名 payload 的数量语义完全一致，供确认展示；取消步骤展示被取消保护单的原有参数。
 /// * [stepId] 
 /// * [sequence] 
@@ -24,6 +26,10 @@ part 'hip3_action_step.g.dart';
 /// * [failureCode] - 可选步骤机器恢复码；模式切换受已有仓位阻止时为hip3_margin_mode_change_requires_flat_position。
 @BuiltValue()
 abstract class Hip3ActionStep implements Built<Hip3ActionStep, Hip3ActionStepBuilder> {
+  /// manage_tpsl 批量步骤必传，包含本次签名涉及的全部订单及逐笔结果。
+  @BuiltValueField(wireName: r'protection_orders')
+  BuiltList<Hip3ProtectionStepOrder>? get protectionOrders;
+
   /// 保护单步骤 prepared 时必须提供；固定数量或比例保护归一为 size_mode=quantity，quantity 为冻结绝对值；全仓保护保留 size_mode=entire_position 且禁止 quantity/percent，表示触发时整个仓位而非准备时数量。各腿 trigger_price 为冻结绝对值，不再包含 price_change_percent。与签名 payload 的数量语义完全一致，供确认展示；取消步骤展示被取消保护单的原有参数。
   @BuiltValueField(wireName: r'normalized_protection')
   Hip3ProtectionSpec? get normalizedProtection;
@@ -36,7 +42,7 @@ abstract class Hip3ActionStep implements Built<Hip3ActionStep, Hip3ActionStepBui
 
   @BuiltValueField(wireName: r'kind')
   Hip3ActionStepKindEnum get kind;
-  // enum kindEnum {  place_order,  cancel_order,  close_position,  place_take_profit,  place_stop_loss,  cancel_take_profit,  cancel_stop_loss,  set_leverage,  };
+  // enum kindEnum {  place_order,  cancel_order,  close_position,  place_take_profit,  place_stop_loss,  cancel_take_profit,  cancel_stop_loss,  set_leverage,  place_protection,  cancel_protection,  };
 
   @BuiltValueField(wireName: r'status')
   Hip3ActionStepStatusEnum get status;
@@ -75,6 +81,13 @@ class _$Hip3ActionStepSerializer implements PrimitiveSerializer<Hip3ActionStep> 
     Hip3ActionStep object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.protectionOrders != null) {
+      yield r'protection_orders';
+      yield serializers.serialize(
+        object.protectionOrders,
+        specifiedType: const FullType(BuiltList, [FullType(Hip3ProtectionStepOrder)]),
+      );
+    }
     if (object.normalizedProtection != null) {
       yield r'normalized_protection';
       yield serializers.serialize(
@@ -142,6 +155,14 @@ class _$Hip3ActionStepSerializer implements PrimitiveSerializer<Hip3ActionStep> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'protection_orders':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(Hip3ProtectionStepOrder)]),
+          ) as BuiltList<Hip3ProtectionStepOrder>?;
+          if (valueDes == null) continue;
+          result.protectionOrders.replace(valueDes);
+          break;
         case r'normalized_protection':
           final valueDes = serializers.deserialize(
             value,
@@ -249,6 +270,10 @@ class Hip3ActionStepKindEnum extends EnumClass {
   static const Hip3ActionStepKindEnum cancelStopLoss = _$hip3ActionStepKindEnum_cancelStopLoss;
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3ActionStepKindEnum setLeverage = _$hip3ActionStepKindEnum_setLeverage;
+  @BuiltValueEnumConst(wireName: r'place_protection')
+  static const Hip3ActionStepKindEnum placeProtection = _$hip3ActionStepKindEnum_placeProtection;
+  @BuiltValueEnumConst(wireName: r'cancel_protection')
+  static const Hip3ActionStepKindEnum cancelProtection = _$hip3ActionStepKindEnum_cancelProtection;
 
   static Serializer<Hip3ActionStepKindEnum> get serializer => _$hip3ActionStepKindEnumSerializer;
 

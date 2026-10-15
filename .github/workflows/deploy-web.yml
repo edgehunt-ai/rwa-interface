@@ -5,6 +5,8 @@ on:
     paths:
       - 'private-key-export/**'
       - 'tool/privy-auth/**'
+      - 'scripts/generate-passkey-association-files*'
+      - 'scripts/sync-privy-url-scheme*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/deploy-web.yml'
@@ -12,6 +14,8 @@ on:
     paths:
       - 'private-key-export/**'
       - 'tool/privy-auth/**'
+      - 'scripts/generate-passkey-association-files*'
+      - 'scripts/sync-privy-url-scheme*'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/deploy-web.yml'
@@ -26,6 +30,14 @@ concurrency:
 
 env:
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
+  PRIVY_EXPORT_URL: ${{ vars.PRIVY_EXPORT_URL }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+  ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+  ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+  ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'global.nobell.app' }}
+  ANDROID_PACKAGE_NAME: ${{ vars.ANDROID_PACKAGE_NAME || 'global.nobell.app' }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -44,12 +56,23 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Setup Java for Android certificate inspection
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Validate deployment configuration
         shell: bash
         run: |
           set -euo pipefail
           for key in \
             PRIVY_APP_ID \
+            PRIVY_EXPORT_URL \
+            ANDROID_KEYSTORE_BASE64 \
+            ANDROID_KEYSTORE_PASSWORD \
+            ANDROID_KEY_ALIAS \
+            ANDROID_KEY_PASSWORD \
             VERCEL_ORG_ID \
             VERCEL_PROJECT_ID \
             VERCEL_TOKEN; do
@@ -62,6 +85,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Test Passkey configuration tooling
+        run: node --test scripts/generate-passkey-association-files.test.mjs scripts/sync-privy-url-scheme.test.mjs
+
       - name: Build private-key export page
         run: npm run privy:export:build
 
@@ -71,14 +97,7 @@ jobs:
           set -euo pipefail
           mkdir -p .vercel/output/static
           cp -a private-key-export/dist/. .vercel/output/static/
-          printf '%s\n' \
-            '{' \
-            '  "version": 3,' \
-            '  "routes": [' \
-            '    { "handle": "filesystem" },' \
-            '    { "src": "/(.*)", "dest": "/index.html" }' \
-            '  ]' \
-            '}' > .vercel/output/config.json
+          cp private-key-export/vercel-output-config.json .vercel/output/config.json
 
       - name: Deploy preview
         if: github.ref != 'refs/heads/main'

@@ -379,9 +379,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3ChallengeRequestPurposeEnum.serializer)
       ..add(Hip3ChallengeSettlementAssetEnum.serializer)
       ..add(Hip3ChallengeStatusEnum.serializer)
-      ..add(Hip3ClearTpSlActionRequest.serializer)
-      ..add(Hip3ClearTpSlActionRequestOperationEnum.serializer)
-      ..add(Hip3ClearTpSlActionRequestScopeEnum.serializer)
       ..add(Hip3CloseActionRequest.serializer)
       ..add(Hip3CloseActionRequestOperationEnum.serializer)
       ..add(Hip3ClosePreview.serializer)
@@ -437,6 +434,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3LiquidationPageWarningsEnum.serializer)
       ..add(Hip3LiquidationPosition.serializer)
       ..add(Hip3MainnetProduct.serializer)
+      ..add(Hip3ManageTpSlActionRequest.serializer)
+      ..add(Hip3ManageTpSlActionRequestOperationEnum.serializer)
       ..add(Hip3MarketOrderMinimum.serializer)
       ..add(Hip3MarketOrderMinimums.serializer)
       ..add(Hip3MarketOrderMinimumsAmountAssetEnum.serializer)
@@ -452,10 +451,26 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3OrderProtectionSpecNot.serializer)
       ..add(Hip3PlaceOrderActionRequest.serializer)
       ..add(Hip3PlaceOrderActionRequestOperationEnum.serializer)
+      ..add(Hip3PositionProtectionOrder.serializer)
+      ..add(Hip3PositionProtectionOrderActivationStatusEnum.serializer)
+      ..add(Hip3PositionProtectionOrderExecutionTypeEnum.serializer)
+      ..add(Hip3PositionProtectionOrderRoleEnum.serializer)
+      ..add(Hip3PositionProtectionOrderSizeModeEnum.serializer)
+      ..add(Hip3PositionProtectionOrderTriggerReferenceEnum.serializer)
       ..add(Hip3PreviewExecution.serializer)
       ..add(Hip3PreviewExecutionTypeEnum.serializer)
+      ..add(Hip3ProtectionCancelChange.serializer)
+      ..add(Hip3ProtectionCancelChangeOperationEnum.serializer)
+      ..add(Hip3ProtectionChange.serializer)
+      ..add(Hip3ProtectionCreateChange.serializer)
+      ..add(Hip3ProtectionCreateChangeOperationEnum.serializer)
+      ..add(Hip3ProtectionModifyChange.serializer)
+      ..add(Hip3ProtectionModifyChangeOperationEnum.serializer)
       ..add(Hip3ProtectionSpec.serializer)
       ..add(Hip3ProtectionSpecSizeModeEnum.serializer)
+      ..add(Hip3ProtectionStepOrder.serializer)
+      ..add(Hip3ProtectionStepOrderRoleEnum.serializer)
+      ..add(Hip3ProtectionStepOrderStatusEnum.serializer)
       ..add(Hip3PublicMarketEnvironmentEnum.serializer)
       ..add(Hip3RealtimeBalance.serializer)
       ..add(Hip3RealtimeBalanceEvent.serializer)
@@ -488,8 +503,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3RealtimeSnapshotItem.serializer)
       ..add(Hip3SetLeverageActionRequest.serializer)
       ..add(Hip3SetLeverageActionRequestOperationEnum.serializer)
-      ..add(Hip3SetTpSlActionRequest.serializer)
-      ..add(Hip3SetTpSlActionRequestOperationEnum.serializer)
+      ..add(Hip3SingleProtectionSpec.serializer)
+      ..add(Hip3SingleProtectionSpecSizeModeEnum.serializer)
       ..add(Hip3StepSigningPayload.serializer)
       ..add(Hip3StepSigningPayloadSignatureFormatEnum.serializer)
       ..add(Hip3StepSigningPayloadSigningMethodEnum.serializer)
@@ -688,6 +703,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioAvailabilityStatus.serializer)
       ..add(PortfolioCrossLiquidationRisk.serializer)
       ..add(PortfolioCrossLiquidationRiskStatusEnum.serializer)
+      ..add(PortfolioCrossMarginPool.serializer)
+      ..add(PortfolioCrossMarginPoolAssetEnum.serializer)
+      ..add(PortfolioCrossMarginPoolStatusEnum.serializer)
       ..add(PortfolioDataStatus.serializer)
       ..add(PortfolioFreshness.serializer)
       ..add(PortfolioHistory.serializer)
@@ -1028,12 +1046,6 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(Hip3Action)]),
           () => ListBuilder<Hip3Action>())
       ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(Hip3ActionStep)]),
-          () => ListBuilder<Hip3ActionStep>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(String)]),
-          () => ListBuilder<String>())
-      ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(Hip3CrossLiquidationImpact)]),
           () => ListBuilder<Hip3CrossLiquidationImpact>())
@@ -1072,6 +1084,21 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Hip3Operation)]),
           () => ListBuilder<Hip3Operation>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3PositionProtectionOrder)]),
+          () => ListBuilder<Hip3PositionProtectionOrder>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3ProtectionChange)]),
+          () => ListBuilder<Hip3ProtectionChange>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3ProtectionStepOrder)]),
+          () => ListBuilder<Hip3ProtectionStepOrder>())
       ..addBuilderFactory(
           const FullType(BuiltList,
               const [const FullType(Hip3WithdrawalPreviewBlockersEnum)]),
@@ -1277,9 +1304,6 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())
       ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(String)]),
-          () => ListBuilder<String>())
-      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(TokenBalance)]),
           () => ListBuilder<TokenBalance>())
       ..addBuilderFactory(
@@ -1322,6 +1346,18 @@ Serializers _$serializers = (Serializers().toBuilder()
             const FullType.nullable(JsonObject)
           ]),
           () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3ActionStep)]),
+          () => ListBuilder<Hip3ActionStep>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
       ..addBuilderFactory(
           const FullType(
               BuiltSet, const [const FullType(FundingPositionBlocker)]),

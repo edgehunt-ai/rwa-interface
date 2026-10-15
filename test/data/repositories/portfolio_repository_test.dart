@@ -167,6 +167,98 @@ void main() {
     );
   });
 
+  for (final status in [
+    api.PortfolioCrossMarginPoolStatusEnum.available,
+    api.PortfolioCrossMarginPoolStatusEnum.unavailable,
+  ]) {
+    for (final total in ['10', '0']) {
+      test('cross pool uses its own snapshot, status=$status total=$total', () {
+        final wire = _allocation(
+          spot: _accountAllocation(
+            account: api.PortfolioAccountAllocationItemAccountEnum.spot,
+            valueUsd: '0',
+            percent: '0',
+          ),
+          perps: _accountAllocation(
+            account: api.PortfolioAccountAllocationItemAccountEnum.perps,
+            valueUsd: '10',
+            percent: '100',
+            crossMarginUsedUsd: '4.47',
+            estimatedWithdrawableUsd: '3.52',
+            crossMarginPool: api.PortfolioCrossMarginPool(
+              (b) => b
+                ..status = status
+                ..asset = api.PortfolioCrossMarginPoolAssetEnum.USDC
+                ..valueUsd = '9.09'
+                ..quantity = '9.08',
+            ),
+          ),
+        ).rebuild((b) => b.valuedTotalUsd = total);
+        final result = mapRailPortfolioAllocation(wire);
+        final details = result.perps!.perpsBreakdown!;
+        final incomplete = mapRailPortfolioAllocation(
+          wire.rebuild((b) {
+            b.dataStatus = api.PortfolioDataStatus.partial;
+            b.items[1] = b.items[1].rebuild((item) => item.percent = null);
+          }),
+        );
+        expect(incomplete.perps, isNotNull);
+        expect(incomplete.perps!.percent, isNull);
+        expect(incomplete.hasCompleteValuation, isFalse);
+        if (status == api.PortfolioCrossMarginPoolStatusEnum.available) {
+          expect(
+            incomplete.perps!.perpsBreakdown!.crossMarginPool!.valueUsd.value,
+            '9.09',
+          );
+        }
+        expect(details.crossMargin!.valueUsd.value, '4.47');
+        expect(details.estimatedWithdrawable!.valueUsd.value, '3.52');
+        if (status == api.PortfolioCrossMarginPoolStatusEnum.available) {
+          expect(details.crossMarginPool!.valueUsd.value, '9.09');
+          expect(
+            details.crossMarginPool!.percent.value,
+            total == '0' ? '0' : '90.9',
+          );
+          expect(details.crossMarginPoolQuantity!.value, '9.08');
+          expect(details.crossMarginPoolQuantity!.asset, 'USDC');
+        } else {
+          expect(details.crossMarginPool, isNull);
+          expect(details.crossMarginPoolQuantity, isNull);
+        }
+        expect(
+          mapRailPortfolioAllocation(
+            wire.rebuild(
+              (b) => b
+                ..dataStatus = api.PortfolioDataStatus.partial
+                ..unvaluedAssetCount = 1,
+            ),
+          ).hasCompleteValuation,
+          isFalse,
+        );
+      });
+    }
+  }
+
+  test('missing pool never falls back to used margin', () {
+    final result = mapRailPortfolioAllocation(
+      _allocation(
+        spot: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.spot,
+          valueUsd: '0',
+          percent: '0',
+        ),
+        perps: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.perps,
+          valueUsd: '10',
+          percent: '100',
+          crossMarginUsedUsd: '4.47',
+        ),
+      ),
+    );
+    expect(result.perps!.perpsBreakdown!.crossMarginPool, isNull);
+    expect(result.perps!.perpsBreakdown!.crossMarginPoolQuantity, isNull);
+  });
+
   test('maps perps allocation details and liquidation risk', () {
     final allocation = mapRailPortfolioAllocation(
       _allocation(
@@ -200,7 +292,7 @@ void main() {
     );
 
     expect(allocation.spot?.valueUsd.value, '600');
-    expect(allocation.perps?.percent.value, '40');
+    expect(allocation.perps?.percent?.value, '40');
     final details = allocation.perps?.perpsBreakdown;
     expect(details?.crossMargin?.valueUsd.value, '180');
     expect(details?.crossMargin?.percent.value, '18');
@@ -260,6 +352,7 @@ api.PortfolioAccountAllocationItem _accountAllocation({
   api.PortfolioAllocationValue? cash,
   api.PortfolioAllocationValue? bstocks,
   String? crossMarginUsedUsd,
+  api.PortfolioCrossMarginPool? crossMarginPool,
   String? isolatedMarginUsedUsd,
   api.PortfolioOpenOrderMarginEstimate? openOrderMarginEstimate,
   String? estimatedWithdrawableUsd,
@@ -274,6 +367,7 @@ api.PortfolioAccountAllocationItem _accountAllocation({
   if (cash != null ||
       bstocks != null ||
       crossMarginUsedUsd != null ||
+      crossMarginPool != null ||
       isolatedMarginUsedUsd != null ||
       openOrderMarginEstimate != null ||
       estimatedWithdrawableUsd != null ||
@@ -282,6 +376,9 @@ api.PortfolioAccountAllocationItem _accountAllocation({
       if (cash != null) breakdown.cash.replace(cash);
       if (bstocks != null) breakdown.bstocks.replace(bstocks);
       breakdown.crossMarginUsedUsd = crossMarginUsedUsd;
+      if (crossMarginPool != null) {
+        breakdown.crossMarginPool.replace(crossMarginPool);
+      }
       breakdown.isolatedMarginUsedUsd = isolatedMarginUsedUsd;
       if (openOrderMarginEstimate != null) {
         breakdown.openOrderMarginEstimate.replace(openOrderMarginEstimate);

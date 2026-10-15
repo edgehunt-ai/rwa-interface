@@ -1,3 +1,5 @@
+import 'hip3_protection.dart';
+
 /// Business-only summary of the exact frozen step; never contains signing data.
 final class Hip3StepConfirmation {
   const Hip3StepConfirmation({
@@ -8,6 +10,7 @@ final class Hip3StepConfirmation {
     required this.stepKind,
     required this.validUntil,
     required this.details,
+    this.protectionOrders = const [],
   });
   final String actionId;
   final String stepId;
@@ -16,4 +19,5 @@ final class Hip3StepConfirmation {
   final String stepKind;
   final DateTime validUntil;
   final Map<String, String> details;
+  final List<Hip3ProtectionOrderResult> protectionOrders;
 }

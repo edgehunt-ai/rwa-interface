@@ -893,7 +893,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tradeMarketHoursDisclaimer =>
-      'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.';
+      'Trading is available 24/7, but liquidity may vary depending on U.S. market hours.';
 
   @override
   String get tradeMarketHoursDescription =>
@@ -1372,7 +1372,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get depositAssets => 'Deposit assets';
 
   @override
-  String get depositReceived => 'Deposit received';
+  String get depositReceived => 'Deposit received !';
+
+  @override
+  String depositReceivedTitle(Object amount, Object network) {
+    return '$amount received\non $network!';
+  }
+
+  @override
+  String get depositReceivedDescription =>
+      'Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.';
+
+  @override
+  String get transferToPerpsAccount => 'Transfer to perps account';
 
   @override
   String get maybeLater => 'Maybe later';
@@ -2756,4 +2768,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String hip3SignAndConfirm(String direction) {
     return 'Sign & Confirm $direction';
   }
+
+  @override
+  String get protectionManageTitle => 'Manage TP/SL';
+
+  @override
+  String get protectionCreate => 'Add order';
+
+  @override
+  String get protectionModify => 'Modify order';
+
+  @override
+  String get protectionCancel => 'Cancel order';
+
+  @override
+  String get protectionConfirmed => 'Confirmed';
+
+  @override
+  String get protectionCancelConfirmed => 'Cancellation confirmed';
+
+  @override
+  String get protectionWaitingConfirmation => 'Waiting for confirmation';
+
+  @override
+  String get protectionFailed => 'Failed';
+
+  @override
+  String get protectionBatchResults => 'Protection order results';
+
+  @override
+  String get protectionNewOrder => 'Add new order';
+
+  @override
+  String get protectionEditTarget => 'Order to edit';
+
+  @override
+  String get protectionPartialFailure =>
+      'Some protection changes failed. Review each result; cancelled orders are not restored automatically.';
+
+  @override
+  String get openOrderTpSlPending => 'TP/SL pending';
+
+  @override
+  String get openOrderTpSlPendingTooltip =>
+      'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.';
 }

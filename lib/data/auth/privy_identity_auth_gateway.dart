@@ -113,6 +113,7 @@ final class PrivyIdentityAuthGateway
     PrivyTypedDataRequester? requestTypedData,
     PrivyTypedDataRequester? requestTransaction,
     PrivyAuthorizationSigner? signAuthorization,
+    this._exportUrl = PrivyConfiguration.privateKeyExportUrl,
   }) : _createPrivy = createPrivy ?? ((config) => Privy.init(config: config)),
        _reportDiagnostic = reportDiagnostic ?? _reportToSentry,
        _requestTypedData =
@@ -124,6 +125,7 @@ final class PrivyIdentityAuthGateway
            ((user, payload) => user.generateAuthorizationSignature(payload));
 
   final PrivyFactory _createPrivy;
+  final String _exportUrl;
   final PrivyDiagnosticReporter _reportDiagnostic;
   final PrivyTypedDataRequester _requestTypedData;
   final PrivyTypedDataRequester _requestTransaction;
@@ -544,7 +546,7 @@ final class PrivyIdentityAuthGateway
   Future<IdentityPrincipal> loginWithPasskey() async {
     try {
       final result = await _initializedPrivy.passkey.login(
-        relyingParty: PrivyConfiguration.relyingParty,
+        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
       );
       switch (result) {
         case Success<PrivyUser>(:final value):
@@ -579,7 +581,7 @@ final class PrivyIdentityAuthGateway
   Future<PasskeyCredential> linkPasskey({String? displayName}) async {
     try {
       final result = await _initializedPrivy.passkey.link(
-        relyingParty: PrivyConfiguration.relyingParty,
+        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
         displayName: displayName,
       );
       switch (result) {
@@ -635,7 +637,7 @@ final class PrivyIdentityAuthGateway
   @override
   Future<IdentityPrincipal> loginWithWallet(WalletConnection connection) async {
     try {
-      final uri = Uri.tryParse(PrivyConfiguration.relyingParty);
+      final uri = Uri.tryParse(PrivyConfiguration.relyingPartyFor(_exportUrl));
       if (uri == null || uri.host.isEmpty) {
         throw const IdentityFailure(
           AuthenticationFailureCode.configuration,

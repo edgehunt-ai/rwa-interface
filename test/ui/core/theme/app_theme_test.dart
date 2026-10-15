@@ -3,6 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
 void main() {
+  test('progress indicator theme uses the specified loading color', () {
+    expect(
+      AppTheme.light.progressIndicatorTheme.color,
+      const Color(0xFF676776),
+    );
+    expect(AppTheme.dark.progressIndicatorTheme.color, const Color(0xFF676776));
+  });
+
   test('semantic colors exist in both appearances', () {
     final light = AppTheme.light.extension<AppSemanticColors>();
     final dark = AppTheme.dark.extension<AppSemanticColors>();

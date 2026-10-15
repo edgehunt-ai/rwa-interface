@@ -23,10 +23,18 @@ abstract interface class FundingRepository {
     required String amount,
     required String idempotencyKey,
   });
+
+  /// Persists the edited source selection for the expected session version.
+  ///
+  /// Standalone `account_transfer` sessions must send [amount]; the server
+  /// interprets it as the net top-up above the freshly observed target balance
+  /// and refuses the selection when it is missing. Order-driven sessions keep
+  /// their frozen requirement and must omit it.
   Future<FundingSessionSummary> updateFundingSessionSelection({
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   });
   Future<FundingCatalogSummary> getFundingCatalog();

@@ -834,6 +834,7 @@ final class _RejectedTransferRepository implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) async => _quote;
 
@@ -879,6 +880,7 @@ final class _RefreshingTransferQuoteRepository implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) async {
     lastAllocations = allocations;
@@ -964,6 +966,7 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) => _quote.future;
 

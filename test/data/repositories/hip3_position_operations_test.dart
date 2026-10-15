@@ -1,6 +1,7 @@
+import 'package:nobell/domain/models/hip3_protection.dart';
+import 'package:nobell/data/services/hip3_action_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:nobell/data/api/idempotency_key.dart';
 import 'package:nobell/data/repositories/positions_repository_impl.dart';
 import 'package:nobell/data/repositories/orders_repository_impl.dart';
 import 'package:nobell/data/services/positions_service.dart';
@@ -181,7 +182,7 @@ void main() {
           expect(actions.request!.percent, isNull);
           expect(actions.positionId, 'p-tsla');
           expect(
-            actions.created.single.intent.oneOf.value,
+            hip3CurrentIntent(actions.created.single).oneOf.value,
             isA<api.Hip3CloseActionRequest>(),
           );
           expect(actions.created.single.productId, 'xyz:TSLA');
@@ -219,7 +220,7 @@ void main() {
       );
 
       expect(actions.previewCalls, 0);
-      final intent = actions.created.single.intent.oneOf.value;
+      final intent = hip3CurrentIntent(actions.created.single).oneOf.value;
       expect(intent, isA<api.Hip3CloseActionRequest>());
       expect(
         (intent as api.Hip3CloseActionRequest).previewId,
@@ -330,7 +331,80 @@ void main() {
     );
   });
 
-  test('switching one leg off cancels its exact scope before setting the retained leg', () async {
+  test(
+    'modify and cancel bind exact system IDs and preserve their role',
+    () async {
+      final position = await repo.get('p-tsla');
+      final result = await repo.manageTpSl(
+        position,
+        changes: [
+          Hip3ProtectionChange.modify(
+            orderId: 'tp-1',
+            protection: Hip3ProtectionParameters(
+              role: 'takeProfit',
+              triggerPrice: DecimalValue('130'),
+              quantity: DecimalValue('0.25'),
+            ),
+          ),
+          const Hip3ProtectionChange.cancel('sl-1'),
+        ],
+        idempotencyKey: 'modify',
+      );
+      expect(result.isSuccessful, isTrue);
+      expect(result.protectionOrders, hasLength(3));
+      final changes = actions.created.single.intent['changes']!.value as List;
+      expect(changes[0]['operation'], 'modify');
+      expect(changes[0]['order_id'], 'tp-1');
+      expect(changes[1], {'operation': 'cancel', 'order_id': 'sl-1'});
+      await expectLater(
+        repo.manageTpSl(
+          position,
+          changes: [
+            Hip3ProtectionChange.modify(
+              orderId: 'tp-1',
+              protection: Hip3ProtectionParameters(
+                role: 'stopLoss',
+                triggerPrice: DecimalValue('90'),
+              ),
+            ),
+          ],
+          idempotencyKey: 'wrong-role',
+        ),
+        throwsFormatException,
+      );
+      expect(actions.created, hasLength(1));
+    },
+  );
+  test(
+    'mixed batch results retain success and failure independently',
+    () async {
+      actions.partialFailure = true;
+      final position = await repo.get('p-tsla');
+      final result = await repo.manageTpSl(
+        position,
+        changes: [
+          Hip3ProtectionChange.create(
+            Hip3ProtectionParameters(
+              role: 'takeProfit',
+              triggerPrice: DecimalValue('130'),
+            ),
+          ),
+          Hip3ProtectionChange.create(
+            Hip3ProtectionParameters(
+              role: 'stopLoss',
+              triggerPrice: DecimalValue('90'),
+            ),
+          ),
+        ],
+        idempotencyKey: 'partial',
+      );
+      expect(result.isSuccessful, isFalse);
+      expect(result.protectionOrders[0].isConfirmed, isTrue);
+      expect(result.protectionOrders[1].isFailed, isTrue);
+      expect(result.protectionOrders[1].failureReason, 'Venue rejected stop');
+    },
+  );
+  test('clearing one leg and creating another uses one mixed action', () async {
     final position = await repo.get('p-tsla');
     await repo.updateTpSl(
       position,
@@ -339,28 +413,16 @@ void main() {
       clearScope: ProtectionClearScope.takeProfit,
       idempotencyKey: 'edit',
     );
-    expect(actions.created.map((a) => a.operation.name), [
-      'clearTpsl',
-      'setTpsl',
-    ]);
-    final clear =
-        actions.created.first.intent.oneOf.value
-            as api.Hip3ClearTpSlActionRequest;
-    expect(clear.scope.name, 'takeProfit');
-    final set =
-        actions.created.last.intent.oneOf.value as api.Hip3SetTpSlActionRequest;
-    expect(set.protection.sizeMode.name, 'quantity');
-    expect(set.protection.quantity, '0.2');
-    expect(set.protection.takeProfit, isNull);
-    expect(set.protection.stopLoss!.triggerPrice, '90');
-    expect(actions.keys, [
-      scopedIdempotencyKey('edit-clear'),
-      scopedIdempotencyKey('edit-set'),
-    ]);
+    expect(actions.created.map((a) => a.operation), ['manage_tpsl']);
+    final wire = actions.created.single.intent['changes']!.value as List;
+    expect(wire[0], {'operation': 'cancel', 'order_id': 'tp-1'});
+    expect(wire[1]['operation'], 'create');
+    expect(wire[1]['protection']['quantity'], '0.2');
+    expect(actions.keys, ['edit']);
   });
 
   test(
-    'both off only clears, pending cancellation never proceeds to set',
+    'both off cancels explicit IDs; a pending batch is not recreated',
     () async {
       final position = await repo.get('p-tsla');
       await repo.updateTpSl(
@@ -369,6 +431,10 @@ void main() {
         idempotencyKey: 'clear',
       );
       expect(actions.created, hasLength(1));
+      expect(actions.created.single.intent['changes']!.value, [
+        {'operation': 'cancel', 'order_id': 'tp-1'},
+        {'operation': 'cancel', 'order_id': 'sl-1'},
+      ]);
       actions.pending = true;
       await expectLater(
         repo.updateTpSl(
@@ -379,11 +445,8 @@ void main() {
         ),
         throwsA(isA<Hip3ActionPending>()),
       );
-      expect(actions.created.last.operation, api.Hip3Operation.clearTpsl);
-      expect(
-        actions.created.where((a) => a.operation == api.Hip3Operation.setTpsl),
-        isEmpty,
-      );
+      expect(actions.created.last.operation, 'manage_tpsl');
+      expect(actions.keys, ['clear', 'pending']);
     },
   );
 }
@@ -428,6 +491,20 @@ class _Positions implements PositionsService {
         'mark_price': '100',
         'take_profit_price': short ? '90' : '110',
         'stop_loss_price': short ? '110' : '90',
+        'protection_orders': [
+          for (final role in ['take_profit', 'stop_loss'])
+            {
+              'order_id': role == 'take_profit' ? 'tp-1' : 'sl-1',
+              'role': role,
+              'size_mode': 'entire_position',
+              'quantity': '1',
+              'trigger_price': role == 'take_profit' ? '110' : '90',
+              'trigger_reference': 'mark',
+              'execution_type': 'market',
+              'limit_price': null,
+              'activation_status': 'active',
+            },
+        ],
       })!;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -436,6 +513,7 @@ class _Positions implements PositionsService {
 class _Actions implements Hip3PositionActionService {
   String? previewQuantity, previewLimit;
   bool short = false, wrongProduct = false, pending = false;
+  bool partialFailure = false;
   int previewCalls = 0;
   String? positionId;
   api.Hip3ClosePreviewRequest? request;
@@ -502,8 +580,86 @@ class _Actions implements Hip3PositionActionService {
         'product_id': 'xyz:TSLA',
         'environment': 'testnet',
         'order_id': wire['operation'] == 'close_position' ? 'order-1' : null,
-        'status': pending ? 'manual_review' : 'succeeded',
-        'steps': <Object>[],
+        'status': pending
+            ? 'manual_review'
+            : partialFailure
+            ? 'failed'
+            : 'succeeded',
+        'steps': [
+          if (wire['operation'] == 'manage_tpsl')
+            for (final cancel in [true, false])
+              if ((wire['changes'] as List).any(
+                (dynamic change) => cancel
+                    ? change['operation'] != 'create'
+                    : change['operation'] != 'cancel',
+              ))
+                {
+                  'step_id': cancel ? 'cancel' : 'place',
+                  'sequence': cancel ? 1 : 2,
+                  'kind': cancel ? 'cancel_protection' : 'place_protection',
+                  'status': pending
+                      ? 'manual_review'
+                      : partialFailure
+                      ? 'failed'
+                      : 'succeeded',
+                  'signing': null,
+                  'failure_reason': null,
+                  'protection_orders': [
+                    for (var i = 0; i < (wire['changes'] as List).length; i++)
+                      if (cancel
+                          ? (wire['changes'] as List)[i]['operation'] !=
+                                'create'
+                          : (wire['changes'] as List)[i]['operation'] !=
+                                'cancel')
+                        {
+                          'change_index': i,
+                          'order_id': cancel
+                              ? (wire['changes'] as List)[i]['order_id']
+                              : 'new-$i',
+                          'replaced_order_id': cancel
+                              ? null
+                              : (wire['changes'] as List)[i]['order_id'],
+                          'role':
+                              (wire['changes'] as List)[i]['protection'] != null
+                              ? ((wire['changes'] as List)[i]['protection']
+                                            as Map)
+                                        .containsKey('take_profit')
+                                    ? 'take_profit'
+                                    : 'stop_loss'
+                              : (wire['changes'] as List)[i]['order_id'] ==
+                                    'tp-1'
+                              ? 'take_profit'
+                              : 'stop_loss',
+                          'status': pending
+                              ? 'unknown'
+                              : partialFailure && i == 1
+                              ? 'rejected'
+                              : 'confirmed',
+                          'failure_reason': partialFailure && i == 1
+                              ? 'Venue rejected stop'
+                              : null,
+                          'protection':
+                              (wire['changes'] as List)[i]['protection'] ??
+                              {
+                                'size_mode': 'entire_position',
+                                (wire['changes'] as List)[i]['order_id'] ==
+                                        'tp-1'
+                                    ? 'take_profit'
+                                    : 'stop_loss': {
+                                  'trigger_price':
+                                      (wire['changes']
+                                              as List)[i]['order_id'] ==
+                                          'tp-1'
+                                      ? '110'
+                                      : '90',
+                                  'trigger_reference': 'mark',
+                                  'execution_type': 'market',
+                                },
+                              },
+                        },
+                  ],
+                },
+        ],
         'affected_order_ids': <String>[],
         'effects_applied': !pending,
         'created_at': '2026-09-10T00:00:00Z',

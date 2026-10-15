@@ -289,7 +289,7 @@
   "tradeBstocksUnavailable": "暂无 bStocks 市场",
   "tradePerpUnavailable": "暂无 HIP-3 永续市场",
   "tradeProductUnavailableDescription": "{symbol} 尚未上线该产品，可切回另一个标签继续交易。",
-  "tradeMarketHoursDisclaimer": "休市表示不可交易的时段，包括周末、美国节假日以及每日结算窗口。",
+  "tradeMarketHoursDisclaimer": "交易全天候开放，但流动性可能因美国市场交易时段而有所不同。",
   "tradeMarketHoursDescription": "市场关闭表示不可交易时段，包括周末、美国节假日和每日结算窗口。",
   "tradePreMarket": "盘前",
   "tradeRegularMarket": "常规交易时段",
@@ -440,7 +440,11 @@
   "depositInstructionsUnavailable": "充值说明不可用",
   "returnToDepositRoutes": "请返回充值路线后重试。",
   "depositAssets": "充值资产",
-  "depositReceived": "充值已到账",
+  "depositReceived": "充值已到账！",
+  "depositReceivedTitle": "{network} 已收到 {amount}！",
+  "@depositReceivedTitle": {"placeholders": {"amount": {}, "network": {}}},
+  "depositReceivedDescription": "资金已进入你的 Spot 账户。转入 Perps 账户后即可交易 HIP-3。",
+  "transferToPerpsAccount": "转入 Perps 账户",
   "maybeLater": "稍后再说",
   "gotIt": "知道了",
   "backToDepositRoutes": "返回充值路线",
@@ -888,5 +892,19 @@
             "type": "String"
         }
     }
-}
+},
+  "protectionManageTitle": "管理止盈止损",
+  "protectionCreate": "新增订单",
+  "protectionModify": "修改订单",
+  "protectionCancel": "取消订单",
+  "protectionConfirmed": "已确认成功",
+  "protectionCancelConfirmed": "已确认取消",
+  "protectionWaitingConfirmation": "等待确认",
+  "protectionFailed": "失败",
+  "protectionBatchResults": "保护订单逐笔结果",
+  "protectionNewOrder": "新增一笔订单",
+  "protectionEditTarget": "选择要修改的订单",
+  "protectionPartialFailure": "部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。",
+  "openOrderTpSlPending": "止盈止损待生效",
+  "openOrderTpSlPendingTooltip": "这些止盈止损订单尚未提交，将在此限价单成交后自动提交。"
 }

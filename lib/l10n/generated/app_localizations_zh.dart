@@ -865,7 +865,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get tradeMarketHoursDisclaimer => '休市表示不可交易的时段，包括周末、美国节假日以及每日结算窗口。';
+  String get tradeMarketHoursDisclaimer => '交易全天候开放，但流动性可能因美国市场交易时段而有所不同。';
 
   @override
   String get tradeMarketHoursDescription => '市场关闭表示不可交易时段，包括周末、美国节假日和每日结算窗口。';
@@ -1318,7 +1318,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get depositAssets => '充值资产';
 
   @override
-  String get depositReceived => '充值已到账';
+  String get depositReceived => '充值已到账！';
+
+  @override
+  String depositReceivedTitle(Object amount, Object network) {
+    return '$network 已收到 $amount！';
+  }
+
+  @override
+  String get depositReceivedDescription =>
+      '资金已进入你的 Spot 账户。转入 Perps 账户后即可交易 HIP-3。';
+
+  @override
+  String get transferToPerpsAccount => '转入 Perps 账户';
 
   @override
   String get maybeLater => '稍后再说';
@@ -2600,4 +2612,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String hip3SignAndConfirm(String direction) {
     return '签名并确认$direction';
   }
+
+  @override
+  String get protectionManageTitle => '管理止盈止损';
+
+  @override
+  String get protectionCreate => '新增订单';
+
+  @override
+  String get protectionModify => '修改订单';
+
+  @override
+  String get protectionCancel => '取消订单';
+
+  @override
+  String get protectionConfirmed => '已确认成功';
+
+  @override
+  String get protectionCancelConfirmed => '已确认取消';
+
+  @override
+  String get protectionWaitingConfirmation => '等待确认';
+
+  @override
+  String get protectionFailed => '失败';
+
+  @override
+  String get protectionBatchResults => '保护订单逐笔结果';
+
+  @override
+  String get protectionNewOrder => '新增一笔订单';
+
+  @override
+  String get protectionEditTarget => '选择要修改的订单';
+
+  @override
+  String get protectionPartialFailure => '部分保护变更失败，请查看逐笔结果；已取消的订单不会自动恢复。';
+
+  @override
+  String get openOrderTpSlPending => '止盈止损待生效';
+
+  @override
+  String get openOrderTpSlPendingTooltip => '这些止盈止损订单尚未提交，将在此限价单成交后自动提交。';
 }

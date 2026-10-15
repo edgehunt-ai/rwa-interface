@@ -237,7 +237,7 @@ final class FundingTransferCommands {
     if (_sameAllocations(session.allocations, allocations)) return session;
 
     try {
-      return await _selectTransferSources(session, allocations);
+      return await _selectTransferSources(session, allocations, amount: amount);
     } on ServerFailure catch (failure) {
       if (failure.statusCode != 409) rethrow;
       session = await _ref
@@ -246,7 +246,7 @@ final class FundingTransferCommands {
       _rememberTransferDraft(session, destination: destination, amount: amount);
       if (session.status == 'funded') return session;
       if (_sameAllocations(session.allocations, allocations)) return session;
-      return _selectTransferSources(session, allocations);
+      return _selectTransferSources(session, allocations, amount: amount);
     }
   });
 
@@ -263,21 +263,26 @@ final class FundingTransferCommands {
 
   Future<FundingSessionSummary> _selectTransferSources(
     FundingSessionSummary session,
-    Map<String, String> allocations,
-  ) async {
+    Map<String, String> allocations, {
+    required String amount,
+  }) async {
     final selected = await _run(
       operation: 'funding_session_selection',
       context: {'funding_session_id': session.sessionId},
       successContext: (selected) => {'status': selected.status},
       command: () => _commands.run(
         operation: 'funding-session-selection',
-        fingerprint: '${session.sessionId}|${session.version}|$allocations',
+        fingerprint:
+            '${session.sessionId}|${session.version}|$amount|$allocations',
         command: (key) => _ref
             .read(fundingRepositoryProvider)
             .updateFundingSessionSelection(
               fundingSessionId: session.sessionId,
               version: session.version,
               allocations: allocations,
+              // A standalone account_transfer session must restate the
+              // intended top-up; the server refuses a selection without it.
+              amount: amount,
               idempotencyKey: key,
             ),
       ),

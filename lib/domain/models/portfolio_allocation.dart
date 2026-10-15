@@ -7,8 +7,10 @@ final class PortfolioRailAllocation {
     required this.unvaluedAssetCount,
     this.spot,
     this.perps,
+    this.hasCompleteValuation = true,
   });
 
+  final bool hasCompleteValuation;
   final List<PortfolioRailAllocationItem> items;
   final DecimalValue valuedTotalUsd;
   final int unvaluedAssetCount;
@@ -24,20 +26,25 @@ final class PortfolioAccountAllocation {
   });
 
   final DecimalValue valueUsd;
-  final DecimalValue percent;
+  final DecimalValue? percent;
   final PortfolioPerpsAllocationBreakdown? perpsBreakdown;
 }
 
 final class PortfolioPerpsAllocationBreakdown {
   const PortfolioPerpsAllocationBreakdown({
     this.crossMargin,
+    this.crossMarginPool,
+    this.crossMarginPoolQuantity,
     this.isolatedMargin,
     this.openOrderMargin,
     this.estimatedWithdrawable,
     this.crossLiquidationRisk,
   });
 
+  /// Position margin already used; distinct from the asset page pool.
   final PortfolioAllocationAmount? crossMargin;
+  final PortfolioAllocationAmount? crossMarginPool;
+  final DecimalValue? crossMarginPoolQuantity;
   final PortfolioAllocationAmount? isolatedMargin;
   final PortfolioAllocationAmount? openOrderMargin;
   final PortfolioAllocationAmount? estimatedWithdrawable;

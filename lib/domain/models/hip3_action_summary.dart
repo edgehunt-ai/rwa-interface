@@ -1,3 +1,5 @@
+import 'hip3_protection.dart';
+
 /// Recoverable server workflow metadata, without wallet signing material.
 final class Hip3ActionSummary {
   const Hip3ActionSummary({
@@ -11,6 +13,9 @@ final class Hip3ActionSummary {
     this.orderId,
     this.failureCode,
     this.userAction,
+    this.failureReason,
+    this.protectionOrders = const [],
+    this.protectionResultsComplete = true,
   });
   final String actionId;
   final String productId;
@@ -22,4 +27,12 @@ final class Hip3ActionSummary {
   final String? orderId;
   final String? failureCode;
   final String? userAction;
+  final String? failureReason;
+  final List<Hip3ProtectionOrderResult> protectionOrders;
+  final bool protectionResultsComplete;
+
+  bool get isSuccessful =>
+      status == 'succeeded' &&
+      protectionResultsComplete &&
+      protectionOrders.every((order) => order.isConfirmed);
 }

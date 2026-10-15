@@ -22,6 +22,10 @@ const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_cancelStopLoss =
     const Hip3ActionStepKindEnum._('cancelStopLoss');
 const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_setLeverage =
     const Hip3ActionStepKindEnum._('setLeverage');
+const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_placeProtection =
+    const Hip3ActionStepKindEnum._('placeProtection');
+const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_cancelProtection =
+    const Hip3ActionStepKindEnum._('cancelProtection');
 
 Hip3ActionStepKindEnum _$hip3ActionStepKindEnumValueOf(String name) {
   switch (name) {
@@ -41,6 +45,10 @@ Hip3ActionStepKindEnum _$hip3ActionStepKindEnumValueOf(String name) {
       return _$hip3ActionStepKindEnum_cancelStopLoss;
     case 'setLeverage':
       return _$hip3ActionStepKindEnum_setLeverage;
+    case 'placeProtection':
+      return _$hip3ActionStepKindEnum_placeProtection;
+    case 'cancelProtection':
+      return _$hip3ActionStepKindEnum_cancelProtection;
     default:
       throw ArgumentError(name);
   }
@@ -56,6 +64,8 @@ final BuiltSet<Hip3ActionStepKindEnum> _$hip3ActionStepKindEnumValues =
   _$hip3ActionStepKindEnum_cancelTakeProfit,
   _$hip3ActionStepKindEnum_cancelStopLoss,
   _$hip3ActionStepKindEnum_setLeverage,
+  _$hip3ActionStepKindEnum_placeProtection,
+  _$hip3ActionStepKindEnum_cancelProtection,
 ]);
 
 const Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnum_waiting =
@@ -136,6 +146,8 @@ class _$Hip3ActionStepKindEnumSerializer
     'cancelTakeProfit': 'cancel_take_profit',
     'cancelStopLoss': 'cancel_stop_loss',
     'setLeverage': 'set_leverage',
+    'placeProtection': 'place_protection',
+    'cancelProtection': 'cancel_protection',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'place_order': 'placeOrder',
@@ -146,6 +158,8 @@ class _$Hip3ActionStepKindEnumSerializer
     'cancel_take_profit': 'cancelTakeProfit',
     'cancel_stop_loss': 'cancelStopLoss',
     'set_leverage': 'setLeverage',
+    'place_protection': 'placeProtection',
+    'cancel_protection': 'cancelProtection',
   };
 
   @override
@@ -212,6 +226,8 @@ class _$Hip3ActionStepStatusEnumSerializer
 
 class _$Hip3ActionStep extends Hip3ActionStep {
   @override
+  final BuiltList<Hip3ProtectionStepOrder>? protectionOrders;
+  @override
   final Hip3ProtectionSpec? normalizedProtection;
   @override
   final String stepId;
@@ -232,7 +248,8 @@ class _$Hip3ActionStep extends Hip3ActionStep {
       (Hip3ActionStepBuilder()..update(updates))._build();
 
   _$Hip3ActionStep._(
-      {this.normalizedProtection,
+      {this.protectionOrders,
+      this.normalizedProtection,
       required this.stepId,
       required this.sequence,
       required this.kind,
@@ -252,6 +269,7 @@ class _$Hip3ActionStep extends Hip3ActionStep {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Hip3ActionStep &&
+        protectionOrders == other.protectionOrders &&
         normalizedProtection == other.normalizedProtection &&
         stepId == other.stepId &&
         sequence == other.sequence &&
@@ -265,6 +283,7 @@ class _$Hip3ActionStep extends Hip3ActionStep {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, protectionOrders.hashCode);
     _$hash = $jc(_$hash, normalizedProtection.hashCode);
     _$hash = $jc(_$hash, stepId.hashCode);
     _$hash = $jc(_$hash, sequence.hashCode);
@@ -280,6 +299,7 @@ class _$Hip3ActionStep extends Hip3ActionStep {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3ActionStep')
+          ..add('protectionOrders', protectionOrders)
           ..add('normalizedProtection', normalizedProtection)
           ..add('stepId', stepId)
           ..add('sequence', sequence)
@@ -295,6 +315,13 @@ class _$Hip3ActionStep extends Hip3ActionStep {
 class Hip3ActionStepBuilder
     implements Builder<Hip3ActionStep, Hip3ActionStepBuilder> {
   _$Hip3ActionStep? _$v;
+
+  ListBuilder<Hip3ProtectionStepOrder>? _protectionOrders;
+  ListBuilder<Hip3ProtectionStepOrder> get protectionOrders =>
+      _$this._protectionOrders ??= ListBuilder<Hip3ProtectionStepOrder>();
+  set protectionOrders(
+          ListBuilder<Hip3ProtectionStepOrder>? protectionOrders) =>
+      _$this._protectionOrders = protectionOrders;
 
   Hip3ProtectionSpecBuilder? _normalizedProtection;
   Hip3ProtectionSpecBuilder get normalizedProtection =>
@@ -340,6 +367,7 @@ class Hip3ActionStepBuilder
   Hip3ActionStepBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _protectionOrders = $v.protectionOrders?.toBuilder();
       _normalizedProtection = $v.normalizedProtection?.toBuilder();
       _stepId = $v.stepId;
       _sequence = $v.sequence;
@@ -371,6 +399,7 @@ class Hip3ActionStepBuilder
     try {
       _$result = _$v ??
           _$Hip3ActionStep._(
+            protectionOrders: _protectionOrders?.build(),
             normalizedProtection: _normalizedProtection?.build(),
             stepId: BuiltValueNullFieldError.checkNotNull(
                 stepId, r'Hip3ActionStep', 'stepId'),
@@ -387,6 +416,8 @@ class Hip3ActionStepBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'protectionOrders';
+        _protectionOrders?.build();
         _$failedField = 'normalizedProtection';
         _normalizedProtection?.build();
 

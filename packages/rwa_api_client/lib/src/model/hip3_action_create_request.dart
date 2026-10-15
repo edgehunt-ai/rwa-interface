@@ -5,13 +5,12 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
-import 'package:rwa_api_client/src/model/hip3_clear_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_close_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_cancel_order_action_request.dart';
-import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_change.dart';
+import 'package:rwa_api_client/src/model/hip3_manage_tp_sl_action_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -24,27 +23,25 @@ part 'hip3_action_create_request.g.dart';
 /// * [operation] 
 /// * [orderId] 
 /// * [previewId] 
-/// * [positionId] 
-/// * [positionVersion] 
-/// * [protection] 
-/// * [scope] 
 /// * [contextId] 
 /// * [leverage] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [marginMode] 
+/// * [positionId] 
+/// * [positionVersion] 
+/// * [changes] 
 @BuiltValue()
 abstract class Hip3ActionCreateRequest implements Built<Hip3ActionCreateRequest, Hip3ActionCreateRequestBuilder> {
-  /// One Of [Hip3CancelOrderActionRequest], [Hip3ClearTpSlActionRequest], [Hip3CloseActionRequest], [Hip3PlaceOrderActionRequest], [Hip3SetLeverageActionRequest], [Hip3SetTpSlActionRequest]
+  /// One Of [Hip3CancelOrderActionRequest], [Hip3CloseActionRequest], [Hip3ManageTpSlActionRequest], [Hip3PlaceOrderActionRequest], [Hip3SetLeverageActionRequest]
   OneOf get oneOf;
 
   static const String discriminatorFieldName = r'operation';
 
   static const Map<String, Type> discriminatorMapping = {
     r'cancel_order': Hip3CancelOrderActionRequest,
-    r'clear_tpsl': Hip3ClearTpSlActionRequest,
     r'close_position': Hip3CloseActionRequest,
+    r'manage_tpsl': Hip3ManageTpSlActionRequest,
     r'place_order': Hip3PlaceOrderActionRequest,
     r'set_leverage': Hip3SetLeverageActionRequest,
-    r'set_tpsl': Hip3SetTpSlActionRequest,
   };
 
   Hip3ActionCreateRequest._();
@@ -63,20 +60,17 @@ extension Hip3ActionCreateRequestDiscriminatorExt on Hip3ActionCreateRequest {
         if (this is Hip3CancelOrderActionRequest) {
             return r'cancel_order';
         }
-        if (this is Hip3ClearTpSlActionRequest) {
-            return r'clear_tpsl';
-        }
         if (this is Hip3CloseActionRequest) {
             return r'close_position';
+        }
+        if (this is Hip3ManageTpSlActionRequest) {
+            return r'manage_tpsl';
         }
         if (this is Hip3PlaceOrderActionRequest) {
             return r'place_order';
         }
         if (this is Hip3SetLeverageActionRequest) {
             return r'set_leverage';
-        }
-        if (this is Hip3SetTpSlActionRequest) {
-            return r'set_tpsl';
         }
         return null;
     }
@@ -86,20 +80,17 @@ extension Hip3ActionCreateRequestBuilderDiscriminatorExt on Hip3ActionCreateRequ
         if (this is Hip3CancelOrderActionRequestBuilder) {
             return r'cancel_order';
         }
-        if (this is Hip3ClearTpSlActionRequestBuilder) {
-            return r'clear_tpsl';
-        }
         if (this is Hip3CloseActionRequestBuilder) {
             return r'close_position';
+        }
+        if (this is Hip3ManageTpSlActionRequestBuilder) {
+            return r'manage_tpsl';
         }
         if (this is Hip3PlaceOrderActionRequestBuilder) {
             return r'place_order';
         }
         if (this is Hip3SetLeverageActionRequestBuilder) {
             return r'set_leverage';
-        }
-        if (this is Hip3SetTpSlActionRequestBuilder) {
-            return r'set_tpsl';
         }
         return null;
     }
@@ -141,7 +132,7 @@ class _$Hip3ActionCreateRequestSerializer implements PrimitiveSerializer<Hip3Act
     final discIndex = serializedList.indexOf(Hip3ActionCreateRequest.discriminatorFieldName) + 1;
     final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [Hip3CancelOrderActionRequest, Hip3ClearTpSlActionRequest, Hip3CloseActionRequest, Hip3PlaceOrderActionRequest, Hip3SetLeverageActionRequest, Hip3SetTpSlActionRequest, ];
+    final oneOfTypes = [Hip3CancelOrderActionRequest, Hip3CloseActionRequest, Hip3ManageTpSlActionRequest, Hip3PlaceOrderActionRequest, Hip3SetLeverageActionRequest, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -152,19 +143,19 @@ class _$Hip3ActionCreateRequestSerializer implements PrimitiveSerializer<Hip3Act
         ) as Hip3CancelOrderActionRequest;
         oneOfType = Hip3CancelOrderActionRequest;
         break;
-      case r'clear_tpsl':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(Hip3ClearTpSlActionRequest),
-        ) as Hip3ClearTpSlActionRequest;
-        oneOfType = Hip3ClearTpSlActionRequest;
-        break;
       case r'close_position':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
           specifiedType: FullType(Hip3CloseActionRequest),
         ) as Hip3CloseActionRequest;
         oneOfType = Hip3CloseActionRequest;
+        break;
+      case r'manage_tpsl':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3ManageTpSlActionRequest),
+        ) as Hip3ManageTpSlActionRequest;
+        oneOfType = Hip3ManageTpSlActionRequest;
         break;
       case r'place_order':
         oneOfResult = serializers.deserialize(
@@ -180,13 +171,6 @@ class _$Hip3ActionCreateRequestSerializer implements PrimitiveSerializer<Hip3Act
         ) as Hip3SetLeverageActionRequest;
         oneOfType = Hip3SetLeverageActionRequest;
         break;
-      case r'set_tpsl':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(Hip3SetTpSlActionRequest),
-        ) as Hip3SetTpSlActionRequest;
-        oneOfType = Hip3SetTpSlActionRequest;
-        break;
       default:
         throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
@@ -197,8 +181,8 @@ class _$Hip3ActionCreateRequestSerializer implements PrimitiveSerializer<Hip3Act
 
 class Hip3ActionCreateRequestOperationEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'set_leverage')
-  static const Hip3ActionCreateRequestOperationEnum setLeverage = _$hip3ActionCreateRequestOperationEnum_setLeverage;
+  @BuiltValueEnumConst(wireName: r'manage_tpsl')
+  static const Hip3ActionCreateRequestOperationEnum manageTpsl = _$hip3ActionCreateRequestOperationEnum_manageTpsl;
 
   static Serializer<Hip3ActionCreateRequestOperationEnum> get serializer => _$hip3ActionCreateRequestOperationEnumSerializer;
 
@@ -206,22 +190,5 @@ class Hip3ActionCreateRequestOperationEnum extends EnumClass {
 
   static BuiltSet<Hip3ActionCreateRequestOperationEnum> get values => _$hip3ActionCreateRequestOperationEnumValues;
   static Hip3ActionCreateRequestOperationEnum valueOf(String name) => _$hip3ActionCreateRequestOperationEnumValueOf(name);
-}
-
-class Hip3ActionCreateRequestScopeEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'take_profit')
-  static const Hip3ActionCreateRequestScopeEnum takeProfit = _$hip3ActionCreateRequestScopeEnum_takeProfit;
-  @BuiltValueEnumConst(wireName: r'stop_loss')
-  static const Hip3ActionCreateRequestScopeEnum stopLoss = _$hip3ActionCreateRequestScopeEnum_stopLoss;
-  @BuiltValueEnumConst(wireName: r'both')
-  static const Hip3ActionCreateRequestScopeEnum both = _$hip3ActionCreateRequestScopeEnum_both;
-
-  static Serializer<Hip3ActionCreateRequestScopeEnum> get serializer => _$hip3ActionCreateRequestScopeEnumSerializer;
-
-  const Hip3ActionCreateRequestScopeEnum._(String name): super(name);
-
-  static BuiltSet<Hip3ActionCreateRequestScopeEnum> get values => _$hip3ActionCreateRequestScopeEnumValues;
-  static Hip3ActionCreateRequestScopeEnum valueOf(String name) => _$hip3ActionCreateRequestScopeEnumValueOf(name);
 }
 

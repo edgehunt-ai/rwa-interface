@@ -9,9 +9,8 @@ part of 'hip3_operation.dart';
 const Hip3Operation _$placeOrder = const Hip3Operation._('placeOrder');
 const Hip3Operation _$cancelOrder = const Hip3Operation._('cancelOrder');
 const Hip3Operation _$closePosition = const Hip3Operation._('closePosition');
-const Hip3Operation _$setTpsl = const Hip3Operation._('setTpsl');
-const Hip3Operation _$clearTpsl = const Hip3Operation._('clearTpsl');
 const Hip3Operation _$setLeverage = const Hip3Operation._('setLeverage');
+const Hip3Operation _$manageTpsl = const Hip3Operation._('manageTpsl');
 
 Hip3Operation _$valueOf(String name) {
   switch (name) {
@@ -21,12 +20,10 @@ Hip3Operation _$valueOf(String name) {
       return _$cancelOrder;
     case 'closePosition':
       return _$closePosition;
-    case 'setTpsl':
-      return _$setTpsl;
-    case 'clearTpsl':
-      return _$clearTpsl;
     case 'setLeverage':
       return _$setLeverage;
+    case 'manageTpsl':
+      return _$manageTpsl;
     default:
       throw ArgumentError(name);
   }
@@ -37,9 +34,8 @@ final BuiltSet<Hip3Operation> _$values =
   _$placeOrder,
   _$cancelOrder,
   _$closePosition,
-  _$setTpsl,
-  _$clearTpsl,
   _$setLeverage,
+  _$manageTpsl,
 ]);
 
 class _$Hip3OperationMeta {
@@ -47,9 +43,8 @@ class _$Hip3OperationMeta {
   Hip3Operation get placeOrder => _$placeOrder;
   Hip3Operation get cancelOrder => _$cancelOrder;
   Hip3Operation get closePosition => _$closePosition;
-  Hip3Operation get setTpsl => _$setTpsl;
-  Hip3Operation get clearTpsl => _$clearTpsl;
   Hip3Operation get setLeverage => _$setLeverage;
+  Hip3Operation get manageTpsl => _$manageTpsl;
   Hip3Operation valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3Operation> get values => _$values;
 }
@@ -67,17 +62,15 @@ class _$Hip3OperationSerializer implements PrimitiveSerializer<Hip3Operation> {
     'placeOrder': 'place_order',
     'cancelOrder': 'cancel_order',
     'closePosition': 'close_position',
-    'setTpsl': 'set_tpsl',
-    'clearTpsl': 'clear_tpsl',
     'setLeverage': 'set_leverage',
+    'manageTpsl': 'manage_tpsl',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'place_order': 'placeOrder',
     'cancel_order': 'cancelOrder',
     'close_position': 'closePosition',
-    'set_tpsl': 'setTpsl',
-    'clear_tpsl': 'clearTpsl',
     'set_leverage': 'setLeverage',
+    'manage_tpsl': 'manageTpsl',
   };
 
   @override

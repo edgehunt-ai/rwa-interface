@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeMarketHoursDisclaimer.
   ///
   /// In en, this message translates to:
-  /// **'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.'**
+  /// **'Trading is available 24/7, but liquidity may vary depending on U.S. market hours.'**
   String get tradeMarketHoursDisclaimer;
 
   /// No description provided for @tradeMarketHoursDescription.
@@ -2623,8 +2623,26 @@ abstract class AppLocalizations {
   /// No description provided for @depositReceived.
   ///
   /// In en, this message translates to:
-  /// **'Deposit received'**
+  /// **'Deposit received !'**
   String get depositReceived;
+
+  /// No description provided for @depositReceivedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} received\non {network}!'**
+  String depositReceivedTitle(Object amount, Object network);
+
+  /// No description provided for @depositReceivedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.'**
+  String get depositReceivedDescription;
+
+  /// No description provided for @transferToPerpsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to perps account'**
+  String get transferToPerpsAccount;
 
   /// No description provided for @maybeLater.
   ///
@@ -4896,6 +4914,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign & Confirm {direction}'**
   String hip3SignAndConfirm(String direction);
+
+  /// No description provided for @protectionManageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage TP/SL'**
+  String get protectionManageTitle;
+
+  /// No description provided for @protectionCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add order'**
+  String get protectionCreate;
+
+  /// No description provided for @protectionModify.
+  ///
+  /// In en, this message translates to:
+  /// **'Modify order'**
+  String get protectionModify;
+
+  /// No description provided for @protectionCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel order'**
+  String get protectionCancel;
+
+  /// No description provided for @protectionConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get protectionConfirmed;
+
+  /// No description provided for @protectionCancelConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation confirmed'**
+  String get protectionCancelConfirmed;
+
+  /// No description provided for @protectionWaitingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation'**
+  String get protectionWaitingConfirmation;
+
+  /// No description provided for @protectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get protectionFailed;
+
+  /// No description provided for @protectionBatchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection order results'**
+  String get protectionBatchResults;
+
+  /// No description provided for @protectionNewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new order'**
+  String get protectionNewOrder;
+
+  /// No description provided for @protectionEditTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Order to edit'**
+  String get protectionEditTarget;
+
+  /// No description provided for @protectionPartialFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Some protection changes failed. Review each result; cancelled orders are not restored automatically.'**
+  String get protectionPartialFailure;
+
+  /// No description provided for @openOrderTpSlPending.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL pending'**
+  String get openOrderTpSlPending;
+
+  /// No description provided for @openOrderTpSlPendingTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.'**
+  String get openOrderTpSlPendingTooltip;
 }
 
 class _AppLocalizationsDelegate

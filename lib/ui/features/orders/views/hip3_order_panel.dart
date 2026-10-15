@@ -794,16 +794,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _type == TradingOrderType.limit &&
         maximumValue < minimumValue &&
         minimumLimit != null;
-    // Keep the existing integer amount steps between the endpoints. Flooring
-    // every percentage to a quantity step can make the amount jump by several
-    // USDC when the product has a coarse size precision.
+    // Keep the exact maximum at 100%. For intermediate percentages, choose the
+    // order amount first so coarse size steps do not cause large amount jumps.
     var notional = requiresFundingForMinimum
         ? minimum.value
         : percentage >= 1 || maximumValue < minimumValue
         ? maximum.notional.value
         : _formatHip3SliderAmount(
             minimumValue + (maximumValue - minimumValue) * percentage,
-            double.parse(_context!.availableMargin.value),
+            maximumValue,
             percentage,
             minimumAmount: minimum.value,
           );
@@ -935,20 +934,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _percentageWaitingForPrice = !_applyPercentageAmount(_percentage);
         return;
       }
-      final input = bounds.$1 + (bounds.$2 - bounds.$1) * _percentage;
-      final balance = _context?.availableMargin;
-      final available = double.tryParse(balance?.value ?? '');
+      final percentage = _percentage;
+      final input = bounds.$1 + (bounds.$2 - bounds.$1) * percentage;
       final controller = _type == TradingOrderType.limit
           ? _orderValue
           : _amount;
-      controller.text = available == null
-          ? input.toString()
-          : _formatHip3SliderAmount(
-              input,
-              available,
-              _percentage,
-              minimumAmount: _minimumOrderNotional?.value,
-            );
+      controller.text = _formatHip3SliderAmount(
+        input,
+        bounds.$2,
+        percentage,
+        minimumAmount: _minimumOrderNotional?.value,
+      );
+      _percentage = percentage;
       return;
     }
 
@@ -1199,7 +1196,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             plan: plan,
             kind: intent.kind,
             canConfirmTransfer: funding.canConfirmTransfer,
-            slippage: intent.slippage,
           ),
         );
         _setProcessingStep('reconciling funding result');
@@ -1689,20 +1685,17 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     final bounds = _amountBounds(balance);
                     if (bounds == null) return;
                     final input = bounds.$1 + (bounds.$2 - bounds.$1) * value;
-                    final available = double.tryParse(balance.value);
                     setState(() {
-                      _percentage = value;
                       final controller = _type == TradingOrderType.limit
                           ? _orderValue
                           : _amount;
-                      controller.text = available == null
-                          ? input.toString()
-                          : _formatHip3SliderAmount(
-                              input,
-                              available,
-                              value,
-                              minimumAmount: _minimumOrderNotional?.value,
-                            );
+                      controller.text = _formatHip3SliderAmount(
+                        input,
+                        bounds.$2,
+                        value,
+                        minimumAmount: _minimumOrderNotional?.value,
+                      );
+                      _percentage = value;
                       _error = null;
                     });
                   },
@@ -1930,6 +1923,11 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _setRiskAccepted(bool value) async {
+    setState(() => _riskAccepted = value);
+    if (value) await _consentService.record();
+  }
+
   Future<void> _loadConsent() async {
     final accepted = await _consentService.read();
     if (!mounted) return;
@@ -2020,6 +2018,8 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
       context: context,
       isScrollControlled: true,
       builder: (_) => TpSlRiskAgreementSheet(
+        initialAccepted: _riskAccepted,
+        onChanged: _setRiskAccepted,
         onAccepted: () => Navigator.of(context).pop(true),
       ),
     );
@@ -2105,10 +2105,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                 const SizedBox(height: 16),
                 TpSlConsentRow(
                   accepted: _riskAccepted,
-                  onChanged: (value) async {
-                    setState(() => _riskAccepted = value);
-                    if (value) await _consentService.record();
-                  },
+                  onChanged: _setRiskAccepted,
                   onOpenDetails: _showRiskAgreement,
                 ),
                 if (_error != null || errors.isNotEmpty) ...[
@@ -2497,13 +2494,13 @@ class _Hip3TradingSettingsNotice extends StatelessWidget {
 
 String _formatHip3SliderAmount(
   double value,
-  double availableBalance,
+  double maximumAmount,
   double percentage, {
   String? minimumAmount,
 }) {
   if (percentage <= 0 && minimumAmount != null) return minimumAmount;
   final String formatted;
-  if (availableBalance <= 2 || percentage >= 1) {
+  if (maximumAmount <= 2 || percentage >= 1) {
     final fixed = value.toStringAsFixed(8);
     formatted = fixed.replaceFirst(RegExp(r'\.?0+$'), '');
   } else {
@@ -3935,8 +3932,12 @@ String _marketPriceErrorMessage(Object error) {
   return '市场价格加载失败，请重试。';
 }
 
-String _formatHip3Quantity(double value, int? decimals) =>
-    _truncateDecimal(_formatHip3Price(value), decimals);
+String _formatHip3Quantity(double value, int? decimals) {
+  final truncated = _truncateDecimal(_formatHip3Price(value), decimals);
+  return truncated.contains('.')
+      ? truncated.replaceFirst(RegExp(r'\.?0+$'), '')
+      : truncated;
+}
 
 TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
     TextInputFormatter.withFunction((oldValue, newValue) {

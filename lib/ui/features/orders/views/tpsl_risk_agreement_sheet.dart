@@ -81,7 +81,15 @@ class TpSlConsentRow extends StatelessWidget {
 }
 
 class TpSlRiskAgreementSheet extends StatefulWidget {
-  const TpSlRiskAgreementSheet({super.key, required this.onAccepted});
+  const TpSlRiskAgreementSheet({
+    super.key,
+    required this.initialAccepted,
+    required this.onChanged,
+    required this.onAccepted,
+  });
+
+  final bool initialAccepted;
+  final ValueChanged<bool> onChanged;
 
   final VoidCallback onAccepted;
 
@@ -90,7 +98,7 @@ class TpSlRiskAgreementSheet extends StatefulWidget {
 }
 
 class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
-  var _accepted = false;
+  late bool _accepted = widget.initialAccepted;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +163,10 @@ class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
               const SizedBox(height: 12),
               _TpSlAgreementConsentRow(
                 accepted: _accepted,
-                onChanged: (value) => setState(() => _accepted = value),
+                onChanged: (value) {
+                  setState(() => _accepted = value);
+                  widget.onChanged(value);
+                },
               ),
               const SizedBox(height: 16),
               SizedBox(

@@ -5,6 +5,7 @@ import '../../domain/models/hip3_action_pending.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../api/idempotency_key.dart';
 import 'hip3_action_binding.dart';
+import 'hip3_action_mapper.dart';
 import 'hip3_position_action_service.dart';
 
 /// Session-scoped executor. The repository maps each frozen step to a domain
@@ -36,6 +37,7 @@ final class Hip3PositionActionExecutor {
     required String actionId,
     required Hip3ActionBinding binding,
     required Future<bool> Function(api.Hip3Action, api.Hip3ActionStep) confirm,
+    void Function(api.Hip3Action)? onUpdate,
   }) async {
     // Do not silently share a running task with a different confirmation intent.
     if (!_running.add(actionId)) throw Hip3ActionPending(actionId);
@@ -44,6 +46,8 @@ final class Hip3PositionActionExecutor {
       var current = await _read(actionId);
       for (var attempt = 0; attempt < _pollAttempts; attempt++) {
         _checkSession(actionId);
+        binding.validate(current, expectedActionId: actionId);
+        onUpdate?.call(current);
         final failure = _failureMetadata(current);
         final hasFailedStep = current.steps.any(
           (step) => step.status == api.Hip3ActionStepStatusEnum.failed,
@@ -65,9 +69,11 @@ final class Hip3PositionActionExecutor {
             userAction: failure.userAction,
           );
         }
-        binding.validate(current, expectedActionId: actionId);
         switch (current.status) {
           case api.Hip3ActionStatus.succeeded:
+            if (!hip3ProtectionResultsConfirmed(current)) {
+              throw Hip3ActionPending(actionId);
+            }
             return current;
           case api.Hip3ActionStatus.manualReview:
             throw Hip3ActionPending(actionId, requiresReview: true);
@@ -102,6 +108,14 @@ final class Hip3PositionActionExecutor {
             );
           }
           final step = candidates.single;
+          if (step.kind == api.Hip3ActionStepKindEnum.placeProtection ||
+              step.kind == api.Hip3ActionStepKindEnum.cancelProtection) {
+            if (!hip3ProtectionStepMatches(current, step)) {
+              throw const Hip3SigningFailure(
+                Hip3SigningFailureCode.invalidPayload,
+              );
+            }
+          }
           if (((step.kind == api.Hip3ActionStepKindEnum.placeTakeProfit ||
                   step.kind == api.Hip3ActionStepKindEnum.placeStopLoss) &&
               step.normalizedProtection == null)) {

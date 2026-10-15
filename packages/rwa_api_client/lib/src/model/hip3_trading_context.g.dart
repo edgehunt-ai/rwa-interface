@@ -62,6 +62,8 @@ class _$Hip3TradingContextSettlementAssetEnumSerializer
 
 class _$Hip3TradingContext extends Hip3TradingContext {
   @override
+  final bool? protectionManagementSupported;
+  @override
   final String contextId;
   @override
   final Hip3Environment environment;
@@ -105,7 +107,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
       (Hip3TradingContextBuilder()..update(updates))._build();
 
   _$Hip3TradingContext._(
-      {required this.contextId,
+      {this.protectionManagementSupported,
+      required this.contextId,
       required this.environment,
       required this.productId,
       required this.symbol,
@@ -138,6 +141,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Hip3TradingContext &&
+        protectionManagementSupported == other.protectionManagementSupported &&
         contextId == other.contextId &&
         environment == other.environment &&
         productId == other.productId &&
@@ -162,6 +166,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, protectionManagementSupported.hashCode);
     _$hash = $jc(_$hash, contextId.hashCode);
     _$hash = $jc(_$hash, environment.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
@@ -188,6 +193,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3TradingContext')
+          ..add('protectionManagementSupported', protectionManagementSupported)
           ..add('contextId', contextId)
           ..add('environment', environment)
           ..add('productId', productId)
@@ -214,6 +220,12 @@ class _$Hip3TradingContext extends Hip3TradingContext {
 class Hip3TradingContextBuilder
     implements Builder<Hip3TradingContext, Hip3TradingContextBuilder> {
   _$Hip3TradingContext? _$v;
+
+  bool? _protectionManagementSupported;
+  bool? get protectionManagementSupported =>
+      _$this._protectionManagementSupported;
+  set protectionManagementSupported(bool? protectionManagementSupported) =>
+      _$this._protectionManagementSupported = protectionManagementSupported;
 
   String? _contextId;
   String? get contextId => _$this._contextId;
@@ -314,6 +326,7 @@ class Hip3TradingContextBuilder
   Hip3TradingContextBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _protectionManagementSupported = $v.protectionManagementSupported;
       _contextId = $v.contextId;
       _environment = $v.environment;
       _productId = $v.productId;
@@ -356,6 +369,7 @@ class Hip3TradingContextBuilder
     try {
       _$result = _$v ??
           _$Hip3TradingContext._(
+            protectionManagementSupported: protectionManagementSupported,
             contextId: BuiltValueNullFieldError.checkNotNull(
                 contextId, r'Hip3TradingContext', 'contextId'),
             environment: BuiltValueNullFieldError.checkNotNull(

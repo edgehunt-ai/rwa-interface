@@ -20,17 +20,29 @@ final class PrivyConfiguration {
   );
   static const nativeAppRedirect = '$appUrlScheme://';
 
-  /// The WebAuthn relying-party identifier configured in Privy.
-  static const relyingParty = String.fromEnvironment(
-    'PRIVY_RELYING_PARTY',
-    defaultValue: 'https://rwa.dxd.ink',
-  );
-
   /// HTTPS page hosting the React Privy private-key export experience.
-  static const privateKeyExportUrl = String.fromEnvironment(
-    'PRIVY_EXPORT_URL',
-    defaultValue: 'https://rwa.dxd.ink/private-key-export.html',
-  );
+  static const privateKeyExportUrl = String.fromEnvironment('PRIVY_EXPORT_URL');
+
+  /// WebAuthn relying-party origin derived from the export site origin.
+  ///
+  /// Keep one public origin setting for both the export page and passkeys.
+  /// Paths, query parameters, and fragments are removed because the relying
+  /// party is an origin, not a page URL.
+  static String get relyingParty => relyingPartyFor(privateKeyExportUrl);
+
+  static String relyingPartyFor(String exportUrl) {
+    final uri = Uri.tryParse(exportUrl.trim());
+    if (uri == null ||
+        uri.host.isEmpty ||
+        uri.scheme != 'https' ||
+        uri.userInfo.isNotEmpty) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.configuration,
+        retryable: true,
+      );
+    }
+    return uri.origin;
+  }
 
   final String appId;
   final String clientId;

@@ -4,9 +4,97 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/position.dart';
 import '../../domain/models/position_operation.dart';
+import '../../domain/models/hip3_protection.dart';
 
 /// Converts domain inputs to the only supported mutation transport: actions.
 abstract final class Hip3PositionIntents {
+  static api.Hip3ActionCreateRequest manageProtection(
+    Position position,
+    List<Hip3ProtectionChange> changes,
+  ) {
+    _position(position);
+    if (changes.isEmpty || changes.length > 20) {
+      throw ArgumentError('Specify between one and twenty protection changes');
+    }
+    final targets = <String>{};
+    final fields = <Map<String, Object?>>[];
+    for (final change in changes) {
+      final orderId = change.orderId;
+      if (change.operation != ProtectionChangeOperation.create) {
+        if (orderId == null ||
+            orderId.trim().isEmpty ||
+            !targets.add(orderId)) {
+          throw ArgumentError('Each existing order may be changed only once');
+        }
+      }
+      final protection = change.protection;
+      if (change.operation == ProtectionChangeOperation.cancel) {
+        fields.add({'operation': 'cancel', 'order_id': orderId});
+        continue;
+      }
+      if (protection == null ||
+          !const {'takeProfit', 'stopLoss'}.contains(protection.role) ||
+          protection.triggerReference != 'mark' ||
+          (protection.quantity != null && protection.percent != null)) {
+        throw ArgumentError('Invalid protection parameters');
+      }
+      _positive(protection.triggerPrice.value);
+      if (protection.limitPrice != null) {
+        _positive(protection.limitPrice!.value);
+      }
+      if (protection.quantity != null) {
+        requireWithinPosition(
+          protection.quantity!.value,
+          position.quantity.value,
+        );
+      }
+      if (protection.percent != null) {
+        requireWithinPosition(protection.percent!.value, '100');
+      }
+      final mark = position.markPrice;
+      if (mark != null && position.side != PositionSide.none) {
+        final comparison = protection.triggerPrice.compareTo(
+          DecimalValue(
+            mark.value,
+            asset: protection.triggerPrice.asset,
+            unit: protection.triggerPrice.unit,
+          ),
+        );
+        final above =
+            (position.side == PositionSide.long) ==
+            (protection.role == 'takeProfit');
+        if (above ? comparison <= 0 : comparison >= 0) {
+          throw ArgumentError(
+            'Trigger price conflicts with mark and position side',
+          );
+        }
+      }
+      fields.add({
+        'operation': change.operation.name,
+        'order_id': ?orderId,
+        'protection': {
+          'size_mode': protection.sizeMode == 'entirePosition'
+              ? 'entire_position'
+              : protection.sizeMode,
+          'quantity': ?protection.quantity?.value,
+          'percent': ?protection.percent?.value,
+          protection.role == 'takeProfit' ? 'take_profit' : 'stop_loss': {
+            'trigger_price': protection.triggerPrice.value,
+            'trigger_reference': 'mark',
+            'execution_type': protection.executionType,
+            'limit_price': ?protection.limitPrice?.value,
+          },
+        },
+      });
+    }
+    return _request({
+      'operation': 'manage_tpsl',
+      'position_id': position.positionId,
+      'position_version': position.positionVersion,
+      'changes': fields,
+    });
+  }
+
   static api.Hip3ActionCreateRequest setProtection(
     Position position, {
     String? takeProfit,
@@ -15,7 +103,6 @@ abstract final class Hip3PositionIntents {
     String? stopLimit,
     String? quantity,
   }) {
-    _position(position);
     if ((takeProfit == null && stopLoss == null) ||
         (stopLimit != null && stopLoss == null) ||
         (takeLimit != null && takeProfit == null)) {
@@ -23,68 +110,40 @@ abstract final class Hip3PositionIntents {
         'Specify a protection leg; each limit price requires its trigger',
       );
     }
-    for (final price in [takeProfit, takeLimit, stopLoss, stopLimit]) {
-      if (price != null) _positive(price);
-    }
-    if (quantity != null) {
-      requireWithinPosition(quantity, position.quantity.value);
-    }
-    // A profitable stop can be above entry. Direction is relative to mark,
-    // and the backend revalidates against a fresh venue observation.
-    final mark = position.markPrice;
-    if (mark != null && position.side != PositionSide.none) {
-      bool invalid(String? price, {required bool take}) {
-        if (price == null) return false;
-        final comparison = DecimalValue(
-          price,
-          asset: mark.asset,
-          unit: mark.unit,
-        ).compareTo(mark);
-        final above = (position.side == PositionSide.long) == take;
-        return above ? comparison <= 0 : comparison >= 0;
-      }
-
-      if (invalid(takeProfit, take: true) || invalid(stopLoss, take: false)) {
-        throw ArgumentError(
-          'Trigger price conflicts with mark and position side',
-        );
-      }
-    }
-    Map<String, Object?> leg(String price, [String? limit]) => {
-      'trigger_price': price,
-      'trigger_reference': 'mark',
-      'execution_type': limit == null ? 'market' : 'limit',
-      'limit_price': ?limit,
-    };
-    return _request({
-      'operation': 'set_tpsl',
-      'position_id': position.positionId,
-      'position_version': position.positionVersion,
-      'protection': {
-        'size_mode': quantity == null ? 'entire_position' : 'quantity',
-        'quantity': ?quantity,
-        if (takeProfit != null) 'take_profit': leg(takeProfit, takeLimit),
-        if (stopLoss != null) 'stop_loss': leg(stopLoss, stopLimit),
-      },
-    });
+    return manageProtection(position, [
+      if (takeProfit != null)
+        Hip3ProtectionChange.create(
+          Hip3ProtectionParameters(
+            role: 'takeProfit',
+            triggerPrice: DecimalValue(takeProfit),
+            limitPrice: takeLimit == null ? null : DecimalValue(takeLimit),
+            quantity: quantity == null ? null : DecimalValue(quantity),
+          ),
+        ),
+      if (stopLoss != null)
+        Hip3ProtectionChange.create(
+          Hip3ProtectionParameters(
+            role: 'stopLoss',
+            triggerPrice: DecimalValue(stopLoss),
+            limitPrice: stopLimit == null ? null : DecimalValue(stopLimit),
+            quantity: quantity == null ? null : DecimalValue(quantity),
+          ),
+        ),
+    ]);
   }
 
   static api.Hip3ActionCreateRequest clearProtection(
     Position position, {
     ProtectionClearScope scope = ProtectionClearScope.both,
-  }) {
-    _position(position);
-    return _request({
-      'operation': 'clear_tpsl',
-      'position_id': position.positionId,
-      'position_version': position.positionVersion,
-      'scope': switch (scope) {
-        ProtectionClearScope.takeProfit => 'take_profit',
-        ProtectionClearScope.stopLoss => 'stop_loss',
-        ProtectionClearScope.both => 'both',
-      },
-    });
-  }
+  }) => manageProtection(position, [
+    for (final order in position.protectionOrders)
+      if (scope == ProtectionClearScope.both ||
+          (scope == ProtectionClearScope.takeProfit &&
+              order.protection.role == 'takeProfit') ||
+          (scope == ProtectionClearScope.stopLoss &&
+              order.protection.role == 'stopLoss'))
+        Hip3ProtectionChange.cancel(order.orderId),
+  ]);
 
   static api.Hip3ActionCreateRequest leverage(
     api.Hip3TradingContext context,

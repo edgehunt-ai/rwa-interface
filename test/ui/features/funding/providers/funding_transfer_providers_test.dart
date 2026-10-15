@@ -69,6 +69,7 @@ void main() {
       expect(funding.transferSessionDestination, 'hip3_margin');
       expect(funding.sessionPlanId, 'transfer-session-1');
       expect(funding.selectedAllocations, {'position-1': '160.25'});
+      expect(funding.selectedAmount, '160.25');
       expect(plan.planId, 'plan-1');
     },
   );
@@ -302,6 +303,7 @@ final class _FundingRepository implements FundingRepository {
   String? transferSessionDestination;
   String? sessionPlanId;
   Map<String, String>? selectedAllocations;
+  String? selectedAmount;
   final bool failPlanQuery;
   final bool conflictOnFirstSelection;
   final Map<String, String> createdAllocations;
@@ -363,9 +365,11 @@ final class _FundingRepository implements FundingRepository {
     required String fundingSessionId,
     required int version,
     required Map<String, String> allocations,
+    String? amount,
     required String idempotencyKey,
   }) async {
     selectionVersions.add(version);
+    selectedAmount = amount;
     if (conflictOnFirstSelection && selectionVersions.length == 1) {
       throw const ServerFailure(
         statusCode: 409,

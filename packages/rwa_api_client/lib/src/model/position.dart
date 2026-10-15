@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_position_protection_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -17,7 +18,8 @@ part 'position.g.dart';
 /// * [productId] - HIP3 完整 venue:coin。
 /// * [positionVersion] - HIP3 变更保护和 close preview 使用的业务仓位版本；数量、方向及影响操作的状态变化时更新，不因单纯行情刷新而变化。
 /// * [hip3ActionId] - 当前 HIP3 修改工作流；待签名阶段不改变已生效仓位字段。
-/// * [protectionOrderIds] - 当前有效的独立 TP/SL Order ID，可查询和分别取消。
+/// * [protectionOrders] - HIP3 已确认生效的逐笔保护明细，可同角色多笔；修改/取消使用其中的order_id。
+/// * [protectionOrderIds] - 当前有效的独立 TP/SL Order ID，可查询和分别取消。同角色多笔时不能通过数组位置或仓位单个价格字段推断目标，该角色单个价格字段返回null，应使用protection_orders。
 /// * [positionId] 
 /// * [symbol] 
 /// * [name] 
@@ -65,7 +67,11 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'hip3_action_id')
   String? get hip3ActionId;
 
-  /// 当前有效的独立 TP/SL Order ID，可查询和分别取消。
+  /// HIP3 已确认生效的逐笔保护明细，可同角色多笔；修改/取消使用其中的order_id。
+  @BuiltValueField(wireName: r'protection_orders')
+  BuiltList<Hip3PositionProtectionOrder>? get protectionOrders;
+
+  /// 当前有效的独立 TP/SL Order ID，可查询和分别取消。同角色多笔时不能通过数组位置或仓位单个价格字段推断目标，该角色单个价格字段返回null，应使用protection_orders。
   @BuiltValueField(wireName: r'protection_order_ids')
   BuiltList<String>? get protectionOrderIds;
 
@@ -235,6 +241,13 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
       yield serializers.serialize(
         object.hip3ActionId,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.protectionOrders != null) {
+      yield r'protection_orders';
+      yield serializers.serialize(
+        object.protectionOrders,
+        specifiedType: const FullType(BuiltList, [FullType(Hip3PositionProtectionOrder)]),
       );
     }
     if (object.protectionOrderIds != null) {
@@ -511,6 +524,14 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
           ) as String?;
           if (valueDes == null) continue;
           result.hip3ActionId = valueDes;
+          break;
+        case r'protection_orders':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(Hip3PositionProtectionOrder)]),
+          ) as BuiltList<Hip3PositionProtectionOrder>?;
+          if (valueDes == null) continue;
+          result.protectionOrders.replace(valueDes);
           break;
         case r'protection_order_ids':
           final valueDes = serializers.deserialize(

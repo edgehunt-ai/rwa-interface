@@ -54,6 +54,41 @@ void main() {
     );
   }
 
+  for (final enabled in [true, false]) {
+    test('perp mapping preserves enabled=$enabled TP/SL prices', () {
+      final source = api.PerpOrder(
+        (b) => b
+          ..orderId = 'parent'
+          ..symbol = 'TSLA'
+          ..kind = api.PerpOrderWalletActionStateKindEnum.perp
+          ..side = api.OrderSide.long
+          ..type = api.OrderType.limit
+          ..status = api.OrderStatus.open
+          ..walletActionBlocker = api
+              .PerpOrderWalletActionStateWalletActionBlockerEnum
+              .notApplicable
+          ..createdAt = DateTime.utc(2026)
+          ..tpSl.replace(
+            api.TpSlSpec(
+              (p) => p
+                ..enabled = enabled
+                ..takeProfitPrice = '200'
+                ..stopLossPrice = '130'
+                ..stopLimitPrice = '129',
+            ),
+          ),
+      );
+      final protection = mapOrder(_order(source, typeIndex: 1)).tpSl;
+      if (enabled) {
+        expect(protection!.takeProfit!.value, '200');
+        expect(protection.stopLoss!.value, '130');
+        expect(protection.stopLimit!.value, '129');
+      } else {
+        expect(protection, isNull);
+      }
+    });
+  }
+
   test(
     'conditional mapping preserves native activation and parent warning',
     () {

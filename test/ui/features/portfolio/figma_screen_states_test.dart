@@ -477,7 +477,7 @@ void main() {
       expect(find.text(r'$5,610.22'), findsOneWidget);
       expect(find.text('Cross Margin'), findsOneWidget);
       expect(find.text(r'$2,264.48'), findsOneWidget);
-      expect(find.text('2,160.44 USDC'), findsOneWidget);
+      expect(find.text('2,264.48 USDC'), findsOneWidget);
       expect(find.text('Isolated Margin'), findsOneWidget);
       expect(find.text('Open Order Margin'), findsOneWidget);
       expect(find.text(r'$1,132.24'), findsNWidgets(2));
@@ -586,6 +586,101 @@ void main() {
     });
   }
 
+  for (final available in [true, false]) {
+    for (final complete in [true, false]) {
+      testWidgets(
+        'cross pool snapshot available=$available complete=$complete',
+        (tester) async {
+          tester.view.physicalSize = const Size(393, 1258);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                portfolioRepositoryProvider.overrideWithValue(
+                  _PerpsPortfolio(),
+                ),
+                portfolioRailAllocationProvider.overrideWith(
+                  (_) async => PortfolioRailAllocation(
+                    items: const [],
+                    valuedTotalUsd: DecimalValue('10'),
+                    unvaluedAssetCount: complete ? 0 : 1,
+                    hasCompleteValuation: complete,
+                    perps: PortfolioAccountAllocation(
+                      valueUsd: DecimalValue('10'),
+                      percent: complete ? DecimalValue('100') : null,
+                      perpsBreakdown: PortfolioPerpsAllocationBreakdown(
+                        crossMargin: PortfolioAllocationAmount(
+                          valueUsd: DecimalValue('4.47'),
+                          percent: DecimalValue('44.7'),
+                        ),
+                        crossMarginPool: available
+                            ? PortfolioAllocationAmount(
+                                valueUsd: DecimalValue('9.09'),
+                                percent: DecimalValue('90.9'),
+                              )
+                            : null,
+                        crossMarginPoolQuantity: available
+                            ? DecimalValue('9.09', asset: 'USDC')
+                            : null,
+                        estimatedWithdrawable: PortfolioAllocationAmount(
+                          valueUsd: DecimalValue('3.52'),
+                          percent: DecimalValue('35.2'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                perpsOpenOrdersProvider(null)
+                    .overrideWith((_) async => const DomainPage(items: [])),
+              ],
+              child: _assetsApp(),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Allocation'));
+          await tester.pumpAndSettle();
+          final allocationValue = find.byKey(
+            const Key('allocation-detail-value-Cross Margin'),
+          );
+          expect(
+            tester.widget<Text>(allocationValue).data,
+            available ? r'$9.09' : 'Unavailable',
+          );
+          expect(
+            find.text('Cross Margin · 90.9%'),
+            available && complete ? findsOneWidget : findsNothing,
+          );
+          await tester.tap(find.text('Perps').last);
+          await tester.pumpAndSettle();
+          final header = find.byKey(
+            const Key('perps-margin-header-Cross Margin'),
+          );
+          expect(
+            find.descendant(
+              of: header,
+              matching: find.text(available ? r'$9.09' : 'Unavailable'),
+            ),
+            available ? findsOneWidget : findsNWidgets(2),
+          );
+          expect(
+            find.descendant(of: header, matching: find.text('9.09 USDC')),
+            available ? findsOneWidget : findsNothing,
+          );
+          expect(
+            find.descendant(of: header, matching: find.text('2,160.44 USDC')),
+            findsNothing,
+          );
+          await tester.tap(header);
+          await tester.pumpAndSettle();
+          expect(find.text(r'$3.52'), findsNWidgets(2));
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   testWidgets('Perps margin groups are sorted by USD value', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -600,7 +695,7 @@ void main() {
                 valueUsd: DecimalValue('5.59', asset: 'USD', unit: 'fiat'),
                 percent: DecimalValue('100', unit: 'percent'),
                 perpsBreakdown: PortfolioPerpsAllocationBreakdown(
-                  crossMargin: PortfolioAllocationAmount(
+                  crossMarginPool: PortfolioAllocationAmount(
                     valueUsd: DecimalValue('3.02', asset: 'USD', unit: 'fiat'),
                     percent: DecimalValue('54', unit: 'percent'),
                   ),
@@ -1427,7 +1522,8 @@ final class _Portfolio
           valueUsd: DecimalValue('5610.22', asset: 'USD', unit: 'fiat'),
           percent: DecimalValue('40', unit: 'percent'),
           perpsBreakdown: PortfolioPerpsAllocationBreakdown(
-            crossMargin: PortfolioAllocationAmount(
+            crossMarginPoolQuantity: DecimalValue('2264.48', asset: 'USDC'),
+            crossMarginPool: PortfolioAllocationAmount(
               valueUsd: DecimalValue('2264.48', asset: 'USD', unit: 'fiat'),
               percent: DecimalValue('18', unit: 'percent'),
             ),

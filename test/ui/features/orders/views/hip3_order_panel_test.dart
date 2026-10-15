@@ -36,6 +36,7 @@ import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 
+import '../../../../helpers/display_config.dart';
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/funded_repository.dart';
 
@@ -59,6 +60,47 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  testWidgets('opening TP/SL risk consent stays synchronized with details', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(600, 1200));
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+    await tester.pumpAndSettle();
+    final outer = find.byKey(const Key('tpsl-risk-checkbox'));
+    final details = find.byKey(const Key('tpsl-risk-details'));
+    final inner = find.byKey(const Key('tpsl-risk-agreement-checkbox'));
+    final confirm = find.byKey(const Key('tpsl-risk-confirm'));
+    expect(tester.widget<Checkbox>(outer).value, isFalse);
+    await tester.ensureVisible(outer);
+    await tester.tap(outer);
+    await tester.pumpAndSettle();
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(inner).value, isTrue);
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
+
+    await tester.tap(inner);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('tpsl-risk-close')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(outer).value, isFalse);
+
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(inner).value, isFalse);
+    await tester.tap(inner);
+    await tester.pumpAndSettle();
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
+    expect(inner, findsNothing);
+    expect(tester.widget<Checkbox>(outer).value, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('hip3 large limit price keeps the editor rendered', (
     tester,
   ) async {
@@ -927,7 +969,7 @@ void main() {
   });
 
   for (final type in [TradingOrderType.market, TradingOrderType.limit]) {
-    testWidgets('HIP-3 $type slider keeps integer amounts below maximum', (
+    testWidgets('HIP-3 $type slider keeps the exact maximum at 100%', (
       tester,
     ) async {
       final orders = _ExecutableHip3Orders();
@@ -937,7 +979,7 @@ void main() {
             ordersRepositoryProvider.overrideWithValue(orders),
             marketSnapshotProvider.overrideWith(
               (ref, product) async =>
-                  MarketSnapshot(price: DecimalValue('7768.6')),
+                  MarketSnapshot(price: DecimalValue('7768.61234567')),
             ),
           ],
           child: _app(
@@ -959,13 +1001,13 @@ void main() {
         await tester.pumpAndSettle();
         Navigator.of(
           tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
-        ).pop('7768.6');
+        ).pop('7768.61234567');
         await tester.pumpAndSettle();
       }
 
       expect(tester.widget<Slider>(find.byType(Slider)).divisions, 100);
       for (final (fraction, expected, quantity) in [
-        (1.0, '31.0744', '0.004'),
+        (1.0, '31.07444938268', '0.004'),
         (0.99, '30', '0.003'),
         (0.9, '29', '0.003'),
         (0.75, '26', '0.003'),
@@ -988,6 +1030,82 @@ void main() {
         }
       }
     });
+  }
+
+  for (final hasCapacity in [false, true]) {
+    for (final type in [TradingOrderType.market, TradingOrderType.limit]) {
+      for (final (margin, maximum, minimum, expected, quantity, end, endSize)
+          in [
+            ('1.67', '1000', '12', '14', '1.4', '16.7', '1.67'),
+            ('10', '0.8', '0.1', '0.45', '0.045', '0.8', '0.08'),
+            ('10', '1', '0.1', '0.55', '0.055', '1', '0.1'),
+            ('10', '1.5', '0.1', '0.8', '0.08', '1.5', '0.15'),
+            ('10', '2', '0.1', '1.05', '0.105', '2', '0.2'),
+            ('10', '2.01', '0.1', '1', '0.1', '2.01', '0.201'),
+          ]) {
+        testWidgets('HIP-3 $type slider formats by maximum with margin $margin '
+            'and cap $maximum (capacity: $hasCapacity)', (tester) async {
+          final orders = _ExecutableHip3Orders();
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                ordersRepositoryProvider.overrideWithValue(orders),
+                marketSnapshotProvider.overrideWith(
+                  (ref, product) async =>
+                      MarketSnapshot(price: DecimalValue('10')),
+                ),
+              ],
+              child: _app(
+                const Hip3OrderPanel(),
+                opening: _Opening(
+                  availableMargin: margin,
+                  maximumNotional: maximum,
+                  minimumNotional: minimum,
+                  directionalAvailableMargin: hasCapacity ? margin : null,
+                  venueMaximumQuantity: hasCapacity ? '100' : null,
+                  takerFeeRate: hasCapacity ? '0' : null,
+                  feeReserveMultiplier: hasCapacity ? '1' : null,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          if (type == TradingOrderType.limit) {
+            await tester.tap(find.text('Limit').last);
+            await tester.pumpAndSettle();
+            Navigator.of(
+              tester.element(
+                find.byKey(const Key('hip3-limit-price-sheet-input')),
+              ),
+            ).pop('10');
+            await tester.pumpAndSettle();
+          }
+
+          for (final (fraction, amount, size) in [
+            (0.5, expected, quantity),
+            (1.0, end, endSize),
+          ]) {
+            tester.widget<Slider>(find.byType(Slider)).onChanged!(fraction);
+            await tester.pump(const Duration(milliseconds: 301));
+            await tester.pumpAndSettle();
+
+            expect(
+              tester
+                  .widget<TextField>(find.byType(TextField).last)
+                  .controller
+                  ?.text,
+              amount,
+            );
+            expect(tester.widget<Slider>(find.byType(Slider)).value, fraction);
+            if (type == TradingOrderType.market) {
+              expect(orders.intents.last.amount?.value, amount);
+            } else {
+              expect(orders.intents.last.quantity?.value, size);
+            }
+          }
+        });
+      }
+    }
   }
 
   testWidgets(
@@ -1040,6 +1158,34 @@ void main() {
       expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
     },
   );
+
+  testWidgets('HIP-3 pending slider uses the maximum after balance loads', (
+    tester,
+  ) async {
+    final opening = _Opening(availableMargin: '1.67');
+    final rules = Completer<Hip3OpeningContext>();
+    await tester.pumpWidget(
+      _app(
+        const Hip3OrderPanel(),
+        opening: _DelayedOpening(opening, rules.future),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(0.5);
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      isEmpty,
+    );
+
+    rules.complete(opening._context('NVDA'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '14',
+    );
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
+  });
 
   testWidgets('HIP-3 fractional slider waits for directional context', (
     tester,
@@ -2137,6 +2283,54 @@ void main() {
       expect(find.byKey(const Key('hip3-limit-price-error')), findsNothing);
     },
   );
+
+  testWidgets('HIP-3 calculated limit quantity trims zeros after truncation', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+          ),
+        ],
+        child: _app(const Hip3OrderPanel(), opening: _Opening(sizeDecimals: 3)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+    ).pop('10');
+    await tester.pumpAndSettle();
+
+    final orderValue = find.byKey(const Key('hip3-order-value-input'));
+    final quantity = find.byKey(const Key('hip3-limit-quantity-input'));
+    for (final (notional, expected) in [
+      ('12.00999', '1.2'),
+      ('10.00999', '1'),
+      ('100.00999', '10'),
+      ('0.00999', '0'),
+    ]) {
+      await tester.enterText(orderValue, notional);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(quantity).controller?.text, expected);
+      expect(tester.widget<TextField>(orderValue).controller?.text, notional);
+      if (expected != '0') {
+        expect(orders.intents.last.quantity?.value, expected);
+      }
+    }
+
+    for (final entered in ['1.200', '1.']) {
+      await tester.enterText(quantity, entered);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(quantity).controller?.text, entered);
+    }
+  });
 
   testWidgets(
     'HIP-3 limit quantity is truncated to trading-context precision',

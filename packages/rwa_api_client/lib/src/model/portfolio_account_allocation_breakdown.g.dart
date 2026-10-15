@@ -13,6 +13,8 @@ class _$PortfolioAccountAllocationBreakdown
   @override
   final PortfolioAllocationValue? bstocks;
   @override
+  final PortfolioCrossMarginPool? crossMarginPool;
+  @override
   final String? crossMarginUsedUsd;
   @override
   final String? isolatedMarginUsedUsd;
@@ -31,6 +33,7 @@ class _$PortfolioAccountAllocationBreakdown
   _$PortfolioAccountAllocationBreakdown._(
       {this.cash,
       this.bstocks,
+      this.crossMarginPool,
       this.crossMarginUsedUsd,
       this.isolatedMarginUsedUsd,
       this.openOrderMarginEstimate,
@@ -52,6 +55,7 @@ class _$PortfolioAccountAllocationBreakdown
     return other is PortfolioAccountAllocationBreakdown &&
         cash == other.cash &&
         bstocks == other.bstocks &&
+        crossMarginPool == other.crossMarginPool &&
         crossMarginUsedUsd == other.crossMarginUsedUsd &&
         isolatedMarginUsedUsd == other.isolatedMarginUsedUsd &&
         openOrderMarginEstimate == other.openOrderMarginEstimate &&
@@ -64,6 +68,7 @@ class _$PortfolioAccountAllocationBreakdown
     var _$hash = 0;
     _$hash = $jc(_$hash, cash.hashCode);
     _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, crossMarginPool.hashCode);
     _$hash = $jc(_$hash, crossMarginUsedUsd.hashCode);
     _$hash = $jc(_$hash, isolatedMarginUsedUsd.hashCode);
     _$hash = $jc(_$hash, openOrderMarginEstimate.hashCode);
@@ -78,6 +83,7 @@ class _$PortfolioAccountAllocationBreakdown
     return (newBuiltValueToStringHelper(r'PortfolioAccountAllocationBreakdown')
           ..add('cash', cash)
           ..add('bstocks', bstocks)
+          ..add('crossMarginPool', crossMarginPool)
           ..add('crossMarginUsedUsd', crossMarginUsedUsd)
           ..add('isolatedMarginUsedUsd', isolatedMarginUsedUsd)
           ..add('openOrderMarginEstimate', openOrderMarginEstimate)
@@ -103,6 +109,12 @@ class PortfolioAccountAllocationBreakdownBuilder
       _$this._bstocks ??= PortfolioAllocationValueBuilder();
   set bstocks(PortfolioAllocationValueBuilder? bstocks) =>
       _$this._bstocks = bstocks;
+
+  PortfolioCrossMarginPoolBuilder? _crossMarginPool;
+  PortfolioCrossMarginPoolBuilder get crossMarginPool =>
+      _$this._crossMarginPool ??= PortfolioCrossMarginPoolBuilder();
+  set crossMarginPool(PortfolioCrossMarginPoolBuilder? crossMarginPool) =>
+      _$this._crossMarginPool = crossMarginPool;
 
   String? _crossMarginUsedUsd;
   String? get crossMarginUsedUsd => _$this._crossMarginUsedUsd;
@@ -143,6 +155,7 @@ class PortfolioAccountAllocationBreakdownBuilder
     if ($v != null) {
       _cash = $v.cash?.toBuilder();
       _bstocks = $v.bstocks?.toBuilder();
+      _crossMarginPool = $v.crossMarginPool?.toBuilder();
       _crossMarginUsedUsd = $v.crossMarginUsedUsd;
       _isolatedMarginUsedUsd = $v.isolatedMarginUsedUsd;
       _openOrderMarginEstimate = $v.openOrderMarginEstimate?.toBuilder();
@@ -174,6 +187,7 @@ class PortfolioAccountAllocationBreakdownBuilder
           _$PortfolioAccountAllocationBreakdown._(
             cash: _cash?.build(),
             bstocks: _bstocks?.build(),
+            crossMarginPool: _crossMarginPool?.build(),
             crossMarginUsedUsd: crossMarginUsedUsd,
             isolatedMarginUsedUsd: isolatedMarginUsedUsd,
             openOrderMarginEstimate: _openOrderMarginEstimate?.build(),
@@ -187,6 +201,8 @@ class PortfolioAccountAllocationBreakdownBuilder
         _cash?.build();
         _$failedField = 'bstocks';
         _bstocks?.build();
+        _$failedField = 'crossMarginPool';
+        _crossMarginPool?.build();
 
         _$failedField = 'openOrderMarginEstimate';
         _openOrderMarginEstimate?.build();

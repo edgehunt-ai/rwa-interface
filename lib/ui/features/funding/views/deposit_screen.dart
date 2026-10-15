@@ -377,7 +377,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       if (!mounted) return;
       _presentingReceipt = false;
       if (transferToPerps) {
-        context.goNamed(AppRoutes.transferName);
+        context.goNamed(
+          AppRoutes.transferName,
+          queryParameters: {'token': change.token, 'network': change.chain},
+        );
       }
     });
   }
@@ -386,14 +389,15 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
 Future<bool> showDepositReceivedSheet(
   BuildContext context, {
   required DepositBalanceChange change,
-}) async =>
-    await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _DepositReceivedSheet(change: change),
-    ) ??
-    false;
+}) async {
+  return await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => _DepositReceivedSheet(change: change),
+      ) ??
+      false;
+}
 
 class _DepositReceivedSheet extends StatelessWidget {
   const _DepositReceivedSheet({required this.change});
@@ -438,19 +442,56 @@ class _DepositReceivedSheet extends StatelessWidget {
                 width: 120,
                 height: 120,
               ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.depositReceived,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${networkDisplayName(change.chain)})',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(color: colors.secondaryText),
-              ),
+              if (canTransferToPerps) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.depositReceivedTitle(
+                    '${change.amount.value} ${change.token}',
+                    networkDisplayName(change.chain),
+                  ),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 20,
+                    height: 26 / 20,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    l10n.depositReceivedDescription,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: colors.secondaryText,
+                      fontSize: 15,
+                      height: 22 / 15,
+                    ),
+                  ),
+                ),
+              ] else ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.depositReceived,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 17,
+                    height: 22 / 17,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${networkDisplayName(change.chain)})',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.secondaryText,
+                    fontSize: 13,
+                    height: 18 / 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               if (canTransferToPerps) ...[
                 SizedBox(
@@ -458,15 +499,23 @@ class _DepositReceivedSheet extends StatelessWidget {
                   child: FilledButton(
                     key: const ValueKey('deposit-received-transfer'),
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(l10n.transfer),
+                    child: Text(l10n.transferToPerpsAccount),
                   ),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 48,
-                  child: TextButton(
+                  child: OutlinedButton(
                     key: const ValueKey('deposit-received-maybe-later'),
                     onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: colors.subtleSurface,
+                      foregroundColor: colors.primaryText,
+                      side: BorderSide(color: colors.border),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                     child: Text(l10n.maybeLater),
                   ),
                 ),

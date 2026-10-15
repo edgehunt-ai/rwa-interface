@@ -8,8 +8,8 @@ import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import '../../../../helpers/test_app.dart';
 
 const _disclaimer =
-    'Market closed indicates no-trading periods, including weekends, '
-    'US holidays, and daily settlement windows.';
+    'Trading is available 24/7, but liquidity may vary depending on U.S. '
+    'market hours.';
 
 Future<void> _pumpSheet(WidgetTester tester, MarketHours hours) async {
   await tester.pumpWidget(
@@ -51,6 +51,39 @@ void main() {
       tester.getTopLeft(find.text(_disclaimer)).dx,
       tester.getTopLeft(find.text('US Market Trading Hours')).dx,
     );
+    await _dismiss(tester);
+  });
+
+  testWidgets('market hours disclaimer is localized in Chinese', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketHoursProvider.overrideWith(
+            (ref) async => MarketHours(
+              timezone: 'America/New_York',
+              current: MarketSessionKind.regular,
+              segments: [
+                MarketSessionSegment(
+                  kind: MarketSessionKind.regular,
+                  start: now.subtract(const Duration(hours: 1)),
+                  end: now.add(const Duration(hours: 2)),
+                ),
+              ],
+            ),
+          ),
+        ],
+        child: buildTestApp(
+          MarketHoursSheet(onClose: () {}),
+          locale: const Locale('zh'),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('交易全天候开放，但流动性可能因美国市场交易时段而有所不同。'), findsOneWidget);
     await _dismiss(tester);
   });
 

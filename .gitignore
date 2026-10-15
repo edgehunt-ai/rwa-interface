@@ -86,6 +86,7 @@ unlinked_spec.ds
 **/ios/Flutter/Flutter.framework
 **/ios/Flutter/Flutter.podspec
 **/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/PrivyPasskey.xcconfig
 **/ios/Flutter/ephemeral
 **/ios/Flutter/app.flx
 **/ios/Flutter/app.zip
@@ -139,5 +140,6 @@ dist/
 
 # Standalone private-key export bundle is built by CI before deployment.
 private-key-export/dist/
+private-key-export/public/.well-known/
 # Widget Preview related
 .widget_preview/

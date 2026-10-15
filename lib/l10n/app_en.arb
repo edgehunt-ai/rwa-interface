@@ -326,7 +326,7 @@
   "tradePerpUnavailable": "No HIP-3 perpetual market",
   "tradeProductUnavailableDescription": "{symbol} is not listed on this product yet. Switch back to the other tab to keep trading.",
   "@tradeProductUnavailableDescription": {"placeholders": {"symbol": {}}},
-  "tradeMarketHoursDisclaimer": "Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.",
+  "tradeMarketHoursDisclaimer": "Trading is available 24/7, but liquidity may vary depending on U.S. market hours.",
   "tradeMarketHoursDescription": "Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.",
   "tradePreMarket": "Pre-Market",
   "tradeRegularMarket": "Regular Market",
@@ -478,7 +478,11 @@
   "depositInstructionsUnavailable": "Deposit instructions unavailable",
   "returnToDepositRoutes": "Return to deposit routes and try again.",
   "depositAssets": "Deposit assets",
-  "depositReceived": "Deposit received",
+  "depositReceived": "Deposit received !",
+  "depositReceivedTitle": "{amount} received\non {network}!",
+  "@depositReceivedTitle": {"placeholders": {"amount": {}, "network": {}}},
+  "depositReceivedDescription": "Your funds are now in your Spot account. Transfer them to your Perps account to trade HIP-3.",
+  "transferToPerpsAccount": "Transfer to perps account",
   "maybeLater": "Maybe later",
   "gotIt": "Got it",
   "backToDepositRoutes": "Back to deposit routes",
@@ -926,5 +930,19 @@
             "type": "String"
         }
     }
-}
+},
+  "protectionManageTitle": "Manage TP/SL",
+  "protectionCreate": "Add order",
+  "protectionModify": "Modify order",
+  "protectionCancel": "Cancel order",
+  "protectionConfirmed": "Confirmed",
+  "protectionCancelConfirmed": "Cancellation confirmed",
+  "protectionWaitingConfirmation": "Waiting for confirmation",
+  "protectionFailed": "Failed",
+  "protectionBatchResults": "Protection order results",
+  "protectionNewOrder": "Add new order",
+  "protectionEditTarget": "Order to edit",
+  "protectionPartialFailure": "Some protection changes failed. Review each result; cancelled orders are not restored automatically.",
+  "openOrderTpSlPending": "TP/SL pending",
+  "openOrderTpSlPendingTooltip": "These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled."
 }

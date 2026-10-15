@@ -1,5 +1,6 @@
 import 'decimal_value.dart';
 import 'market_product.dart';
+import 'hip3_protection.dart';
 
 enum PositionSide { long, short, none }
 
@@ -16,6 +17,7 @@ final class Position {
     this.positionVersion,
     this.hip3ActionId,
     this.protectionOrderIds = const [],
+    this.protectionOrders = const [],
     this.marginMode,
     this.side = PositionSide.none,
     this.entryPrice,
@@ -39,6 +41,7 @@ final class Position {
   final String? positionVersion;
   final String? hip3ActionId;
   final List<String> protectionOrderIds;
+  final List<Hip3PositionProtectionOrder> protectionOrders;
   final PositionMarginMode? marginMode;
   final String symbol;
   final MarketProductKind kind;

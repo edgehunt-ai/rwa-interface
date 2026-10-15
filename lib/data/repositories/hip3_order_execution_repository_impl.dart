@@ -1,3 +1,5 @@
+import '../services/hip3_action_mapper.dart';
+
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/domain_page.dart';
@@ -103,10 +105,7 @@ final class Hip3OrderExecutionRepositoryImpl
         var current = action;
         for (var attempt = 0; attempt < 30; attempt++) {
           if (current.orderId != orderId ||
-              current.operation !=
-                  (cancel
-                      ? api.Hip3Operation.cancelOrder
-                      : api.Hip3Operation.placeOrder)) {
+              current.operation != (cancel ? 'cancel_order' : 'place_order')) {
             throw const Hip3SigningFailure(
               Hip3SigningFailureCode.invalidPayload,
             );
@@ -198,7 +197,7 @@ final class Hip3OrderExecutionRepositoryImpl
   Hip3ActionSummary _summary(api.Hip3Action action) => Hip3ActionSummary(
     actionId: action.actionId,
     productId: action.productId,
-    operation: action.operation.name,
+    operation: hip3OperationName(action.operation),
     status: action.status.name,
     positionId: action.positionId,
     orderId: action.orderId,

@@ -8,6 +8,7 @@ import '../../domain/models/portfolio_asset.dart';
 import '../../domain/models/portfolio_allocation.dart';
 import '../../domain/models/portfolio_history.dart' as domain;
 import '../../domain/models/position.dart';
+import '../../domain/models/hip3_protection.dart';
 import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../services/portfolio_service.dart';
@@ -218,9 +219,28 @@ Position mapPosition(api.Position value) => Position(
   productId: value.productId,
   positionVersion: value.positionVersion,
   hip3ActionId: value.hip3ActionId,
-  protectionOrderIds: List.unmodifiable(
-    value.protectionOrderIds?.toList() ?? const [],
-  ),
+  protectionOrderIds: List.unmodifiable({
+    ...?value.protectionOrderIds,
+    ...?value.protectionOrders?.map((order) => order.orderId),
+  }),
+  protectionOrders: List.unmodifiable([
+    for (final order
+        in value.protectionOrders ?? <api.Hip3PositionProtectionOrder>[])
+      Hip3PositionProtectionOrder(
+        orderId: order.orderId,
+        protection: Hip3ProtectionParameters(
+          role: order.role.name,
+          triggerPrice: DecimalValue(order.triggerPrice),
+          triggerReference: order.triggerReference.name,
+          quantity: order.sizeMode.name == 'quantity'
+              ? DecimalValue(order.quantity)
+              : null,
+          limitPrice: order.limitPrice == null
+              ? null
+              : DecimalValue(order.limitPrice!),
+        ),
+      ),
+  ]),
   marginMode: switch (value.marginMode) {
     api.MarginMode.isolated => PositionMarginMode.isolated,
     api.MarginMode.cross => PositionMarginMode.cross,
@@ -304,6 +324,9 @@ PortfolioRailAllocation mapRailPortfolioAllocation(
     }
   }
   return PortfolioRailAllocation(
+    hasCompleteValuation:
+        value.dataStatus == api.PortfolioDataStatus.complete &&
+        value.unvaluedAssetCount == 0,
     items: List.unmodifiable(items),
     valuedTotalUsd: _usdValue(value.valuedTotalUsd),
     unvaluedAssetCount: value.unvaluedAssetCount,
@@ -318,10 +341,10 @@ PortfolioAccountAllocation? _accountAllocation(
 }) {
   final valueUsd = item.valueUsd;
   final percent = item.percent;
-  if (valueUsd == null || percent == null) return null;
+  if (valueUsd == null) return null;
   return PortfolioAccountAllocation(
     valueUsd: _usdValue(valueUsd),
-    percent: DecimalValue(percent, unit: 'percent'),
+    percent: percent == null ? null : DecimalValue(percent, unit: 'percent'),
     perpsBreakdown: perpsBreakdown,
   );
 }
@@ -333,6 +356,21 @@ PortfolioPerpsAllocationBreakdown? _perpsBreakdown(
   if (value == null) return null;
   return PortfolioPerpsAllocationBreakdown(
     crossMargin: _allocationAmount(value.crossMarginUsedUsd, valuedTotalUsd),
+    crossMarginPool:
+        value.crossMarginPool?.status ==
+            api.PortfolioCrossMarginPoolStatusEnum.available
+        ? _allocationAmount(value.crossMarginPool?.valueUsd, valuedTotalUsd)
+        : null,
+    crossMarginPoolQuantity:
+        value.crossMarginPool?.status ==
+                api.PortfolioCrossMarginPoolStatusEnum.available &&
+            value.crossMarginPool?.quantity != null
+        ? DecimalValue(
+            value.crossMarginPool!.quantity!,
+            asset: value.crossMarginPool!.asset.name,
+            unit: 'quantity',
+          )
+        : null,
     isolatedMargin: _allocationAmount(
       value.isolatedMarginUsedUsd,
       valuedTotalUsd,

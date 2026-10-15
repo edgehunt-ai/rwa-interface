@@ -226,6 +226,8 @@ class _$Position extends Position {
   @override
   final String? hip3ActionId;
   @override
+  final BuiltList<Hip3PositionProtectionOrder>? protectionOrders;
+  @override
   final BuiltList<String>? protectionOrderIds;
   @override
   final String positionId;
@@ -301,6 +303,7 @@ class _$Position extends Position {
       {this.productId,
       this.positionVersion,
       this.hip3ActionId,
+      this.protectionOrders,
       this.protectionOrderIds,
       required this.positionId,
       required this.symbol,
@@ -350,6 +353,7 @@ class _$Position extends Position {
         productId == other.productId &&
         positionVersion == other.positionVersion &&
         hip3ActionId == other.hip3ActionId &&
+        protectionOrders == other.protectionOrders &&
         protectionOrderIds == other.protectionOrderIds &&
         positionId == other.positionId &&
         symbol == other.symbol &&
@@ -392,6 +396,7 @@ class _$Position extends Position {
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, positionVersion.hashCode);
     _$hash = $jc(_$hash, hip3ActionId.hashCode);
+    _$hash = $jc(_$hash, protectionOrders.hashCode);
     _$hash = $jc(_$hash, protectionOrderIds.hashCode);
     _$hash = $jc(_$hash, positionId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -436,6 +441,7 @@ class _$Position extends Position {
           ..add('productId', productId)
           ..add('positionVersion', positionVersion)
           ..add('hip3ActionId', hip3ActionId)
+          ..add('protectionOrders', protectionOrders)
           ..add('protectionOrderIds', protectionOrderIds)
           ..add('positionId', positionId)
           ..add('symbol', symbol)
@@ -489,6 +495,13 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
   String? _hip3ActionId;
   String? get hip3ActionId => _$this._hip3ActionId;
   set hip3ActionId(String? hip3ActionId) => _$this._hip3ActionId = hip3ActionId;
+
+  ListBuilder<Hip3PositionProtectionOrder>? _protectionOrders;
+  ListBuilder<Hip3PositionProtectionOrder> get protectionOrders =>
+      _$this._protectionOrders ??= ListBuilder<Hip3PositionProtectionOrder>();
+  set protectionOrders(
+          ListBuilder<Hip3PositionProtectionOrder>? protectionOrders) =>
+      _$this._protectionOrders = protectionOrders;
 
   ListBuilder<String>? _protectionOrderIds;
   ListBuilder<String> get protectionOrderIds =>
@@ -650,6 +663,7 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
       _productId = $v.productId;
       _positionVersion = $v.positionVersion;
       _hip3ActionId = $v.hip3ActionId;
+      _protectionOrders = $v.protectionOrders?.toBuilder();
       _protectionOrderIds = $v.protectionOrderIds?.toBuilder();
       _positionId = $v.positionId;
       _symbol = $v.symbol;
@@ -710,6 +724,7 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
             productId: productId,
             positionVersion: positionVersion,
             hip3ActionId: hip3ActionId,
+            protectionOrders: _protectionOrders?.build(),
             protectionOrderIds: _protectionOrderIds?.build(),
             positionId: BuiltValueNullFieldError.checkNotNull(
                 positionId, r'Position', 'positionId'),
@@ -752,6 +767,8 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'protectionOrders';
+        _protectionOrders?.build();
         _$failedField = 'protectionOrderIds';
         _protectionOrderIds?.build();
       } catch (e) {

@@ -12,6 +12,9 @@ const BstocksPreviewRouteLegVenueEnum
 const BstocksPreviewRouteLegVenueEnum
     _$bstocksPreviewRouteLegVenueEnum_pancakeV3 =
     const BstocksPreviewRouteLegVenueEnum._('pancakeV3');
+const BstocksPreviewRouteLegVenueEnum
+    _$bstocksPreviewRouteLegVenueEnum_liquidmesh =
+    const BstocksPreviewRouteLegVenueEnum._('liquidmesh');
 
 BstocksPreviewRouteLegVenueEnum _$bstocksPreviewRouteLegVenueEnumValueOf(
     String name) {
@@ -20,6 +23,8 @@ BstocksPreviewRouteLegVenueEnum _$bstocksPreviewRouteLegVenueEnumValueOf(
       return _$bstocksPreviewRouteLegVenueEnum_propamm;
     case 'pancakeV3':
       return _$bstocksPreviewRouteLegVenueEnum_pancakeV3;
+    case 'liquidmesh':
+      return _$bstocksPreviewRouteLegVenueEnum_liquidmesh;
     default:
       throw ArgumentError(name);
   }
@@ -30,6 +35,7 @@ final BuiltSet<BstocksPreviewRouteLegVenueEnum>
         BstocksPreviewRouteLegVenueEnum>(const <BstocksPreviewRouteLegVenueEnum>[
   _$bstocksPreviewRouteLegVenueEnum_propamm,
   _$bstocksPreviewRouteLegVenueEnum_pancakeV3,
+  _$bstocksPreviewRouteLegVenueEnum_liquidmesh,
 ]);
 
 Serializer<BstocksPreviewRouteLegVenueEnum>
@@ -41,10 +47,12 @@ class _$BstocksPreviewRouteLegVenueEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'propamm': 'propamm',
     'pancakeV3': 'pancake_v3',
+    'liquidmesh': 'liquidmesh',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'propamm': 'propamm',
     'pancake_v3': 'pancakeV3',
+    'liquidmesh': 'liquidmesh',
   };
 
   @override

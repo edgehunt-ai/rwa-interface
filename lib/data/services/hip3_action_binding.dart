@@ -1,6 +1,7 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/services/hip3_typed_data_signer.dart';
+import 'hip3_action_mapper.dart';
 
 /// Frozen client intent. Validate every create, poll and submission response
 /// before using it to request a wallet signature or report success.
@@ -25,10 +26,16 @@ final class Hip3ActionBinding {
   final String? orderId;
 
   void validate(api.Hip3Action action, {String? expectedActionId}) {
+    final api.Hip3ActionCreateRequest received;
+    try {
+      received = hip3CurrentIntent(action);
+    } on Object {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
     if (action.actionId.isEmpty ||
         (expectedActionId != null && action.actionId != expectedActionId) ||
-        action.intent != intent ||
-        action.operation != operation ||
+        received != intent ||
+        action.operation != hip3OperationWire(operation) ||
         action.productId != productId ||
         (environment != null && action.environment != environment) ||
         (positionId != null && action.positionId != positionId) ||

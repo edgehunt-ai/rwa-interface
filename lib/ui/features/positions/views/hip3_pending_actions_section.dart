@@ -8,6 +8,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
 import '../providers/position_providers.dart';
+import 'hip3_protection_order_results.dart';
 
 /// Operate: extend the assets page's themed, linear list. Show frozen workflow
 /// identity and status before an explicit recovery action; never create an order.
@@ -107,8 +108,7 @@ class _ActionPageState extends ConsumerState<_ActionPage> {
         final actions = value.items
             .where(
               (action) => const {
-                'setTpsl',
-                'clearTpsl',
+                'manageTpsl',
                 'setLeverage',
                 'closePosition',
               }.contains(action.operation),
@@ -176,8 +176,7 @@ class _ActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final operation = switch (action.operation) {
-      'setTpsl' => l10n.hip3PendingSetTpsl,
-      'clearTpsl' => l10n.hip3PendingClearTpsl,
+      'manageTpsl' => l10n.protectionManageTitle,
       'setLeverage' => l10n.hip3PendingLeverage,
       _ => l10n.hip3PendingClose,
     };
@@ -188,6 +187,7 @@ class _ActionRow extends StatelessWidget {
       children: [
         Text(action.productId, style: Theme.of(context).textTheme.titleSmall),
         Text(operation),
+        Hip3ProtectionOrderResults(orders: action.protectionOrders),
         Text(
           review
               ? l10n.hip3PendingReview

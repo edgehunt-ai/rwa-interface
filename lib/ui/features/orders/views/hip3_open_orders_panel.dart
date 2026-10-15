@@ -11,6 +11,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/design_state_feedback.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../../core/feedback/empty_state.dart';
+import '../../../core/feedback/rwa_tooltip.dart';
 import '../../../core/feedback/loading_skeleton.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
@@ -184,6 +185,21 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             'stopLoss' => 'SL',
             _ => l10n.conditionalOrder,
           };
+    final isDirectionalLimit =
+        conditional == null && order.type == TradingOrderType.limit;
+    final directionColor = order.side == TradingSide.long
+        ? const Color(0xFF04A08B)
+        : kShortTradeColor;
+    final badge = isDirectionalLimit
+        ? '${order.side == TradingSide.long ? l10n.long : l10n.short} / $role'
+        : role;
+    final protection = isDirectionalLimit ? order.tpSl : null;
+    final protectionPrices = [
+      if (protection?.takeProfit case final price?)
+        'TP ${_formatQuantity(price.value)}',
+      if (protection?.stopLoss case final price?)
+        'SL ${_formatQuantity(price.value)}',
+    ];
     final total = double.tryParse(
       order.quantity?.value ?? conditional?.quantity ?? '',
     );
@@ -245,12 +261,15 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: colors.border,
+                            color: isDirectionalLimit
+                                ? directionColor.withValues(alpha: 0.1)
+                                : colors.border,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            role,
-                            style: const TextStyle(
+                            badge,
+                            style: TextStyle(
+                              color: isDirectionalLimit ? directionColor : null,
                               fontSize: 11,
                               height: 14 / 11,
                             ),
@@ -360,6 +379,59 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               ),
             ],
           ),
+          if (protectionPrices.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: colors.subtleSurface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.openOrderTpSlPending,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.tertiaryText,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      protectionPrices.join(' / '),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 16 / 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  RwaRichTooltip(
+                    autoFlipVertically: true,
+                    message: TextSpan(
+                      text: l10n.openOrderTpSlPendingTooltip,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 18 / 12,
+                        color: colors.primaryText,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.help_outline,
+                      size: 14,
+                      color: colors.secondaryText,
+                      semanticLabel: l10n.openOrderTpSlPending,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (hasProtectionException) ...[
             const SizedBox(height: 12),
             Text(
