@@ -439,12 +439,15 @@ final class SelfCustodialWithdrawalCommands {
               asset.walletId == wallet.walletId &&
               asset.contractAddress != null &&
               !asset.native &&
-              quote.intent.amount.scale <= asset.decimals &&
-              asset.balance.compareTo(quote.intent.amount) >= 0,
+              quote.intent.amount.scale <= asset.decimals,
         )
         .toList(growable: false);
     if (matches.length != 1) {
       throw StateError('No unique withdrawable asset is available');
+    }
+    final available = matches.single.withdrawalAvailableBalance;
+    if (available == null || available.compareTo(quote.intent.amount) < 0) {
+      throw StateError('Insufficient available withdrawal balance');
     }
     return matches.single;
   }

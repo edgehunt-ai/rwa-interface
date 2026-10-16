@@ -134,6 +134,19 @@ Widget / screen
   tests may use lower-level calls only when the exception is documented and
   tested.
 
+### Withdrawal availability
+
+BSC withdrawal Available, Max, and input limits use the server's top-level
+`PortfolioAsset.available_quantity`, not the total `balance`. The repository maps
+it to `availableQuantity`; `withdrawalAvailableBalance` accepts complete/partial
+authority, caps it by the observed total, and rejects stale, missing or unknown
+availability. Zero remains zero. The picker preserves total balance and USD
+valuation and matches availability by asset, wallet, network and token identity.
+Preparation reads fresh availability before creating an intent; execution still
+uses the server's immutable transaction. Regenerate the client when updating the
+contract submodule; older BSC responses without availability must not enable Max.
+
+
 ## Repository Layout
 
 ```text

@@ -74,6 +74,17 @@ const BstocksPortfolioAvailabilityUnavailableReasonsEnum
     _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance =
     const BstocksPortfolioAvailabilityUnavailableReasonsEnum._(
         'reservationExceedsBalance');
+const BstocksPortfolioAvailabilityUnavailableReasonsEnum
+    _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_platformOrder =
+    const BstocksPortfolioAvailabilityUnavailableReasonsEnum._('platformOrder');
+const BstocksPortfolioAvailabilityUnavailableReasonsEnum
+    _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingTransfer =
+    const BstocksPortfolioAvailabilityUnavailableReasonsEnum._(
+        'pendingTransfer');
+const BstocksPortfolioAvailabilityUnavailableReasonsEnum
+    _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingWithdrawal =
+    const BstocksPortfolioAvailabilityUnavailableReasonsEnum._(
+        'pendingWithdrawal');
 
 BstocksPortfolioAvailabilityUnavailableReasonsEnum
     _$bstocksPortfolioAvailabilityUnavailableReasonsEnumValueOf(String name) {
@@ -86,6 +97,12 @@ BstocksPortfolioAvailabilityUnavailableReasonsEnum
       return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell;
     case 'reservationExceedsBalance':
       return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance;
+    case 'platformOrder':
+      return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_platformOrder;
+    case 'pendingTransfer':
+      return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingTransfer;
+    case 'pendingWithdrawal':
+      return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingWithdrawal;
     default:
       throw ArgumentError(name);
   }
@@ -98,6 +115,9 @@ final BuiltSet<BstocksPortfolioAvailabilityUnavailableReasonsEnum>
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_confirmedGtcSell,
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell,
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance,
+  _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_platformOrder,
+  _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingTransfer,
+  _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingWithdrawal,
 ]);
 
 Serializer<BstocksPortfolioAvailabilityRailEnum>
@@ -185,12 +205,18 @@ class _$BstocksPortfolioAvailabilityUnavailableReasonsEnumSerializer
     'confirmedGtcSell': 'confirmed_gtc_sell',
     'submittedGtcSell': 'submitted_gtc_sell',
     'reservationExceedsBalance': 'reservation_exceeds_balance',
+    'platformOrder': 'platform_order',
+    'pendingTransfer': 'pending_transfer',
+    'pendingWithdrawal': 'pending_withdrawal',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet_identity_unavailable': 'walletIdentityUnavailable',
     'confirmed_gtc_sell': 'confirmedGtcSell',
     'submitted_gtc_sell': 'submittedGtcSell',
     'reservation_exceeds_balance': 'reservationExceedsBalance',
+    'platform_order': 'platformOrder',
+    'pending_transfer': 'pendingTransfer',
+    'pending_withdrawal': 'pendingWithdrawal',
   };
 
   @override

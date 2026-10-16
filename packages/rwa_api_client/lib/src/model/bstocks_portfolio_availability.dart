@@ -9,14 +9,14 @@ import 'package:built_value/serializer.dart';
 
 part 'bstocks_portfolio_availability.g.dart';
 
-/// 已确认GTC卖单、已提交GTC卖动作和已提交bStock提现的账户钱包级可用数量投影；不是链上托管或真实锁币。 提现占用由pending_withdrawal_quantity解释，不扩展既有unavailable_reasons枚举。已挖矿但未完成观察确认时可能保守扣减，最终确认后解除。 未签名动作不计入 reservation，缺少钱包身份时数量为null。 
+/// 平台账户钱包级可用数量投影；不是链上托管或真实锁币。GTC按未成交剩余量占用，待执行IOC按最大输入占用。 生成可执行动作即占用；approval和仅预览不占用。canonical订单替代动作占用，不重复计算。 部分成交减少占用，完全成交或撤单确认后释放；申请撤单或本地超时不提前释放。缺少钱包身份时数量为null。 
 ///
 /// Properties:
 /// * [rail] 
 /// * [productId] 
 /// * [withdrawalAssetId] - 可用于自托管提现asset_id的服务端链/token身份，不等同于顶层内部asset_id。
-/// * [pendingWithdrawalQuantity] - 已提交、确认中、noncanonical或manual_review的bStock提现数量；身份/覆盖未知时null。未签名意图不计入。
-/// * [availableQuantity] - 钱包余额减去已确认GTC卖单剩余量、已提交待确认GTC卖动作及待处理提现后的可卖数量，下限为0；不是美元金额或执行保证。未知时为null，需结合availability_status与资产freshness使用。
+/// * [pendingWithdrawalQuantity] - 已创建尚未结算的提现占用，包括等待签名/提交、确认中及未决结果；身份或覆盖未知时为null。不是已确认支出。
+/// * [availableQuantity] - 钱包余额减去平台订单、转账/补资及提现占用后的可用数量，下限为0；待签名可执行交易也占用。用于提现额度/Max及卖出数量校验，不是美元金额或执行保证；未知时为null，不得回退到总余额。
 /// * [unavailableQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [reservationQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [availabilityStatus] 
@@ -34,11 +34,11 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
   @BuiltValueField(wireName: r'withdrawal_asset_id')
   String? get withdrawalAssetId;
 
-  /// 已提交、确认中、noncanonical或manual_review的bStock提现数量；身份/覆盖未知时null。未签名意图不计入。
+  /// 已创建尚未结算的提现占用，包括等待签名/提交、确认中及未决结果；身份或覆盖未知时为null。不是已确认支出。
   @BuiltValueField(wireName: r'pending_withdrawal_quantity')
   String? get pendingWithdrawalQuantity;
 
-  /// 钱包余额减去已确认GTC卖单剩余量、已提交待确认GTC卖动作及待处理提现后的可卖数量，下限为0；不是美元金额或执行保证。未知时为null，需结合availability_status与资产freshness使用。
+  /// 钱包余额减去平台订单、转账/补资及提现占用后的可用数量，下限为0；待签名可执行交易也占用。用于提现额度/Max及卖出数量校验，不是美元金额或执行保证；未知时为null，不得回退到总余额。
   @BuiltValueField(wireName: r'available_quantity')
   String? get availableQuantity;
 
@@ -56,7 +56,7 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
 
   @BuiltValueField(wireName: r'unavailable_reasons')
   BuiltList<BstocksPortfolioAvailabilityUnavailableReasonsEnum> get unavailableReasons;
-  // enum unavailableReasonsEnum {  wallet_identity_unavailable,  confirmed_gtc_sell,  submitted_gtc_sell,  reservation_exceeds_balance,  };
+  // enum unavailableReasonsEnum {  wallet_identity_unavailable,  confirmed_gtc_sell,  submitted_gtc_sell,  reservation_exceeds_balance,  platform_order,  pending_transfer,  pending_withdrawal,  };
 
   BstocksPortfolioAvailability._();
 
@@ -290,6 +290,12 @@ class BstocksPortfolioAvailabilityUnavailableReasonsEnum extends EnumClass {
   static const BstocksPortfolioAvailabilityUnavailableReasonsEnum submittedGtcSell = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell;
   @BuiltValueEnumConst(wireName: r'reservation_exceeds_balance')
   static const BstocksPortfolioAvailabilityUnavailableReasonsEnum reservationExceedsBalance = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance;
+  @BuiltValueEnumConst(wireName: r'platform_order')
+  static const BstocksPortfolioAvailabilityUnavailableReasonsEnum platformOrder = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_platformOrder;
+  @BuiltValueEnumConst(wireName: r'pending_transfer')
+  static const BstocksPortfolioAvailabilityUnavailableReasonsEnum pendingTransfer = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingTransfer;
+  @BuiltValueEnumConst(wireName: r'pending_withdrawal')
+  static const BstocksPortfolioAvailabilityUnavailableReasonsEnum pendingWithdrawal = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_pendingWithdrawal;
 
   static Serializer<BstocksPortfolioAvailabilityUnavailableReasonsEnum> get serializer => _$bstocksPortfolioAvailabilityUnavailableReasonsEnumSerializer;
 

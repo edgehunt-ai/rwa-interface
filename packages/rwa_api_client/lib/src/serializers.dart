@@ -242,6 +242,7 @@ import 'package:rwa_api_client/src/model/hip3_market_order_minimum.dart';
 import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
+import 'package:rwa_api_client/src/model/hip3_opening_protection_order.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
 import 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
 import 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';
@@ -740,6 +741,7 @@ part 'serializers.g.dart';
   Hip3MarketOrderMinimums,
   Hip3OpeningProtectionConfirmation,
   Hip3OpeningProtectionConfirmationLegsInner,
+  Hip3OpeningProtectionOrder,
   Hip3Operation,
   Hip3OrderCapacity,
   Hip3OrderCapacitySide,
@@ -1079,6 +1081,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
         () => ListBuilder<FundingRouteBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3OpeningProtectionOrder)]),
+        () => ListBuilder<Hip3OpeningProtectionOrder>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DepositRail)]),

@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_public_market.g.dart';
 
-/// 服务端确认的公开 HIP3 行情身份。environment 指行情来源环境，不是钱包充值网络。 tradable 仅表示该公开产品在当前客户端签名执行通道的产品级可用性，不授予账户交易权限。 开仓前必须加载同 product_id、venue、environment 的最新 context，并使用其中最大杠杆及其他动态限制； 身份不一致必须拒绝下单，不能按 symbol 偷换产品或网络。主网只读行情不代表已开放主网执行。 
+/// 服务端确认的公开 HIP3 行情身份。environment 指行情来源环境，不是钱包充值网络。 tradable 仅表示该公开产品在当前客户端签名执行通道的产品级可用性，不授予账户交易权限。 仅支持逐仓的市场仍可返回 tradable=true；不支持全仓不代表整个产品不可交易。 可选保证金模式以最新 context.rules.margin_modes 为准；仅逐仓市场只能使用 isolated，不得强制使用 cross。 开仓前必须加载同 product_id、venue、environment 的最新 context，并使用其中最大杠杆及其他动态限制； 身份不一致必须拒绝下单，不能按 symbol 偷换产品或网络。主网只读行情不代表已开放主网执行。 
 ///
 /// Properties:
 /// * [productId] 

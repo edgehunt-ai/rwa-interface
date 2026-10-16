@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/hip3_opening_protection_order.dart';
 import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
@@ -23,6 +24,7 @@ part 'order_common.g.dart';
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
 /// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
 /// * [conditional] 
+/// * [openingProtectionOrders] - 本开仓主单实际持久化的保护子单，包含等待主单成交及已失效的子单。 关系按账户及 parent_order_id 确定，不受订单列表筛选、分页影响。 按 take_profit、stop_loss 排序；activation_status 才表示是否已安装生效。 未创建保护子单时可省略；不从仓位保护或其他订单推断。 
 /// * [clientOrderId] 
 /// * [providerOrderId] 
 /// * [providerStatus] - Provider-native status retained for support and reconciliation.
@@ -40,7 +42,7 @@ part 'order_common.g.dart';
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 
 /// * [reduceOnly] 
-/// * [tpSl] 
+/// * [tpSl] - 开仓主单上为已持久化保护子单的配置价格摘要。enabled 表示存在尚未失效的子单， 不表示交易所已激活；真实安装、触发状态及执行方式读取 opening_protection_orders。 已失效子单保留历史价格，全部失效时 enabled=false。 
 /// * [positionId] 
 /// * [realizedPnl] - 平仓单的已实现盈亏
 /// * [txHash] 
@@ -63,6 +65,10 @@ abstract class OrderCommon  {
 
   @BuiltValueField(wireName: r'conditional')
   Hip3ConditionalOrder? get conditional;
+
+  /// 本开仓主单实际持久化的保护子单，包含等待主单成交及已失效的子单。 关系按账户及 parent_order_id 确定，不受订单列表筛选、分页影响。 按 take_profit、stop_loss 排序；activation_status 才表示是否已安装生效。 未创建保护子单时可省略；不从仓位保护或其他订单推断。 
+  @BuiltValueField(wireName: r'opening_protection_orders')
+  BuiltList<Hip3OpeningProtectionOrder>? get openingProtectionOrders;
 
   @BuiltValueField(wireName: r'client_order_id')
   String? get clientOrderId;
@@ -126,6 +132,7 @@ abstract class OrderCommon  {
   @BuiltValueField(wireName: r'reduce_only')
   bool? get reduceOnly;
 
+  /// 开仓主单上为已持久化保护子单的配置价格摘要。enabled 表示存在尚未失效的子单， 不表示交易所已激活；真实安装、触发状态及执行方式读取 opening_protection_orders。 已失效子单保留历史价格，全部失效时 enabled=false。 
   @BuiltValueField(wireName: r'tp_sl')
   TpSlSpec? get tpSl;
 
@@ -190,6 +197,13 @@ class _$OrderCommonSerializer implements PrimitiveSerializer<OrderCommon> {
       yield serializers.serialize(
         object.conditional,
         specifiedType: const FullType(Hip3ConditionalOrder),
+      );
+    }
+    if (object.openingProtectionOrders != null) {
+      yield r'opening_protection_orders';
+      yield serializers.serialize(
+        object.openingProtectionOrders,
+        specifiedType: const FullType(BuiltList, [FullType(Hip3OpeningProtectionOrder)]),
       );
     }
     if (object.clientOrderId != null) {
@@ -446,6 +460,14 @@ class _$$OrderCommonSerializer implements PrimitiveSerializer<$OrderCommon> {
           ) as Hip3ConditionalOrder?;
           if (valueDes == null) continue;
           result.conditional.replace(valueDes);
+          break;
+        case r'opening_protection_orders':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(Hip3OpeningProtectionOrder)]),
+          ) as BuiltList<Hip3OpeningProtectionOrder>?;
+          if (valueDes == null) continue;
+          result.openingProtectionOrders.replace(valueDes);
           break;
         case r'client_order_id':
           final valueDes = serializers.deserialize(

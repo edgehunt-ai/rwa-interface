@@ -48,6 +48,11 @@ void main() {
                 symbol: 'USDC',
                 chain: 'Arbitrum',
                 balance: DecimalValue('100', asset: 'USDC', unit: 'token'),
+                availableBalance: DecimalValue(
+                  '100',
+                  asset: 'USDC',
+                  unit: 'token',
+                ),
                 decimals: 6,
                 withdrawable: true,
               ),

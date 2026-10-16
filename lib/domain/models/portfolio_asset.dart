@@ -15,6 +15,8 @@ final class PortfolioAsset {
     this.productId,
     this.holdingReturnAmountUsd,
     this.holdingReturnPercent,
+    this.availableQuantity,
+    this.availabilityStatus,
     this.bstocksAvailableQuantity,
     this.bstocksUnavailableQuantity,
     this.bstocksAvailabilityStatus,
@@ -38,10 +40,31 @@ final class PortfolioAsset {
   final String? productId;
   final DecimalValue? holdingReturnAmountUsd;
   final DecimalValue? holdingReturnPercent;
+  final DecimalValue? availableQuantity;
+  final String? availabilityStatus;
   final DecimalValue? bstocksAvailableQuantity;
   final DecimalValue? bstocksUnavailableQuantity;
   final String? bstocksAvailabilityStatus;
   final String? freshness;
+
+  /// Reserved-adjusted funds; unknown or stale availability is never spendable.
+  /// BSC requires top-level authority; nested bStocks data is sell-only.
+  DecimalValue? get withdrawalAvailableBalance {
+    if (freshness == 'stale' || freshness == 'unavailable') return null;
+    final status = availabilityStatus;
+    final available = availableQuantity;
+    if (status == null && available == null && normalizedNetwork != 'bsc') {
+      return balance;
+    }
+    if ((status != 'complete' && status != 'partial') || available == null) {
+      return null;
+    }
+    final zero = DecimalValue('0', asset: balance.asset, unit: balance.unit);
+    if (available.compareTo(zero) < 0 || balance.compareTo(zero) < 0) {
+      return null;
+    }
+    return available.compareTo(balance) > 0 ? balance : available;
+  }
 
   /// Canonical EVM asset identity, `eip155:<chain id>/erc20:<address>`,
   /// assembled from [network] and [contractAddress] — this is what the contract

@@ -430,6 +430,7 @@ Class | Method | HTTP request | Description
  - [Hip3MarketOrderMinimums](doc/Hip3MarketOrderMinimums.md)
  - [Hip3OpeningProtectionConfirmation](doc/Hip3OpeningProtectionConfirmation.md)
  - [Hip3OpeningProtectionConfirmationLegsInner](doc/Hip3OpeningProtectionConfirmationLegsInner.md)
+ - [Hip3OpeningProtectionOrder](doc/Hip3OpeningProtectionOrder.md)
  - [Hip3Operation](doc/Hip3Operation.md)
  - [Hip3OrderCapacity](doc/Hip3OrderCapacity.md)
  - [Hip3OrderCapacitySide](doc/Hip3OrderCapacitySide.md)

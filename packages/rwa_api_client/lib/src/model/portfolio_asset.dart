@@ -31,11 +31,17 @@ part 'portfolio_asset.g.dart';
 /// * [accountRef] - Server-issued opaque account reference; clients cannot override it.
 /// * [contractAddress] 
 /// * [native_] 
-/// * [withdrawable] - 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 
+/// * [withdrawable] - 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 此布尔值仅表示提现资格，不代表整笔balance可提；额度和Max须读取available_quantity。 
 /// * [symbol] 
 /// * [decimals] 
 /// * [balanceRaw] - 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
 /// * [balance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [availableQuantity] - BSC ERC20的服务器可用数量，已扣除平台订单、转账/补资和提现占用，下限为0；非交易准入token同样使用观察到的精度及自身占用。 提现额度、Max和输入上限使用此值，不使用balance；总余额仍用于持仓和估值。 null表示不可确定，禁止回退到balance。旧服务可能缺省，客户端须升级并刷新，不得视作零占用。 
+/// * [unavailableQuantity] - 当前余额中不可用的数量，最多为balance；未知时为null。
+/// * [reservationQuantity] - 完整平台占用，可能大于钱包余额；不能将占用截断后当成已释放。
+/// * [pendingWithdrawalQuantity] - 占用中的待处理提现数量，包括等待签名/提交；未知时为null。
+/// * [availabilityStatus] - partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+/// * [unavailableReasons] 
 /// * [priceUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [pricingSource] - USD 估值来源；不代表余额或钱包所有权来源。
 /// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
@@ -91,7 +97,7 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   @BuiltValueField(wireName: r'native')
   bool get native_;
 
-  /// 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 
+  /// 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 此布尔值仅表示提现资格，不代表整笔balance可提；额度和Max须读取available_quantity。 
   @BuiltValueField(wireName: r'withdrawable')
   bool? get withdrawable;
 
@@ -108,6 +114,31 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'balance')
   String get balance;
+
+  /// BSC ERC20的服务器可用数量，已扣除平台订单、转账/补资和提现占用，下限为0；非交易准入token同样使用观察到的精度及自身占用。 提现额度、Max和输入上限使用此值，不使用balance；总余额仍用于持仓和估值。 null表示不可确定，禁止回退到balance。旧服务可能缺省，客户端须升级并刷新，不得视作零占用。 
+  @BuiltValueField(wireName: r'available_quantity')
+  String? get availableQuantity;
+
+  /// 当前余额中不可用的数量，最多为balance；未知时为null。
+  @BuiltValueField(wireName: r'unavailable_quantity')
+  String? get unavailableQuantity;
+
+  /// 完整平台占用，可能大于钱包余额；不能将占用截断后当成已释放。
+  @BuiltValueField(wireName: r'reservation_quantity')
+  String? get reservationQuantity;
+
+  /// 占用中的待处理提现数量，包括等待签名/提交；未知时为null。
+  @BuiltValueField(wireName: r'pending_withdrawal_quantity')
+  String? get pendingWithdrawalQuantity;
+
+  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  @BuiltValueField(wireName: r'availability_status')
+  PortfolioAssetAvailabilityStatusEnum? get availabilityStatus;
+  // enum availabilityStatusEnum {  complete,  partial,  unavailable,  };
+
+  @BuiltValueField(wireName: r'unavailable_reasons')
+  BuiltList<PortfolioAssetUnavailableReasonsEnum>? get unavailableReasons;
+  // enum unavailableReasonsEnum {  wallet_identity_unavailable,  confirmed_gtc_sell,  submitted_gtc_sell,  reservation_exceeds_balance,  platform_order,  pending_transfer,  pending_withdrawal,  };
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'price_usd')
@@ -264,6 +295,48 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
       object.balance,
       specifiedType: const FullType(String),
     );
+    if (object.availableQuantity != null) {
+      yield r'available_quantity';
+      yield serializers.serialize(
+        object.availableQuantity,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.unavailableQuantity != null) {
+      yield r'unavailable_quantity';
+      yield serializers.serialize(
+        object.unavailableQuantity,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.reservationQuantity != null) {
+      yield r'reservation_quantity';
+      yield serializers.serialize(
+        object.reservationQuantity,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.pendingWithdrawalQuantity != null) {
+      yield r'pending_withdrawal_quantity';
+      yield serializers.serialize(
+        object.pendingWithdrawalQuantity,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.availabilityStatus != null) {
+      yield r'availability_status';
+      yield serializers.serialize(
+        object.availabilityStatus,
+        specifiedType: const FullType(PortfolioAssetAvailabilityStatusEnum),
+      );
+    }
+    if (object.unavailableReasons != null) {
+      yield r'unavailable_reasons';
+      yield serializers.serialize(
+        object.unavailableReasons,
+        specifiedType: const FullType(BuiltList, [FullType(PortfolioAssetUnavailableReasonsEnum)]),
+      );
+    }
     if (object.priceUsd != null) {
       yield r'price_usd';
       yield serializers.serialize(
@@ -463,6 +536,54 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
           ) as String;
           result.balance = valueDes;
           break;
+        case r'available_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.availableQuantity = valueDes;
+          break;
+        case r'unavailable_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.unavailableQuantity = valueDes;
+          break;
+        case r'reservation_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.reservationQuantity = valueDes;
+          break;
+        case r'pending_withdrawal_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.pendingWithdrawalQuantity = valueDes;
+          break;
+        case r'availability_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioAssetAvailabilityStatusEnum),
+          ) as PortfolioAssetAvailabilityStatusEnum?;
+          if (valueDes == null) continue;
+          result.availabilityStatus = valueDes;
+          break;
+        case r'unavailable_reasons':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(PortfolioAssetUnavailableReasonsEnum)]),
+          ) as BuiltList<PortfolioAssetUnavailableReasonsEnum>?;
+          if (valueDes == null) continue;
+          result.unavailableReasons.replace(valueDes);
+          break;
         case r'price_usd':
           final valueDes = serializers.deserialize(
             value,
@@ -581,5 +702,50 @@ class PortfolioAssetAssetTypeEnum extends EnumClass {
 
   static BuiltSet<PortfolioAssetAssetTypeEnum> get values => _$portfolioAssetAssetTypeEnumValues;
   static PortfolioAssetAssetTypeEnum valueOf(String name) => _$portfolioAssetAssetTypeEnumValueOf(name);
+}
+
+class PortfolioAssetAvailabilityStatusEnum extends EnumClass {
+
+  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  @BuiltValueEnumConst(wireName: r'complete')
+  static const PortfolioAssetAvailabilityStatusEnum complete = _$portfolioAssetAvailabilityStatusEnum_complete;
+  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  @BuiltValueEnumConst(wireName: r'partial')
+  static const PortfolioAssetAvailabilityStatusEnum partial = _$portfolioAssetAvailabilityStatusEnum_partial;
+  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  @BuiltValueEnumConst(wireName: r'unavailable')
+  static const PortfolioAssetAvailabilityStatusEnum unavailable = _$portfolioAssetAvailabilityStatusEnum_unavailable;
+
+  static Serializer<PortfolioAssetAvailabilityStatusEnum> get serializer => _$portfolioAssetAvailabilityStatusEnumSerializer;
+
+  const PortfolioAssetAvailabilityStatusEnum._(String name): super(name);
+
+  static BuiltSet<PortfolioAssetAvailabilityStatusEnum> get values => _$portfolioAssetAvailabilityStatusEnumValues;
+  static PortfolioAssetAvailabilityStatusEnum valueOf(String name) => _$portfolioAssetAvailabilityStatusEnumValueOf(name);
+}
+
+class PortfolioAssetUnavailableReasonsEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'wallet_identity_unavailable')
+  static const PortfolioAssetUnavailableReasonsEnum walletIdentityUnavailable = _$portfolioAssetUnavailableReasonsEnum_walletIdentityUnavailable;
+  @BuiltValueEnumConst(wireName: r'confirmed_gtc_sell')
+  static const PortfolioAssetUnavailableReasonsEnum confirmedGtcSell = _$portfolioAssetUnavailableReasonsEnum_confirmedGtcSell;
+  @BuiltValueEnumConst(wireName: r'submitted_gtc_sell')
+  static const PortfolioAssetUnavailableReasonsEnum submittedGtcSell = _$portfolioAssetUnavailableReasonsEnum_submittedGtcSell;
+  @BuiltValueEnumConst(wireName: r'reservation_exceeds_balance')
+  static const PortfolioAssetUnavailableReasonsEnum reservationExceedsBalance = _$portfolioAssetUnavailableReasonsEnum_reservationExceedsBalance;
+  @BuiltValueEnumConst(wireName: r'platform_order')
+  static const PortfolioAssetUnavailableReasonsEnum platformOrder = _$portfolioAssetUnavailableReasonsEnum_platformOrder;
+  @BuiltValueEnumConst(wireName: r'pending_transfer')
+  static const PortfolioAssetUnavailableReasonsEnum pendingTransfer = _$portfolioAssetUnavailableReasonsEnum_pendingTransfer;
+  @BuiltValueEnumConst(wireName: r'pending_withdrawal')
+  static const PortfolioAssetUnavailableReasonsEnum pendingWithdrawal = _$portfolioAssetUnavailableReasonsEnum_pendingWithdrawal;
+
+  static Serializer<PortfolioAssetUnavailableReasonsEnum> get serializer => _$portfolioAssetUnavailableReasonsEnumSerializer;
+
+  const PortfolioAssetUnavailableReasonsEnum._(String name): super(name);
+
+  static BuiltSet<PortfolioAssetUnavailableReasonsEnum> get values => _$portfolioAssetUnavailableReasonsEnumValues;
+  static PortfolioAssetUnavailableReasonsEnum valueOf(String name) => _$portfolioAssetUnavailableReasonsEnumValueOf(name);
 }
 
