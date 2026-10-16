@@ -2128,6 +2128,54 @@ abstract class AppLocalizations {
   /// **'Type'**
   String get activityType;
 
+  /// No description provided for @activityTxHash.
+  ///
+  /// In en, this message translates to:
+  /// **'Tx Hash'**
+  String get activityTxHash;
+
+  /// No description provided for @activityFilledQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled quantity'**
+  String get activityFilledQuantity;
+
+  /// No description provided for @activityAveragePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Average price'**
+  String get activityAveragePrice;
+
+  /// No description provided for @activitySide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get activitySide;
+
+  /// No description provided for @activityClosePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Price'**
+  String get activityClosePrice;
+
+  /// No description provided for @activityTriggerPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger Price'**
+  String get activityTriggerPrice;
+
+  /// No description provided for @activityOrderAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Amount'**
+  String get activityOrderAmount;
+
+  /// No description provided for @activityFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get activityFee;
+
   /// No description provided for @activityStatus.
   ///
   /// In en, this message translates to:

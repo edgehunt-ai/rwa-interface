@@ -1063,6 +1063,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityType => '类型';
 
   @override
+  String get activityTxHash => '交易哈希';
+
+  @override
+  String get activityFilledQuantity => '成交数量';
+
+  @override
+  String get activityAveragePrice => '成交均价';
+
+  @override
+  String get activitySide => '方向';
+
+  @override
+  String get activityClosePrice => '平仓价格';
+
+  @override
+  String get activityTriggerPrice => '触发价格';
+
+  @override
+  String get activityOrderAmount => '订单金额';
+
+  @override
+  String get activityFee => '手续费';
+
+  @override
   String get activityStatus => '状态';
 
   @override

@@ -7,11 +7,129 @@ import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/repositories/activity_repository.dart';
 import 'package:nobell/ui/features/activity/views/activity_screen.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final language in ['zh', 'en']) {
+    for (final (side, chinese) in [
+      ('Long', '做多'),
+      ('Short', '做空'),
+      ('Buy', '买入'),
+      ('Sell', '卖出'),
+    ]) {
+      testWidgets('$side detail follows $language locale', (tester) async {
+        await configureDisplay(tester, size: const Size(393, 852));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authenticatedStateOverride,
+              activityRepositoryProvider.overrideWithValue(
+                _OrderActivityRepository([
+                  ActivityRecord(
+                    id: 'direction-order',
+                    category: ActivityCategory.orders,
+                    type: 'tpsl',
+                    businessType: ActivityBusinessType.stopLoss,
+                    status: ActivityState.pending,
+                    title: 'Stop loss NVDA',
+                    symbol: 'NVDA',
+                    fields: [ActivityField(label: 'Side', value: side)],
+                    createdAt: DateTime.utc(2026),
+                  ),
+                ]),
+              ),
+            ],
+            child: buildTestApp(
+              const ActivityScreen(),
+              locale: Locale(language),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('NVDA'));
+        await tester.pumpAndSettle();
+
+        expect(find.text(language == 'zh' ? chinese : side), findsOneWidget);
+        expect(find.text(language == 'zh' ? '方向' : 'Side'), findsOneWidget);
+        if (language == 'zh') expect(find.text(side), findsNothing);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  for (final language in ['zh', 'en']) {
+    testWidgets('order detail labels follow $language locale', (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      const labels = [
+        ('Tx Hash', '交易哈希'),
+        ('Quantity', '数量'),
+        ('Limit price', '限价'),
+        ('Filled quantity', '成交数量'),
+        ('Average price', '成交均价'),
+        ('Amount', '金额'),
+        ('Status', '状态'),
+      ];
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            activityRepositoryProvider.overrideWithValue(
+              _OrderActivityRepository([
+                ActivityRecord(
+                  id: 'localized-order',
+                  category: ActivityCategory.orders,
+                  type: 'limit',
+                  status: ActivityState.success,
+                  title: 'Sell AAPLB',
+                  symbol: 'AAPLB',
+                  fields: [
+                    for (final pair in labels)
+                      ActivityField(
+                        label: pair.$1,
+                        value: pair.$1 == 'Tx Hash'
+                            ? '0x1234567890abcdef'
+                            : '1',
+                      ),
+                    const ActivityField(label: 'Custom detail', value: '2'),
+                  ],
+                  createdAt: DateTime.utc(2026),
+                ),
+              ]),
+            ),
+          ],
+          child: buildTestApp(const ActivityScreen(), locale: Locale(language)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('AAPLB'));
+      await tester.pumpAndSettle();
+
+      for (final (english, chinese) in labels) {
+        // The existing English resource capitalizes Limit Price.
+        final expected = language == 'zh'
+            ? chinese
+            : english == 'Limit price'
+            ? 'Limit Price'
+            : english;
+        expect(find.text(expected), findsWidgets);
+        if (language == 'zh') expect(find.text(english), findsNothing);
+      }
+      expect(find.text('Custom detail'), findsOneWidget);
+      final copyLabel = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label ==
+                (language == 'zh' ? '交易哈希' : 'Tx Hash') &&
+            widget.properties.button == true,
+      );
+      expect(copyLabel, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('manual close is labelled Close and shows close price and fee', (
     tester,
   ) async {
@@ -53,6 +171,11 @@ void main() {
     // The badge must say Close — manual closes are not stop-losses.
     expect(find.text('Close'), findsWidgets);
     expect(find.text('Stop loss'), findsNothing);
+    _expectBadgeColor(
+      tester,
+      'Close',
+      AppTheme.light.extension<AppRwaColors>()!.secondaryText,
+    );
 
     await tester.tap(find.text('SNDK'));
     await tester.pumpAndSettle();
@@ -120,6 +243,8 @@ void main() {
 
     expect(find.text('Stop loss'), findsOneWidget);
     expect(find.text('Buy / Limit Price'), findsOneWidget);
+    _expectBadgeColor(tester, 'Stop loss', kShortTradeColor);
+    _expectBadgeColor(tester, 'Buy / Limit Price', const Color(0xFF04A08B));
 
     await tester.tap(find.text('AAPL'));
     await tester.pumpAndSettle();
@@ -239,6 +364,22 @@ void main() {
       closeTo(tester.getRect(activityCard).right - 16, 0.01),
     );
   });
+}
+
+void _expectBadgeColor(WidgetTester tester, String label, Color color) {
+  final badge = find.byWidgetPredicate(
+    (widget) =>
+        widget is Text && widget.data == label && widget.style?.fontSize == 12,
+  );
+  expect(badge, findsOneWidget);
+  expect(tester.widget<Text>(badge).style?.color, color);
+  final container = tester.widget<Container>(
+    find.ancestor(of: badge, matching: find.byType(Container)).first,
+  );
+  expect(
+    (container.decoration! as BoxDecoration).color,
+    color.withValues(alpha: .12),
+  );
 }
 
 final class _OrderActivityRepository implements ActivityRepository {

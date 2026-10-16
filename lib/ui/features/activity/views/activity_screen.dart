@@ -927,7 +927,11 @@ class _TypeBadge extends StatelessWidget {
     final badgeColor = order
         ? (positive == true
               ? const Color(0xFF04A08B)
-              : (isSell ? kShortTradeColor : const Color(0xFF04A08B)))
+              : direction == l10n.close
+              ? colors.secondaryText
+              : (isSell || direction == l10n.stopLoss)
+              ? kShortTradeColor
+              : const Color(0xFF04A08B))
         : colors.secondaryText;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1104,13 +1108,15 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAddress = field.value.startsWith('0x') || field.value.length > 24;
-    final displayValue = _detailValue(field);
+    final l10n = AppLocalizations.of(context);
+    final displayValue = _detailValue(field, l10n);
+    final label = _detailLabel(field.label, l10n);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          field.label,
+          label,
           style: TextStyle(
             fontSize: 12,
             height: 16 / 12,
@@ -1121,7 +1127,7 @@ class _DetailRow extends StatelessWidget {
         const SizedBox(width: 12),
         Flexible(
           child: isAddress
-              ? _CompactCopyValue(value: field.value, label: field.label)
+              ? _CompactCopyValue(value: field.value, label: label)
               : Text(
                   displayValue,
                   textAlign: TextAlign.right,
@@ -1138,8 +1144,35 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-String _detailValue(ActivityField field) {
+String _detailLabel(String label, AppLocalizations l10n) =>
+    switch (label.trim().toLowerCase().replaceAll(RegExp(r'[_\s]+'), ' ')) {
+      'tx hash' || 'transaction hash' => l10n.activityTxHash,
+      'quantity' => l10n.quantity,
+      'limit price' => l10n.limitPrice,
+      'filled quantity' => l10n.activityFilledQuantity,
+      'average price' => l10n.activityAveragePrice,
+      'amount' => l10n.amount,
+      'status' => l10n.status,
+      'side' => l10n.activitySide,
+      'close price' => l10n.activityClosePrice,
+      'trigger price' => l10n.activityTriggerPrice,
+      'order amount' => l10n.activityOrderAmount,
+      'filled' => l10n.filled,
+      'fee' => l10n.activityFee,
+      _ => label,
+    };
+
+String _detailValue(ActivityField field, AppLocalizations l10n) {
   final label = field.label.trim().toLowerCase();
+  if (label == 'side') {
+    return switch (field.value.trim().toLowerCase()) {
+      'long' => l10n.long,
+      'short' => l10n.short,
+      'buy' => l10n.buy,
+      'sell' => l10n.sell,
+      _ => field.value,
+    };
+  }
   final isAmount =
       label == 'amount' || label == 'send amount' || label == 'receive amount';
   if (!isAmount) return field.value;

@@ -1103,6 +1103,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityType => 'Type';
 
   @override
+  String get activityTxHash => 'Tx Hash';
+
+  @override
+  String get activityFilledQuantity => 'Filled quantity';
+
+  @override
+  String get activityAveragePrice => 'Average price';
+
+  @override
+  String get activitySide => 'Side';
+
+  @override
+  String get activityClosePrice => 'Close Price';
+
+  @override
+  String get activityTriggerPrice => 'Trigger Price';
+
+  @override
+  String get activityOrderAmount => 'Order Amount';
+
+  @override
+  String get activityFee => 'Fee';
+
+  @override
   String get activityStatus => 'Status';
 
   @override
