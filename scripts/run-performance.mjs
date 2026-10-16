@@ -99,8 +99,21 @@ const result = spawnSync('flutter', [
   `--dart-define=PERF_TRACE_SCENARIOS=${diagnosticTracing}`,
   ...(diagnosticTracing ? ['--no-dds'] : []),
   '--timeout=900',
-], { stdio: 'inherit' });
-if (result.error || result.status !== 0) process.exit(result.status || 1);
+], {
+  stdio: 'inherit',
+  // Flutter's drive timeout does not bound VM Service connection retries.
+  // Leave time for diagnostics and artifact upload before the CI job expires.
+  timeout: 25 * 60 * 1000,
+  killSignal: 'SIGKILL',
+});
+if (result.error || result.status !== 0) {
+  if (android) {
+    const logcat = captureOptional('adb', ['-s', device.id, 'logcat', '-d', '-t', '2000']);
+    if (logcat) await writeFile(`${output}/android-logcat.txt`, logcat);
+  }
+  console.error(`Native performance run failed: ${result.error?.message ?? result.status}`);
+  process.exit(result.status || 1);
+}
 const raw = JSON.parse(await readFile(`${output}/raw.json`, 'utf8'));
 raw.environment = environment;
 raw.machine = machine;

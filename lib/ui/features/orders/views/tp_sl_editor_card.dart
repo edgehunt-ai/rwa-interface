@@ -238,7 +238,7 @@ class _TpSlAmount extends StatelessWidget {
               final textPainter = TextPainter(
                 text: TextSpan(
                   text:
-                      '${value.text.isEmpty ? '0' : value.text}${suffix ?? ''}',
+                      '${prefix ?? ''}${value.text.isEmpty ? '0' : value.text}${suffix ?? ''}',
                   style: amountStyle,
                 ),
                 textDirection: Directionality.of(context),

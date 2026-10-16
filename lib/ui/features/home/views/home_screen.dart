@@ -39,7 +39,9 @@ class HomeScreen extends ConsumerWidget {
     final authentication = ref.watch(authenticationProvider);
     final authenticated = authentication is AuthenticationAuthenticated;
     final initializing = authentication is AuthenticationInitializing;
-    final restoreFailure = authentication is AuthenticationFailed
+    final restoreFailure =
+        authentication is AuthenticationFailed &&
+            authentication.failure.retryable
         ? authentication.failure
         : null;
     final portfolio = authenticated

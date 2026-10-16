@@ -65,7 +65,7 @@ void main() {
           marketsRepositoryProvider.overrideWithValue(_Markets()),
         ],
       );
-    await tester.pumpWidget(
+      await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: buildTestApp(const HomeScreen()),
@@ -86,9 +86,40 @@ void main() {
       expect(find.text(r'$12,580.42'), findsOneWidget);
       expect(find.byType(PrivyLoginScreen), findsNothing);
       expect(tester.takeException(), isNull);
-    await _disposeContainerAfterWidgets(tester, container);
+      await _disposeContainerAfterWidgets(tester, container);
     },
   );
+
+  testWidgets('terminal restoration failure keeps login available', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    final container = ProviderContainer(
+      overrides: [
+        authenticationProvider.overrideWithBuild(
+          (_, _) => const AuthenticationFailed(
+            IdentityFailure(
+              AuthenticationFailureCode.provider,
+              retryable: false,
+            ),
+          ),
+        ),
+        marketsRepositoryProvider.overrideWithValue(_Markets()),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildTestApp(const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ready when you are'), findsOneWidget);
+    expect(find.text('Log in'), findsWidgets);
+    expect(find.text('Retry'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await _disposeContainerAfterWidgets(tester, container);
+  });
 
   for (final scenario in [
     (
