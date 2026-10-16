@@ -2871,19 +2871,21 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
               ),
             ],
           ),
-          if (canExpand) ...[
-            const SizedBox(width: 8),
-            AnimatedRotation(
-              turns: expanded ? 0 : -.25,
-              duration: const Duration(milliseconds: 180),
-              child: SvgPicture.asset(
-                'assets/figma/portfolio/chevron_down.svg',
-                key: Key('perps-margin-chevron-${widget.label}'),
-                width: 20,
-                height: 20,
+          const SizedBox(width: 8),
+          AnimatedRotation(
+            turns: expanded && canExpand ? 0 : .5,
+            duration: const Duration(milliseconds: 180),
+            child: SvgPicture.asset(
+              'assets/figma/portfolio/chevron_down.svg',
+              key: Key('perps-margin-chevron-${widget.label}'),
+              width: 20,
+              height: 20,
+              colorFilter: ColorFilter.mode(
+                canExpand ? colors.primaryText : colors.secondaryText,
+                BlendMode.srcIn,
               ),
             ),
-          ],
+          ),
         ],
       ),
     );

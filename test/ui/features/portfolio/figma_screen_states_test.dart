@@ -503,6 +503,10 @@ void main() {
       expect(find.text('Max Withdraw'), findsOneWidget);
       expect(find.text(r'$1,250.04'), findsOneWidget);
 
+      await tester.tap(find.text('Max Withdraw'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
+
       await tester.tap(
         find.byKey(const Key('perps-margin-header-Isolated Margin')),
       );
@@ -769,7 +773,7 @@ void main() {
     for (final label in ['Isolated Margin', 'Open Order Margin']) {
       final header = find.byKey(Key('perps-margin-header-$label'));
       expect(header, findsOneWidget);
-      expect(find.byKey(Key('perps-margin-chevron-$label')), findsNothing);
+      expect(find.byKey(Key('perps-margin-chevron-$label')), findsOneWidget);
       expect(
         find.ancestor(of: header, matching: find.byType(InkWell)),
         findsNothing,
