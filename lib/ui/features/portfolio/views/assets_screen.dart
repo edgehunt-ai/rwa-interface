@@ -25,6 +25,7 @@ import 'package:nobell/ui/core/feedback/rwa_tooltip.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
+import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
@@ -2010,7 +2011,7 @@ class _SpotFilters extends StatelessWidget {
     return Row(
       children: [
         Flexible(
-          child: _SpotFilterMenu<_SpotProductFilter>(
+          child: AppFilterMenu<_SpotProductFilter>(
             key: const Key('spot-product-filter'),
             value: productFilter,
             label: switch (productFilter) {
@@ -2019,116 +2020,35 @@ class _SpotFilters extends StatelessWidget {
               _SpotProductFilter.bstocks => l10n.bstocks,
             },
             options: [
-              _FilterOption(_SpotProductFilter.all, l10n.allTokens),
-              _FilterOption(_SpotProductFilter.cash, l10n.cash),
-              _FilterOption(_SpotProductFilter.bstocks, l10n.bstocks),
+              AppFilterOption(
+                value: _SpotProductFilter.all,
+                label: l10n.allTokens,
+              ),
+              AppFilterOption(value: _SpotProductFilter.cash, label: l10n.cash),
+              AppFilterOption(
+                value: _SpotProductFilter.bstocks,
+                label: l10n.bstocks,
+              ),
             ],
             onChanged: onProductChanged,
           ),
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: _SpotFilterMenu<String>(
+          child: AppFilterMenu<String>(
             key: const Key('spot-network-filter'),
             value: networkFilter ?? '',
             label: networkFilter ?? l10n.allNetworks,
             options: [
-              _FilterOption('', l10n.allNetworks),
-              for (final network in networks) _FilterOption(network, network),
+              AppFilterOption(value: '', label: l10n.allNetworks),
+              for (final network in networks)
+                AppFilterOption(value: network, label: network),
             ],
             onChanged: (value) =>
                 onNetworkChanged(value.isEmpty ? null : value),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _FilterOption<T> {
-  const _FilterOption(this.value, this.label);
-
-  final T value;
-  final String label;
-}
-
-class _SpotFilterMenu<T> extends StatelessWidget {
-  const _SpotFilterMenu({
-    super.key,
-    required this.value,
-    required this.label,
-    required this.options,
-    required this.onChanged,
-  });
-
-  final T value;
-  final String label;
-  final List<_FilterOption<T>> options;
-  final ValueChanged<T> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return PopupMenuButton<T>(
-      color: colors.surface,
-      constraints: const BoxConstraints.tightFor(width: 168),
-      menuPadding: const EdgeInsets.all(4),
-      offset: const Offset(0, 40),
-      onSelected: onChanged,
-      itemBuilder: (context) => [
-        for (final option in options)
-          PopupMenuItem<T>(
-            value: option.value,
-            height: 40,
-            padding: EdgeInsets.zero,
-            child: Container(
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: option.value == value ? colors.selectedSoft : null,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(option.label),
-            ),
-          ),
-      ],
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 135),
-        child: SizedBox(
-          height: 36,
-          child: OutlinedButton(
-            onPressed: null,
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(120, 36),
-              maximumSize: const Size(135, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              backgroundColor: colors.surface,
-              disabledBackgroundColor: colors.surface,
-              disabledForegroundColor: colors.primaryText,
-              side: BorderSide(color: colors.border),
-              textStyle: const TextStyle(
-                fontSize: 13,
-                height: 18 / 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-                SvgPicture.asset(
-                  'assets/figma/portfolio/chevron_down.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

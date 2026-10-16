@@ -17,6 +17,7 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/features/activity/providers/activity_provider.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/app/providers/session_scope.dart';
@@ -406,122 +407,6 @@ List<_ActivityTypeOption> _typeOptions(
   ];
 }
 
-class _ActivityFilterOption<T> {
-  const _ActivityFilterOption({required this.value, required this.label});
-  final T value;
-  final String label;
-}
-
-class _ActivityFilterMenu<T> extends StatelessWidget {
-  const _ActivityFilterMenu({
-    required this.value,
-    required this.options,
-    required this.label,
-    required this.onChanged,
-    this.width = 120,
-  });
-
-  final T value;
-  final List<_ActivityFilterOption<T>> options;
-  final String label;
-  final ValueChanged<T> onChanged;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    // PopupMenuButton treats a null selected value as menu dismissal, so a
-    // nullable filter option ("All") can never be selected directly. Use a
-    // non-null option index for the menu value and forward the actual filter
-    // value, including null, through onChanged.
-    return Theme(
-      data: Theme.of(context).copyWith(
-        splashFactory: NoSplash.splashFactory,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-      ),
-      child: PopupMenuButton<int>(
-        tooltip: label,
-        color: colors.surface,
-        constraints: const BoxConstraints.tightFor(width: 168),
-        menuPadding: const EdgeInsets.all(4),
-        offset: const Offset(0, 40),
-        onSelected: (index) => onChanged(options[index].value),
-        itemBuilder: (context) => options
-            .asMap()
-            .entries
-            .map(
-              (entry) => PopupMenuItem<int>(
-                value: entry.key,
-                height: 40,
-                padding: EdgeInsets.zero,
-                child: Container(
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: entry.value.value == value
-                        ? colors.selectedSoft
-                        : null,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(entry.value.label),
-                ),
-              ),
-            )
-            .toList(growable: false),
-        child: _FilterButton(width: width, label: label),
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.label, required this.width});
-
-  final String label;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return SizedBox(
-      width: width,
-      height: 36,
-      child: OutlinedButton(
-        onPressed: null,
-        style: OutlinedButton.styleFrom(
-          minimumSize: Size(width, 36),
-          maximumSize: Size(width, 36),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: colors.surface,
-          disabledBackgroundColor: colors.surface,
-          disabledForegroundColor: colors.primaryText,
-          side: BorderSide(color: colors.border),
-          textStyle: const TextStyle(
-            fontSize: 13,
-            height: 18 / 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-            SvgPicture.asset(
-              'assets/figma/home_markets/chevron_down.svg',
-              width: 20,
-              height: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _Filters extends StatelessWidget {
   const _Filters({
     required this.category,
@@ -544,20 +429,17 @@ class _Filters extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final productOptions = [
-      _ActivityFilterOption<MarketProductKind?>(
-        value: null,
-        label: l10n.allProducts,
-      ),
-      const _ActivityFilterOption<MarketProductKind?>(
+      AppFilterOption<MarketProductKind?>(value: null, label: l10n.allProducts),
+      const AppFilterOption<MarketProductKind?>(
         value: MarketProductKind.bstock,
         label: 'bStocks',
       ),
-      _ActivityFilterOption<MarketProductKind?>(
+      AppFilterOption<MarketProductKind?>(
         value: MarketProductKind.perp,
         label: l10n.hip3Perps,
       ),
     ];
-    final product = _ActivityFilterMenu<MarketProductKind?>(
+    final product = AppFilterMenu<MarketProductKind?>(
       value: productKind,
       options: productOptions,
       label: productOptions
@@ -567,15 +449,13 @@ class _Filters extends StatelessWidget {
       width: 135,
     );
     final typeOptions = [
-      _ActivityFilterOption<String?>(value: null, label: l10n.activityType),
+      AppFilterOption<String?>(value: null, label: l10n.activityType),
       ..._typeOptions(context, category).map(
-        (option) => _ActivityFilterOption<String?>(
-          value: option.value,
-          label: option.label,
-        ),
+        (option) =>
+            AppFilterOption<String?>(value: option.value, label: option.label),
       ),
     ];
-    final typeButton = _ActivityFilterMenu<String?>(
+    final typeButton = AppFilterMenu<String?>(
       value: type,
       options: typeOptions,
       label: type == null
@@ -585,28 +465,25 @@ class _Filters extends StatelessWidget {
       width: 83,
     );
     final statusOptions = [
-      _ActivityFilterOption<ActivityState?>(
-        value: null,
-        label: l10n.activityStatus,
-      ),
-      _ActivityFilterOption<ActivityState?>(
+      AppFilterOption<ActivityState?>(value: null, label: l10n.activityStatus),
+      AppFilterOption<ActivityState?>(
         value: ActivityState.pending,
         label: l10n.activityInProgress,
       ),
-      _ActivityFilterOption<ActivityState?>(
+      AppFilterOption<ActivityState?>(
         value: ActivityState.success,
         label: l10n.activityCompleted,
       ),
-      _ActivityFilterOption<ActivityState?>(
+      AppFilterOption<ActivityState?>(
         value: ActivityState.failed,
         label: l10n.activityFailed,
       ),
-      _ActivityFilterOption<ActivityState?>(
+      AppFilterOption<ActivityState?>(
         value: ActivityState.cancelled,
         label: l10n.activityCancelled,
       ),
     ];
-    final statusButton = _ActivityFilterMenu<ActivityState?>(
+    final statusButton = AppFilterMenu<ActivityState?>(
       value: status,
       options: statusOptions,
       label: status == null
