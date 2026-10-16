@@ -245,7 +245,17 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     onDeposit: () {
                       final router = GoRouter.of(context);
                       Navigator.of(context).pop(false);
-                      router.pushNamed(AppRoutes.depositName);
+                      router.pushNamed(
+                        AppRoutes.depositName,
+                        queryParameters: {
+                          'chain':
+                              _plan.targetNetwork ??
+                              (widget.kind == MarketProductKind.bstock
+                                  ? 'BSC'
+                                  : 'Hyperliquid'),
+                          'token': _targetAsset,
+                        },
+                      );
                     },
                   ),
               ],

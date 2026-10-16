@@ -2181,8 +2181,20 @@ class _CashRow extends StatelessWidget {
           },
           onWithdraw: () {
             final router = GoRouter.of(context);
+            final chain = _depositNetworkLabel(
+              details?.network ?? balance.chain,
+            );
             Navigator.of(sheetContext).pop();
-            router.pushNamed(AppRoutes.withdrawalAssetSelectName);
+            if (chain == null) {
+              router.pushNamed(AppRoutes.withdrawalAssetSelectName);
+              return;
+            }
+            router.push(
+              AppRoutes.withdrawalLocation(
+                token: balance.symbol.toUpperCase(),
+                chain: chain,
+              ),
+            );
           },
           onClose: () => Navigator.of(sheetContext).pop(),
         ),

@@ -1276,6 +1276,59 @@ void main() {
     expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
   });
 
+  testWidgets('Spot detail Withdraw opens the matching token and network', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: AppRoutes.assetsPath,
+      routes: [
+        GoRoute(
+          path: AppRoutes.assetsPath,
+          builder: (_, _) => const AssetsScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.withdrawalName,
+          path: AppRoutes.withdrawalPath,
+          builder: (_, state) => Scaffold(
+            body: Text(
+              '${state.uri.queryParameters['chain']}:'
+              '${state.uri.queryParameters['token']}:'
+              '${state.uri.queryParameters['source']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          portfolioRepositoryProvider.overrideWithValue(
+            _SpotNetworkPortfolio(),
+          ),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final usdc = find.text('USDC');
+    await _scrollAssetsUntilVisible(tester, usdc);
+    await tester.tap(usdc);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('cash-action-sheet')),
+        matching: find.text('Withdraw'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Arbitrum:USDC:spot'), findsOneWidget);
+    expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
+  });
+
   testWidgets('Assets localizes the bStocks unrealized PnL label', (
     tester,
   ) async {
