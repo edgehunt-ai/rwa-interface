@@ -6,12 +6,15 @@ abstract interface class PushMessagingGateway {
   Future<PushMessage?> getInitialMessage();
   Stream<String> get tokenRefreshes;
   Stream<PushMessage> get openedMessages;
+  Stream<PushMessage> get foregroundMessages;
 }
 
 enum PushPermission { granted, denied, unavailable }
 
 final class PushMessage {
-  const PushMessage(this.data);
+  const PushMessage(this.data, {this.title, this.body});
 
   final Map<String, String> data;
+  final String? title;
+  final String? body;
 }

@@ -63,6 +63,13 @@ final class FirebasePushMessagingGateway implements PushMessagingGateway {
     yield* FirebaseMessaging.onMessageOpenedApp.map(_mapMessage);
   }
 
+  @override
+  Stream<PushMessage> get foregroundMessages async* {
+    if (!isSupported) return;
+    await _ensureInitialized();
+    yield* FirebaseMessaging.onMessage.map(_mapMessage);
+  }
+
   Future<void> _ensureInitialized() =>
       _initialization ??= _initializeFirebase().then((_) {});
 
@@ -78,5 +85,7 @@ final class FirebasePushMessagingGateway implements PushMessagingGateway {
 
   PushMessage _mapMessage(RemoteMessage message) => PushMessage(
     message.data.map((key, value) => MapEntry(key, value.toString())),
+    title: message.notification?.title ?? message.data['title']?.toString(),
+    body: message.notification?.body ?? message.data['body']?.toString(),
   );
 }
