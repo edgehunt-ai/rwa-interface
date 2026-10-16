@@ -24,6 +24,7 @@ import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart';
@@ -1468,10 +1469,16 @@ class _TokenSelector extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _NetworkFilter(
-                        networks: networks,
-                        selected: networkFilter,
-                        onSelected: onNetworkChanged,
+                      AppFilterMenu<String?>(
+                        key: const Key('transfer-token-network-filter'),
+                        value: networkFilter,
+                        label: networkFilter ?? l10n.allNetworks,
+                        options: [
+                          AppFilterOption(value: null, label: l10n.allNetworks),
+                          for (final network in networks)
+                            AppFilterOption(value: network, label: network),
+                        ],
+                        onChanged: onNetworkChanged,
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -1497,78 +1504,6 @@ class _TokenSelector extends StatelessWidget {
                     },
                   ),
                 ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NetworkFilter extends StatelessWidget {
-  const _NetworkFilter({
-    required this.networks,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final List<String> networks;
-  final String? selected;
-  final ValueChanged<String?> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
-    return PopupMenuButton<String>(
-      key: const Key('transfer-token-network-filter'),
-      color: colors.surface,
-      constraints: const BoxConstraints.tightFor(width: 168),
-      menuPadding: const EdgeInsets.all(4),
-      offset: const Offset(0, 40),
-      onSelected: (value) => onSelected(value.isEmpty ? null : value),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          value: '',
-          height: 40,
-          child: Text(l10n.allNetworks),
-        ),
-        for (final network in networks)
-          PopupMenuItem<String>(
-            value: network,
-            height: 40,
-            child: Text(network),
-          ),
-      ],
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 135),
-        child: Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  selected ?? l10n.allNetworks,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    height: 18 / 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              SvgPicture.asset(
-                'assets/figma/portfolio/chevron_down.svg',
-                width: 20,
-                height: 20,
-              ),
             ],
           ),
         ),

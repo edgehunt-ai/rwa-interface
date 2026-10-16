@@ -65,6 +65,18 @@ void main() {
   );
 
   test(
+    'HIP-3 detail preserves the product identity without a product listing',
+    () async {
+      final product = await MarketsRepositoryImpl(_Markets('100')).getProduct(
+        const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
+      );
+
+      expect(product.productId, 'xyz:NVDA');
+      expect(product.tradable, isTrue);
+    },
+  );
+
+  test(
     'bStocks snapshot preserves the product ID from the order book',
     () async {
       final snapshot = await MarketsRepositoryImpl(_Markets('100')).getSnapshot(
@@ -193,6 +205,18 @@ final class _Markets implements MarketsService {
       ..kind = kind
       ..logoUrl = 'https://cdn.example.com/detail.png'
       ..logoText = 'DT'
+      ..hip3Market = kind == wire.ProductKind.perp
+          ? wire.standardSerializers.deserializeWith(
+              wire.Hip3PublicMarket.serializer,
+              {
+                'product_id': 'xyz:$symbol',
+                'venue': 'xyz',
+                'environment': 'mainnet',
+                'settlement_asset': 'USDC',
+                'tradable': true,
+              },
+            )
+          : null
       ..quote.update((quote) => quote.price = financial)
       ..assetInfo.update(
         (info) => info

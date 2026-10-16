@@ -3015,6 +3015,11 @@ class _MarginModeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    const disabledColor = Color(0xFF676776);
+    final optionTextColor = enabled ? colors.primaryText : disabledColor;
+    final optionDescriptionColor = enabled
+        ? (selected ? colors.primaryText : colors.secondaryText)
+        : disabledColor;
     return Semantics(
       button: enabled,
       selected: selected,
@@ -3039,7 +3044,15 @@ class _MarginModeOption extends StatelessWidget {
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: icon,
+                child: enabled
+                    ? icon
+                    : ColorFiltered(
+                        colorFilter: const ColorFilter.mode(
+                          disabledColor,
+                          BlendMode.srcIn,
+                        ),
+                        child: icon,
+                      ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -3048,16 +3061,15 @@ class _MarginModeOption extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: optionTextColor,
+                      ),
                     ),
                     Text(
                       description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: selected
-                            ? colors.primaryText
-                            : colors.secondaryText,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: optionDescriptionColor),
                     ),
                   ],
                 ),

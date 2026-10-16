@@ -232,35 +232,53 @@ class _TpSlAmount extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Flexible(
-          child: SizedBox(
-            width: 112,
-            child: TextField(
-              key: fieldKey,
-              controller: controller,
-              enabled: enabled,
-              textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-                signed: true,
-              ),
-              style: amountStyle,
-              cursorColor: colors.primaryText,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: false,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                hintText: '0',
-                hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
-                prefixText: prefix,
-                prefixStyle: amountStyle,
-                suffixText: suffix,
-                suffixStyle: amountStyle,
-              ),
-            ),
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: controller,
+            builder: (context, value, _) {
+              final textPainter = TextPainter(
+                text: TextSpan(
+                  text:
+                      '${prefix ?? ''}${value.text.isEmpty ? '0' : value.text}${suffix ?? ''}',
+                  style: amountStyle,
+                ),
+                textDirection: Directionality.of(context),
+                textScaler: MediaQuery.textScalerOf(context),
+              )..layout();
+              final fieldWidth = alignEnd
+                  ? textPainter.width.ceilToDouble() + 2
+                  : 112.0;
+              textPainter.dispose();
+              return SizedBox(
+                width: fieldWidth,
+                child: TextField(
+                  key: fieldKey,
+                  controller: controller,
+                  enabled: enabled,
+                  textAlign: TextAlign.start,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  style: amountStyle,
+                  cursorColor: colors.primaryText,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    hintText: '0',
+                    hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
+                    prefixText: prefix,
+                    prefixStyle: amountStyle,
+                    suffixText: suffix,
+                    suffixStyle: amountStyle,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],

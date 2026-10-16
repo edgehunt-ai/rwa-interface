@@ -599,6 +599,20 @@ void main() {
     expect(find.text('Native'), findsNothing);
     expect(find.text('USDT'), findsNothing);
 
+    await tester.tap(find.byKey(const ValueKey('withdrawal-network-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arbitrum').last);
+    await tester.pumpAndSettle();
+    expect(find.text('NVDAB'), findsNothing);
+    expect(find.text('USDC'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('withdrawal-network-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All network').last);
+    await tester.pumpAndSettle();
+    expect(find.text('NVDAB'), findsOneWidget);
+    expect(find.text('USDC'), findsOneWidget);
+
     await tester.tap(find.text('USDC'));
     await tester.pumpAndSettle();
     expect(find.text('Network'), findsOneWidget);

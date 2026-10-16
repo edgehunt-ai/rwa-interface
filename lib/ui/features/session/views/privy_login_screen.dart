@@ -415,6 +415,8 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                             failure?.code ==
                                 AuthenticationFailureCode.walletSync ||
                             failure?.code ==
+                                AuthenticationFailureCode.backendSession ||
+                            failure?.code ==
                                 AuthenticationFailureCode.expired) ...[
                           const SizedBox(height: 12),
                           OutlinedButton(

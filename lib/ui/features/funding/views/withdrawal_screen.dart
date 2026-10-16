@@ -23,6 +23,7 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -655,11 +656,12 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
         const SizedBox(height: 60),
         FilledButton(
           onPressed: canSubmit ? _review : null,
-          child: Text(
-            widget.submitting
-                ? l10n.preparingWithdrawal
-                : l10n.reviewWithdrawal,
-          ),
+          child: widget.submitting
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.reviewWithdrawal),
         ),
       ],
     );
@@ -1070,50 +1072,19 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerLeft,
-              child: PopupMenuButton<String?>(
-                initialValue: network,
-                onSelected: (value) => setState(() => network = value),
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: null, child: Text(l10n.allNetworks)),
+              child: AppFilterMenu<String?>(
+                key: const ValueKey('withdrawal-network-filter'),
+                value: network,
+                label: network ?? l10n.allNetworks,
+                onChanged: (value) => setState(() => network = value),
+                options: [
+                  AppFilterOption(value: null, label: l10n.allNetworks),
                   for (final value
                       in (assets.value ?? const <WithdrawableAsset>[])
                           .map((asset) => asset.chain)
                           .toSet())
-                    PopupMenuItem(value: value, child: Text(value)),
+                    AppFilterOption(value: value, label: value),
                 ],
-                child: Container(
-                  key: const ValueKey('withdrawal-network-filter'),
-                  width: 135,
-                  height: 36,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    border: Border.all(color: colors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          network ?? l10n.allNetworks,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            height: 18 / 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      SvgPicture.asset(
-                        'assets/figma/home_markets/chevron_down.svg',
-                        width: 20,
-                        height: 20,
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 8),

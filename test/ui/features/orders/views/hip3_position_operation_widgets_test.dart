@@ -25,6 +25,7 @@ import 'package:nobell/domain/repositories/orders_repository.dart';
 import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
+import 'package:nobell/ui/features/positions/views/hip3_protection_order_results.dart';
 import 'package:nobell/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:nobell/ui/features/orders/views/hip3_segmented_control.dart';
 import 'package:nobell/ui/features/orders/views/hip3_open_orders_panel.dart';
@@ -118,7 +119,7 @@ void main() {
       if (entry.value != null) {
         expect(find.text(entry.value!), findsOneWidget);
       }
-      expect(find.text('Attached to order: parent'), findsOneWidget);
+      expect(find.text('Attached to order: parent'), findsNothing);
       if (entry.key == 'active') {
         expect(find.text('Protection active'), findsNothing);
       }
@@ -211,6 +212,16 @@ void main() {
           expect(find.byIcon(Icons.help_outline), findsNothing);
         } else {
           expect(find.text('TP/SL pending'), findsOneWidget);
+          final iconBounds = tester.getRect(find.byIcon(Icons.help_outline));
+          final summaryBounds = tester.getRect(
+            find
+                .ancestor(
+                  of: find.byIcon(Icons.help_outline),
+                  matching: find.byType(Container),
+                )
+                .first,
+          );
+          expect(summaryBounds.right - iconBounds.right, 8);
           expect(
             find.text(switch (legs) {
               'both' => 'TP 200 / SL 130',
@@ -235,6 +246,35 @@ void main() {
       });
     }
   }
+  testWidgets('open order card localizes metrics and protection summary', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(
+          Hip3OpenOrderCard(
+            order: _order(
+              'parent',
+              tpSl: TakeProfitStopLoss(
+                takeProfit: DecimalValue('200'),
+                stopLoss: DecimalValue('130'),
+              ),
+            ),
+            onChanged: () {},
+          ),
+          locale: const Locale('zh'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('已成交 / 总计'), findsOneWidget);
+    expect(find.text('价格'), findsOneWidget);
+    expect(find.text('进度'), findsOneWidget);
+    expect(find.text('止盈 200 / 止损 130'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('successful parent cancellation shows a success toast', (
     tester,
   ) async {
@@ -349,8 +389,13 @@ void main() {
         expect(find.byType(AlertDialog), findsNothing);
         if (initiallyPending) {
           expect(find.byType(PositionTpSlSheet), findsOneWidget);
-          expect(find.text('Protection order results'), findsOneWidget);
-          expect(find.text('Waiting for confirmation'), findsWidgets);
+          expect(find.text('Protection order results'), findsNothing);
+          expect(find.byType(Hip3ProtectionOrderResults), findsNothing);
+          expect(find.text('Waiting for confirmation'), findsNothing);
+          expect(find.text('Check progress'), findsNothing);
+          expect(find.text('protection-result'), findsNothing);
+          expect(find.text('new-tp'), findsNothing);
+          expect(find.byType(CircularProgressIndicator), findsOneWidget);
           expect(find.text('Confirmed'), findsNothing);
           refreshed.complete(completed);
           await tester.pump();

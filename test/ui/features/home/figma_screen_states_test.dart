@@ -36,6 +36,91 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'failed restore offers retry and recovers without opening login',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      final container = ProviderContainer(
+        overrides: [
+          authenticationProvider.overrideWithBuild(
+            (_, _) => const AuthenticationFailed(
+              IdentityFailure(
+                AuthenticationFailureCode.backendSession,
+                retryable: true,
+                requestId: 'restore-request',
+              ),
+            ),
+          ),
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(
+              restoredPrincipal: const IdentityPrincipal('home-user'),
+            ),
+          ),
+          privyConfigurationProvider.overrideWithValue(
+            const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+          ),
+          sessionRepositoryProvider.overrideWithValue(_Session()),
+          walletsRepositoryProvider.overrideWithValue(_Wallets()),
+          portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
+          marketsRepositoryProvider.overrideWithValue(_Markets()),
+        ],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ready when you are'), findsNothing);
+      expect(find.text('Log in'), findsNothing);
+      expect(find.textContaining('restore-request'), findsOneWidget);
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+      expect(find.text(r'$12,580.42'), findsOneWidget);
+      expect(find.byType(PrivyLoginScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      await _disposeContainerAfterWidgets(tester, container);
+    },
+  );
+
+  testWidgets('terminal restoration failure keeps login available', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    final container = ProviderContainer(
+      overrides: [
+        authenticationProvider.overrideWithBuild(
+          (_, _) => const AuthenticationFailed(
+            IdentityFailure(
+              AuthenticationFailureCode.provider,
+              retryable: false,
+            ),
+          ),
+        ),
+        marketsRepositoryProvider.overrideWithValue(_Markets()),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildTestApp(const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ready when you are'), findsOneWidget);
+    expect(find.text('Log in'), findsWidgets);
+    expect(find.text('Retry'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await _disposeContainerAfterWidgets(tester, container);
+  });
+
   for (final scenario in [
     (
       name: 'whole amounts',

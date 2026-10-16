@@ -164,6 +164,13 @@ void main() {
     expect(find.byKey(const Key('transfer-token-eth')), findsOneWidget);
     expect(find.byKey(const Key('transfer-token-usdt')), findsNothing);
 
+    await tester.tap(find.byKey(const Key('transfer-token-network-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All network').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('transfer-token-usdt')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-eth')), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('transfer-token-eth')));
     await tester.pumpAndSettle();
 

@@ -1063,6 +1063,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityType => '类型';
 
   @override
+  String get activityTxHash => '交易哈希';
+
+  @override
+  String get activityFilledQuantity => '成交数量';
+
+  @override
+  String get activityAveragePrice => '成交均价';
+
+  @override
+  String get activitySide => '方向';
+
+  @override
+  String get activityClosePrice => '平仓价格';
+
+  @override
+  String get activityTriggerPrice => '触发价格';
+
+  @override
+  String get activityOrderAmount => '订单金额';
+
+  @override
+  String get activityFee => '手续费';
+
+  @override
   String get activityStatus => '状态';
 
   @override
@@ -1705,7 +1729,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sessionExpiredLogin => '你的会话已过期，请重新登录。';
 
   @override
-  String get backendSessionFailed => 'Privy 登录成功，但无法创建 RWA 会话，请稍后重试。';
+  String get backendSessionFailed => '暂时无法完成登录，请稍后重试。';
 
   @override
   String get walletSyncFailed => '你已登录，但钱包无法同步，请稍后重试。';
@@ -2654,4 +2678,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openOrderTpSlPendingTooltip => '这些止盈止损订单尚未提交，将在此限价单成交后自动提交。';
+
+  @override
+  String get orderFilledTotalLabel => '已成交 / 总计';
+
+  @override
+  String get orderProgressLabel => '进度';
+
+  @override
+  String get takeProfitShortLabel => '止盈';
+
+  @override
+  String get stopLossShortLabel => '止损';
 }

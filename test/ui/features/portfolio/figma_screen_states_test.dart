@@ -503,6 +503,10 @@ void main() {
       expect(find.text('Max Withdraw'), findsOneWidget);
       expect(find.text(r'$1,250.04'), findsOneWidget);
 
+      await tester.tap(find.text('Max Withdraw'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
+
       await tester.tap(
         find.byKey(const Key('perps-margin-header-Isolated Margin')),
       );
@@ -769,7 +773,7 @@ void main() {
     for (final label in ['Isolated Margin', 'Open Order Margin']) {
       final header = find.byKey(Key('perps-margin-header-$label'));
       expect(header, findsOneWidget);
-      expect(find.byKey(Key('perps-margin-chevron-$label')), findsNothing);
+      expect(find.byKey(Key('perps-margin-chevron-$label')), findsOneWidget);
       expect(
         find.ancestor(of: header, matching: find.byType(InkWell)),
         findsNothing,
@@ -1269,6 +1273,59 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Arbitrum:USDC'), findsOneWidget);
+    expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
+  });
+
+  testWidgets('Spot detail Withdraw opens the matching token and network', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: AppRoutes.assetsPath,
+      routes: [
+        GoRoute(
+          path: AppRoutes.assetsPath,
+          builder: (_, _) => const AssetsScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.withdrawalName,
+          path: AppRoutes.withdrawalPath,
+          builder: (_, state) => Scaffold(
+            body: Text(
+              '${state.uri.queryParameters['chain']}:'
+              '${state.uri.queryParameters['token']}:'
+              '${state.uri.queryParameters['source']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          portfolioRepositoryProvider.overrideWithValue(
+            _SpotNetworkPortfolio(),
+          ),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final usdc = find.text('USDC');
+    await _scrollAssetsUntilVisible(tester, usdc);
+    await tester.tap(usdc);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('cash-action-sheet')),
+        matching: find.text('Withdraw'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Arbitrum:USDC:spot'), findsOneWidget);
     expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
   });
 

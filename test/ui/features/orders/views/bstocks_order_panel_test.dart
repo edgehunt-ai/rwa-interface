@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/deployment_environment.dart';
@@ -41,6 +43,72 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  for (final scenario in [
+    (
+      kind: MarketProductKind.bstock,
+      plan: _readyFundingPlan,
+      route: 'BSC:USDT',
+    ),
+    (
+      kind: MarketProductKind.perp,
+      plan: _prepareFundingPlan,
+      route: 'Arbitrum:USDC',
+    ),
+  ]) {
+    testWidgets('${scenario.kind} funding Deposit prefills the target route', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, _) => Scaffold(
+              body: TextButton(
+                onPressed: () => showModalBottomSheet<bool>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => OrderFundingSheet(
+                    plan: scenario.plan,
+                    kind: scenario.kind,
+                    canConfirmTransfer: true,
+                  ),
+                ),
+                child: const Text('Open funding'),
+              ),
+            ),
+          ),
+          GoRoute(
+            name: AppRoutes.depositName,
+            path: AppRoutes.depositPath,
+            builder: (_, state) => Scaffold(
+              body: Text(
+                '${state.uri.queryParameters['chain']}:${state.uri.queryParameters['token']}',
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            transferOptionsProvider.overrideWith(
+              (_) async => _transferOptions('0'),
+            ),
+          ],
+          child: buildRouterTestApp(router),
+        ),
+      );
+      await tester.tap(find.text('Open funding'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Deposit'));
+      await tester.tap(find.text('Deposit'));
+      await tester.pumpAndSettle();
+      expect(find.text(scenario.route), findsOneWidget);
+      expect(find.byType(OrderFundingSheet), findsNothing);
+    });
+  }
+
   testWidgets('bstocks large limit price keeps the editor rendered', (
     tester,
   ) async {

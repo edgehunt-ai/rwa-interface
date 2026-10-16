@@ -181,8 +181,8 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     final role = conditional == null
         ? (order.type == TradingOrderType.limit ? l10n.limit : l10n.market)
         : switch (conditional.role) {
-            'takeProfit' => 'TP',
-            'stopLoss' => 'SL',
+            'takeProfit' => l10n.takeProfitShortLabel,
+            'stopLoss' => l10n.stopLossShortLabel,
             _ => l10n.conditionalOrder,
           };
     final isDirectionalLimit =
@@ -196,9 +196,9 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     final protection = isDirectionalLimit ? order.tpSl : null;
     final protectionPrices = [
       if (protection?.takeProfit case final price?)
-        'TP ${_formatQuantity(price.value)}',
+        '${l10n.takeProfitShortLabel} ${_formatQuantity(price.value)}',
       if (protection?.stopLoss case final price?)
-        'SL ${_formatQuantity(price.value)}',
+        '${l10n.stopLossShortLabel} ${_formatQuantity(price.value)}',
     ];
     final total = double.tryParse(
       order.quantity?.value ?? conditional?.quantity ?? '',
@@ -311,7 +311,12 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  child: Text(_busy ? l10n.cancelling : l10n.cancel),
+                  child: _busy
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.cancel),
                 ),
               ),
             ],
@@ -320,11 +325,12 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
           Row(
             children: [
               _OrderMetric(
-                label: 'Filled / Total',
+                label: l10n.orderFilledTotalLabel,
                 value:
                     '${_formatQuantity(filledQuantity)} / ${_formatQuantity(totalQuantity)}',
               ),
-              _OrderMetric(label: 'Price', value: price),
+              const SizedBox(width: 12),
+              _OrderMetric(label: l10n.price, value: price),
               Expanded(
                 child: Align(
                   alignment: AlignmentDirectional.centerEnd,
@@ -332,7 +338,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'Progress',
+                        l10n.orderProgressLabel,
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
@@ -399,10 +405,12 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Flexible(
+                  Expanded(
                     child: Text(
                       protectionPrices.join(' / '),
                       textAlign: TextAlign.end,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
@@ -449,14 +457,6 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               style: TextStyle(fontSize: 12, color: colors.secondaryText),
             ),
           ],
-          if (conditional?.parentOrderId case final parentOrderId?)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                l10n.attachedToOrder(parentOrderId),
-                style: TextStyle(fontSize: 12, color: colors.secondaryText),
-              ),
-            ),
           if (conditional?.warningCode ==
               'parentCancelledCheckRemainingPositionProtection')
             Padding(

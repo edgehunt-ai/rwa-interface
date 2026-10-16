@@ -115,6 +115,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       tradable: value.kind == api.ProductKind.perp
           ? (value.hip3Market?.tradable ?? false)
           : true,
+      productId: value.hip3Market?.productId,
       change24hPercent: _decimal(value.quote.change24hPercent, unit: 'percent'),
     );
   }

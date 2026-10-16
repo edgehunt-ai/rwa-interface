@@ -136,6 +136,54 @@ void main() {
     },
   );
 
+  test(
+    'foreground messages wait for a tap before navigating and stop on logout',
+    () async {
+      final messaging = _Messaging(token: 'token');
+      final coordinator = PushNotificationCoordinator(
+        messaging,
+        const _DeviceIds(),
+        _AccountRepository(),
+        platform: () => 'android',
+      );
+      addTearDown(coordinator.dispose);
+      final messages = <PushMessage>[];
+      final routes = <String>[];
+      final messageSubscription = coordinator.foregroundMessages.listen(
+        messages.add,
+      );
+      final routeSubscription = coordinator.routes.listen(routes.add);
+      addTearDown(messageSubscription.cancel);
+      addTearDown(routeSubscription.cancel);
+      const message = PushMessage(
+        {'route': '/activity'},
+        title: 'Order filled',
+        body: 'Your order filled',
+      );
+
+      await coordinator.activate(_settings);
+      await coordinator.activate(_settings);
+      messaging.foreground.add(message);
+      await Future<void>.delayed(Duration.zero);
+      expect(messages, [message]);
+      expect(routes, isEmpty);
+
+      coordinator.openMessage(message);
+      coordinator.openMessage(
+        const PushMessage({'route': 'https://invalid.example'}),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(routes, ['/activity']);
+
+      await coordinator.deactivate();
+      messaging.foreground.add(message);
+      coordinator.openMessage(message);
+      await Future<void>.delayed(Duration.zero);
+      expect(messages, [message]);
+      expect(routes, ['/activity']);
+    },
+  );
+
   test('only emits approved in-app notification routes', () async {
     final messaging = _Messaging(token: 'token');
     final coordinator = PushNotificationCoordinator(
@@ -174,6 +222,7 @@ final class _Messaging implements PushMessagingGateway {
   final String token;
   final tokens = StreamController<String>.broadcast();
   final opened = StreamController<PushMessage>.broadcast();
+  final foreground = StreamController<PushMessage>.broadcast();
   var permissionRequests = 0;
 
   @override
@@ -184,6 +233,8 @@ final class _Messaging implements PushMessagingGateway {
   Future<String?> getToken() async => token;
   @override
   Stream<PushMessage> get openedMessages => opened.stream;
+  @override
+  Stream<PushMessage> get foregroundMessages => foreground.stream;
   @override
   Future<PushPermission> requestPermission() async {
     permissionRequests++;

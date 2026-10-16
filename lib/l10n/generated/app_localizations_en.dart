@@ -1103,6 +1103,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityType => 'Type';
 
   @override
+  String get activityTxHash => 'Tx Hash';
+
+  @override
+  String get activityFilledQuantity => 'Filled quantity';
+
+  @override
+  String get activityAveragePrice => 'Average price';
+
+  @override
+  String get activitySide => 'Side';
+
+  @override
+  String get activityClosePrice => 'Close Price';
+
+  @override
+  String get activityTriggerPrice => 'Trigger Price';
+
+  @override
+  String get activityOrderAmount => 'Order Amount';
+
+  @override
+  String get activityFee => 'Fee';
+
+  @override
   String get activityStatus => 'Status';
 
   @override
@@ -1786,7 +1810,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backendSessionFailed =>
-      'Privy sign-in succeeded, but we could not create your RWA session. Try again later.';
+      'Unable to complete sign-in. Please try again.';
 
   @override
   String get walletSyncFailed =>
@@ -2812,4 +2836,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get openOrderTpSlPendingTooltip =>
       'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.';
+
+  @override
+  String get orderFilledTotalLabel => 'Filled / Total';
+
+  @override
+  String get orderProgressLabel => 'Progress';
+
+  @override
+  String get takeProfitShortLabel => 'TP';
+
+  @override
+  String get stopLossShortLabel => 'SL';
 }

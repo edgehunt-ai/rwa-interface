@@ -206,13 +206,14 @@ class _ActionRow extends StatelessWidget {
           OutlinedButton(
             key: ValueKey('resume-${action.actionId}'),
             onPressed: busyAction == null ? onResume : null,
-            child: Text(
-              busyAction == action.actionId
-                  ? l10n.hip3PendingBusy
-                  : awaiting
-                  ? l10n.hip3PendingContinue
-                  : l10n.hip3PendingCheck,
-            ),
+            child: busyAction == action.actionId
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    awaiting ? l10n.hip3PendingContinue : l10n.hip3PendingCheck,
+                  ),
           ),
       ],
     );

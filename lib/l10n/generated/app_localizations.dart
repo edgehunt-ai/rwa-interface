@@ -2128,6 +2128,54 @@ abstract class AppLocalizations {
   /// **'Type'**
   String get activityType;
 
+  /// No description provided for @activityTxHash.
+  ///
+  /// In en, this message translates to:
+  /// **'Tx Hash'**
+  String get activityTxHash;
+
+  /// No description provided for @activityFilledQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled quantity'**
+  String get activityFilledQuantity;
+
+  /// No description provided for @activityAveragePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Average price'**
+  String get activityAveragePrice;
+
+  /// No description provided for @activitySide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get activitySide;
+
+  /// No description provided for @activityClosePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Price'**
+  String get activityClosePrice;
+
+  /// No description provided for @activityTriggerPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger Price'**
+  String get activityTriggerPrice;
+
+  /// No description provided for @activityOrderAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Amount'**
+  String get activityOrderAmount;
+
+  /// No description provided for @activityFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get activityFee;
+
   /// No description provided for @activityStatus.
   ///
   /// In en, this message translates to:
@@ -3349,7 +3397,7 @@ abstract class AppLocalizations {
   /// No description provided for @backendSessionFailed.
   ///
   /// In en, this message translates to:
-  /// **'Privy sign-in succeeded, but we could not create your RWA session. Try again later.'**
+  /// **'Unable to complete sign-in. Please try again.'**
   String get backendSessionFailed;
 
   /// No description provided for @walletSyncFailed.
@@ -4998,6 +5046,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.'**
   String get openOrderTpSlPendingTooltip;
+
+  /// No description provided for @orderFilledTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled / Total'**
+  String get orderFilledTotalLabel;
+
+  /// No description provided for @orderProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get orderProgressLabel;
+
+  /// No description provided for @takeProfitShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TP'**
+  String get takeProfitShortLabel;
+
+  /// No description provided for @stopLossShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SL'**
+  String get stopLossShortLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -655,7 +655,12 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                               previewRequest!,
                               sizeDecimals!,
                             ),
-                      child: Text(_busy ? l10n.preparing : l10n.signAndConfirm),
+                      child: _busy
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.signAndConfirm),
                     ),
                   ),
                 ],

@@ -6,6 +6,81 @@ import 'package:nobell/data/api/privy_access_token_provider.dart';
 import 'package:nobell/data/api/privy_auth_interceptor.dart';
 
 void main() {
+  test(
+    'session POST refreshes an expired bearer without idempotency key',
+    () async {
+      final provider = _TokenProvider('expired-token', 'fresh-token');
+      final adapter = _SequenceAdapter([401, 200]);
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.test'))
+        ..httpClientAdapter = adapter;
+      dio.interceptors.add(PrivyAuthInterceptor(dio, provider));
+
+      final response = await dio.post<Object?>(
+        '/v1/auth/session',
+        data: {'language': 'zh-CN'},
+      );
+
+      expect(response.statusCode, 200);
+      expect(provider.refreshCalls, 1);
+      expect(provider.expiredCalls, 0);
+      expect(adapter.authorizationHeaders, [
+        'Bearer expired-token',
+        'Bearer fresh-token',
+      ]);
+    },
+  );
+
+  test(
+    'session POST retries at most once if backend still returns 401',
+    () async {
+      final provider = _TokenProvider('expired-token', 'fresh-token');
+      final adapter = _SequenceAdapter([401, 401]);
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.test'))
+        ..httpClientAdapter = adapter;
+      dio.interceptors.add(PrivyAuthInterceptor(dio, provider));
+
+      await expectLater(
+        dio.post<Object?>('/v1/auth/session', data: {}),
+        throwsA(isA<DioException>()),
+      );
+      expect(provider.refreshCalls, 1);
+      expect(adapter.authorizationHeaders.length, 2);
+    },
+  );
+
+  test('ordinary POST without idempotency key is not replayed', () async {
+    final provider = _TokenProvider('expired-token', 'fresh-token');
+    final adapter = _SequenceAdapter([401]);
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.test'))
+      ..httpClientAdapter = adapter;
+    dio.interceptors.add(PrivyAuthInterceptor(dio, provider));
+
+    await expectLater(
+      dio.post<Object?>('/v1/orders', data: {}),
+      throwsA(isA<DioException>()),
+    );
+    expect(provider.refreshCalls, 0);
+    expect(adapter.authorizationHeaders, ['Bearer expired-token']);
+  });
+
+  test('public 401 does not refresh or clear a cached identity', () async {
+    final provider = _TokenProvider('cached-token', null);
+    final adapter = _SequenceAdapter([401]);
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.test'))
+      ..httpClientAdapter = adapter;
+    dio.interceptors.add(PrivyAuthInterceptor(dio, provider));
+
+    await expectLater(
+      dio.get<Object?>(
+        '/v1/public',
+        options: Options(extra: {'secure': <Map<String, String>>[]}),
+      ),
+      throwsA(isA<DioException>()),
+    );
+    expect(provider.refreshCalls, 0);
+    expect(provider.expiredCalls, 0);
+  });
+
   test('public operation 不附加 bearer token', () async {
     final provider = _TokenProvider('must-not-leak', null);
     final adapter = _SequenceAdapter([200]);

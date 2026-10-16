@@ -245,7 +245,18 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     onDeposit: () {
                       final router = GoRouter.of(context);
                       Navigator.of(context).pop(false);
-                      router.pushNamed(AppRoutes.depositName);
+                      router.pushNamed(
+                        AppRoutes.depositName,
+                        queryParameters: {
+                          // HIP-3 is funded through an Arbitrum USDC deposit.
+                          'chain': widget.kind == MarketProductKind.perp
+                              ? 'Arbitrum'
+                              : (_plan.targetNetwork ?? 'BSC'),
+                          'token': widget.kind == MarketProductKind.perp
+                              ? 'USDC'
+                              : _targetAsset,
+                        },
+                      );
                     },
                   ),
               ],

@@ -1383,11 +1383,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 foregroundColor: Colors.white,
               ),
               onPressed: reviewing || hasExplicitInvalidAmount ? null : _review,
-              child: Text(
-                reviewing
-                    ? l10n.preparingOrder
-                    : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
-              ),
+              child: reviewing
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
+                    ),
             ),
           ),
         ],
@@ -1573,7 +1576,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       : approvalRequired
                       ? _approveConfirmation
                       : _submit,
-                  child: _approving
+                  child: _approving || reviewing
                       ? const SizedBox.square(
                           dimension: 18,
                           child: CircularProgressIndicator(
@@ -1582,9 +1585,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           ),
                         )
                       : Text(
-                          reviewing
-                              ? l10n.submittingOrder
-                              : approvalRequired
+                          approvalRequired
                               ? l10n.approve
                               : '${l10n.confirm} $action',
                         ),

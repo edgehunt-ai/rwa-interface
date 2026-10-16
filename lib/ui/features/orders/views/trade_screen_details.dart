@@ -440,11 +440,12 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
             children: [
               Expanded(
                 child: _TradeMetric(
-                  'Filled / Total',
+                  l10n.orderFilledTotalLabel,
                   '${filled == null ? '0' : TokenAmountFormatter.formatValue(filled)} / '
-                      '${quantity == null ? '—' : TokenAmountFormatter.formatValue(quantity)}',
+                  '${quantity == null ? '—' : TokenAmountFormatter.formatValue(quantity)}',
                 ),
               ),
+              const SizedBox(width: 12),
               Expanded(
                 child: _TradeMetric(
                   l10n.price,
@@ -460,7 +461,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'Progress',
+                        l10n.orderProgressLabel,
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
@@ -682,7 +683,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               _Hip3SourceChip(
-                label: 'Spot · BNB Smart Chain',
+                label: '${l10n.spot} · BNB Smart Chain',
                 backgroundColor: const Color(0x1AEDBC04),
                 leading: SvgPicture.asset(
                   'assets/figma/common/network_bsc.svg',
@@ -956,7 +957,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
                 ),
               ),
               _Hip3Metric(
-                'Liq.Price',
+                l10n.liquidationPriceShort,
                 position.liquidationPrice == null
                     ? '—'
                     : '~${_formatUsd(position.liquidationPrice)}',
