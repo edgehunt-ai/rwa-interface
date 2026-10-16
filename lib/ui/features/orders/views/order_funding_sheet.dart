@@ -248,12 +248,13 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                       router.pushNamed(
                         AppRoutes.depositName,
                         queryParameters: {
-                          'chain':
-                              _plan.targetNetwork ??
-                              (widget.kind == MarketProductKind.bstock
-                                  ? 'BSC'
-                                  : 'Hyperliquid'),
-                          'token': _targetAsset,
+                          // HIP-3 is funded through an Arbitrum USDC deposit.
+                          'chain': widget.kind == MarketProductKind.perp
+                              ? 'Arbitrum'
+                              : (_plan.targetNetwork ?? 'BSC'),
+                          'token': widget.kind == MarketProductKind.perp
+                              ? 'USDC'
+                              : _targetAsset,
                         },
                       );
                     },

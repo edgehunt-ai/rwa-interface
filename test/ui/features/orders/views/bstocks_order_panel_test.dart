@@ -52,7 +52,7 @@ void main() {
     (
       kind: MarketProductKind.perp,
       plan: _prepareFundingPlan,
-      route: 'Hyperliquid:USDC',
+      route: 'Arbitrum:USDC',
     ),
   ]) {
     testWidgets('${scenario.kind} funding Deposit prefills the target route', (

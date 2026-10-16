@@ -497,58 +497,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     });
   }
 
-  Widget _inlineResults(
-    Hip3ActionSummary result,
-    AsyncValue<Hip3ActionSummary>? refreshed,
-  ) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 28),
-        Text(
-          l10n.protectionBatchResults,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        Hip3ProtectionOrderResults(orders: result.protectionOrders),
-        if (result.status == 'failed' ||
-            result.protectionOrders.any((order) => order.isFailed))
-          Text(l10n.protectionPartialFailure),
-        if (!result.protectionResultsComplete)
-          Text(l10n.protectionWaitingConfirmation),
-        if (result.status == 'manualReview') Text(l10n.hip3PendingReview),
-        if (result.failureReason case final reason?) Text(reason),
-        if (refreshed?.hasError == true) Text(l10n.hip3PendingError),
-        if (result.canResumePositionAction)
-          OutlinedButton(
-            onPressed: _submitting
-                ? null
-                : () async {
-                    setState(() => _submitting = true);
-                    try {
-                      await ref
-                          .read(positionCommandProvider)
-                          .resumeHip3Action(result.actionId);
-                    } on Object catch (error) {
-                      if (mounted) {
-                        setState(() => _error = _specificErrorMessage(error));
-                      }
-                    } finally {
-                      if (mounted) {
-                        ref.invalidate(
-                          hip3ProtectionActionProvider(result.actionId),
-                        );
-                        setState(() => _submitting = false);
-                      }
-                    }
-                  },
-            child: Text(l10n.hip3PendingCheck),
-          ),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.watch(positionCommandProvider);
@@ -642,8 +590,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   ),
                 ),
                 if (_loadingProtection) const LinearProgressIndicator(),
-                if (result != null && !result.isSuccessful)
-                  _inlineResults(result, refreshedResult),
                 const SizedBox(height: 16),
                 TpSlEditorCard(
                   title: l10n.takeProfit,
@@ -756,9 +702,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                                 sizeDecimals == null
                             ? null
                             : () => _save(sizeDecimals),
-                        child: Text(
-                          _submitting ? l10n.loadingLabel : l10n.signAndConfirm,
-                        ),
+                        child: _submitting || _pending
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(l10n.signAndConfirm),
                       ),
                     ),
                   ],

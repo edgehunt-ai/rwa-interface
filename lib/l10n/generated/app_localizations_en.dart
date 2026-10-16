@@ -2836,4 +2836,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get openOrderTpSlPendingTooltip =>
       'These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.';
+
+  @override
+  String get orderFilledTotalLabel => 'Filled / Total';
+
+  @override
+  String get orderProgressLabel => 'Progress';
+
+  @override
+  String get takeProfitShortLabel => 'TP';
+
+  @override
+  String get stopLossShortLabel => 'SL';
 }

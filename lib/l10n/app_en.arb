@@ -952,5 +952,9 @@
   "protectionEditTarget": "Order to edit",
   "protectionPartialFailure": "Some protection changes failed. Review each result; cancelled orders are not restored automatically.",
   "openOrderTpSlPending": "TP/SL pending",
-  "openOrderTpSlPendingTooltip": "These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled."
+  "openOrderTpSlPendingTooltip": "These TP/SL orders have not been placed yet. They will be placed automatically after this limit order is filled.",
+  "orderFilledTotalLabel": "Filled / Total",
+  "orderProgressLabel": "Progress",
+  "takeProfitShortLabel": "TP",
+  "stopLossShortLabel": "SL"
 }

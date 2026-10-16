@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/repositories/bstocks_order_execution_repository_impl.dart';
@@ -240,6 +241,30 @@ void main() {
       const Size.square(18),
     );
   });
+
+  for (final scenario in ['missing stock', 'empty lookup', 'failed lookup']) {
+    testWidgets('HIP-3 header retains metadata with $scenario', (tester) async {
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          initialKind: MarketProductKind.perp,
+          hip3OpeningContext: _hip3OpeningContext(),
+          stocks: scenario == 'missing stock'
+              ? const DomainPage<Stock>(items: [], hasMore: false)
+              : null,
+          products: scenario == 'empty lookup' ? [] : null,
+          productLookupError: scenario == 'failed lookup'
+              ? const ServerFailure(statusCode: 503, code: 'unavailable')
+              : null,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('NVDA'), findsOneWidget);
+      expect(find.text('20x'), findsOneWidget);
+      expect(find.text('HIP-3 · XYZ'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('Trade pull-to-refresh reloads the current position list', (
     tester,
@@ -586,7 +611,7 @@ void main() {
     expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
   });
 
-  testWidgets('Trade drag tooltip updates the price and change colors', (
+  testWidgets('Trade tooltip shows history while header keeps latest quote', (
     tester,
   ) async {
     const product = MarketProductRef(
@@ -612,6 +637,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final dynamic linePainter = tester
+        .widget<CustomPaint>(find.byKey(const Key('trade-chart-line-painter')))
+        .painter;
+    expect(linePainter.color, const Color(0xFFB3261E));
+
     final chart = find.byKey(const Key('trade-chart-plot'));
     final bounds = tester.getRect(chart);
     final gesture = await tester.startGesture(bounds.centerLeft);
@@ -621,20 +651,36 @@ void main() {
     expect(find.text(r'$110'), findsWidgets);
     expect(find.text('+10%'), findsWidgets);
     expect(
-      tester.widget<Text>(_headerPrice(r'$110')).style?.color,
-      const Color(0xFF04A08B),
+      tester.widget<Text>(_headerPrice(r'$100')).style?.color,
+      const Color(0xFFB3261E),
+    );
+    expect(find.text('-1%'), findsOneWidget);
+    expect(find.text(r'US $175'), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('trade-chart-tooltip-date')))
+          .data,
+      DateFormat('yyyy/MM/dd HH:mm')
+          .format(DateTime.utc(2026, 1, 1, 0, 1).toLocal()),
     );
 
     await gesture.up();
     await tester.pump();
-    // Releasing hands the header back to the live price, which rolls into
-    // place; let that land before reading the settled Text.
-    await tester.pump(const Duration(milliseconds: 900));
+    expect(find.byKey(const Key('trade-chart-tooltip')), findsNothing);
     expect(_headerPrice(r'$100'), findsOneWidget);
     expect(
       tester.widget<Text>(_headerPrice(r'$100')).style?.color,
       const Color(0xFFB3261E),
     );
+
+    await tester.tap(find.byTooltip('Candlestick chart'));
+    await tester.pump();
+    final dynamic candlePainter = tester
+        .widget<CustomPaint>(
+          find.byKey(const Key('trade-chart-candle-painter')),
+        )
+        .painter;
+    expect(candlePainter.lossColor, const Color(0xFFB3261E));
   });
 
   testWidgets('Reference chart shows US prices and market sessions', (
@@ -671,6 +717,10 @@ void main() {
     final chart = find.byKey(const Key('trade-chart-plot'));
     final bounds = tester.getRect(chart);
     final gesture = await tester.startGesture(bounds.centerLeft);
+    await gesture.moveTo(Offset(bounds.left + 30, bounds.center.dy));
+    await tester.pump();
+    expect(find.text(r'US $160'), findsOneWidget);
+    expect(find.text(r'US Stock $175'), findsOneWidget);
     await gesture.moveTo(Offset(bounds.right - 1, bounds.center.dy));
     await tester.pump();
     expect(find.text('US \$175'), findsOneWidget);
@@ -1830,6 +1880,8 @@ Finder _headerPrice(String value) => find.byWidgetPredicate(
 Widget _tradeWithMarkets({
   GoRouter? router,
   List<MarketProduct>? products,
+  DomainPage<Stock>? stocks,
+  Object? productLookupError,
   PositionsRepository? positionsRepository,
   OrdersRepository? ordersRepository,
   FundingRepository? fundingRepository,
@@ -1847,7 +1899,7 @@ Widget _tradeWithMarkets({
     bstocksSettlementTokenProvider.overrideWith(
       (_) async => _testSettlementToken,
     ),
-    marketStocksProvider.overrideWith((_) async => _nvdaStockPage),
+    marketStocksProvider.overrideWith((_) async => stocks ?? _nvdaStockPage),
     hip3AccountAbstractionProvider.overrideWith(
       (_) async => const Hip3AccountAbstractionStatus(
         ownerAddress: '0xowner',
@@ -1879,8 +1931,9 @@ Widget _tradeWithMarkets({
       cursor: null,
       group: 'hot',
       productType: null,
-    )).overrideWith(
-      (_) async => DomainPage(
+    )).overrideWith((_) async {
+      if (productLookupError != null) throw productLookupError;
+      return DomainPage(
         items:
             products ??
             [
@@ -1888,8 +1941,8 @@ Widget _tradeWithMarkets({
               _marketProduct('NVDA', MarketProductKind.perp),
             ],
         hasMore: false,
-      ),
-    ),
+      );
+    }),
     marketProductProvider(_bstockProduct).overrideWith(
       (_) async => _marketProduct('NVDAB', MarketProductKind.bstock),
     ),

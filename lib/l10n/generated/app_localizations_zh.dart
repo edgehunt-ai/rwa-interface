@@ -2678,4 +2678,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openOrderTpSlPendingTooltip => '这些止盈止损订单尚未提交，将在此限价单成交后自动提交。';
+
+  @override
+  String get orderFilledTotalLabel => '已成交 / 总计';
+
+  @override
+  String get orderProgressLabel => '进度';
+
+  @override
+  String get takeProfitShortLabel => '止盈';
+
+  @override
+  String get stopLossShortLabel => '止损';
 }

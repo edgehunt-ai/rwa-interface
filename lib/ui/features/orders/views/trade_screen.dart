@@ -49,7 +49,6 @@ import 'package:nobell/data/services/tpsl_risk_consent_service.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
-import 'package:nobell/ui/features/positions/views/hip3_protection_order_results.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
@@ -353,10 +352,12 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         activeProduct = matchingProducts.first;
       }
     }
-    if (activeProduct?.productId != _productId) {
-      _productId = activeProduct?.productId;
-    }
     final productDetailState = ref.watch(marketProductProvider(productRef));
+    // Product details remain available independently of the stock catalog and
+    // product lookup. Keep header metadata and trading context tied to that
+    // authoritative identity when the catalog cannot resolve this product.
+    _productId =
+        productDetailState.value?.productId ?? activeProduct?.productId;
     final productDisplaySymbol =
         activeProduct?.symbol ?? productDetailState.value?.symbol;
     final productTradable =
@@ -383,11 +384,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     );
     final snapshot = snapshotState.value;
     final candles = candlesState.value;
-    final selectedChange = _chartChangePercent(candles?.points, chartSelection);
-    final selectedReference = _nearestCandle(
-      candles?.referencePoints,
-      chartSelection?.at,
-    );
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
       (_, next) {
@@ -439,12 +435,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     onMarketHours: () => setState(() => marketHoursOpen = true),
                     chartStyle: chartStyle,
                     snapshot: snapshot,
-                    selectedPrice: chartSelection?.close,
-                    selectedChangePercent: selectedChange,
                     referencePrice:
-                        selectedReference?.close ??
                         candles?.referencePoints.lastOrNull?.close ??
-                        candles?.referencePrice,
+                        candles?.referencePrice ??
+                        snapshot?.referencePrice,
                     loading: snapshotState.isLoading,
                     isFavorite: isFavorite,
                     favoriteLoading: _favoriteBusy,
@@ -457,6 +451,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       style: chartStyle,
                       range: chartRange,
                       candles: candles,
+                      changePercent: snapshot?.change24hPercent,
                       loading: candlesState.isLoading,
                       onStyleChanged: (next) =>
                           setState(() => chartStyle = next),
@@ -664,8 +659,6 @@ class _ProductHeader extends StatelessWidget {
     required this.onMarketHours,
     required this.chartStyle,
     required this.snapshot,
-    required this.selectedPrice,
-    required this.selectedChangePercent,
     required this.referencePrice,
     required this.loading,
     required this.isFavorite,
@@ -682,8 +675,6 @@ class _ProductHeader extends StatelessWidget {
   final VoidCallback onMarketHours;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
-  final DecimalValue? selectedPrice;
-  final DecimalValue? selectedChangePercent;
   final DecimalValue? referencePrice;
   final bool loading;
   final bool isFavorite;
@@ -693,12 +684,9 @@ class _ProductHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final price = selectedPrice ?? snapshot?.price;
-    final change = selectedChangePercent ?? snapshot?.change24hPercent;
+    final price = snapshot?.price;
+    final change = snapshot?.change24hPercent;
     final changeColor = _changeColor(context, change);
-    // Scrubbing the chart drives these from the finger, so the digits follow
-    // it directly; rolling them would animate on every pointer move.
-    final settle = selectedPrice == null ? null : Duration.zero;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -874,7 +862,6 @@ class _ProductHeader extends StatelessWidget {
             else
               AnimatedNumberText(
                 price == null ? '—' : TokenAmountFormatter.formatUsd(price),
-                duration: settle,
                 style: TextStyle(
                   color: price == null ? null : changeColor,
                   fontWeight: FontWeight.w700,
@@ -894,7 +881,6 @@ class _ProductHeader extends StatelessWidget {
                 ),
                 child: AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(change),
-                  duration: settle,
                   style: TextStyle(
                     color: changeColor,
                     fontSize: 12,
@@ -991,6 +977,7 @@ class _Chart extends StatelessWidget {
     required this.style,
     required this.range,
     required this.candles,
+    required this.changePercent,
     required this.loading,
     required this.selectedCandle,
     required this.onStyleChanged,
@@ -1002,6 +989,7 @@ class _Chart extends StatelessWidget {
   final CandleChart? candles;
   final bool loading;
   final Candle? selectedCandle;
+  final DecimalValue? changePercent;
   final ValueChanged<TradeChartStyle> onStyleChanged;
   final ValueChanged<CandleChartRange> onRangeChanged;
   final ValueChanged<Candle?> onSelectionChanged;
@@ -1013,6 +1001,12 @@ class _Chart extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final chart = candles;
     final latestClose = candles?.points.lastOrNull?.close;
+    final chartChange =
+        changePercent ??
+        _chartChangePercent(chart?.points, chart?.points.lastOrNull);
+    final productColor = chartChange == null || _decimalSign(chartChange) == 0
+        ? semantic.success
+        : _changeColor(context, chartChange);
     return Column(
       children: [
         SizedBox(
@@ -1074,8 +1068,9 @@ class _Chart extends StatelessWidget {
                                       ),
                                 child: switch (style) {
                                   TradeChartStyle.line => CustomPaint(
+                                    key: const Key('trade-chart-line-painter'),
                                     painter: _LineChartPainter(
-                                      semantic.success,
+                                      productColor,
                                       points,
                                     ),
                                   ),
@@ -1084,15 +1079,19 @@ class _Chart extends StatelessWidget {
                                       'trade-chart-reference-painter',
                                     ),
                                     painter: _ReferenceChartPainter(
-                                      productColor: semantic.success,
+                                      productColor: productColor,
                                       referenceColor: _referenceChartLineColor,
                                       points: points,
                                       referencePoints: referencePoints,
                                     ),
                                   ),
                                   TradeChartStyle.candle => CustomPaint(
+                                    key: const Key(
+                                      'trade-chart-candle-painter',
+                                    ),
                                     painter: _CandleChartPainter(
                                       semantic.success,
+                                      semantic.loss,
                                       points,
                                     ),
                                   ),
@@ -1123,6 +1122,7 @@ class _Chart extends StatelessWidget {
                                 ),
                                 top: 8,
                                 child: _ChartValueTooltip(
+                                  at: points[selectedIndex].at,
                                   price: points[selectedIndex].close,
                                   changePercent: selectedChange,
                                   color: selectedColor,
@@ -1264,7 +1264,7 @@ int _decimalSign(DecimalValue value) {
 }
 
 double _tooltipLeft(int index, int count, double width) {
-  const tooltipWidth = 98.0;
+  final tooltipWidth = min(164.0, width);
   return (_chartX(index, count, width) - tooltipWidth / 2)
       .clamp(0, width - tooltipWidth)
       .toDouble();
@@ -1272,12 +1272,14 @@ double _tooltipLeft(int index, int count, double width) {
 
 class _ChartValueTooltip extends StatelessWidget {
   const _ChartValueTooltip({
+    required this.at,
     required this.price,
     required this.changePercent,
     required this.color,
     this.referencePrice,
   });
 
+  final DateTime at;
   final DecimalValue price;
   final DecimalValue? changePercent;
   final Color color;
@@ -1287,6 +1289,8 @@ class _ChartValueTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Container(
+      key: const Key('trade-chart-tooltip'),
+      width: 164,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).extension<AppRwaColors>()!.surface,
@@ -1296,6 +1300,14 @@ class _ChartValueTooltip extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            DateFormat('yyyy/MM/dd HH:mm').format(at.toLocal()),
+            key: const Key('trade-chart-tooltip-date'),
+            style: TextStyle(
+              fontSize: 10,
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            ),
+          ),
           Text(
             TokenAmountFormatter.formatUsd(price),
             style: TextStyle(
@@ -1543,9 +1555,10 @@ class _LineChartPainter extends CustomPainter {
 }
 
 class _CandleChartPainter extends CustomPainter {
-  const _CandleChartPainter(this.color, this.points);
+  const _CandleChartPainter(this.color, this.lossColor, this.points);
 
   final Color color;
+  final Color lossColor;
   final List<Candle> points;
 
   @override
@@ -1561,7 +1574,7 @@ class _CandleChartPainter extends CustomPainter {
       final low = _decimalAsDouble(candle.low ?? candle.close);
       final x = _chartX(index, points.length, size.width);
       final rising = close >= open;
-      final candleColor = rising ? color : const Color(0xFFFF5B5B);
+      final candleColor = rising ? color : lossColor;
       final paint = Paint()..color = candleColor;
       canvas.drawLine(
         Offset(x, scale.y(high, size.height)),
@@ -1579,7 +1592,9 @@ class _CandleChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CandleChartPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.points != points;
+      oldDelegate.color != color ||
+      oldDelegate.lossColor != lossColor ||
+      oldDelegate.points != points;
 }
 
 class _ReferenceChartPainter extends CustomPainter {

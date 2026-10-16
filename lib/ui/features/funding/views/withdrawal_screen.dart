@@ -656,11 +656,12 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
         const SizedBox(height: 60),
         FilledButton(
           onPressed: canSubmit ? _review : null,
-          child: Text(
-            widget.submitting
-                ? l10n.preparingWithdrawal
-                : l10n.reviewWithdrawal,
-          ),
+          child: widget.submitting
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.reviewWithdrawal),
         ),
       ],
     );
