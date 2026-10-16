@@ -251,6 +251,7 @@ lib/src/model/hip3_market_order_minimum.dart
 lib/src/model/hip3_market_order_minimums.dart
 lib/src/model/hip3_opening_protection_confirmation.dart
 lib/src/model/hip3_opening_protection_confirmation_legs_inner.dart
+lib/src/model/hip3_opening_protection_order.dart
 lib/src/model/hip3_operation.dart
 lib/src/model/hip3_order_capacity.dart
 lib/src/model/hip3_order_capacity_side.dart

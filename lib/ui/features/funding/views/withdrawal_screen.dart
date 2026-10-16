@@ -482,9 +482,17 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
     final rawAmount = widget.amount.text.trim();
     final displayAmount = rawAmount.isEmpty ? '0.00' : rawAmount;
     final parsedAmount = _parseAmount(rawAmount);
+    final availableBalance = widget.asset?.availableBalance;
+    final hasAvailableBalance =
+        availableBalance != null &&
+        availableBalance.compareTo(
+              DecimalValue('0', asset: widget.token, unit: 'token'),
+            ) >
+            0;
     final canSubmit =
         !widget.submitting &&
         widget.asset?.isWithdrawalSupported == true &&
+        hasAvailableBalance &&
         widget.address.text.trim().isNotEmpty &&
         parsedAmount != null &&
         parsedAmount.compareTo(
@@ -495,7 +503,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
               ),
             ) >
             0 &&
-        parsedAmount.compareTo(widget.asset!.balance) <= 0;
+        parsedAmount.compareTo(availableBalance) <= 0;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
@@ -575,15 +583,15 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                 children: [
                   _FieldLabel(l10n.amount),
                   _FieldLabel(
-                    widget.asset == null
-                        ? l10n.availableToken(widget.token)
-                        : l10n.availableTokenAmount(
-                            TokenAmountFormatter.formatValue(
-                              widget.asset!.balance,
+                    l10n.availableTokenAmount(
+                      availableBalance == null
+                          ? '—'
+                          : TokenAmountFormatter.formatValue(
+                              availableBalance,
                               decimals: widget.asset!.decimals,
                             ),
-                            widget.token,
-                          ),
+                      widget.token,
+                    ),
                   ),
                 ],
               ),
@@ -625,10 +633,9 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                         ?.copyWith(color: colors.secondaryText),
                   ),
                   TextButton(
-                    onPressed: widget.asset == null
-                        ? null
-                        : () =>
-                              widget.amount.text = widget.asset!.balance.value,
+                    onPressed: hasAvailableBalance
+                        ? () => widget.amount.text = availableBalance.value
+                        : null,
                     style: TextButton.styleFrom(
                       foregroundColor: colors.primaryText,
                       padding: EdgeInsets.zero,

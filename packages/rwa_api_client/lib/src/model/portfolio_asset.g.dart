@@ -46,11 +46,105 @@ final BuiltSet<PortfolioAssetAssetTypeEnum>
   _$portfolioAssetAssetTypeEnum_bstock,
 ]);
 
+const PortfolioAssetAvailabilityStatusEnum
+    _$portfolioAssetAvailabilityStatusEnum_complete =
+    const PortfolioAssetAvailabilityStatusEnum._('complete');
+const PortfolioAssetAvailabilityStatusEnum
+    _$portfolioAssetAvailabilityStatusEnum_partial =
+    const PortfolioAssetAvailabilityStatusEnum._('partial');
+const PortfolioAssetAvailabilityStatusEnum
+    _$portfolioAssetAvailabilityStatusEnum_unavailable =
+    const PortfolioAssetAvailabilityStatusEnum._('unavailable');
+
+PortfolioAssetAvailabilityStatusEnum
+    _$portfolioAssetAvailabilityStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'complete':
+      return _$portfolioAssetAvailabilityStatusEnum_complete;
+    case 'partial':
+      return _$portfolioAssetAvailabilityStatusEnum_partial;
+    case 'unavailable':
+      return _$portfolioAssetAvailabilityStatusEnum_unavailable;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PortfolioAssetAvailabilityStatusEnum>
+    _$portfolioAssetAvailabilityStatusEnumValues = BuiltSet<
+        PortfolioAssetAvailabilityStatusEnum>(const <PortfolioAssetAvailabilityStatusEnum>[
+  _$portfolioAssetAvailabilityStatusEnum_complete,
+  _$portfolioAssetAvailabilityStatusEnum_partial,
+  _$portfolioAssetAvailabilityStatusEnum_unavailable,
+]);
+
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_walletIdentityUnavailable =
+    const PortfolioAssetUnavailableReasonsEnum._('walletIdentityUnavailable');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_confirmedGtcSell =
+    const PortfolioAssetUnavailableReasonsEnum._('confirmedGtcSell');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_submittedGtcSell =
+    const PortfolioAssetUnavailableReasonsEnum._('submittedGtcSell');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_reservationExceedsBalance =
+    const PortfolioAssetUnavailableReasonsEnum._('reservationExceedsBalance');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_platformOrder =
+    const PortfolioAssetUnavailableReasonsEnum._('platformOrder');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_pendingTransfer =
+    const PortfolioAssetUnavailableReasonsEnum._('pendingTransfer');
+const PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnum_pendingWithdrawal =
+    const PortfolioAssetUnavailableReasonsEnum._('pendingWithdrawal');
+
+PortfolioAssetUnavailableReasonsEnum
+    _$portfolioAssetUnavailableReasonsEnumValueOf(String name) {
+  switch (name) {
+    case 'walletIdentityUnavailable':
+      return _$portfolioAssetUnavailableReasonsEnum_walletIdentityUnavailable;
+    case 'confirmedGtcSell':
+      return _$portfolioAssetUnavailableReasonsEnum_confirmedGtcSell;
+    case 'submittedGtcSell':
+      return _$portfolioAssetUnavailableReasonsEnum_submittedGtcSell;
+    case 'reservationExceedsBalance':
+      return _$portfolioAssetUnavailableReasonsEnum_reservationExceedsBalance;
+    case 'platformOrder':
+      return _$portfolioAssetUnavailableReasonsEnum_platformOrder;
+    case 'pendingTransfer':
+      return _$portfolioAssetUnavailableReasonsEnum_pendingTransfer;
+    case 'pendingWithdrawal':
+      return _$portfolioAssetUnavailableReasonsEnum_pendingWithdrawal;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PortfolioAssetUnavailableReasonsEnum>
+    _$portfolioAssetUnavailableReasonsEnumValues = BuiltSet<
+        PortfolioAssetUnavailableReasonsEnum>(const <PortfolioAssetUnavailableReasonsEnum>[
+  _$portfolioAssetUnavailableReasonsEnum_walletIdentityUnavailable,
+  _$portfolioAssetUnavailableReasonsEnum_confirmedGtcSell,
+  _$portfolioAssetUnavailableReasonsEnum_submittedGtcSell,
+  _$portfolioAssetUnavailableReasonsEnum_reservationExceedsBalance,
+  _$portfolioAssetUnavailableReasonsEnum_platformOrder,
+  _$portfolioAssetUnavailableReasonsEnum_pendingTransfer,
+  _$portfolioAssetUnavailableReasonsEnum_pendingWithdrawal,
+]);
+
 Serializer<PortfolioAssetKindEnum> _$portfolioAssetKindEnumSerializer =
     _$PortfolioAssetKindEnumSerializer();
 Serializer<PortfolioAssetAssetTypeEnum>
     _$portfolioAssetAssetTypeEnumSerializer =
     _$PortfolioAssetAssetTypeEnumSerializer();
+Serializer<PortfolioAssetAvailabilityStatusEnum>
+    _$portfolioAssetAvailabilityStatusEnumSerializer =
+    _$PortfolioAssetAvailabilityStatusEnumSerializer();
+Serializer<PortfolioAssetUnavailableReasonsEnum>
+    _$portfolioAssetUnavailableReasonsEnumSerializer =
+    _$PortfolioAssetUnavailableReasonsEnumSerializer();
 
 class _$PortfolioAssetKindEnumSerializer
     implements PrimitiveSerializer<PortfolioAssetKindEnum> {
@@ -107,6 +201,82 @@ class _$PortfolioAssetAssetTypeEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$PortfolioAssetAvailabilityStatusEnumSerializer
+    implements PrimitiveSerializer<PortfolioAssetAvailabilityStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'complete': 'complete',
+    'partial': 'partial',
+    'unavailable': 'unavailable',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'complete': 'complete',
+    'partial': 'partial',
+    'unavailable': 'unavailable',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PortfolioAssetAvailabilityStatusEnum
+  ];
+  @override
+  final String wireName = 'PortfolioAssetAvailabilityStatusEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, PortfolioAssetAvailabilityStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PortfolioAssetAvailabilityStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PortfolioAssetAvailabilityStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PortfolioAssetUnavailableReasonsEnumSerializer
+    implements PrimitiveSerializer<PortfolioAssetUnavailableReasonsEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'walletIdentityUnavailable': 'wallet_identity_unavailable',
+    'confirmedGtcSell': 'confirmed_gtc_sell',
+    'submittedGtcSell': 'submitted_gtc_sell',
+    'reservationExceedsBalance': 'reservation_exceeds_balance',
+    'platformOrder': 'platform_order',
+    'pendingTransfer': 'pending_transfer',
+    'pendingWithdrawal': 'pending_withdrawal',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'wallet_identity_unavailable': 'walletIdentityUnavailable',
+    'confirmed_gtc_sell': 'confirmedGtcSell',
+    'submitted_gtc_sell': 'submittedGtcSell',
+    'reservation_exceeds_balance': 'reservationExceedsBalance',
+    'platform_order': 'platformOrder',
+    'pending_transfer': 'pendingTransfer',
+    'pending_withdrawal': 'pendingWithdrawal',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PortfolioAssetUnavailableReasonsEnum
+  ];
+  @override
+  final String wireName = 'PortfolioAssetUnavailableReasonsEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, PortfolioAssetUnavailableReasonsEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PortfolioAssetUnavailableReasonsEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PortfolioAssetUnavailableReasonsEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$PortfolioAsset extends PortfolioAsset {
   @override
   final PortfolioAssetKindEnum? kind;
@@ -142,6 +312,18 @@ class _$PortfolioAsset extends PortfolioAsset {
   final String balanceRaw;
   @override
   final String balance;
+  @override
+  final String? availableQuantity;
+  @override
+  final String? unavailableQuantity;
+  @override
+  final String? reservationQuantity;
+  @override
+  final String? pendingWithdrawalQuantity;
+  @override
+  final PortfolioAssetAvailabilityStatusEnum? availabilityStatus;
+  @override
+  final BuiltList<PortfolioAssetUnavailableReasonsEnum>? unavailableReasons;
   @override
   final String? priceUsd;
   @override
@@ -180,6 +362,12 @@ class _$PortfolioAsset extends PortfolioAsset {
       required this.decimals,
       required this.balanceRaw,
       required this.balance,
+      this.availableQuantity,
+      this.unavailableQuantity,
+      this.reservationQuantity,
+      this.pendingWithdrawalQuantity,
+      this.availabilityStatus,
+      this.unavailableReasons,
       this.priceUsd,
       required this.pricingSource,
       this.valueUsd,
@@ -217,6 +405,12 @@ class _$PortfolioAsset extends PortfolioAsset {
         decimals == other.decimals &&
         balanceRaw == other.balanceRaw &&
         balance == other.balance &&
+        availableQuantity == other.availableQuantity &&
+        unavailableQuantity == other.unavailableQuantity &&
+        reservationQuantity == other.reservationQuantity &&
+        pendingWithdrawalQuantity == other.pendingWithdrawalQuantity &&
+        availabilityStatus == other.availabilityStatus &&
+        unavailableReasons == other.unavailableReasons &&
         priceUsd == other.priceUsd &&
         pricingSource == other.pricingSource &&
         valueUsd == other.valueUsd &&
@@ -247,6 +441,12 @@ class _$PortfolioAsset extends PortfolioAsset {
     _$hash = $jc(_$hash, decimals.hashCode);
     _$hash = $jc(_$hash, balanceRaw.hashCode);
     _$hash = $jc(_$hash, balance.hashCode);
+    _$hash = $jc(_$hash, availableQuantity.hashCode);
+    _$hash = $jc(_$hash, unavailableQuantity.hashCode);
+    _$hash = $jc(_$hash, reservationQuantity.hashCode);
+    _$hash = $jc(_$hash, pendingWithdrawalQuantity.hashCode);
+    _$hash = $jc(_$hash, availabilityStatus.hashCode);
+    _$hash = $jc(_$hash, unavailableReasons.hashCode);
     _$hash = $jc(_$hash, priceUsd.hashCode);
     _$hash = $jc(_$hash, pricingSource.hashCode);
     _$hash = $jc(_$hash, valueUsd.hashCode);
@@ -279,6 +479,12 @@ class _$PortfolioAsset extends PortfolioAsset {
           ..add('decimals', decimals)
           ..add('balanceRaw', balanceRaw)
           ..add('balance', balance)
+          ..add('availableQuantity', availableQuantity)
+          ..add('unavailableQuantity', unavailableQuantity)
+          ..add('reservationQuantity', reservationQuantity)
+          ..add('pendingWithdrawalQuantity', pendingWithdrawalQuantity)
+          ..add('availabilityStatus', availabilityStatus)
+          ..add('unavailableReasons', unavailableReasons)
           ..add('priceUsd', priceUsd)
           ..add('pricingSource', pricingSource)
           ..add('valueUsd', valueUsd)
@@ -369,6 +575,42 @@ class PortfolioAssetBuilder
   String? get balance => _$this._balance;
   set balance(String? balance) => _$this._balance = balance;
 
+  String? _availableQuantity;
+  String? get availableQuantity => _$this._availableQuantity;
+  set availableQuantity(String? availableQuantity) =>
+      _$this._availableQuantity = availableQuantity;
+
+  String? _unavailableQuantity;
+  String? get unavailableQuantity => _$this._unavailableQuantity;
+  set unavailableQuantity(String? unavailableQuantity) =>
+      _$this._unavailableQuantity = unavailableQuantity;
+
+  String? _reservationQuantity;
+  String? get reservationQuantity => _$this._reservationQuantity;
+  set reservationQuantity(String? reservationQuantity) =>
+      _$this._reservationQuantity = reservationQuantity;
+
+  String? _pendingWithdrawalQuantity;
+  String? get pendingWithdrawalQuantity => _$this._pendingWithdrawalQuantity;
+  set pendingWithdrawalQuantity(String? pendingWithdrawalQuantity) =>
+      _$this._pendingWithdrawalQuantity = pendingWithdrawalQuantity;
+
+  PortfolioAssetAvailabilityStatusEnum? _availabilityStatus;
+  PortfolioAssetAvailabilityStatusEnum? get availabilityStatus =>
+      _$this._availabilityStatus;
+  set availabilityStatus(
+          PortfolioAssetAvailabilityStatusEnum? availabilityStatus) =>
+      _$this._availabilityStatus = availabilityStatus;
+
+  ListBuilder<PortfolioAssetUnavailableReasonsEnum>? _unavailableReasons;
+  ListBuilder<PortfolioAssetUnavailableReasonsEnum> get unavailableReasons =>
+      _$this._unavailableReasons ??=
+          ListBuilder<PortfolioAssetUnavailableReasonsEnum>();
+  set unavailableReasons(
+          ListBuilder<PortfolioAssetUnavailableReasonsEnum>?
+              unavailableReasons) =>
+      _$this._unavailableReasons = unavailableReasons;
+
   String? _priceUsd;
   String? get priceUsd => _$this._priceUsd;
   set priceUsd(String? priceUsd) => _$this._priceUsd = priceUsd;
@@ -428,6 +670,12 @@ class PortfolioAssetBuilder
       _decimals = $v.decimals;
       _balanceRaw = $v.balanceRaw;
       _balance = $v.balance;
+      _availableQuantity = $v.availableQuantity;
+      _unavailableQuantity = $v.unavailableQuantity;
+      _reservationQuantity = $v.reservationQuantity;
+      _pendingWithdrawalQuantity = $v.pendingWithdrawalQuantity;
+      _availabilityStatus = $v.availabilityStatus;
+      _unavailableReasons = $v.unavailableReasons?.toBuilder();
       _priceUsd = $v.priceUsd;
       _pricingSource = $v.pricingSource;
       _valueUsd = $v.valueUsd;
@@ -484,6 +732,12 @@ class PortfolioAssetBuilder
                 balanceRaw, r'PortfolioAsset', 'balanceRaw'),
             balance: BuiltValueNullFieldError.checkNotNull(
                 balance, r'PortfolioAsset', 'balance'),
+            availableQuantity: availableQuantity,
+            unavailableQuantity: unavailableQuantity,
+            reservationQuantity: reservationQuantity,
+            pendingWithdrawalQuantity: pendingWithdrawalQuantity,
+            availabilityStatus: availabilityStatus,
+            unavailableReasons: _unavailableReasons?.build(),
             priceUsd: priceUsd,
             pricingSource: BuiltValueNullFieldError.checkNotNull(
                 pricingSource, r'PortfolioAsset', 'pricingSource'),
@@ -503,6 +757,9 @@ class PortfolioAssetBuilder
         _holdingReturn?.build();
         _$failedField = 'bstocks';
         _bstocks?.build();
+
+        _$failedField = 'unavailableReasons';
+        _unavailableReasons?.build();
 
         _$failedField = 'warnings';
         warnings.build();

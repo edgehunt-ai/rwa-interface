@@ -250,6 +250,7 @@ export 'package:rwa_api_client/src/model/hip3_market_order_minimum.dart';
 export 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 export 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 export 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
+export 'package:rwa_api_client/src/model/hip3_opening_protection_order.dart';
 export 'package:rwa_api_client/src/model/hip3_operation.dart';
 export 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
 export 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';

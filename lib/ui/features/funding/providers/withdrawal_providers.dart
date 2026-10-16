@@ -7,6 +7,7 @@ import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/decimal_value.dart';
+import '../../../../domain/models/portfolio_asset.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/repositories/portfolio_repository.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
@@ -22,12 +23,15 @@ final withdrawalAssetsProvider =
       ]);
       final spotAssets = results[0];
       final withdrawalEligibility = {
-        for (final asset in results[1]) asset.assetId: asset,
+        for (final asset in results[1]) _withdrawalAssetIdentity(asset): asset,
       };
       return spotAssets
           .where(
             (asset) =>
-                withdrawalEligibility[asset.assetId]?.withdrawable == true &&
+                asset.walletId != null &&
+                withdrawalEligibility[_withdrawalAssetIdentity(asset)]
+                        ?.withdrawable ==
+                    true &&
                 asset.balance.compareTo(
                       DecimalValue(
                         '0',
@@ -38,26 +42,41 @@ final withdrawalAssetsProvider =
                     0,
           )
           .map((asset) {
-            final eligibility = withdrawalEligibility[asset.assetId]!;
+            final eligibility =
+                withdrawalEligibility[_withdrawalAssetIdentity(asset)]!;
+            final available = eligibility.withdrawalAvailableBalance;
             return WithdrawableAsset(
               symbol: asset.symbol,
               chain: asset.network,
               balance: asset.balance,
+              availableBalance: available == null
+                  ? null
+                  : available.compareTo(asset.balance) > 0
+                  ? asset.balance
+                  : available,
               valueUsd: asset.valueUsd,
               productId: asset.productId,
               holdingReturnAmountUsd: asset.holdingReturnAmountUsd,
               holdingReturnPercent: asset.holdingReturnPercent,
               decimals: asset.decimals,
               assetId: asset.assetId,
-              walletId: asset.walletId ?? eligibility.walletId,
-              contractAddress:
-                  asset.contractAddress ?? eligibility.contractAddress,
+              walletId: asset.walletId,
+              contractAddress: asset.contractAddress,
               native: asset.native,
               withdrawable: eligibility.withdrawable,
             );
           })
           .toList(growable: false);
     });
+
+(String, String?, String, String?) _withdrawalAssetIdentity(
+  PortfolioAsset asset,
+) => (
+  asset.assetId,
+  asset.walletId,
+  asset.normalizedNetwork,
+  asset.canonicalEvmId,
+);
 
 final withdrawalsProvider = FutureProvider.autoDispose
     .family<DomainPage<Withdrawal>, String?>((ref, cursor) {

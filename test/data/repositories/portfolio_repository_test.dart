@@ -135,7 +135,77 @@ void main() {
     expect(assets.single.bstocksAvailableQuantity?.value, '1.25');
     expect(assets.single.bstocksAvailabilityStatus, 'complete');
     expect(assets.single.freshness, 'live');
+    expect(assets.single.withdrawalAvailableBalance, isNull);
   });
+
+  test(
+    'decodes top-level quote and stock withdrawal availability exactly',
+    () async {
+      for (final symbol in ['USDC', 'NVDAB', 'OTHER']) {
+        final assets = await PortfolioRepositoryImpl(
+          _ProductPortfolio(
+            wireOverrides: {
+              'symbol': symbol,
+              'balance': '100',
+              'value_usd': '100',
+              'available_quantity': '20.000000000000000001',
+              'availability_status': 'complete',
+              if (symbol != 'NVDAB') 'bstocks': null,
+            },
+          ),
+        ).listAssets();
+        final asset = assets.single;
+        expect(asset.availableQuantity?.value, '20.000000000000000001');
+        expect(asset.availabilityStatus, 'complete');
+        expect(
+          asset.withdrawalAvailableBalance?.value,
+          '20.000000000000000001',
+        );
+        expect(asset.balance.value, '100');
+        expect(asset.valueUsd?.value, '100');
+        expect(
+          asset.bstocksAvailableQuantity?.value,
+          symbol == 'NVDAB' ? '1.25' : null,
+        );
+      }
+    },
+  );
+
+  test(
+    'decodes zero, null and stale without falling back to nested stock funds',
+    () async {
+      for (final scenario in [
+        (quantity: '0', status: 'complete', freshness: 'live', expected: '0'),
+        (quantity: null, status: 'partial', freshness: 'live', expected: null),
+        (
+          quantity: '20',
+          status: 'unavailable',
+          freshness: 'live',
+          expected: null,
+        ),
+        (
+          quantity: '20',
+          status: 'complete',
+          freshness: 'stale',
+          expected: null,
+        ),
+      ]) {
+        final asset = (await PortfolioRepositoryImpl(
+          _ProductPortfolio(
+            wireOverrides: {
+              'balance': '100',
+              'available_quantity': scenario.quantity,
+              'availability_status': scenario.status,
+              'freshness': scenario.freshness,
+            },
+          ),
+        ).listAssets()).single;
+        expect(asset.bstocksAvailableQuantity?.value, '1.25');
+        expect(asset.withdrawalAvailableBalance?.value, scenario.expected);
+        expect(asset.balance.value, '100');
+      }
+    },
+  );
 
   test('maps account allocation and expands known spot breakdowns', () {
     final allocation = mapRailPortfolioAllocation(
@@ -451,6 +521,9 @@ final class _Portfolio implements PortfolioService {
 }
 
 final class _ProductPortfolio implements PortfolioService {
+  _ProductPortfolio({this.wireOverrides});
+
+  final Map<String, Object?>? wireOverrides;
   String? productId;
   String? account;
 
@@ -462,7 +535,7 @@ final class _ProductPortfolio implements PortfolioService {
   }) async {
     this.productId = productId;
     this.account = account;
-    return api.PortfolioAssetPage(
+    final page = api.PortfolioAssetPage(
       (page) => page
         ..unvaluedAssetCount = 0
         ..dataStatus = api.PortfolioDataStatus.complete
@@ -508,6 +581,19 @@ final class _ProductPortfolio implements PortfolioService {
           ),
         ),
     );
+    if (wireOverrides == null) return page;
+    final wire = Map<String, Object?>.from(
+      api.standardSerializers.serializeWith(
+            api.PortfolioAsset.serializer,
+            page.items.single,
+          )!
+          as Map,
+    )..addAll(wireOverrides!);
+    final decoded = api.standardSerializers.deserializeWith(
+      api.PortfolioAsset.serializer,
+      wire,
+    )!;
+    return page.rebuild((builder) => builder.items.replace([decoded]));
   }
 
   @override

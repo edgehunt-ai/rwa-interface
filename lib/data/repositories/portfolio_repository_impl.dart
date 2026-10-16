@@ -122,6 +122,14 @@ final class PortfolioRepositoryImpl
             holdingReturnPercent: asset.holdingReturn?.percent == null
                 ? null
                 : DecimalValue(asset.holdingReturn!.percent!, unit: 'percent'),
+            availableQuantity: asset.availableQuantity == null
+                ? null
+                : DecimalValue(
+                    asset.availableQuantity!,
+                    asset: asset.symbol,
+                    unit: 'token',
+                  ),
+            availabilityStatus: asset.availabilityStatus?.name,
             bstocksAvailableQuantity: asset.bstocks?.availableQuantity == null
                 ? null
                 : DecimalValue(

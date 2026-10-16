@@ -6,6 +6,7 @@ final class WithdrawableAsset {
     required this.symbol,
     required this.chain,
     required this.balance,
+    this.availableBalance,
     this.valueUsd,
     this.productId,
     this.holdingReturnAmountUsd,
@@ -21,6 +22,9 @@ final class WithdrawableAsset {
   final String symbol;
   final String chain;
   final DecimalValue balance;
+
+  /// Spendable funds, separate from total [balance]; null means unknown.
+  final DecimalValue? availableBalance;
   final DecimalValue? valueUsd;
   final String? productId;
   final DecimalValue? holdingReturnAmountUsd;

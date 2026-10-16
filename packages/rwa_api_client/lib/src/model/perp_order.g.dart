@@ -113,6 +113,8 @@ class _$PerpOrder extends PerpOrder {
   @override
   final Hip3ConditionalOrder? conditional;
   @override
+  final BuiltList<Hip3OpeningProtectionOrder>? openingProtectionOrders;
+  @override
   final String? clientOrderId;
   @override
   final String? providerOrderId;
@@ -183,6 +185,7 @@ class _$PerpOrder extends PerpOrder {
       this.productId,
       this.hip3ActionId,
       this.conditional,
+      this.openingProtectionOrders,
       this.clientOrderId,
       this.providerOrderId,
       this.providerStatus,
@@ -230,6 +233,7 @@ class _$PerpOrder extends PerpOrder {
         productId == other.productId &&
         hip3ActionId == other.hip3ActionId &&
         conditional == other.conditional &&
+        openingProtectionOrders == other.openingProtectionOrders &&
         clientOrderId == other.clientOrderId &&
         providerOrderId == other.providerOrderId &&
         providerStatus == other.providerStatus &&
@@ -270,6 +274,7 @@ class _$PerpOrder extends PerpOrder {
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, hip3ActionId.hashCode);
     _$hash = $jc(_$hash, conditional.hashCode);
+    _$hash = $jc(_$hash, openingProtectionOrders.hashCode);
     _$hash = $jc(_$hash, clientOrderId.hashCode);
     _$hash = $jc(_$hash, providerOrderId.hashCode);
     _$hash = $jc(_$hash, providerStatus.hashCode);
@@ -312,6 +317,7 @@ class _$PerpOrder extends PerpOrder {
           ..add('productId', productId)
           ..add('hip3ActionId', hip3ActionId)
           ..add('conditional', conditional)
+          ..add('openingProtectionOrders', openingProtectionOrders)
           ..add('clientOrderId', clientOrderId)
           ..add('providerOrderId', providerOrderId)
           ..add('providerStatus', providerStatus)
@@ -373,6 +379,15 @@ class PerpOrderBuilder
       _$this._conditional ??= Hip3ConditionalOrderBuilder();
   set conditional(covariant Hip3ConditionalOrderBuilder? conditional) =>
       _$this._conditional = conditional;
+
+  ListBuilder<Hip3OpeningProtectionOrder>? _openingProtectionOrders;
+  ListBuilder<Hip3OpeningProtectionOrder> get openingProtectionOrders =>
+      _$this._openingProtectionOrders ??=
+          ListBuilder<Hip3OpeningProtectionOrder>();
+  set openingProtectionOrders(
+          covariant ListBuilder<Hip3OpeningProtectionOrder>?
+              openingProtectionOrders) =>
+      _$this._openingProtectionOrders = openingProtectionOrders;
 
   String? _clientOrderId;
   String? get clientOrderId => _$this._clientOrderId;
@@ -532,6 +547,7 @@ class PerpOrderBuilder
       _productId = $v.productId;
       _hip3ActionId = $v.hip3ActionId;
       _conditional = $v.conditional?.toBuilder();
+      _openingProtectionOrders = $v.openingProtectionOrders?.toBuilder();
       _clientOrderId = $v.clientOrderId;
       _providerOrderId = $v.providerOrderId;
       _providerStatus = $v.providerStatus;
@@ -591,6 +607,7 @@ class PerpOrderBuilder
             productId: productId,
             hip3ActionId: hip3ActionId,
             conditional: _conditional?.build(),
+            openingProtectionOrders: _openingProtectionOrders?.build(),
             clientOrderId: clientOrderId,
             providerOrderId: providerOrderId,
             providerStatus: providerStatus,
@@ -636,6 +653,8 @@ class PerpOrderBuilder
       try {
         _$failedField = 'conditional';
         _conditional?.build();
+        _$failedField = 'openingProtectionOrders';
+        _openingProtectionOrders?.build();
 
         _$failedField = 'fills';
         _fills?.build();

@@ -444,6 +444,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
           .serializer)
       ..add(Hip3OpeningProtectionConfirmationLegsInnerRoleEnum.serializer)
+      ..add(Hip3OpeningProtectionOrder.serializer)
       ..add(Hip3Operation.serializer)
       ..add(Hip3OrderCapacity.serializer)
       ..add(Hip3OrderCapacitySide.serializer)
@@ -695,11 +696,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioAllocationValue.serializer)
       ..add(PortfolioAsset.serializer)
       ..add(PortfolioAssetAssetTypeEnum.serializer)
+      ..add(PortfolioAssetAvailabilityStatusEnum.serializer)
       ..add(PortfolioAssetKindEnum.serializer)
       ..add(PortfolioAssetNetwork.serializer)
       ..add(PortfolioAssetPage.serializer)
       ..add(PortfolioAssetPageAccountEnum.serializer)
       ..add(PortfolioAssetSourceKind.serializer)
+      ..add(PortfolioAssetUnavailableReasonsEnum.serializer)
       ..add(PortfolioAvailabilityStatus.serializer)
       ..add(PortfolioCrossLiquidationRisk.serializer)
       ..add(PortfolioCrossLiquidationRiskStatusEnum.serializer)
@@ -1082,6 +1085,27 @@ Serializers _$serializers = (Serializers().toBuilder()
           ]),
           () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3OpeningProtectionOrder)]),
+          () => ListBuilder<Hip3OpeningProtectionOrder>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(OrderFill)]),
+          () => ListBuilder<OrderFill>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3OpeningProtectionOrder)]),
+          () => ListBuilder<Hip3OpeningProtectionOrder>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(OrderFill)]),
+          () => ListBuilder<OrderFill>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3OpeningProtectionOrder)]),
+          () => ListBuilder<Hip3OpeningProtectionOrder>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(OrderFill)]),
+          () => ListBuilder<OrderFill>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Hip3Operation)]),
           () => ListBuilder<Hip3Operation>())
       ..addBuilderFactory(
@@ -1189,15 +1213,6 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(OrderBookLevel)]),
           () => ListBuilder<OrderBookLevel>())
       ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(OrderFill)]),
-          () => ListBuilder<OrderFill>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(OrderFill)]),
-          () => ListBuilder<OrderFill>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(OrderFill)]),
-          () => ListBuilder<OrderFill>())
-      ..addBuilderFactory(
           const FullType(BuiltList,
               const [const FullType(PortfolioAccountAllocationItem)]),
           () => ListBuilder<PortfolioAccountAllocationItem>())
@@ -1211,6 +1226,14 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PortfolioAsset)]),
           () => ListBuilder<PortfolioAsset>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(PortfolioAssetUnavailableReasonsEnum)]),
+          () => ListBuilder<PortfolioAssetUnavailableReasonsEnum>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioWarningCode)]),
+          () => ListBuilder<PortfolioWarningCode>())
       ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(PortfolioHistoryPoint)]),
@@ -1242,10 +1265,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PortfolioAsset)]),
           () => ListBuilder<PortfolioAsset>())
-      ..addBuilderFactory(
-          const FullType(
-              BuiltList, const [const FullType(PortfolioWarningCode)]),
-          () => ListBuilder<PortfolioWarningCode>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Position)]),
           () => ListBuilder<Position>())
