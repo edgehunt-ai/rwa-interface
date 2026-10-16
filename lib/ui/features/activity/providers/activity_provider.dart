@@ -43,3 +43,24 @@ final activityProvider = FutureProvider.autoDispose
             cursor: filter.cursor,
           );
     });
+
+/// The contract exposes activity pages only; resolve a stable record ID across
+/// all pages independently of the list screen's active filters.
+final activityDetailProvider = FutureProvider.autoDispose
+    .family<ActivityRecord?, String>((ref, id) async {
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(activityRepositoryProvider);
+      String? cursor;
+      final visited = <String>{};
+      do {
+        final page = await repository.list(cursor: cursor);
+        if (!ref.mounted) return null;
+        for (final record in page.items) {
+          if (record.id == id) return record;
+        }
+        cursor = page.nextCursor;
+        if (!page.hasMore || cursor == null || !visited.add(cursor)) {
+          return null;
+        }
+      } while (true);
+    });

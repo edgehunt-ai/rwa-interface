@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="privy_app_url_scheme" translatable="false">nobell</string>
+    <string name="app_link_url_scheme" translatable="false">nobell-app</string>
 </resources>

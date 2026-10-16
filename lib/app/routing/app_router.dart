@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/ui/features/home/views/details_screen.dart';
@@ -114,8 +115,12 @@ abstract final class AppRouter {
               'perp' => MarketProductKind.perp,
               _ => MarketProductKind.bstock,
             };
+            final symbol = state.uri.queryParameters['symbol']!.trim();
             return TradeScreen(
-              symbol: state.uri.queryParameters['symbol']!,
+              key: ValueKey(
+                MarketProductRef(symbol: symbol.toUpperCase(), kind: kind),
+              ),
+              symbol: symbol,
               initialKind: kind,
             );
           },
@@ -133,6 +138,12 @@ abstract final class AppRouter {
                 ? ActivityCategory.cash
                 : null,
           ),
+        ),
+        GoRoute(
+          name: AppRoutes.activityDetailName,
+          path: AppRoutes.activityDetailPath,
+          builder: (context, state) =>
+              ActivityDetailScreen(recordId: state.pathParameters['id']!),
         ),
         GoRoute(
           name: AppRoutes.detailsName,

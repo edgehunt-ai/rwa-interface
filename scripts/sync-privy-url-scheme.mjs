@@ -25,6 +25,7 @@ export function syncPrivyConfiguration(envFile = '.env', rootDirectory = reposit
       '<?xml version="1.0" encoding="utf-8"?>',
       '<resources>',
       '    <string name="privy_app_url_scheme" translatable="false">' + scheme + '</string>',
+      '    <string name="app_link_url_scheme" translatable="false">' + scheme + '-app</string>',
       '</resources>',
       '',
     ].join(String.fromCharCode(10)),
@@ -34,6 +35,7 @@ export function syncPrivyConfiguration(envFile = '.env', rootDirectory = reposit
     [
       '// Generated from ' + envFile + '; do not edit manually.',
       'PRIVY_APP_URL_SCHEME = ' + scheme,
+      'APP_LINK_URL_SCHEME = ' + scheme + '-app',
       '',
     ].join(String.fromCharCode(10)),
   );

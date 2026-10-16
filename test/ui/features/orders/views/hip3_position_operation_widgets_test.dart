@@ -314,6 +314,104 @@ void main() {
     );
   });
 
+  testWidgets(
+    'pending protection automatically signs the same action without another confirmation',
+    (tester) async {
+      addTearDown(AppToast.dismiss);
+      await configureDisplay(tester, size: const Size(600, 1200));
+      const awaiting = Hip3ActionSummary(
+        actionId: 'protection-result',
+        productId: 'xyz:TSLA',
+        operation: 'manageTpsl',
+        status: 'awaitingSignature',
+        effectsApplied: false,
+        canResumePositionAction: true,
+      );
+      final repo = _Positions()
+        ..protectionResult = const Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: 'reconciling',
+          effectsApplied: false,
+          canResumePositionAction: true,
+        );
+      final resume = Completer<void>();
+      repo.resumeDelay = resume.future;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(
+            Builder(
+              builder: (context) => FilledButton(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => PositionTpSlSheet(
+                    position: _position(withProtection: false),
+                  ),
+                ),
+                child: const Text('Open protection'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open protection'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '111',
+      );
+      final submit = find.widgetWithText(FilledButton, 'Sign and confirm');
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pump();
+      await tester.pump();
+      expect(repo.protectionReads, 1);
+      repo.protectionResult = awaiting;
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Waiting for your signature'), findsNothing);
+      expect(find.text('Continue action'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(repo.protectionReads, 2);
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump();
+      expect(repo.protectionReads, 2);
+
+      expect(repo.resumedActions, ['protection-result']);
+      expect(repo.protectionCalls, 1);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed,
+        isNull,
+      );
+      repo.protectionResult = const Hip3ActionSummary(
+        actionId: 'protection-result',
+        productId: 'xyz:TSLA',
+        operation: 'manageTpsl',
+        status: 'succeeded',
+        effectsApplied: true,
+        canResumePositionAction: false,
+      );
+      resume.complete();
+      await tester.pump();
+      for (
+        var frame = 0;
+        frame < 10 && find.byType(PositionTpSlSheet).evaluate().isNotEmpty;
+        frame++
+      ) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(repo.protectionReads, 3);
+      expect(repo.protectionCalls, 1);
+      expect(find.byType(PositionTpSlSheet), findsNothing);
+      expect(find.text('Confirmed'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final initiallyPending in [false, true]) {
     testWidgets(
       'protection success closes the sheet and uses the existing toast, initiallyPending=$initiallyPending',
@@ -421,7 +519,7 @@ void main() {
   }
 
   testWidgets(
-    'multiple TP orders use one whole-position setting without a selector',
+    'existing multiple TP orders are preserved when adding protection',
     (tester) async {
       final repo = _Positions();
       final position = _position(
@@ -454,15 +552,7 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
       await tester.pumpAndSettle();
-      expect(repo.protectionChanges, hasLength(3));
-      expect(
-        repo.protectionChanges
-            .where(
-              (change) => change.operation == ProtectionChangeOperation.cancel,
-            )
-            .map((change) => change.orderId),
-        containsAll(<String>['tp-first', 'tp-second']),
-      );
+      expect(repo.protectionChanges, hasLength(1));
       final create = repo.protectionChanges.singleWhere(
         (change) => change.operation == ProtectionChangeOperation.create,
       );
@@ -472,58 +562,70 @@ void main() {
     },
   );
 
-  testWidgets('existing fixed protection keeps its quantity when reopened', (
-    tester,
-  ) async {
-    final repo = _Positions();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          positionsRepositoryProvider.overrideWithValue(repo),
-          ordersRepositoryProvider.overrideWithValue(_Orders()),
-        ],
-        child: buildTestApp(
-          PositionTpSlSheet(position: _position(protectionIds: ['tp-1'])),
+  testWidgets(
+    'existing protection is not read or prefilled when adding protection',
+    (tester) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repo),
+            ordersRepositoryProvider.overrideWithValue(_Orders()),
+          ],
+          child: buildTestApp(
+            PositionTpSlSheet(position: _position(protectionIds: ['tp-1'])),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Take Profit & stop loss'), findsOneWidget);
-    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
-    expect(
-      find.textContaining('Fixed quantity will not adjust automatically'),
-      findsNothing,
-    );
-    expect(find.text('Order TP/SL'), findsNothing);
-    final input = tester.widget<TextField>(
-      find.byKey(const Key('protection-quantity')),
-    );
-    expect(input.controller!.text, '1');
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const Key('protection-percentage-slider')))
-          .value,
-      100,
-    );
-    await tester.enterText(
-      find.byKey(const Key('position-protection-take-profit')),
-      '131',
-    );
-    await tester.ensureVisible(
-      find.widgetWithText(FilledButton, 'Sign and confirm'),
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
-    await tester.pumpAndSettle();
-    expect(repo.quantity, '1');
-    expect(repo.takeProfit, '131');
-    expect(repo.stopLoss, isNull);
-    expect(repo.protectionChanges, hasLength(1));
-    expect(
-      repo.protectionChanges.single.operation,
-      ProtectionChangeOperation.modify,
-    );
-    expect(repo.protectionChanges.single.orderId, 'tp-1');
-  });
+      );
+      await tester.pumpAndSettle();
+      for (final key in [
+        'position-protection-take-profit',
+        'position-protection-stop-loss',
+      ]) {
+        expect(
+          tester.widget<TextField>(find.byKey(Key(key))).controller!.text,
+          '',
+        );
+      }
+      expect(find.text('Take Profit & stop loss'), findsOneWidget);
+      expect(find.byType(DropdownButtonFormField<String>), findsNothing);
+      expect(
+        find.textContaining('Fixed quantity will not adjust automatically'),
+        findsNothing,
+      );
+      expect(find.text('Order TP/SL'), findsNothing);
+      final input = tester.widget<TextField>(
+        find.byKey(const Key('protection-quantity')),
+      );
+      expect(input.controller!.text, '1');
+      expect(
+        tester
+            .widget<Slider>(
+              find.byKey(const Key('protection-percentage-slider')),
+            )
+            .value,
+        100,
+      );
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '131',
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+      expect(repo.quantity, isNull);
+      expect(repo.takeProfit, '131');
+      expect(repo.stopLoss, isNull);
+      expect(repo.protectionChanges, hasLength(1));
+      expect(
+        repo.protectionChanges.single.operation,
+        ProtectionChangeOperation.create,
+      );
+      expect(repo.protectionChanges.single.orderId, isNull);
+    },
+  );
 
   testWidgets(
     'position settings signs and submits without a second confirmation',
@@ -1340,42 +1442,9 @@ void main() {
   );
 
   for (final both in [false, true]) {
-    testWidgets('protection switches send explicit cancellation, both=$both', (
-      tester,
-    ) async {
-      final repo = _Positions();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
-          child: buildTestApp(PositionTpSlSheet(position: _position())),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch).first);
-      await tester.pump();
-      if (both) {
-        await tester.tap(find.byType(Switch).last);
-        await tester.pump();
-      }
-      await tester.ensureVisible(
-        find.widgetWithText(FilledButton, 'Sign and confirm'),
-      );
-      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
-      await tester.pumpAndSettle();
-      expect(
-        repo.clearScope,
-        both ? ProtectionClearScope.both : ProtectionClearScope.takeProfit,
-      );
-      expect(repo.takeProfit, isNull);
-      expect(repo.stopLoss, isNull);
-    });
-  }
-
-  for (final price in ['', '0', '0.00']) {
-    for (final scope in ProtectionClearScope.values) {
-      testWidgets('unset trigger "$price" cancels existing ${scope.name}', (
-        tester,
-      ) async {
+    testWidgets(
+      'disabled new protection leaves existing orders unchanged, both=$both',
+      (tester) async {
         final repo = _Positions();
         await tester.pumpWidget(
           ProviderScope(
@@ -1384,30 +1453,65 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        if (scope != ProtectionClearScope.stopLoss) {
-          await tester.enterText(
-            find.byKey(const Key('position-protection-take-profit')),
-            price,
-          );
-        }
-        if (scope != ProtectionClearScope.takeProfit) {
-          await tester.enterText(
-            find.byKey(const Key('position-protection-stop-loss')),
-            price,
-          );
+        await tester.tap(find.byType(Switch).first);
+        await tester.pump();
+        if (both) {
+          await tester.tap(find.byType(Switch).last);
+          await tester.pump();
         }
         await tester.ensureVisible(
           find.widgetWithText(FilledButton, 'Sign and confirm'),
         );
         await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
         await tester.pumpAndSettle();
+        expect(repo.protectionCalls, 0);
+        expect(repo.protectionChanges, isEmpty);
+        expect(repo.takeProfit, isNull);
+        expect(repo.stopLoss, isNull);
+      },
+    );
+  }
 
-        expect(repo.protectionCalls, 1);
-        expect(repo.clearScope, scope);
-        expect(repo.takeProfit, null);
-        expect(repo.stopLoss, null);
-        expect(find.byType(TpSlInlineError), findsNothing);
-      });
+  for (final price in ['', '0', '0.00']) {
+    for (final scope in ProtectionClearScope.values) {
+      testWidgets(
+        'unset new trigger "$price" preserves existing ${scope.name}',
+        (tester) async {
+          final repo = _Positions();
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+              child: buildTestApp(PositionTpSlSheet(position: _position())),
+            ),
+          );
+          await tester.pumpAndSettle();
+          if (scope != ProtectionClearScope.stopLoss) {
+            await tester.enterText(
+              find.byKey(const Key('position-protection-take-profit')),
+              price,
+            );
+          }
+          if (scope != ProtectionClearScope.takeProfit) {
+            await tester.enterText(
+              find.byKey(const Key('position-protection-stop-loss')),
+              price,
+            );
+          }
+          await tester.ensureVisible(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          );
+          await tester.tap(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          );
+          await tester.pumpAndSettle();
+
+          expect(repo.protectionCalls, 0);
+          expect(repo.protectionChanges, isEmpty);
+          expect(repo.takeProfit, null);
+          expect(repo.stopLoss, null);
+          expect(find.byType(TpSlInlineError), findsNothing);
+        },
+      );
     }
   }
 
@@ -1513,8 +1617,8 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
     await tester.pumpAndSettle();
 
-    expect(repo.protectionCalls, 1);
-    expect(repo.clearScope, ProtectionClearScope.takeProfit);
+    expect(repo.protectionCalls, 0);
+    expect(repo.protectionChanges, isEmpty);
     expect(repo.takeProfit, isNull);
     expect(repo.takeLimit, isNull);
     expect(repo.stopLoss, isNull);
@@ -1775,6 +1879,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '110',
+      );
       await tester.ensureVisible(find.byKey(const Key('protection-quantity')));
       if (quantity.isEmpty) {
         await tester.enterText(
@@ -1804,40 +1912,47 @@ void main() {
     });
   }
 
-  testWidgets('protection load failure uses an inline notice and blocks save', (
-    tester,
-  ) async {
+  testWidgets('adding protection never reads existing orders', (tester) async {
     final repo = _Positions();
     final position = _position(protectionIds: ['tp-1']);
+    var reads = 0;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           positionsRepositoryProvider.overrideWithValue(repo),
-          positionProtectionOrdersProvider(position).overrideWith(
-            (_) async => throw const FormatException('Unsupported protection'),
-          ),
+          positionProtectionOrdersProvider(position).overrideWith((_) async {
+            reads++;
+            throw const FormatException('Unsupported protection');
+          }),
         ],
         child: buildTestApp(PositionTpSlSheet(position: position)),
       ),
     );
     await tester.pumpAndSettle();
-
-    expect(
-      find.text(
-        'Could not read existing protection sizes. Close and refresh before editing.',
-      ),
-      findsOneWidget,
+    expect(reads, 0);
+    expect(find.byType(TpSlInlineError), findsNothing);
+    for (final (key, price) in [
+      ('position-protection-take-profit', '110'),
+      ('position-protection-stop-loss', '90'),
+    ]) {
+      expect(
+        tester.widget<TextField>(find.byKey(Key(key))).controller!.text,
+        '',
+      );
+      await tester.enterText(find.byKey(Key(key)), price);
+    }
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Sign and confirm'),
     );
-    expect(find.byType(TpSlInlineError), findsOneWidget);
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Sign and confirm'),
-          )
-          .onPressed,
-      isNull,
-    );
-    expect(repo.protectionCalls, 0);
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+    await tester.pumpAndSettle();
+    expect(reads, 0);
+    expect(repo.protectionCalls, 1);
+    expect(repo.protectionChanges, hasLength(2));
+    for (final change in repo.protectionChanges) {
+      expect(change.operation, ProtectionChangeOperation.create);
+      expect(change.orderId, isNull);
+    }
   });
 
   for (final (name, error, message) in <(String, Object, String)>[
@@ -2112,6 +2227,10 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('position-protection-take-profit')),
+          short ? '90' : '110',
+        );
         final slider = find.byKey(const Key('protection-percentage-slider'));
         await tester.ensureVisible(slider);
         final rect = tester.getRect(slider);
@@ -2142,7 +2261,7 @@ void main() {
         );
         await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
         await tester.pumpAndSettle();
-        expect(repo.protectionCalls, percentage == 100 ? 0 : 1);
+        expect(repo.protectionCalls, 1);
         if (percentage == 100) {
           expect(repo.quantity, isNull);
         } else {
@@ -2165,6 +2284,10 @@ void main() {
           overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
           child: buildTestApp(PositionTpSlSheet(position: _position())),
         ),
+      );
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        '110',
       );
       await tester.ensureVisible(find.byKey(const Key('protection-quantity')));
       await tester.enterText(
@@ -2472,6 +2595,22 @@ class _Positions implements PositionsRepository {
   Object? protectionError;
   Hip3ActionSummary? protectionResult;
   bool? protectionConfirmBeforeSigning;
+  int protectionReads = 0;
+  final resumedActions = <String>[];
+  Future<void>? resumeDelay;
+
+  @override
+  Future<Hip3ActionSummary> hip3Action(String actionId) async {
+    protectionReads++;
+    return protectionResult!;
+  }
+
+  @override
+  Future<void> resumeHip3Action(String actionId) async {
+    resumedActions.add(actionId);
+    await resumeDelay;
+  }
+
   @override
   Future<TradingOrder> close(
     String positionId, {

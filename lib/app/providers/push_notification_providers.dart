@@ -172,7 +172,20 @@ final class PushNotificationCoordinator {
 
   void _handleMessage(PushMessage message) {
     final route = message.data['route'] ?? message.data['deep_link'];
-    if (route == null || !_allowedRoutes.contains(route)) return;
+    if (route == null) return;
+    final uri = Uri.tryParse(route);
+    if (uri == null ||
+        uri.hasScheme ||
+        uri.hasAuthority ||
+        !route.startsWith('/') ||
+        route.startsWith('//')) {
+      return;
+    }
+    final isActivityDetail =
+        uri.pathSegments.length == 2 &&
+        uri.pathSegments.first == 'activity' &&
+        uri.pathSegments.last.trim().isNotEmpty;
+    if (!_allowedRoutes.contains(uri.path) && !isActivityDetail) return;
     _routes.add(route);
   }
 

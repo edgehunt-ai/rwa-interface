@@ -13,21 +13,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   late final TextEditingController _takeProfit;
   late final TextEditingController _stopLoss;
   final _quantity = TextEditingController();
-  final _stopLimit = TextEditingController();
-  final _takeLimit = TextEditingController();
-  bool _takeIsLimit = false;
-  bool _stopIsLimit = false;
   bool _fixedQuantity = false;
   double _quantityPercent = 100;
-  bool _loadingProtection = false;
-  bool _protectionLoadFailed = false;
   bool _pending = false;
-  List<Hip3PositionProtectionOrder> _existingOrders = const [];
-  final _multipleProtectionRoles = <String>{};
   Hip3ActionSummary? _result;
   var _closingSuccessfulResult = false;
-  bool _hadTakeProfit = false;
-  bool _hadStopLoss = false;
   var _takeProfitEnabled = true;
   var _stopLossEnabled = true;
   var _submitting = false;
@@ -53,26 +43,10 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   @override
   void initState() {
     super.initState();
-    _takeProfit = TextEditingController(
-      text: widget.position.takeProfitPrice?.value ?? '',
-    );
-    _stopLoss = TextEditingController(
-      text: widget.position.stopLossPrice?.value ?? '',
-    );
+    // Each visit creates new protection; existing orders remain independent.
+    _takeProfit = TextEditingController();
+    _stopLoss = TextEditingController();
     _quantity.text = absoluteQuantity(widget.position.quantity.value);
-    _stopLimit.text = widget.position.stopLimitPrice?.value ?? '';
-    _stopIsLimit = widget.position.stopLimitPrice != null;
-    _hadTakeProfit = widget.position.takeProfitPrice != null;
-    _hadStopLoss = widget.position.stopLossPrice != null;
-    if (_hadTakeProfit || _hadStopLoss) {
-      _takeProfitEnabled = _hadTakeProfit;
-      _stopLossEnabled = _hadStopLoss;
-    }
-    if (widget.position.protectionOrderIds.isNotEmpty ||
-        widget.position.protectionOrders.isNotEmpty) {
-      _loadingProtection = true;
-      _loadProtection();
-    }
     _loadConsent();
   }
 
@@ -81,129 +55,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     (widget.position.markPrice ?? widget.position.entryPrice)?.value ?? '',
   );
 
-  Future<void> _loadProtection() async {
-    try {
-      var orders = widget.position.protectionOrders;
-      if (orders.isEmpty) {
-        final legacy = await ref.read(
-          positionProtectionOrdersProvider(widget.position).future,
-        );
-        orders = [
-          for (final order in legacy)
-            Hip3PositionProtectionOrder(
-              orderId: order.orderId,
-              protection: Hip3ProtectionParameters(
-                role: order.conditional!.role,
-                triggerPrice: order.conditional!.triggerPrice,
-                triggerReference: order.conditional!.triggerReference,
-                quantity: order.conditional!.sizeMode == 'entirePosition'
-                    ? null
-                    : DecimalValue(order.conditional!.quantity),
-                limitPrice: order.conditional!.executionType == 'limit'
-                    ? order.limitPrice
-                    : null,
-              ),
-            ),
-        ];
-      }
-      if (!mounted) return;
-      if (orders.any(
-        (order) =>
-            order.protection.triggerReference != 'mark' ||
-            !const {'takeProfit', 'stopLoss'}.contains(order.protection.role),
-      )) {
-        throw const FormatException('Unsupported existing protection');
-      }
-      setState(() {
-        _existingOrders = orders;
-        for (final role in ['takeProfit', 'stopLoss']) {
-          final matching = orders
-              .where((order) => order.protection.role == role)
-              .toList();
-          if (matching.length == 1) {
-            _applyProtection(role, matching.single.protection);
-          } else if (matching.length > 1) {
-            _multipleProtectionRoles.add(role);
-            if (role == 'takeProfit') {
-              _hadTakeProfit = true;
-              _takeProfitEnabled = true;
-            } else {
-              _hadStopLoss = true;
-              _stopLossEnabled = true;
-            }
-          } else {
-            _clearProtection(role);
-          }
-        }
-        final sizes = orders
-            .where(
-              (order) =>
-                  !_multipleProtectionRoles.contains(order.protection.role),
-            )
-            .map((order) => order.protection.quantity?.value ?? 'entire')
-            .toSet();
-        if (sizes.length == 1 && sizes.single != 'entire') {
-          _fixedQuantity = true;
-          _quantity.text = sizes.single;
-          _syncQuantityPercent();
-        }
-        _loadingProtection = false;
-      });
-    } on Object {
-      if (mounted) {
-        setState(() {
-          _loadingProtection = false;
-          _protectionLoadFailed = true;
-          _error = AppLocalizations.of(context).protectionSizesUnavailable;
-        });
-      }
-    }
-  }
-
-  void _applyProtection(String role, Hip3ProtectionParameters parameters) {
-    if (role == 'takeProfit') {
-      _hadTakeProfit = true;
-      _takeProfitEnabled = true;
-      _takeProfit.text = parameters.triggerPrice.value;
-      _takeIsLimit = parameters.limitPrice != null;
-      _takeLimit.text = parameters.limitPrice?.value ?? '';
-    } else {
-      _hadStopLoss = true;
-      _stopLossEnabled = true;
-      _stopLoss.text = parameters.triggerPrice.value;
-      _stopLimit.text = parameters.limitPrice?.value ?? '';
-      _stopIsLimit = parameters.limitPrice != null;
-    }
-    if (parameters.quantity case final quantity?) {
-      _fixedQuantity = true;
-      _quantity.text = quantity.value;
-      _syncQuantityPercent();
-    }
-  }
-
-  void _clearProtection(String role) {
-    if (role == 'takeProfit') {
-      _hadTakeProfit = false;
-      _takeProfitEnabled = false;
-      _takeProfit.clear();
-      _takeIsLimit = false;
-      _takeLimit.clear();
-    } else {
-      _hadStopLoss = false;
-      _stopLossEnabled = false;
-      _stopLoss.clear();
-      _stopIsLimit = false;
-      _stopLimit.clear();
-    }
-  }
-
   @override
   void dispose() {
     _takeProfit.dispose();
     _stopLoss.dispose();
     _quantity.dispose();
-    _stopLimit.dispose();
-    _takeLimit.dispose();
     super.dispose();
   }
 
@@ -285,14 +141,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     final l10n = AppLocalizations.of(context);
     final takeProfit = _takeProfitTrigger;
     final stopLoss = _stopLossTrigger;
-    final prices = {
-      l10n.takeProfit: ?takeProfit,
-      l10n.stopLoss: ?stopLoss,
-      if (takeProfit != null && _takeIsLimit)
-        l10n.takeProfitLimitPrice: _takeLimit.text.trim(),
-      if (stopLoss != null && _stopIsLimit)
-        l10n.stopLimitPrice: _stopLimit.text.trim(),
-    };
+    final prices = {l10n.takeProfit: ?takeProfit, l10n.stopLoss: ?stopLoss};
     for (final entry in prices.entries) {
       try {
         requirePositiveDecimal(entry.value);
@@ -320,12 +169,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   }
 
   Future<void> _save(int sizeDecimals) async {
-    if (_submitting ||
-        _pending ||
-        _loadingProtection ||
-        _protectionLoadFailed) {
-      return;
-    }
+    if (_submitting || _pending) return;
     if (_consentLoading) return;
     if (!_riskAccepted) {
       final accepted = await showModalBottomSheet<bool>(
@@ -355,67 +199,22 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
       final takeProfit = _takeProfitTrigger;
       final stopLoss = _stopLossTrigger;
       final changes = <Hip3ProtectionChange>[];
-      for (final (role, trigger, limit, enabled, rawValue) in [
-        (
-          'takeProfit',
-          takeProfit,
-          _takeIsLimit ? _takeLimit.text.trim() : null,
-          _takeProfitEnabled,
-          _takeProfit.text.trim(),
-        ),
-        (
-          'stopLoss',
-          stopLoss,
-          _stopIsLimit ? _stopLimit.text.trim() : null,
-          _stopLossEnabled,
-          _stopLoss.text.trim(),
-        ),
+      for (final (role, trigger) in [
+        ('takeProfit', takeProfit),
+        ('stopLoss', stopLoss),
       ]) {
-        final existing = _existingOrders
-            .where((order) => order.protection.role == role)
-            .toList(growable: false);
-        if (trigger == null) {
-          final untouchedAmbiguousRole =
-              _multipleProtectionRoles.contains(role) &&
-              enabled &&
-              rawValue.isEmpty;
-          if (!untouchedAmbiguousRole) {
-            changes.addAll(
-              existing.map(
-                (order) => Hip3ProtectionChange.cancel(order.orderId),
-              ),
-            );
-          }
-          continue;
-        }
-        final parameters = Hip3ProtectionParameters(
-          role: role,
-          triggerPrice: DecimalValue(trigger),
-          limitPrice: limit == null ? null : DecimalValue(limit),
-          quantity: _fixedQuantity ? DecimalValue(_quantity.text.trim()) : null,
-        );
-        if (existing.length == 1) {
-          final orderId = existing.single.orderId;
-          final previous = existing.single.protection;
-          if (previous.triggerPrice.value == trigger &&
-              previous.limitPrice?.value == limit &&
-              previous.quantity?.value == parameters.quantity?.value) {
-            continue;
-          }
-          changes.add(
-            Hip3ProtectionChange.modify(
-              orderId: orderId,
-              protection: parameters,
+        if (trigger == null) continue;
+        changes.add(
+          Hip3ProtectionChange.create(
+            Hip3ProtectionParameters(
+              role: role,
+              triggerPrice: DecimalValue(trigger),
+              quantity: _fixedQuantity
+                  ? DecimalValue(_quantity.text.trim())
+                  : null,
             ),
-          );
-        } else if (existing.length > 1) {
-          changes.addAll(
-            existing.map((order) => Hip3ProtectionChange.cancel(order.orderId)),
-          );
-          changes.add(Hip3ProtectionChange.create(parameters));
-        } else {
-          changes.add(Hip3ProtectionChange.create(parameters));
-        }
+          ),
+        );
       }
       if (changes.isEmpty) {
         if (mounted) Navigator.of(context).pop();
@@ -452,6 +251,37 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _resumeProtection(Hip3ActionSummary result) async {
+    if (_submitting) return;
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      await ref.read(positionCommandProvider).resumeHip3Action(result.actionId);
+    } on Hip3ActionPending {
+      // The refreshed action decides whether to wait or request another signature.
+    } on Object catch (error) {
+      if (mounted) setState(() => _error = _specificErrorMessage(error));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  bool _resumeScheduled = false;
+
+  void _scheduleProtectionSignature(Hip3ActionSummary result) {
+    if (_resumeScheduled || _submitting || _error != null) return;
+    _resumeScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resumeScheduled = false;
+      if (!mounted || _result?.actionId != result.actionId) return;
+      // The user already confirmed this action in the editor. Continue its
+      // released signing steps through the same session-bound command.
+      _resumeProtection(result);
+    });
   }
 
   String _specificErrorMessage(Object error) {
@@ -506,6 +336,12 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         ? null
         : ref.watch(hip3ProtectionActionProvider(initialResult.actionId));
     final result = refreshedResult?.value ?? initialResult;
+    if (refreshedResult?.isLoading == false &&
+        refreshedResult?.hasError == false &&
+        result?.status == 'awaitingSignature' &&
+        result!.canResumePositionAction) {
+      _scheduleProtectionSignature(result);
+    }
     if (result?.isSuccessful == true) _closeSuccessfulResult(result!);
     final productId = widget.position.productId;
     final sizeDecimalsState = productId == null
@@ -526,8 +362,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     final sizeDecimals = sizeDecimalsState?.hasError == true
         ? null
         : sizeDecimalsState?.value;
-    final locked =
-        _submitting || _pending || _loadingProtection || _protectionLoadFailed;
+    final locked = _submitting || _pending;
     final rulesError = productId == null || sizeDecimalsState?.hasError == true
         ? l10n.hip3TradingContextUnavailable
         : null;
@@ -589,7 +424,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     ],
                   ),
                 ),
-                if (_loadingProtection) const LinearProgressIndicator(),
                 const SizedBox(height: 16),
                 TpSlEditorCard(
                   title: l10n.takeProfit,
@@ -625,26 +459,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                       ? null
                       : (value) => _setQuantityPercent(value, sizeDecimals),
                 ),
-                if (_takeProfitEnabled && _takeIsLimit)
-                  TextField(
-                    controller: _takeLimit,
-                    enabled: !locked,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: l10n.takeProfitLimitPrice,
-                    ),
-                  ),
-                if (_stopLossEnabled && _stopIsLimit)
-                  TextField(
-                    controller: _stopLimit,
-                    enabled: !locked,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(labelText: l10n.stopLimitPrice),
-                  ),
                 const SizedBox(height: 12),
                 TpSlConsentRow(
                   accepted: _riskAccepted,
@@ -696,8 +510,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                         onPressed:
                             _submitting ||
                                 _pending ||
-                                _loadingProtection ||
-                                _protectionLoadFailed ||
                                 _consentLoading ||
                                 sizeDecimals == null
                             ? null

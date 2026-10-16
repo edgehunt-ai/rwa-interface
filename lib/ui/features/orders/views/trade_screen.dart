@@ -452,6 +452,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       range: chartRange,
                       candles: candles,
                       changePercent: snapshot?.change24hPercent,
+                      snapshotReferencePrice: snapshot?.referencePrice,
                       loading: candlesState.isLoading,
                       onStyleChanged: (next) =>
                           setState(() => chartStyle = next),
@@ -698,7 +699,9 @@ class _ProductHeader extends StatelessWidget {
               label: l10n.back,
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                onTap: () => context.canPop()
+                    ? context.pop()
+                    : context.go(AppRoutes.marketsPath),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
                   child: Transform.flip(
@@ -978,6 +981,7 @@ class _Chart extends StatelessWidget {
     required this.range,
     required this.candles,
     required this.changePercent,
+    required this.snapshotReferencePrice,
     required this.loading,
     required this.selectedCandle,
     required this.onStyleChanged,
@@ -990,6 +994,7 @@ class _Chart extends StatelessWidget {
   final bool loading;
   final Candle? selectedCandle;
   final DecimalValue? changePercent;
+  final DecimalValue? snapshotReferencePrice;
   final ValueChanged<TradeChartStyle> onStyleChanged;
   final ValueChanged<CandleChartRange> onRangeChanged;
   final ValueChanged<Candle?> onSelectionChanged;
@@ -1029,10 +1034,16 @@ class _Chart extends StatelessWidget {
                     final selectedColor = _changeColor(context, selectedChange);
                     final selectedReference = selectedIndex == null
                         ? null
-                        : _nearestCandle(
-                            referencePoints,
-                            points[selectedIndex].at,
-                          );
+                        : _lastCandleAtOrBefore(
+                                referencePoints,
+                                points[selectedIndex].at,
+                              ) ??
+                              // The hovered time precedes the first US quote
+                              // in the window; fall back to the nearest point.
+                              _nearestCandle(
+                                referencePoints,
+                                points[selectedIndex].at,
+                              );
                     return MouseRegion(
                       onHover: (event) => _selectCandle(
                         event.localPosition.dx,
@@ -1128,7 +1139,8 @@ class _Chart extends StatelessWidget {
                                   color: selectedColor,
                                   referencePrice:
                                       selectedReference?.close ??
-                                      chart?.referencePrice,
+                                      chart?.referencePrice ??
+                                      snapshotReferencePrice,
                                 ),
                               ),
                             ],
@@ -1234,6 +1246,21 @@ Candle? _nearestCandle(List<Candle>? points, DateTime? at) {
         ? point
         : nearest,
   );
+}
+
+/// Most recent reference candle at or before [at].
+///
+/// US reference quotes only exist while the equity market is quoting, so
+/// hovered times in the gaps (overnight, weekend, holiday) carry forward the
+/// last close instead of jumping to a quote from the next session.
+Candle? _lastCandleAtOrBefore(List<Candle>? points, DateTime? at) {
+  if (points == null || points.isEmpty || at == null) return null;
+  Candle? latest;
+  for (final point in points) {
+    if (point.at.isAfter(at)) continue;
+    if (latest == null || point.at.isAfter(latest.at)) latest = point;
+  }
+  return latest;
 }
 
 DecimalValue? _chartChangePercent(
