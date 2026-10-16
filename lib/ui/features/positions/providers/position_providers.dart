@@ -37,10 +37,11 @@ final hip3ProtectionActionProvider = FutureProvider.autoDispose
       final pendingOrders = result.protectionOrders.any(
         (order) => !order.isConfirmed && !order.isFailed,
       );
-      if (pendingOrders ||
-          (result.status == 'succeeded' && !result.protectionResultsComplete) ||
+      // Signing is handled by the action executor; reads cannot advance it.
+      // Terminal failures and manual review must not poll prepared orders.
+      if ((result.status == 'succeeded' &&
+              (pendingOrders || !result.protectionResultsComplete)) ||
           const {
-            'awaitingSignature',
             'submitting',
             'reconciling',
             'ambiguous',
@@ -248,13 +249,20 @@ final class PositionCommands {
   }
 
   Future<void> resumeHip3Action(String actionId) async {
-    await _run(
-      operation: 'resume-hip3',
-      fingerprint: actionId,
-      context: {'action_id': actionId},
-      command: (_) =>
-          _ref.read(positionsRepositoryProvider).resumeHip3Action(actionId),
-    );
+    final generation = _ref.read(sessionGenerationProvider);
+    try {
+      await _run(
+        operation: 'resume-hip3',
+        fingerprint: actionId,
+        context: {'action_id': actionId},
+        command: (_) =>
+            _ref.read(positionsRepositoryProvider).resumeHip3Action(actionId),
+      );
+    } finally {
+      if (_ref.mounted && _ref.read(sessionGenerationProvider) == generation) {
+        _ref.invalidate(hip3ProtectionActionProvider(actionId));
+      }
+    }
     _ref.invalidate(positionProvider);
     _ref.invalidate(positionsProvider);
     _ref.invalidate(positionLeverageContextProvider);

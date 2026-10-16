@@ -454,6 +454,37 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     }
   }
 
+  Future<void> _resumeProtection(Hip3ActionSummary result) async {
+    if (_submitting) return;
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      await ref.read(positionCommandProvider).resumeHip3Action(result.actionId);
+    } on Hip3ActionPending {
+      // The refreshed action decides whether to wait or request another signature.
+    } on Object catch (error) {
+      if (mounted) setState(() => _error = _specificErrorMessage(error));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  bool _resumeScheduled = false;
+
+  void _scheduleProtectionSignature(Hip3ActionSummary result) {
+    if (_resumeScheduled || _submitting || _error != null) return;
+    _resumeScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resumeScheduled = false;
+      if (!mounted || _result?.actionId != result.actionId) return;
+      // The user already confirmed this action in the editor. Continue its
+      // released signing steps through the same session-bound command.
+      _resumeProtection(result);
+    });
+  }
+
   String _specificErrorMessage(Object error) {
     final l10n = AppLocalizations.of(context);
     final fallback = l10n.tpSlSaveFailed;
@@ -506,6 +537,12 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         ? null
         : ref.watch(hip3ProtectionActionProvider(initialResult.actionId));
     final result = refreshedResult?.value ?? initialResult;
+    if (refreshedResult?.isLoading == false &&
+        refreshedResult?.hasError == false &&
+        result?.status == 'awaitingSignature' &&
+        result!.canResumePositionAction) {
+      _scheduleProtectionSignature(result);
+    }
     if (result?.isSuccessful == true) _closeSuccessfulResult(result!);
     final productId = widget.position.productId;
     final sizeDecimalsState = productId == null
