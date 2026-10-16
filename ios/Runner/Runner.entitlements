@@ -5,7 +5,6 @@
     <key>com.apple.developer.associated-domains</key>
     <array>
         <string>webcredentials:$(PRIVY_RELYING_PARTY_HOST)</string>
-        <string>applinks:$(PRIVY_RELYING_PARTY_HOST)</string>
     </array>
 </dict>
 </plist>

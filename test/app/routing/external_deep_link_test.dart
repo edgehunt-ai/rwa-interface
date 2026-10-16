@@ -29,59 +29,54 @@ Widget app(GoRouter router) => ProviderScope(
 );
 
 void main() {
-  for (final origin in [
-    'nobell-app://app',
-    'https://rwa-interface.vercel.app',
-  ]) {
-    testWidgets('$origin cold launch opens the selected market', (
-      tester,
-    ) async {
-      tester.platformDispatcher.defaultRouteNameTestValue =
-          '$origin/trade?symbol=ETH&kind=perp';
-      addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
-      final router = AppRouter.create();
-      addTearDown(router.dispose);
-      await tester.pumpWidget(app(router));
+  const origin = 'nobell-app://app';
+
+  testWidgets('$origin cold launch opens the selected market', (tester) async {
+    tester.platformDispatcher.defaultRouteNameTestValue =
+        '$origin/trade?symbol=ETH&kind=perp';
+    addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
+    final router = AppRouter.create();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(app(router));
+    await tester.pumpAndSettle();
+    final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
+    expect(screen.symbol, 'ETH');
+    expect(screen.initialKind, MarketProductKind.perp);
+    expect(find.text('ETH'), findsWidgets);
+  });
+
+  testWidgets('$origin delivery to a running app switches details', (
+    tester,
+  ) async {
+    final router = AppRouter.create();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(app(router));
+    await tester.pumpAndSettle();
+    for (final target in [
+      'trade?symbol=TSLA&kind=bstock',
+      'trade?symbol=ETH&kind=perp',
+    ]) {
+      await router.routeInformationProvider.didPushRouteInformation(
+        RouteInformation(uri: Uri.parse('$origin/$target')),
+      );
       await tester.pumpAndSettle();
       final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
-      expect(screen.symbol, 'ETH');
-      expect(screen.initialKind, MarketProductKind.perp);
-      expect(find.text('ETH'), findsWidgets);
-    });
-
-    testWidgets('$origin delivery to a running app switches details', (
-      tester,
-    ) async {
-      final router = AppRouter.create();
-      addTearDown(router.dispose);
-      await tester.pumpWidget(app(router));
-      await tester.pumpAndSettle();
-      for (final target in [
-        'trade?symbol=TSLA&kind=bstock',
-        'trade?symbol=ETH&kind=perp',
-      ]) {
-        await router.routeInformationProvider.didPushRouteInformation(
-          RouteInformation(uri: Uri.parse('$origin/$target')),
-        );
-        await tester.pumpAndSettle();
-        final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
-        expect(screen.symbol, Uri.parse(target).queryParameters['symbol']);
-        expect(
-          screen.initialKind.name,
-          Uri.parse(target).queryParameters['kind'],
-        );
-      }
-      await router.routeInformationProvider.didPushRouteInformation(
-        RouteInformation(uri: Uri.parse('$origin/activity/order%2F123')),
-      );
-      await tester.pumpAndSettle();
+      expect(screen.symbol, Uri.parse(target).queryParameters['symbol']);
       expect(
-        tester
-            .widget<ActivityDetailScreen>(find.byType(ActivityDetailScreen))
-            .recordId,
-        'order/123',
+        screen.initialKind.name,
+        Uri.parse(target).queryParameters['kind'],
       );
-      expect(tester.takeException(), isNull);
-    });
-  }
+    }
+    await router.routeInformationProvider.didPushRouteInformation(
+      RouteInformation(uri: Uri.parse('$origin/activity/order%2F123')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ActivityDetailScreen>(find.byType(ActivityDetailScreen))
+          .recordId,
+      'order/123',
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

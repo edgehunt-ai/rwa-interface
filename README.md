@@ -46,9 +46,8 @@ to encode symbols safely. Product selection from Home, Markets, and Search
 updates the URL so the same product can be opened directly or after a refresh.
 Omitting `kind` defaults to bStocks; a missing or blank symbol returns to Markets.
 Notification payloads can use the same location in `route` or `deep_link`.
-Native external links use `nobell-app://app/trade?symbol=ETH&kind=perp`. HTTPS
-App Links / Universal Links share the configured Passkey domain and require
-deploying its association files; see [external links](docs/deep-links.md).
+Native external links use `nobell-app://app/trade?symbol=ETH&kind=perp`; see
+[external links](docs/deep-links.md).
 
 | Platform | Status | Notes |
 |---|---|---|

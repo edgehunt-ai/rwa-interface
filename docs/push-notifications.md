@@ -46,6 +46,5 @@ and displays the existing activity detail fields. Signed-out users log in from
 the detail page and return to that record. Missing records and failed requests
 show the corresponding empty or retry state.
 
-External App Links, Universal Links, and custom scheme URLs are described in
-[external links](deep-links.md). Notification payloads continue to use the
-relative application routes above.
+External custom scheme URLs are described in [external links](deep-links.md).
+Notification payloads continue to use the relative application routes above.

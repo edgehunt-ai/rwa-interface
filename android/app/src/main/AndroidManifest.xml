@@ -34,15 +34,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="@string/app_link_url_scheme" android:host="app" />
             </intent-filter>
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="@string/app_link_host" />
-                <data android:path="/trade" />
-                <data android:path="/markets" />
-                <data android:pathPrefix="/activity/" />
-            </intent-filter>
         </activity>
         <!-- Privy receives the OAuth callback before returning to Flutter. -->
         <activity

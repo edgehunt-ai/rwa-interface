@@ -25,7 +25,6 @@ export function syncPrivyConfiguration(envFile = '.env', rootDirectory = reposit
       '<?xml version="1.0" encoding="utf-8"?>',
       '<resources>',
       '    <string name="privy_app_url_scheme" translatable="false">' + scheme + '</string>',
-      '    <string name="app_link_host" translatable="false">' + exportUrl.hostname + '</string>',
       '    <string name="app_link_url_scheme" translatable="false">' + scheme + '-app</string>',
       '</resources>',
       '',
