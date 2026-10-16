@@ -1705,7 +1705,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sessionExpiredLogin => '你的会话已过期，请重新登录。';
 
   @override
-  String get backendSessionFailed => 'Privy 登录成功，但无法创建 RWA 会话，请稍后重试。';
+  String get backendSessionFailed => '暂时无法完成登录，请稍后重试。';
 
   @override
   String get walletSyncFailed => '你已登录，但钱包无法同步，请稍后重试。';

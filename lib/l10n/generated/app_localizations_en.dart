@@ -1786,7 +1786,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backendSessionFailed =>
-      'Privy sign-in succeeded, but we could not create your RWA session. Try again later.';
+      'Unable to complete sign-in. Please try again.';
 
   @override
   String get walletSyncFailed =>

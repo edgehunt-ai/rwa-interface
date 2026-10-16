@@ -884,6 +884,95 @@ void main() {
     );
   });
 
+  test(
+    'backend retry reuses identity without SDK init or another OTP',
+    () async {
+      final gateway = FakeIdentityAuthGateway();
+      final repository = _SessionRepository()
+        ..createFailure = const NetworkFailure();
+      final container = _container(gateway, repository);
+      final notifier = container.read(authenticationProvider.notifier);
+      await notifier.bootstrap();
+      await notifier.requestEmailCode('user@example.com');
+      await notifier.verifyEmailCode('123456');
+      expect(
+        (container.read(
+          authenticationProvider,
+        ) as AuthenticationAwaitingCode).failure?.code,
+        AuthenticationFailureCode.backendSession,
+      );
+
+      repository.createFailure = null;
+      gateway.initializeFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+      );
+      gateway.verifyFailure = const IdentityFailure(
+        AuthenticationFailureCode.invalidCode,
+        retryable: true,
+      );
+      await notifier.retry();
+
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+      expect(gateway.logoutCalls, 0);
+    },
+  );
+
+  test('backend session retry keeps wallet connected until logout', () async {
+    final gateway = FakeIdentityAuthGateway();
+    final repository = _SessionRepository()
+      ..createFailure = const NetworkFailure();
+    final container = _container(gateway, repository);
+    final notifier = container.read(authenticationProvider.notifier);
+    final connection = _WalletConnection();
+    await notifier.bootstrap();
+    await notifier.loginWithWallet(() async => connection);
+    expect(connection.disconnectCalls, 0);
+
+    repository.createFailure = null;
+    await notifier.retry();
+    expect(
+      container.read(authenticationProvider),
+      isA<AuthenticationAuthenticated>(),
+    );
+    expect(connection.disconnectCalls, 0);
+    await notifier.logout();
+    expect(connection.disconnectCalls, 1);
+  });
+
+  test(
+    'logout clears identity retained for failed backend session retry',
+    () async {
+      final gateway = FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      );
+      final repository = _SessionRepository()
+        ..createFailure = const NetworkFailure();
+      final container = _container(gateway, repository);
+      final notifier = container.read(authenticationProvider.notifier);
+      await notifier.bootstrap();
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationFailed>(),
+      );
+      final calls = repository.createCalls;
+
+      await notifier.logout();
+      gateway.restoredPrincipal = null;
+      repository.createFailure = null;
+      await notifier.retry();
+
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationUnauthenticated>(),
+      );
+      expect(repository.createCalls, calls);
+    },
+  );
+
   test('email is normalized and valid code establishes session', () async {
     final gateway = FakeIdentityAuthGateway(
       verifiedPrincipal: const IdentityPrincipal(

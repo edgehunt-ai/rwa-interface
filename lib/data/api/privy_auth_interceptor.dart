@@ -45,8 +45,10 @@ class PrivyAuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (!_shouldRetry(err.requestOptions, err.response?.statusCode) ||
-        !_replayPolicy.canReplay(err.requestOptions)) {
+    if (!_requiresBearer(err.requestOptions) ||
+        !_shouldRetry(err.requestOptions, err.response?.statusCode) ||
+        (!_isSessionCreation(err.requestOptions) &&
+            !_replayPolicy.canReplay(err.requestOptions))) {
       handler.next(err);
       return;
     }
@@ -71,6 +73,13 @@ class PrivyAuthInterceptor extends Interceptor {
   bool _shouldRetry(RequestOptions request, int? statusCode) {
     return statusCode == 401 && request.extra[_retriedKey] != true;
   }
+
+  // A rejected authentication request has not created a product session.
+  // Allow this specific POST to refresh its bearer and retry after a 401;
+  // other mutations still require the normal replay policy.
+  bool _isSessionCreation(RequestOptions request) =>
+      request.method.toUpperCase() == 'POST' &&
+      request.uri.path == '/v1/auth/session';
 
   Future<String?> _refreshOnce() async {
     final current = _refreshInFlight;

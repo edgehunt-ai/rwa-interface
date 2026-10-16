@@ -609,7 +609,7 @@
   "browserSignInUnavailable": "Unable to start social sign-in. Check that your browser and network are working, then try again.",
   "privyNotConfigured": "Privy is not configured for this build.",
   "sessionExpiredLogin": "Your session expired. Please sign in again.",
-  "backendSessionFailed": "Privy sign-in succeeded, but we could not create your RWA session. Try again later.",
+  "backendSessionFailed": "Unable to complete sign-in. Please try again.",
   "walletSyncFailed": "You are signed in, but your wallet could not be synchronized. Try again later.",
   "emailLoginUnavailable": "Email sign-in is not available.",
   "privyPlatformUnsupported": "Privy sign-in is available on Android and iOS.",

@@ -39,6 +39,9 @@ class HomeScreen extends ConsumerWidget {
     final authentication = ref.watch(authenticationProvider);
     final authenticated = authentication is AuthenticationAuthenticated;
     final initializing = authentication is AuthenticationInitializing;
+    final restoreFailure = authentication is AuthenticationFailed
+        ? authentication.failure
+        : null;
     final portfolio = authenticated
         ? ref.watch(portfolioSummaryProvider)
         : null;
@@ -96,6 +99,20 @@ class HomeScreen extends ConsumerWidget {
                 )
               else if (initializing)
                 const _HomeStateCard()
+              else if (restoreFailure != null)
+                FailureState(
+                  description:
+                      restoreFailure.code ==
+                          AuthenticationFailureCode.backendSession
+                      ? AppLocalizations.of(context).backendSessionFailed
+                      : AppLocalizations.of(context).checkConnectionRetry,
+                  supportingMessage: restoreFailure.requestId == null
+                      ? null
+                      : AppLocalizations.of(context)
+                            .supportId(restoreFailure.requestId!),
+                  onRetry: () =>
+                      ref.read(authenticationProvider.notifier).retry(),
+                )
               else
                 _LoggedOutPrompt(onLogin: () => _openLogin(context)),
               const SizedBox(height: 12),
@@ -118,6 +135,8 @@ class HomeScreen extends ConsumerWidget {
                       height: 48,
                       radius: 12,
                     )
+                  : restoreFailure != null
+                  ? const SizedBox.shrink()
                   : _LoginAction(onLogin: () => _openLogin(context)),
               const SizedBox(height: 28),
               const _MarketPreview(),

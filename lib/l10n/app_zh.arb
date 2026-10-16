@@ -571,7 +571,7 @@
   "browserSignInUnavailable": "无法启动社交账号登录。请检查浏览器和网络后重试。",
   "privyNotConfigured": "此构建尚未配置 Privy。",
   "sessionExpiredLogin": "你的会话已过期，请重新登录。",
-  "backendSessionFailed": "Privy 登录成功，但无法创建 RWA 会话，请稍后重试。",
+  "backendSessionFailed": "暂时无法完成登录，请稍后重试。",
   "walletSyncFailed": "你已登录，但钱包无法同步，请稍后重试。",
   "emailLoginUnavailable": "邮箱登录不可用。",
   "privyPlatformUnsupported": "Privy 登录仅支持 Android 和 iOS。",

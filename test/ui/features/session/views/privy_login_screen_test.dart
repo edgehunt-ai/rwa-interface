@@ -27,6 +27,31 @@ import '../../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('backend session failure exposes a retry action', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationUnauthenticated(
+              failure: IdentityFailure(
+                AuthenticationFailureCode.backendSession,
+                retryable: true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Unable to complete sign-in. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(OutlinedButton, 'Retry'), findsOneWidget);
+  });
+
   testWidgets('renders the refreshed login artwork and legal footer', (
     tester,
   ) async {

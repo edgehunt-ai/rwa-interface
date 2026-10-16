@@ -3349,7 +3349,7 @@ abstract class AppLocalizations {
   /// No description provided for @backendSessionFailed.
   ///
   /// In en, this message translates to:
-  /// **'Privy sign-in succeeded, but we could not create your RWA session. Try again later.'**
+  /// **'Unable to complete sign-in. Please try again.'**
   String get backendSessionFailed;
 
   /// No description provided for @walletSyncFailed.
