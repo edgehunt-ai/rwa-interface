@@ -21,7 +21,10 @@ test('syncs native OAuth and Passkey configuration from one environment file', a
   ].join(String.fromCharCode(10)));
   syncPrivyConfiguration('.env.test', root);
   assert.match(await readFile(join(root, 'android/app/src/main/res/values/privy_url_scheme.xml'), 'utf8'), />nobell-test</);
+  assert.match(await readFile(join(root, 'android/app/src/main/res/values/privy_url_scheme.xml'), 'utf8'), /name="app_link_host"[^>]*>keys.example.test</);
   assert.match(await readFile(join(root, 'ios/Flutter/PrivyUrlScheme.xcconfig'), 'utf8'), /PRIVY_APP_URL_SCHEME = nobell-test/);
+  assert.match(await readFile(join(root, 'ios/Flutter/PrivyUrlScheme.xcconfig'), 'utf8'), /APP_LINK_URL_SCHEME = nobell-test-app/);
+  assert.match(await readFile(join(root, 'android/app/src/main/res/values/privy_url_scheme.xml'), 'utf8'), /name="app_link_url_scheme"[^>]*>nobell-test-app</);
   assert.equal(
     await readFile(join(root, 'ios/Flutter/PrivyPasskey.xcconfig'), 'utf8'),
     '// Generated from PRIVY_EXPORT_URL; do not edit manually.' + String.fromCharCode(10) +
@@ -32,6 +35,9 @@ test('syncs native OAuth and Passkey configuration from one environment file', a
   const updated = await readFile(join(root, 'ios/Flutter/PrivyPasskey.xcconfig'), 'utf8');
   assert.match(updated, /PRIVY_RELYING_PARTY_HOST = another\.example\.test/);
   assert.doesNotMatch(updated, /keys\.example\.test/);
+  const android = await readFile(join(root, 'android/app/src/main/res/values/privy_url_scheme.xml'), 'utf8');
+  assert.match(android, />another.example.test</);
+  assert.doesNotMatch(android, /keys.example.test/);
 });
 
 test('invalid export configuration cannot overwrite native configuration', async (t) => {

@@ -55,4 +55,14 @@ abstract final class AppRoutes {
   static const settingsPath = '/settings';
   static const activityName = 'activity';
   static const activityPath = '/activity';
+  static const activityDetailName = 'activityDetail';
+  static const activityDetailPath = '/activity/:id';
+
+  /// Uses the activity record ID, not its related order or transaction ID.
+  static String activityDetailLocation(String id) {
+    if (id.trim().isEmpty) {
+      throw ArgumentError.value(id, 'id', 'must not be empty');
+    }
+    return '$activityPath/${Uri.encodeComponent(id)}';
+  }
 }

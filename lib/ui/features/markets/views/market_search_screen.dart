@@ -298,7 +298,7 @@ class _MarketDiscoverySearchScreenState
           .read(recentMarketSearchesProvider.notifier)
           .record(MarketProductRef(symbol: product.symbol, kind: product.kind)),
     );
-    context.push(
+    context.go(
       AppRoutes.tradeLocation(symbol: product.symbol, kind: product.kind.name),
     );
   }

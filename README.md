@@ -38,6 +38,18 @@ Key capabilities include:
 
 ## Platform Support
 
+Market detail links use `/trade?symbol=TSLA&kind=bstock` for bStocks and
+`/trade?symbol=ETH&kind=perp` for perpetuals. On Web, use the existing hash URL,
+for example `/#/trade?symbol=ETH&kind=perp`. Build locations with
+`AppRoutes.tradeLocation(symbol: product.symbol, kind: product.kind.name)`
+to encode symbols safely. Product selection from Home, Markets, and Search
+updates the URL so the same product can be opened directly or after a refresh.
+Omitting `kind` defaults to bStocks; a missing or blank symbol returns to Markets.
+Notification payloads can use the same location in `route` or `deep_link`.
+Native external links use `nobell-app://app/trade?symbol=ETH&kind=perp`. HTTPS
+App Links / Universal Links share the configured Passkey domain and require
+deploying its association files; see [external links](docs/deep-links.md).
+
 | Platform | Status | Notes |
 |---|---|---|
 | Android | Supported | Android API 28 or later |

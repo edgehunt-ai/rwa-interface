@@ -683,6 +683,139 @@ void main() {
     expect(candlePainter.lossColor, const Color(0xFFB3261E));
   });
 
+  testWidgets(
+    'Trade tooltip falls back to the snapshot reference price when the 1h '
+    'window has no US reference points',
+    (tester) async {
+      const product = MarketProductRef(
+        symbol: 'NVDAB',
+        kind: MarketProductKind.bstock,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketSnapshotProvider(product).overrideWith(
+              (_) async => MarketSnapshot(
+                price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+                change24hPercent: DecimalValue('-1', unit: 'percent'),
+                referencePrice: DecimalValue(
+                  '200',
+                  asset: 'USD',
+                  unit: 'price',
+                ),
+              ),
+            ),
+            marketCandlesProvider((
+              product: product,
+              range: CandleChartRange.oneHour,
+            )).overrideWith(
+              (_) async => CandleChart(
+                symbol: product.symbol,
+                range: '1h',
+                points: [
+                  Candle(
+                    at: DateTime.utc(2026),
+                    close: DecimalValue('100', asset: 'USDC', unit: 'price'),
+                  ),
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1, 0, 1),
+                    close: DecimalValue('110', asset: 'USDC', unit: 'price'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chart = find.byKey(const Key('trade-chart-plot'));
+      final bounds = tester.getRect(chart);
+      final gesture = await tester.startGesture(bounds.centerLeft);
+      await gesture.moveTo(Offset(bounds.right - 1, bounds.center.dy));
+      await tester.pump();
+
+      expect(find.byKey(const Key('trade-chart-tooltip')), findsOneWidget);
+      expect(find.text(r'US $200'), findsOneWidget);
+      await gesture.up();
+    },
+  );
+
+  testWidgets(
+    'Trade tooltip carries forward the last US close across reference gaps',
+    (tester) async {
+      const product = MarketProductRef(
+        symbol: 'NVDAB',
+        kind: MarketProductKind.bstock,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketSnapshotProvider(product).overrideWith(
+              (_) async => MarketSnapshot(
+                price: DecimalValue('105', asset: 'USDC', unit: 'price'),
+                change24hPercent: DecimalValue('-1', unit: 'percent'),
+              ),
+            ),
+            marketCandlesProvider((
+              product: product,
+              range: CandleChartRange.oneHour,
+            )).overrideWith(
+              (_) async => CandleChart(
+                symbol: product.symbol,
+                range: '1h',
+                points: [
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1),
+                    close: DecimalValue('100', asset: 'USDC', unit: 'price'),
+                  ),
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1, 0, 14),
+                    close: DecimalValue('105', asset: 'USDC', unit: 'price'),
+                  ),
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1, 0, 20),
+                    close: DecimalValue('110', asset: 'USDC', unit: 'price'),
+                  ),
+                ],
+                referencePoints: [
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1),
+                    close: DecimalValue('160', asset: 'USD', unit: 'price'),
+                  ),
+                  Candle(
+                    at: DateTime.utc(2026, 1, 1, 0, 20),
+                    close: DecimalValue('175', asset: 'USD', unit: 'price'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chart = find.byKey(const Key('trade-chart-plot'));
+      final bounds = tester.getRect(chart);
+      final gesture = await tester.startGesture(bounds.centerLeft);
+      await gesture.moveTo(bounds.center);
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<Text>(find.byKey(const Key('trade-chart-tooltip-date')))
+            .data,
+        DateFormat('yyyy/MM/dd HH:mm')
+            .format(DateTime.utc(2026, 1, 1, 0, 14).toLocal()),
+      );
+      expect(find.text(r'US $160'), findsOneWidget);
+      expect(find.text(r'US $175'), findsNothing);
+      await gesture.up();
+    },
+  );
+
   testWidgets('Reference chart shows US prices and market sessions', (
     tester,
   ) async {

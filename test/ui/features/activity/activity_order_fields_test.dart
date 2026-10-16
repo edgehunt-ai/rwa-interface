@@ -13,6 +13,88 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'cash summaries show tokens and numeric amounts, keeping details',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            activityRepositoryProvider.overrideWithValue(
+              _OrderActivityRepository([
+                ActivityRecord(
+                  id: 'deposit',
+                  category: ActivityCategory.cash,
+                  type: 'deposit',
+                  status: ActivityState.success,
+                  title: 'Deposit',
+                  asset: 'USDT',
+                  amount: DecimalValue('1000', asset: 'USDT'),
+                  txHash: '0xdeposit',
+                  createdAt: DateTime.utc(2026),
+                ),
+                ActivityRecord(
+                  id: 'transfer',
+                  category: ActivityCategory.cash,
+                  type: 'bridge',
+                  status: ActivityState.pending,
+                  title: 'Transfer',
+                  asset: 'USDT',
+                  amount: DecimalValue('1.607487', asset: 'USDT'),
+                  fields: const [
+                    ActivityField(label: 'Send Token', value: 'ETH'),
+                    ActivityField(label: 'Receive Token', value: 'USDT'),
+                    ActivityField(label: 'Send Amount', value: '0.01 ETH'),
+                  ],
+                  createdAt: DateTime.utc(2026),
+                ),
+                ActivityRecord(
+                  id: 'address-transfer',
+                  category: ActivityCategory.cash,
+                  type: 'bridge',
+                  status: ActivityState.success,
+                  title: 'Transfer',
+                  asset: 'USDC',
+                  amount: DecimalValue('2.305068', asset: 'USDC'),
+                  fields: const [
+                    ActivityField(label: 'Send Token', value: '0x1234567890'),
+                    ActivityField(label: 'Send Amount', value: '2.4 USDT'),
+                    ActivityField(
+                      label: 'Receive Amount',
+                      value: '2.305068 USDC',
+                    ),
+                  ],
+                  createdAt: DateTime.utc(2026),
+                ),
+              ]),
+            ),
+          ],
+          child: buildTestApp(
+            const ActivityScreen(initialCategory: ActivityCategory.cash),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('USDT'), findsOneWidget);
+      expect(find.text('ETH→USDT'), findsOneWidget);
+      expect(find.text('USDT→USDC'), findsOneWidget);
+      expect(find.text('1,000'), findsOneWidget);
+      expect(find.text('1.607487'), findsOneWidget);
+      expect(find.text('1,000 USDT'), findsNothing);
+      expect(find.text('1.607487 USDT'), findsNothing);
+      // Each operation appears only in its type badge, not again as a title.
+      expect(find.text('Deposit'), findsOneWidget);
+      expect(find.text('Transfer'), findsNWidgets(2));
+      await tester.tap(find.text('USDT'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tx Hash'), findsOneWidget);
+      expect(find.text('1,000 USDT'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final language in ['zh', 'en']) {
     for (final (side, chinese) in [
       ('Long', '做多'),

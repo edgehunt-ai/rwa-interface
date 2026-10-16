@@ -27,10 +27,16 @@ test('generates native associations with independent iOS and Android identities'
   });
   assert.equal(result.origin, 'https://keys.example.test');
   const apple = JSON.parse(await readFile(join(outputDirectory, 'apple-app-site-association'), 'utf8'));
-  assert.deepEqual(apple, { webcredentials: { apps: ['ABCDE12345.test.ios.app'] } });
+  assert.deepEqual(apple, {
+    webcredentials: { apps: ['ABCDE12345.test.ios.app'] },
+    applinks: { details: [{
+      appIDs: ['ABCDE12345.test.ios.app'],
+      components: [{ '/': '/trade' }, { '/': '/markets' }, { '/': '/activity/*' }],
+    }] },
+  });
   const android = JSON.parse(await readFile(join(outputDirectory, 'assetlinks.json'), 'utf8'));
   assert.deepEqual(android, [{
-    relation: ['delegate_permission/common.get_login_creds'],
+    relation: ['delegate_permission/common.get_login_creds', 'delegate_permission/common.handle_all_urls'],
     target: {
       namespace: 'android_app',
       package_name: 'test.android.app',

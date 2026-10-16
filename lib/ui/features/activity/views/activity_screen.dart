@@ -20,7 +20,74 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/features/activity/providers/activity_provider.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
+import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 import 'package:nobell/app/providers/session_scope.dart';
+
+/// A reloadable destination for a record anywhere in the activity feed.
+class ActivityDetailScreen extends ConsumerWidget {
+  const ActivityDetailScreen({super.key, required this.recordId});
+
+  final String recordId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final authentication = ref.watch(authenticationProvider);
+    final Widget body;
+    if (authentication is AuthenticationInitializing) {
+      body = DesignStateFeedback(
+        state: DesignState.loading,
+        title: l10n.activityLoading,
+      );
+    } else if (authentication is! AuthenticationAuthenticated) {
+      body = _LoggedOutActivity(onLogin: () => pushLoginScreen(context));
+    } else {
+      final detail = ref.watch(activityDetailProvider(recordId));
+      body = detail.when(
+        loading: () => DesignStateFeedback(
+          state: DesignState.loading,
+          title: l10n.activityLoading,
+        ),
+        error: (_, _) => DesignStateFeedback(
+          state: DesignState.failure,
+          title: l10n.activityUnavailable,
+          message: l10n.activityRetry,
+          onRetry: () => ref.invalidate(activityDetailProvider(recordId)),
+        ),
+        data: (record) => record == null
+            ? DesignStateFeedback(
+                state: DesignState.empty,
+                title: l10n.pageNotFoundTitle,
+                message: l10n.pageNotFoundMessage,
+              )
+            : ListView(
+                children: [
+                  Card(
+                    child: _ActivityRow(
+                      record,
+                      initiallyExpanded: true,
+                      showDetailLink: false,
+                    ),
+                  ),
+                ],
+              ),
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.details),
+        leading: BackButton(
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.activityPath),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(padding: const EdgeInsets.all(20), child: body),
+      ),
+    );
+  }
+}
 
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({super.key, this.initialCategory});
@@ -599,8 +666,14 @@ class _ActivityList extends StatelessWidget {
 }
 
 class _ActivityRow extends StatelessWidget {
-  const _ActivityRow(this.record);
+  const _ActivityRow(
+    this.record, {
+    this.initiallyExpanded = false,
+    this.showDetailLink = true,
+  });
   final ActivityRecord record;
+  final bool initiallyExpanded;
+  final bool showDetailLink;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -612,7 +685,10 @@ class _ActivityRow extends StatelessWidget {
       _ => colors.secondaryText,
     };
     return _ExpandableActivityRow(
+      key: ValueKey(record.id),
       record: record,
+      initiallyExpanded: initiallyExpanded,
+      showDetailLink: showDetailLink,
       statusColor: statusColor,
       amount: _amount(record),
     );
@@ -621,6 +697,9 @@ class _ActivityRow extends StatelessWidget {
   String _amount(ActivityRecord record) {
     final amount = record.amount;
     if (amount == null) return '-';
+    if (record.category == ActivityCategory.cash) {
+      return TokenAmountFormatter.formatDecimal(amount);
+    }
     final asset = record.asset ?? amount.asset;
     if (asset == null || asset.trim().isEmpty) {
       return TokenAmountFormatter.formatUsd(amount);
@@ -631,11 +710,16 @@ class _ActivityRow extends StatelessWidget {
 
 class _ExpandableActivityRow extends StatefulWidget {
   const _ExpandableActivityRow({
+    super.key,
     required this.record,
     required this.statusColor,
     required this.amount,
+    required this.initiallyExpanded,
+    required this.showDetailLink,
   });
   final ActivityRecord record;
+  final bool initiallyExpanded;
+  final bool showDetailLink;
   final Color statusColor;
   final String amount;
 
@@ -644,7 +728,7 @@ class _ExpandableActivityRow extends StatefulWidget {
 }
 
 class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
-  bool expanded = false;
+  late bool expanded = widget.initiallyExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -656,11 +740,13 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
         ? _orderTypeLabel(record, AppLocalizations.of(context))
         : _activityTypeLabel(record.type, AppLocalizations.of(context));
     final networks = _networks(record);
-    final title = isOrder ? _orderTitle(record) : record.title;
+    final title = isOrder
+        ? _orderTitle(record)
+        : record.category == ActivityCategory.cash
+        ? _cashTitle(record)
+        : record.title;
     return InkWell(
-      onTap: record.fields.isEmpty && record.txHash == null
-          ? null
-          : () => setState(() => expanded = !expanded),
+      onTap: () => setState(() => expanded = !expanded),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -781,7 +867,19 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                 ],
               ),
             ),
-            if (expanded) _ActivityDetails(record: record),
+            if (expanded) ...[
+              _ActivityDetails(record: record),
+              if (widget.showDetailLink)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    key: ValueKey('activity-detail-link-${record.id}'),
+                    onPressed: () =>
+                        context.go(AppRoutes.activityDetailLocation(record.id)),
+                    child: Text(AppLocalizations.of(context).details),
+                  ),
+                ),
+            ],
             Container(height: 1, color: colors.subtleSurface),
           ],
         ),
@@ -1176,6 +1274,50 @@ String? _orderSideLabel(ActivityRecord record, AppLocalizations l10n) {
 String _orderTitle(ActivityRecord record) {
   final symbol = record.symbol?.trim();
   return symbol == null || symbol.isEmpty ? record.title : symbol;
+}
+
+String _cashTitle(ActivityRecord record) {
+  final asset =
+      _tokenSymbol(record.asset) ?? _tokenSymbol(record.amount?.asset);
+  if (record.type == 'bridge' || record.type == 'transfer') {
+    final from = _cashFieldToken(record, 'send');
+    final to = _cashFieldToken(record, 'receive');
+    if (from != null && to != null) return '$from→$to';
+    // Some activity responses already provide the token pair as symbol.
+    final symbol = record.symbol?.trim();
+    if (symbol != null && symbol.isNotEmpty) return symbol;
+    return from ?? to ?? asset ?? record.title;
+  }
+  return asset ?? _tokenSymbol(record.symbol) ?? record.title;
+}
+
+String? _cashFieldToken(ActivityRecord record, String direction) {
+  for (final field in record.fields) {
+    final label = field.label.trim().toLowerCase().replaceAll('_', ' ');
+    if (label == '$direction token' || label == '$direction token symbol') {
+      final symbol = _tokenSymbol(field.value);
+      if (symbol != null) return symbol;
+    }
+    if (label == '$direction amount') {
+      final parts = field.value.trim().split(RegExp(r'\s+'));
+      if (parts.length == 2) {
+        final symbol = _tokenSymbol(parts.last);
+        if (symbol != null) return symbol;
+      }
+    }
+  }
+  return null;
+}
+
+String? _tokenSymbol(String? value) {
+  final symbol = value?.trim();
+  // Token address fields are not token symbols and must not become titles.
+  if (symbol == null ||
+      symbol.startsWith('0x') ||
+      !RegExp(r'^[A-Za-z][A-Za-z0-9.\-]{0,19}$').hasMatch(symbol)) {
+    return null;
+  }
+  return symbol;
 }
 
 String _fundingSide(ActivityRecord record, AppLocalizations l10n) {

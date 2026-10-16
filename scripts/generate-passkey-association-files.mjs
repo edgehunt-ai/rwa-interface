@@ -65,11 +65,24 @@ export async function generatePasskeyAssociationFiles({
   if (appleTeamId) {
     files['apple-app-site-association'] = {
       webcredentials: { apps: [appleTeamId + '.' + iosBundleId] },
+      applinks: {
+        details: [{
+          appIDs: [appleTeamId + '.' + iosBundleId],
+          components: [
+            { '/': '/trade' },
+            { '/': '/markets' },
+            { '/': '/activity/*' },
+          ],
+        }],
+      },
     };
   }
   if (fingerprints.length) {
     files['assetlinks.json'] = [{
-      relation: ['delegate_permission/common.get_login_creds'],
+      relation: [
+        'delegate_permission/common.get_login_creds',
+        'delegate_permission/common.handle_all_urls',
+      ],
       target: {
         namespace: 'android_app',
         package_name: androidPackageName,

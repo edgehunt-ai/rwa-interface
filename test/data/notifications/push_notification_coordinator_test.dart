@@ -184,6 +184,42 @@ void main() {
     },
   );
 
+  test(
+    'notification details preserve IDs and reject external destinations',
+    () async {
+      final messaging = _Messaging(token: 'token');
+      final coordinator = PushNotificationCoordinator(
+        messaging,
+        const _DeviceIds(),
+        _AccountRepository(),
+        platform: () => 'android',
+      );
+      addTearDown(coordinator.dispose);
+      final routes = <String>[];
+      final subscription = coordinator.routes.listen(routes.add);
+      addTearDown(subscription.cancel);
+      await coordinator.activate(_settings);
+      for (final route in [
+        '/activity/order%2F123',
+        '/activity?tab=cash',
+        '/trade?symbol=ETH&kind=perp',
+        '//attacker.invalid/activity/order',
+        'https://attacker.invalid/activity/order',
+        '/activity/order/extra',
+        '/activity/%20',
+        '/settings',
+      ]) {
+        messaging.opened.add(PushMessage({'deep_link': route}));
+      }
+      await Future<void>.delayed(Duration.zero);
+      expect(routes, [
+        '/activity/order%2F123',
+        '/activity?tab=cash',
+        '/trade?symbol=ETH&kind=perp',
+      ]);
+    },
+  );
+
   test('only emits approved in-app notification routes', () async {
     final messaging = _Messaging(token: 'token');
     final coordinator = PushNotificationCoordinator(
