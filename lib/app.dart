@@ -10,6 +10,7 @@ import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/notifications/push_messaging_gateway.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/motion/launch_animation.dart';
+import 'package:nobell/ui/core/layout/foldable_adaptive_shell.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/positions/views/hip3_confirmation_host.dart';
 
@@ -109,7 +110,9 @@ final class _AppViewState extends ConsumerState<_AppView> {
       routerConfig: widget.router,
       builder: (context, child) => LaunchAnimationGate(
         ready: appReady,
-        child: Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
+        child: FoldableAdaptiveShell(
+          child: Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
+        ),
       ),
       locale: locale,
       localizationsDelegates: const [
