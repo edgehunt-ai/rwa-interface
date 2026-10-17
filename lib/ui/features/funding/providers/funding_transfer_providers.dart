@@ -293,6 +293,8 @@ final class FundingTransferCommands {
 
   Future<FundingSessionSummary> refreshTransferQuote(String sessionId) =>
       _serializeQuote(() async {
+        final refreshingDraft = _transferDraft?.sessionId == sessionId;
+        if (refreshingDraft) _transferDraft = null;
         final refreshed = await _run(
           operation: 'funding_session_refresh',
           context: {'funding_session_id': sessionId},
@@ -300,7 +302,7 @@ final class FundingTransferCommands {
           command: () =>
               _ref.read(fundingRepositoryProvider).getFundingSession(sessionId),
         );
-        if (_transferDraft?.sessionId == sessionId) {
+        if (refreshingDraft) {
           _transferDraft = refreshed;
         }
         return refreshed;

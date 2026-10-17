@@ -63,4 +63,15 @@ final class FundingSourcePosition {
   final String network;
   final DecimalValue availableAmount;
   final bool eligible;
+
+  bool canAllocate(String amount) {
+    if (!eligible) return false;
+    try {
+      final value = DecimalValue(amount, asset: availableAmount.asset);
+      return value.compareTo(DecimalValue('0', asset: value.asset)) > 0 &&
+          value.compareMagnitudeTo(availableAmount) <= 0;
+    } on FormatException {
+      return false;
+    }
+  }
 }
