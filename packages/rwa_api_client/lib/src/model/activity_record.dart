@@ -12,6 +12,7 @@ import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
 import 'package:rwa_api_client/src/model/bstocks_activity_continuation.dart';
+import 'package:rwa_api_client/src/model/activity_cash_flow.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -25,7 +26,8 @@ part 'activity_record.g.dart';
 /// * [category] 
 /// * [type] 
 /// * [status] 
-/// * [title] 
+/// * [title] - 展示标题，与 type 标签分开。现金充值/提现使用币种，已知两端的划转使用 source asset → destination asset；无法确定两端的历史记录保留原标题。
+/// * [cashFlow] - 仅在账户绑定的转账业务记录能证明两端身份时提供；历史未知记录为 null 或省略， 不得由单侧 asset/chain 推测另一端。列表使用两端币种和网络展示转账方向。 原 amount/asset 仍是该行数量及其单位，chain/tx_hash/explorer 仍描述交易证据所在链， 不得把 amount 同时当作两端数量或最低到账金额。金额栏只显示 amount，不拼接币种。
 /// * [amount] - Decimal amount without a unit suffix.
 /// * [context] - 副标题，说明市场与当前状态
 /// * [failureReason] - 终态失败/人工复核时的可读原因（venue 拒因、reconciliation 说明等）， 来自资源 metadata 的 `last_error_message`/`failure_reason`；非终态或无失败时为 null。 
@@ -64,8 +66,13 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
   ActivityStatus get status;
   // enum statusEnum {  pending,  success,  failed,  cancelled,  manual_review,  };
 
+  /// 展示标题，与 type 标签分开。现金充值/提现使用币种，已知两端的划转使用 source asset → destination asset；无法确定两端的历史记录保留原标题。
   @BuiltValueField(wireName: r'title')
   String get title;
+
+  /// 仅在账户绑定的转账业务记录能证明两端身份时提供；历史未知记录为 null 或省略， 不得由单侧 asset/chain 推测另一端。列表使用两端币种和网络展示转账方向。 原 amount/asset 仍是该行数量及其单位，chain/tx_hash/explorer 仍描述交易证据所在链， 不得把 amount 同时当作两端数量或最低到账金额。金额栏只显示 amount，不拼接币种。
+  @BuiltValueField(wireName: r'cash_flow')
+  ActivityCashFlow? get cashFlow;
 
   /// Decimal amount without a unit suffix.
   @BuiltValueField(wireName: r'amount')
@@ -180,6 +187,13 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       object.title,
       specifiedType: const FullType(String),
     );
+    if (object.cashFlow != null) {
+      yield r'cash_flow';
+      yield serializers.serialize(
+        object.cashFlow,
+        specifiedType: const FullType.nullable(ActivityCashFlow),
+      );
+    }
     yield r'amount';
     yield object.amount == null ? null : serializers.serialize(
       object.amount,
@@ -341,6 +355,14 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
             specifiedType: const FullType(String),
           ) as String;
           result.title = valueDes;
+          break;
+        case r'cash_flow':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ActivityCashFlow),
+          ) as ActivityCashFlow?;
+          if (valueDes == null) continue;
+          result.cashFlow.replace(valueDes);
           break;
         case r'amount':
           final valueDes = serializers.deserialize(

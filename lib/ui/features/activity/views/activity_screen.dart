@@ -828,7 +828,9 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                             ],
                             isOrder || isFunding
                                 ? _VenueLabel(kind: record.kind)
-                                : _NetworkPath(networks: networks),
+                                : Flexible(
+                                    child: _NetworkPath(networks: networks),
+                                  ),
                           ],
                         ),
                       ],
@@ -927,7 +929,7 @@ class _TypeBadge extends StatelessWidget {
 
 class _NetworkPath extends StatelessWidget {
   const _NetworkPath({required this.networks});
-  final List<String> networks;
+  final List<({String chain, String label})> networks;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -948,7 +950,12 @@ class _NetworkPath extends StatelessWidget {
                 ),
               ),
             ),
-          _NetworkLabel(network: networks[index]),
+          Flexible(
+            child: _NetworkLabel(
+              network: networks[index].chain,
+              label: networks[index].label,
+            ),
+          ),
         ],
       ],
     );
@@ -988,8 +995,9 @@ class _VenueLabel extends StatelessWidget {
 }
 
 class _NetworkLabel extends StatelessWidget {
-  const _NetworkLabel({required this.network});
+  const _NetworkLabel({required this.network, required this.label});
   final String network;
+  final String label;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -1010,12 +1018,19 @@ class _NetworkLabel extends StatelessWidget {
             child: const Icon(Icons.link, size: 9, color: Colors.white),
           ),
         const SizedBox(width: 4),
-        Text(
-          networkDisplayName(network),
-          style: TextStyle(
-            fontSize: 12,
-            height: 16 / 12,
-            color: colors.secondaryText,
+        Flexible(
+          child: Tooltip(
+            message: label,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                height: 16 / 12,
+                color: colors.secondaryText,
+              ),
+            ),
           ),
         ),
       ],
@@ -1277,6 +1292,19 @@ String _orderTitle(ActivityRecord record) {
 }
 
 String _cashTitle(ActivityRecord record) {
+  final flow = record.cashFlow;
+  if (flow != null) return '${flow.source.asset} → ${flow.destination.asset}';
+  final title = record.title.trim();
+  if (title.isNotEmpty &&
+      !const {
+        'transfer',
+        'bridge',
+        'deposit',
+        'withdrawal',
+        'withdraw',
+      }.contains(title.toLowerCase())) {
+    return title;
+  }
   final asset =
       _tokenSymbol(record.asset) ?? _tokenSymbol(record.amount?.asset);
   if (record.type == 'bridge' || record.type == 'transfer') {
@@ -1334,14 +1362,50 @@ String _fundingDirection(ActivityRecord record, AppLocalizations l10n) {
       : l10n.receive;
 }
 
-List<String> _networks(ActivityRecord record) {
+List<({String chain, String label})> _networks(ActivityRecord record) {
+  final flow = record.cashFlow;
+  if (flow != null) {
+    return [
+      for (final endpoint in [flow.source, flow.destination])
+        (chain: endpoint.chain, label: _cashNetworkLabel(endpoint)),
+    ];
+  }
+  // A legacy cash row proves only its evidence chain, not the other endpoint.
+  if (record.category == ActivityCategory.cash) {
+    return record.chain == null
+        ? const []
+        : [(chain: record.chain!, label: networkDisplayName(record.chain!))];
+  }
   final matches = RegExp(
     r'(BSC|Polygon|Arbitrum|Base|Ethereum|Solana)',
     caseSensitive: false,
   ).allMatches(record.context ?? '').map((match) => match.group(1)!).toList();
-  if (matches.isNotEmpty) return matches;
-  return record.chain == null ? const [] : [record.chain!];
+  final chains = matches.isNotEmpty
+      ? matches
+      : record.chain == null
+      ? const <String>[]
+      : [record.chain!];
+  return [
+    for (final chain in chains)
+      (chain: chain, label: networkDisplayName(chain)),
+  ];
 }
+
+String _cashNetworkLabel(ActivityCashFlowEndpoint endpoint) =>
+    switch ((endpoint.chain, endpoint.chainId)) {
+      ('BSC', '97') => 'BSC Testnet',
+      ('Arbitrum', '421614') => 'Arbitrum Sepolia',
+      ('Ethereum', '11155111') => 'Sepolia',
+      ('Base', '84532') => 'Base Sepolia',
+      ('Polygon', '80002') => 'Polygon Amoy',
+      ('BSC', '56') ||
+      ('Arbitrum', '42161') ||
+      ('Ethereum', '1') ||
+      ('Base', '8453') ||
+      ('Polygon', '137') ||
+      (_, null) => networkDisplayName(endpoint.chain),
+      (_, final id) => '${networkDisplayName(endpoint.chain)} ($id)',
+    };
 
 String _shortAddress(String value) {
   if (value.length <= 13) return value;

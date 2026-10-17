@@ -69,7 +69,7 @@ void main() {
       expect(funding.transferSessionDestination, 'hip3_margin');
       expect(funding.sessionPlanId, 'transfer-session-1');
       expect(funding.selectedAllocations, {'position-1': '160.25'});
-      expect(funding.selectedAmount, '160.25');
+      expect(funding.selectedAmount, isNull);
       expect(plan.planId, 'plan-1');
     },
   );
@@ -151,6 +151,32 @@ void main() {
   );
 
   test(
+    'transfer quote resubmits matching allocations while selection is editing',
+    () async {
+      final funding = _FundingRepository(
+        createdStatus: 'editing',
+        createdCanConfirmTransfer: false,
+        createdAllocations: const {'position-1': '10'},
+      );
+      final container = ProviderContainer(
+        overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(fundingTransferCommandsProvider)
+          .quoteTransfer(
+            destination: 'hip3_margin',
+            amount: '10',
+            allocations: const {'position-1': '10'},
+          );
+
+      expect(funding.selectionVersions, [3]);
+      expect(funding.selectedAmount, isNull);
+    },
+  );
+
+  test(
     'transfer quote refreshes and retries once after a version conflict',
     () async {
       final funding = _FundingRepository(conflictOnFirstSelection: true);
@@ -172,6 +198,32 @@ void main() {
       expect(quote.version, 8);
     },
   );
+
+  test('transfer quote retries matching allocations when conflict refresh is editing', () async {
+    final funding = _FundingRepository(
+      conflictOnFirstSelection: true,
+      refreshedStatus: 'editing',
+      refreshedCanConfirmTransfer: false,
+      refreshedAllocations: const {'position-1': '10'},
+    );
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+    );
+    addTearDown(container.dispose);
+
+    final quote = await container
+        .read(fundingTransferCommandsProvider)
+        .quoteTransfer(
+          destination: 'hip3_margin',
+          amount: '10',
+          allocations: const {'position-1': '10'},
+        );
+
+    expect(funding.selectionVersions, [3, 7]);
+    expect(funding.sessionRefreshes, 1);
+    expect(funding.selectedAmount, isNull);
+    expect(quote.version, 8);
+  });
 
   test(
     'funding transfer lifecycle uses a server-selected plan and authorization',
@@ -294,7 +346,12 @@ final class _FundingRepository implements FundingRepository {
   _FundingRepository({
     this.failPlanQuery = false,
     this.conflictOnFirstSelection = false,
+    this.createdStatus = 'readyToConfirm',
+    this.createdCanConfirmTransfer = true,
     this.createdAllocations = const {},
+    this.refreshedStatus = 'readyToConfirm',
+    this.refreshedCanConfirmTransfer = true,
+    this.refreshedAllocations = const {},
   });
 
   String? createdPlanFor;
@@ -306,7 +363,12 @@ final class _FundingRepository implements FundingRepository {
   String? selectedAmount;
   final bool failPlanQuery;
   final bool conflictOnFirstSelection;
+  final String createdStatus;
+  final bool createdCanConfirmTransfer;
   final Map<String, String> createdAllocations;
+  final String refreshedStatus;
+  final bool refreshedCanConfirmTransfer;
+  final Map<String, String> refreshedAllocations;
   int transferSessionCalls = 0;
   int sessionRefreshes = 0;
   final List<int> selectionVersions = [];
@@ -342,9 +404,9 @@ final class _FundingRepository implements FundingRepository {
     transferSessionAmount = amount;
     return FundingSessionSummary(
       sessionId: 'transfer-session-$transferSessionCalls',
-      status: 'readyToConfirm',
+      status: createdStatus,
       version: 3,
-      canConfirmTransfer: true,
+      canConfirmTransfer: createdCanConfirmTransfer,
       expiresAt: DateTime.utc(2026, 1, 2),
       allocations: createdAllocations,
     );
@@ -392,10 +454,11 @@ final class _FundingRepository implements FundingRepository {
     sessionRefreshes++;
     return FundingSessionSummary(
       sessionId: id,
-      status: 'readyToConfirm',
+      status: refreshedStatus,
       version: 7,
-      canConfirmTransfer: true,
+      canConfirmTransfer: refreshedCanConfirmTransfer,
       expiresAt: DateTime.utc(2026, 1, 2),
+      allocations: refreshedAllocations,
     );
   }
 

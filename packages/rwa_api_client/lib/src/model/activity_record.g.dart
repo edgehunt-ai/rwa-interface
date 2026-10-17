@@ -188,6 +188,8 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   final String title;
   @override
+  final ActivityCashFlow? cashFlow;
+  @override
   final String? amount;
   @override
   final String? context;
@@ -230,6 +232,7 @@ class _$ActivityRecord extends ActivityRecord {
       required this.type,
       required this.status,
       required this.title,
+      this.cashFlow,
       this.amount,
       this.context,
       this.failureReason,
@@ -264,6 +267,7 @@ class _$ActivityRecord extends ActivityRecord {
         type == other.type &&
         status == other.status &&
         title == other.title &&
+        cashFlow == other.cashFlow &&
         amount == other.amount &&
         context == other.context &&
         failureReason == other.failureReason &&
@@ -291,6 +295,7 @@ class _$ActivityRecord extends ActivityRecord {
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, title.hashCode);
+    _$hash = $jc(_$hash, cashFlow.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, context.hashCode);
     _$hash = $jc(_$hash, failureReason.hashCode);
@@ -320,6 +325,7 @@ class _$ActivityRecord extends ActivityRecord {
           ..add('type', type)
           ..add('status', status)
           ..add('title', title)
+          ..add('cashFlow', cashFlow)
           ..add('amount', amount)
           ..add('context', context)
           ..add('failureReason', failureReason)
@@ -368,6 +374,12 @@ class ActivityRecordBuilder
   String? _title;
   String? get title => _$this._title;
   set title(String? title) => _$this._title = title;
+
+  ActivityCashFlowBuilder? _cashFlow;
+  ActivityCashFlowBuilder get cashFlow =>
+      _$this._cashFlow ??= ActivityCashFlowBuilder();
+  set cashFlow(ActivityCashFlowBuilder? cashFlow) =>
+      _$this._cashFlow = cashFlow;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -455,6 +467,7 @@ class ActivityRecordBuilder
       _type = $v.type;
       _status = $v.status;
       _title = $v.title;
+      _cashFlow = $v.cashFlow?.toBuilder();
       _amount = $v.amount;
       _context = $v.context;
       _failureReason = $v.failureReason;
@@ -505,6 +518,7 @@ class ActivityRecordBuilder
                 status, r'ActivityRecord', 'status'),
             title: BuiltValueNullFieldError.checkNotNull(
                 title, r'ActivityRecord', 'title'),
+            cashFlow: _cashFlow?.build(),
             amount: amount,
             context: context,
             failureReason: failureReason,
@@ -527,6 +541,9 @@ class ActivityRecordBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'cashFlow';
+        _cashFlow?.build();
+
         _$failedField = 'fields';
         _fields?.build();
 

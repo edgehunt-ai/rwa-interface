@@ -13,14 +13,14 @@ part 'hip3_withdrawal_create_request.g.dart';
 ///
 /// Properties:
 /// * [amount] - bridge2/float为HL USDC总扣减额（bridge2含1 USDC手续费）；relay为BSC USDT期望到账额，实际HL扣款由quote决定。
-/// * [rail] - 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+/// * [rail] - 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
 @BuiltValue()
 abstract class Hip3WithdrawalCreateRequest implements Built<Hip3WithdrawalCreateRequest, Hip3WithdrawalCreateRequestBuilder> {
   /// bridge2/float为HL USDC总扣减额（bridge2含1 USDC手续费）；relay为BSC USDT期望到账额，实际HL扣款由quote决定。
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+  /// 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
   @BuiltValueField(wireName: r'rail')
   Hip3WithdrawalCreateRequestRailEnum? get rail;
   // enum railEnum {  auto,  bridge2,  float,  relay,  };
@@ -129,16 +129,16 @@ class _$Hip3WithdrawalCreateRequestSerializer implements PrimitiveSerializer<Hip
 
 class Hip3WithdrawalCreateRequestRailEnum extends EnumClass {
 
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+  /// 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
   @BuiltValueEnumConst(wireName: r'auto')
   static const Hip3WithdrawalCreateRequestRailEnum auto = _$hip3WithdrawalCreateRequestRailEnum_auto;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+  /// 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
   @BuiltValueEnumConst(wireName: r'bridge2')
   static const Hip3WithdrawalCreateRequestRailEnum bridge2 = _$hip3WithdrawalCreateRequestRailEnum_bridge2;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+  /// 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalCreateRequestRailEnum float = _$hip3WithdrawalCreateRequestRailEnum_float;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`，否则走 `relay`（mainnet 已配置时） 或回落 `bridge2`。显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。 
+  /// 出金通道选择；缺省或 `auto` 时保持 Arbitrum USDC 到账：平台池已配置走 `float`， 否则走 `bridge2`。BSC USDT 到账必须显式请求 `relay`，不会因 Relay 已配置而自动改变到账资产或金额语义。 显式请求 `float`/`relay` 而对应能力未配置时返回错误，不会静默降级。 null与省略等价。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 relay 的 `amount` 语义是期望到账的 BSC USDT 金额（exact output），与 bridge2/float 的 venue 扣款语义不同——实际扣款金额由服务端 quote 决定并在响应 `amount` 中返回。
   @BuiltValueEnumConst(wireName: r'relay')
   static const Hip3WithdrawalCreateRequestRailEnum relay = _$hip3WithdrawalCreateRequestRailEnum_relay;
 

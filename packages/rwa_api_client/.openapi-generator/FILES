@@ -27,6 +27,8 @@ lib/src/model/account_deletion_blocker.dart
 lib/src/model/account_deletion_request.dart
 lib/src/model/account_deletion_status.dart
 lib/src/model/account_kind.dart
+lib/src/model/activity_cash_flow.dart
+lib/src/model/activity_cash_flow_endpoint.dart
 lib/src/model/activity_category.dart
 lib/src/model/activity_page.dart
 lib/src/model/activity_record.dart
