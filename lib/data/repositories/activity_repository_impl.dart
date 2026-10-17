@@ -86,11 +86,24 @@ final class ActivityRepositoryImpl implements ActivityRepository {
             url: value.explorer!.url,
           ),
     asset: value.asset,
+    cashFlow: value.cashFlow == null
+        ? null
+        : ActivityCashFlow(
+            source: _cashEndpoint(value.cashFlow!.source_),
+            destination: _cashEndpoint(value.cashFlow!.destination),
+          ),
     symbol: value.symbol,
     kind: value.kind?.name,
     createdAt: value.createdAt.toUtc(),
     updatedAt: value.updatedAt.toUtc(),
   );
+
+  ActivityCashFlowEndpoint _cashEndpoint(api.ActivityCashFlowEndpoint value) =>
+      ActivityCashFlowEndpoint(
+        asset: value.asset,
+        chain: canonicalChainName(value.chain.name),
+        chainId: value.chainId,
+      );
 
   String _activityType(api.ActivityType value) => switch (value) {
     api.ActivityType.market => 'market',

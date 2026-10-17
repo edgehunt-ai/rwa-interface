@@ -42,6 +42,25 @@ final class ActivityExplorer {
   final String url;
 }
 
+final class ActivityCashFlowEndpoint {
+  const ActivityCashFlowEndpoint({
+    required this.asset,
+    required this.chain,
+    required this.chainId,
+  });
+
+  final String asset;
+  final String chain;
+  final String? chainId;
+}
+
+final class ActivityCashFlow {
+  const ActivityCashFlow({required this.source, required this.destination});
+
+  final ActivityCashFlowEndpoint source;
+  final ActivityCashFlowEndpoint destination;
+}
+
 final class ActivityRecord {
   const ActivityRecord({
     required this.id,
@@ -64,6 +83,7 @@ final class ActivityRecord {
     this.txHash,
     this.explorer,
     this.asset,
+    this.cashFlow,
     this.symbol,
     this.kind,
     this.updatedAt,
@@ -90,6 +110,7 @@ final class ActivityRecord {
   final String? txHash;
   final ActivityExplorer? explorer;
   final String? asset;
+  final ActivityCashFlow? cashFlow;
   final String? symbol;
   final String? kind;
   final DateTime createdAt;

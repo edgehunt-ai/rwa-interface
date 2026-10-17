@@ -27,6 +27,8 @@ export 'package:rwa_api_client/src/model/account_deletion_blocker.dart';
 export 'package:rwa_api_client/src/model/account_deletion_request.dart';
 export 'package:rwa_api_client/src/model/account_deletion_status.dart';
 export 'package:rwa_api_client/src/model/account_kind.dart';
+export 'package:rwa_api_client/src/model/activity_cash_flow.dart';
+export 'package:rwa_api_client/src/model/activity_cash_flow_endpoint.dart';
 export 'package:rwa_api_client/src/model/activity_category.dart';
 export 'package:rwa_api_client/src/model/activity_page.dart';
 export 'package:rwa_api_client/src/model/activity_record.dart';

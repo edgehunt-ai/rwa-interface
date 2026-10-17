@@ -234,10 +234,13 @@ final class FundingTransferCommands {
       session = existing;
     }
     if (session.status == 'funded') return session;
-    if (_sameAllocations(session.allocations, allocations)) return session;
+    if (session.canConfirmTransfer &&
+        _sameAllocations(session.allocations, allocations)) {
+      return session;
+    }
 
     try {
-      return await _selectTransferSources(session, allocations, amount: amount);
+      return await _selectTransferSources(session, allocations);
     } on ServerFailure catch (failure) {
       if (failure.statusCode != 409) rethrow;
       session = await _ref
@@ -245,8 +248,11 @@ final class FundingTransferCommands {
           .getFundingSession(session.sessionId);
       _rememberTransferDraft(session, destination: destination, amount: amount);
       if (session.status == 'funded') return session;
-      if (_sameAllocations(session.allocations, allocations)) return session;
-      return _selectTransferSources(session, allocations, amount: amount);
+      if (session.canConfirmTransfer &&
+          _sameAllocations(session.allocations, allocations)) {
+        return session;
+      }
+      return _selectTransferSources(session, allocations);
     }
   });
 
@@ -263,26 +269,21 @@ final class FundingTransferCommands {
 
   Future<FundingSessionSummary> _selectTransferSources(
     FundingSessionSummary session,
-    Map<String, String> allocations, {
-    required String amount,
-  }) async {
+    Map<String, String> allocations,
+  ) async {
     final selected = await _run(
       operation: 'funding_session_selection',
       context: {'funding_session_id': session.sessionId},
       successContext: (selected) => {'status': selected.status},
       command: () => _commands.run(
         operation: 'funding-session-selection',
-        fingerprint:
-            '${session.sessionId}|${session.version}|$amount|$allocations',
+        fingerprint: '${session.sessionId}|${session.version}|$allocations',
         command: (key) => _ref
             .read(fundingRepositoryProvider)
             .updateFundingSessionSelection(
               fundingSessionId: session.sessionId,
               version: session.version,
               allocations: allocations,
-              // A standalone account_transfer session must restate the
-              // intended top-up; the server refuses a selection without it.
-              amount: amount,
               idempotencyKey: key,
             ),
       ),
