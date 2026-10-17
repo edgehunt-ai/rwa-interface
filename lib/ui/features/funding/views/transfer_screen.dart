@@ -71,32 +71,38 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   bool _sendFromSpot = true;
   bool _selectingToken = false;
   String? _selectedPositionId;
-  Set<String> _eligiblePositionIds = const {};
+  Map<String, FundingSourcePosition> _positions = const {};
+  UnifiedFundingAccountSummary? _account;
   String _tokenQuery = '';
   String? _tokenNetworkFilter;
 
   Map<String, String> get _allocations {
-    final positionId = _selectedPositionId;
-    if (positionId == null || !_eligiblePositionIds.contains(positionId)) {
+    final options = ref.read(transferOptionsProvider);
+    if (options.isLoading || options.hasError) return const {};
+    final account = options.value?.account;
+    final position = identical(account, _account)
+        ? _positions[_selectedPositionId]
+        : account?.positions
+              .where((position) => position.positionId == _selectedPositionId)
+              .firstOrNull;
+    final amount = _amounts[_selectedPositionId]?.text.trim();
+    if (position == null || amount == null || !position.canAllocate(amount)) {
       return const {};
     }
-    final amount = _amounts[positionId]?.text.trim();
-    if (amount == null || (double.tryParse(amount) ?? 0) <= 0) {
-      return const {};
-    }
-    return {positionId: amount};
+    return {position.positionId: amount};
   }
 
   void _preparePositions(List<FundingSourcePosition> positions) {
-    _eligiblePositionIds = positions
-        .map((position) => position.positionId)
-        .toSet();
+    _positions = {
+      for (final position in positions)
+        if (position.eligible) position.positionId: position,
+    };
     if (_selectedPositionId == null &&
         widget.initialToken != null &&
         widget.initialNetwork != null) {
       final requestedToken = widget.initialToken!.trim().toUpperCase();
       final requestedNetwork = widget.initialNetwork!.trim().toLowerCase();
-      _selectedPositionId = positions
+      _selectedPositionId = _positions.values
           .where(
             (position) =>
                 position.token.trim().toUpperCase() == requestedToken &&
@@ -105,10 +111,19 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           .firstOrNull
           ?.positionId;
     }
-    if (!_eligiblePositionIds.contains(_selectedPositionId)) {
-      _selectedPositionId = positions.firstOrNull?.positionId;
+    if (!_positions.containsKey(_selectedPositionId) &&
+        !_submitting &&
+        !_transferPending) {
+      if (_selectedPositionId != null) {
+        _quoteDebounce?.cancel();
+        _quoteRefresh?.cancel();
+        _quoteSequence++;
+        _quote = null;
+        _quoting = false;
+      }
+      _selectedPositionId = _positions.values.firstOrNull?.positionId;
     }
-    for (final position in positions) {
+    for (final position in _positions.values) {
       _amounts.putIfAbsent(position.positionId, () {
         final controller = TextEditingController();
         controller.addListener(_scheduleQuote);
@@ -118,7 +133,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _openTokenSelector() {
-    if (_eligiblePositionIds.length <= 1) return;
+    if (_positions.length <= 1 || _submitting || _transferPending) return;
     setState(() => _selectingToken = true);
   }
 
@@ -131,6 +146,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _selectToken(FundingSourcePosition position) {
+    if (_submitting || _transferPending) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -150,6 +166,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _scheduleQuote() {
+    if (_submitting || _transferPending) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -291,12 +308,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _requestQuote() async {
-    if (!_sendFromSpot) return;
+    if (!_sendFromSpot || _submitting || _transferPending) return;
     final allocations = _allocations;
     if (allocations.isEmpty) return;
-    final amount = allocations.values
-        .map(double.parse)
-        .fold<double>(0, (sum, value) => sum + value);
+    final amount = allocations.values.single;
     final sequence = ++_quoteSequence;
     setState(() {
       _quoting = true;
@@ -307,15 +322,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           .read(fundingTransferCommandsProvider)
           .quoteTransfer(
             destination: 'hip3_margin',
-            amount: amount.toString(),
+            amount: amount,
             allocations: allocations,
           );
       if (!mounted || sequence != _quoteSequence) return;
-      setState(() {
-        _quote = quote;
-        _applySessionStatus(quote);
-      });
-      _scheduleQuoteRefresh(quote, sequence);
+      setState(() => _applyQuote(quote));
+      if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
     } catch (error) {
       if (!mounted || sequence != _quoteSequence) return;
       setState(() {
@@ -329,6 +341,19 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         setState(() => _quoting = false);
       }
     }
+  }
+
+  void _applyQuote(FundingSessionSummary quote) {
+    _quote = quote;
+    if (quote.status != 'transferring' && quote.status != 'funded') {
+      _preparePositions(quote.positions);
+      if (_allocations.isEmpty) {
+        _quote = null;
+        _quoting = false;
+        _error = AppLocalizations.of(context).transferQuoteChanged;
+      }
+    }
+    _applySessionStatus(quote);
   }
 
   void _scheduleQuoteRefresh(FundingSessionSummary quote, int sequence) {
@@ -347,7 +372,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   Future<void> _refreshQuote(String sessionId, int sequence) async {
     if (!mounted ||
         sequence != _quoteSequence ||
-        _allocations.isEmpty ||
+        (!_transferPending && _allocations.isEmpty) ||
         _submitting) {
       return;
     }
@@ -356,17 +381,19 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           .read(fundingTransferCommandsProvider)
           .refreshTransferQuote(sessionId);
       if (!mounted || sequence != _quoteSequence) return;
-      setState(() {
-        _quote = quote;
-        _applySessionStatus(quote);
-      });
-      _scheduleQuoteRefresh(quote, sequence);
+      setState(() => _applyQuote(quote));
+      if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
     } catch (_) {
       if (!mounted || sequence != _quoteSequence) return;
-      // Keep the last usable quote visible and retry the refresh. A transfer
-      // still requires the server to accept the session version.
       final current = _quote;
-      if (current != null) _scheduleQuoteRefresh(current, sequence);
+      if (_transferPending && current != null) {
+        _scheduleQuoteRefresh(current, sequence);
+      } else {
+        setState(() {
+          _quote = null;
+          _error = AppLocalizations.of(context).transferQuoteChanged;
+        });
+      }
     }
   }
 
@@ -375,6 +402,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       await _submitHip3Withdrawal();
       return;
     }
+    if (_submitting || _transferPending) return;
     final l10n = AppLocalizations.of(context);
     final allocations = _allocations;
     if (allocations.isEmpty) {
@@ -409,15 +437,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       final commands = ref.read(fundingTransferCommandsProvider);
       final quote = await commands.refreshTransferQuote(currentQuote.sessionId);
       if (!mounted || submitSequence != _quoteSequence) return;
-      setState(() {
-        _quote = quote;
-        _applySessionStatus(quote);
-      });
+      setState(() => _applyQuote(quote));
       if (quote.status == 'funded') return;
       if (quote.status == 'transferring') {
         return;
       }
-      if (!quote.canConfirmTransfer) {
+      if (_allocations.isEmpty || !quote.canConfirmTransfer) {
         throw StateError(l10n.transferQuoteChanged);
       }
       final plan = await commands.planForSession(quote);
@@ -425,6 +450,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
+        if (!_transferPending) _quote = null;
         _error = switch (error) {
           ApiFailure failure => apiFailureMessage(
             failure,
@@ -767,6 +793,26 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final options = ref.watch(transferOptionsProvider);
+    final account = options.value?.account;
+    if (account != null &&
+        !identical(account, _account) &&
+        !_submitting &&
+        !_transferPending) {
+      _account = account;
+      _preparePositions(account.positions);
+    }
+    if (_sendFromSpot &&
+        !_submitting &&
+        !_transferPending &&
+        (_quote != null || _quoting) &&
+        _allocations.isEmpty) {
+      _quoteDebounce?.cancel();
+      _quoteRefresh?.cancel();
+      _quoteSequence++;
+      _quote = null;
+      _quoting = false;
+    }
+    final positions = _positions.values.toList(growable: false);
     final hip3Balance = _sendFromSpot
         ? null
         : ref.watch(hip3TransferBalanceProvider);
@@ -799,10 +845,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           body: SafeArea(
             child: options.when(
               data: (value) {
-                final positions = value.account.positions
-                    .where((position) => position.eligible)
-                    .toList(growable: false);
-                _preparePositions(positions);
                 return _TokenSelector(
                   positions: positions,
                   query: _tokenQuery,
@@ -862,10 +904,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _SectionLabel(l10n.sendAmount),
                         options.when(
                           data: (value) {
-                            final positions = value.account.positions
-                                .where((position) => position.eligible)
-                                .toList(growable: false);
-                            _preparePositions(positions);
                             final selected = positions
                                 .where(
                                   (position) =>
@@ -878,6 +916,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                               controller: selected == null
                                   ? null
                                   : _amounts[selected.positionId],
+                              enabled: !_submitting && !_transferPending,
                               canSelect: positions.length > 1,
                               onSelect: _openTokenSelector,
                             );
@@ -1166,12 +1205,14 @@ class _SendAmountCard extends StatelessWidget {
     required this.controller,
     required this.canSelect,
     required this.onSelect,
+    required this.enabled,
   });
 
   final FundingSourcePosition? position;
   final TextEditingController? controller;
   final bool canSelect;
   final VoidCallback onSelect;
+  final bool enabled;
 
   static String _assetPath(String token) => switch (token.toUpperCase()) {
     'USDT' => 'assets/figma/funding/usdt.png',
@@ -1201,8 +1242,9 @@ class _SendAmountCard extends StatelessWidget {
               available: selected.availableAmount.value,
               assetPath: _assetPath(selected.token),
               controller: controller!,
+              enabled: enabled,
               canSelect: canSelect,
-              onSelect: canSelect ? onSelect : null,
+              onSelect: canSelect && enabled ? onSelect : null,
             ),
     );
   }
@@ -1217,6 +1259,7 @@ class _AssetAmountRow extends StatelessWidget {
     required this.controller,
     required this.canSelect,
     required this.onSelect,
+    required this.enabled,
   });
 
   final String asset;
@@ -1226,6 +1269,7 @@ class _AssetAmountRow extends StatelessWidget {
   final TextEditingController controller;
   final bool canSelect;
   final VoidCallback? onSelect;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -1316,6 +1360,7 @@ class _AssetAmountRow extends StatelessWidget {
                 ),
                 child: TextField(
                   controller: controller,
+                  enabled: enabled,
                   textAlign: TextAlign.right,
                   textAlignVertical: TextAlignVertical.center,
                   keyboardType: const TextInputType.numberWithOptions(

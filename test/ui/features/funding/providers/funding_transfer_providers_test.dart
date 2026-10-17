@@ -173,6 +173,34 @@ void main() {
     },
   );
 
+  test('failed quote refresh cannot reuse a stale transfer draft', () async {
+    final funding = _FundingRepository(
+      createdAllocations: const {'position-1': '10'},
+    );
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+    );
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+    final quote = await commands.quoteTransfer(
+      destination: 'hip3_margin',
+      amount: '10',
+      allocations: const {'position-1': '10'},
+    );
+    funding.failSessionRefresh = true;
+    await expectLater(
+      commands.refreshTransferQuote(quote.sessionId),
+      throwsA(isA<NetworkFailure>()),
+    );
+    await commands.quoteTransfer(
+      destination: 'hip3_margin',
+      amount: '10',
+      allocations: const {'position-1': '10'},
+    );
+
+    expect(funding.transferSessionCalls, 2);
+  });
+
   test(
     'funding transfer lifecycle uses a server-selected plan and authorization',
     () async {
@@ -309,6 +337,7 @@ final class _FundingRepository implements FundingRepository {
   final Map<String, String> createdAllocations;
   int transferSessionCalls = 0;
   int sessionRefreshes = 0;
+  bool failSessionRefresh = false;
   final List<int> selectionVersions = [];
   final List<String> planKeys = [];
   final plan = FundingPlan(
@@ -390,6 +419,7 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingSessionSummary> getFundingSession(String id) async {
     sessionRefreshes++;
+    if (failSessionRefresh) throw const NetworkFailure(retryable: false);
     return FundingSessionSummary(
       sessionId: id,
       status: 'readyToConfirm',
