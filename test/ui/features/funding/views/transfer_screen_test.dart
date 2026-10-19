@@ -814,6 +814,445 @@ void main() {
     expect(error, findsOneWidget);
     expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
   });
+
+  testWidgets('net available 20 quotes 20 but never quotes or confirms 21', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+
+    expect(find.text('Available: 20'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(funding.amounts, ['20']);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+
+    await tester.enterText(find.byType(TextField), '21');
+    await tester.pump(const Duration(milliseconds: 501));
+    expect(funding.amounts, ['20']);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+    expect(funding.planCalls, 0);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-receive-amount-value')),
+          )
+          .value,
+      isEmpty,
+    );
+  });
+
+  testWidgets('transfer quote preserves exact decimal input at capacity', (
+    tester,
+  ) async {
+    const available = '20.000000000000000001';
+    final funding = _CapacityTransferRepository()..available = available;
+    await _pumpCapacityTransfer(
+      tester,
+      funding,
+      options: () => _capacityOptions(available: available),
+    );
+    await tester.enterText(find.byType(TextField), '20.000000000000000002');
+    await tester.pump(const Duration(milliseconds: 501));
+    expect(funding.amounts, isEmpty);
+
+    await tester.enterText(find.byType(TextField), available);
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(funding.amounts, [available]);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('fresh session capacity reflects released reservations', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    funding.available = '40';
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump();
+    expect(find.text('Available: 40'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '21');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(funding.amounts, ['20', '21']);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('late quote cannot revive capacity reduced during its request', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..quoteResponse = Completer<FundingSessionSummary>();
+    var options = _capacityOptions();
+    final container = await _pumpCapacityTransfer(
+      tester,
+      funding,
+      options: () => options,
+    );
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    expect(funding.amounts, ['20']);
+    options = _capacityOptions(available: '5');
+    container.invalidate(transferOptionsProvider);
+    await tester.pump();
+    funding.quoteResponse!.complete(funding._session);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Available: 5'), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-receive-amount-value')),
+          )
+          .value,
+      isEmpty,
+    );
+  });
+
+  testWidgets('nonpositive and nondecimal transfer input never quotes', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+    for (final amount in ['0', '-1', 'NaN', 'Infinity', '1e1', '.']) {
+      await tester.enterText(find.byType(TextField), amount);
+      await tester.pump(const Duration(milliseconds: 501));
+      expect(funding.amounts, isEmpty, reason: amount);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+        reason: amount,
+      );
+    }
+  });
+
+  for (final eligible in [true, false]) {
+    testWidgets('zero or ineligible capacity cannot quote ($eligible)', (
+      tester,
+    ) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(
+        tester,
+        funding,
+        options: () => _capacityOptions(
+          available: eligible ? '0' : '20',
+          eligible: eligible,
+        ),
+      );
+      if (eligible) {
+        await tester.enterText(find.byType(TextField), '1');
+        await tester.pump(const Duration(milliseconds: 501));
+      } else {
+        expect(find.byType(TextField), findsNothing);
+      }
+      expect(funding.amounts, isEmpty);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+    });
+  }
+
+  for (final quoted in [false, true]) {
+    testWidgets('live reduction cancels ${quoted ? 'quote' : 'debounce'}', (
+      tester,
+    ) async {
+      final funding = _CapacityTransferRepository();
+      var options = _capacityOptions();
+      final container = await _pumpCapacityTransfer(
+        tester,
+        funding,
+        options: () => options,
+      );
+      await tester.enterText(find.byType(TextField), '20');
+      if (quoted) {
+        await tester.pump(const Duration(milliseconds: 501));
+        await tester.pump();
+      }
+      options = _capacityOptions(available: '5');
+      container.invalidate(transferOptionsProvider);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 501));
+
+      expect(find.text('Available: 5'), findsOneWidget);
+      expect(funding.amounts, quoted ? ['20'] : isEmpty);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+      await tester.pump(const Duration(seconds: 5));
+      expect(funding.refreshCalls, 0);
+    });
+  }
+
+  for (final change in ['reduced', 'ineligible', 'missing', 'failed']) {
+    testWidgets('quote refresh clears stale capacity when $change', (
+      tester,
+    ) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      funding.available = change == 'reduced' ? '5' : '20';
+      funding.eligible = change != 'ineligible';
+      funding.missing = change == 'missing';
+      funding.failRefresh = change == 'failed';
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+
+      expect(funding.refreshCalls, 1);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<AnimatedNumberText>(
+              find.byKey(const Key('transfer-receive-amount-value')),
+            )
+            .value,
+        isEmpty,
+      );
+      expect(funding.planCalls, 0);
+      if (change == 'reduced') {
+        expect(find.text('Available: 5'), findsOneWidget);
+      }
+    });
+  }
+
+  testWidgets('submit rechecks refreshed capacity before creating a plan', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    funding.available = '5';
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump();
+
+    expect(funding.refreshCalls, 1);
+    expect(funding.planCalls, 0);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('refresh failure preserves an already transferring session', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    funding.status = 'transferring';
+    funding.missing = true;
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump();
+    funding.failRefresh = true;
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump();
+
+    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(funding.refreshCalls, 2);
+    expect(funding.planCalls, 0);
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+    await tester.pump(const Duration(seconds: 5));
+    expect(funding.refreshCalls, 3);
+  });
+
+  testWidgets('own reservation does not interrupt an executing transfer', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    var options = _capacityOptions();
+    final container = await _pumpCapacityTransfer(
+      tester,
+      funding,
+      options: () => options,
+    );
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump();
+    expect(funding.planCalls, 1);
+
+    options = _capacityOptions(available: '0', eligible: false);
+    container.invalidate(transferOptionsProvider);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(funding.planReads, greaterThan(1));
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+  });
+}
+
+FundingSourcePosition _transferPosition({
+  String available = '100',
+  bool eligible = true,
+}) => FundingSourcePosition(
+  positionId: 'usdc',
+  token: 'USDC',
+  network: 'Arbitrum',
+  availableAmount: DecimalValue(available, asset: 'USDC', unit: 'token'),
+  eligible: eligible,
+);
+
+TransferOptions _capacityOptions({
+  String available = '20',
+  bool eligible = true,
+}) => TransferOptions(
+  account: UnifiedFundingAccountSummary(
+    totalUsd: DecimalValue('100', asset: 'USD'),
+    availableToFundUsd: DecimalValue(available, asset: 'USD'),
+    reservedUsd: DecimalValue('80', asset: 'USD'),
+    inTransitUsd: DecimalValue('0', asset: 'USD'),
+    dataStatus: 'complete',
+    calculatedAt: DateTime.utc(2026),
+    positions: [_transferPosition(available: available, eligible: eligible)],
+  ),
+  catalog: null,
+);
+
+Future<ProviderContainer> _pumpCapacityTransfer(
+  WidgetTester tester,
+  FundingRepository funding, {
+  TransferOptions Function()? options,
+}) async {
+  tester.view.physicalSize = const Size(430, 950);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  final container = ProviderContainer(
+    overrides: [
+      fundingRepositoryProvider.overrideWithValue(funding),
+      transferOptionsProvider.overrideWith(
+        (ref) async => options?.call() ?? _capacityOptions(),
+      ),
+    ],
+  );
+  addTearDown(() async {
+    await tester.pumpWidget(const SizedBox());
+    container.dispose();
+  });
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        theme: AppTheme.light,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const TransferScreen(),
+      ),
+    ),
+  );
+  await tester.pump();
+  return container;
+}
+
+final class _CapacityTransferRepository implements FundingRepository {
+  final amounts = <String>[];
+  String available = '20';
+  bool eligible = true;
+  bool missing = false;
+  bool failRefresh = false;
+  String status = 'ready_to_confirm';
+  Completer<FundingSessionSummary>? quoteResponse;
+  int refreshCalls = 0;
+  int planCalls = 0;
+  int planReads = 0;
+
+  FundingSessionSummary get _session => FundingSessionSummary(
+    sessionId: 'capacity-session',
+    status: status,
+    version: 1,
+    canConfirmTransfer: true,
+    expiresAt: DateTime.utc(2027),
+    minimumReceived: '19.5',
+    allocations: {'usdc': amounts.last},
+    positions: missing
+        ? const []
+        : [_transferPosition(available: available, eligible: eligible)],
+  );
+
+  @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async {
+    amounts.add(amount);
+    if (quoteResponse case final response?) return response.future;
+    return _session;
+  }
+
+  @override
+  Future<FundingSessionSummary> getFundingSession(String id) async {
+    refreshCalls++;
+    if (failRefresh) throw const NetworkFailure(retryable: false);
+    return _session;
+  }
+
+  FundingPlan get _plan => FundingPlan(
+    planId: 'capacity-plan',
+    tradePreviewId: '',
+    shortfall: DecimalValue('20'),
+    status: FundingPlanState.executing,
+  );
+
+  @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async {
+    planCalls++;
+    return _plan;
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async {
+    planReads++;
+    return _plan;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _RejectedTransferRepository implements FundingRepository {
@@ -827,6 +1266,7 @@ final class _RejectedTransferRepository implements FundingRepository {
     targetToken: 'USDC',
     targetNetwork: 'Hyperliquid',
     allocations: const {'usdc': '10'},
+    positions: [_transferPosition()],
   );
 
   @override
@@ -924,6 +1364,7 @@ final class _RefreshingTransferQuoteRepository implements FundingRepository {
     targetToken: 'USDC',
     targetNetwork: 'Hyperliquid',
     allocations: allocations,
+    positions: [_transferPosition()],
     fees: bridgeFee == null || networkFee == null || totalFee == null
         ? null
         : FundingSessionFees(
@@ -995,6 +1436,7 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
     targetToken: 'USDC',
     targetNetwork: 'Hyperliquid',
     allocations: allocations,
+    positions: [_transferPosition()],
     crossLiquidationImpacts: crossLiquidationImpacts,
     fees: bridgeFee == null || networkFee == null || totalFee == null
         ? null

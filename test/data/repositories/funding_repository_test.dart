@@ -38,6 +38,10 @@ void main() {
       expect(session.remainingMinimumTopUp, '5');
       expect(session.targetToken, 'USDC-PERPS');
       expect(session.targetNetwork, 'Hyperliquid');
+      expect(session.positions.single.availableAmount.value, '20');
+      expect(session.positions.single.eligible, isTrue);
+      expect(session.positions.single.canAllocate('20'), isTrue);
+      expect(session.positions.single.canAllocate('21'), isFalse);
       expect(session.crossLiquidationImpacts.single.productId, 'xyz:BTC');
       expect(session.crossLiquidationImpacts.single.side, TradingSide.long);
       expect(session.crossLiquidationImpacts.single.markPrice?.value, '1000');
@@ -47,6 +51,35 @@ void main() {
       );
     },
   );
+
+  test('net funding capacity preserves total account valuation', () async {
+    final account = await FundingRepositoryImpl(_MappedSessionFunding())
+        .getUnifiedFundingAccount();
+
+    expect(account.totalUsd.value, '100');
+    expect(account.availableToFundUsd.value, '20');
+    expect(account.reservedUsd.value, '80');
+    expect(account.inTransitUsd.value, '0');
+    expect(account.positions.single.availableAmount.value, '20');
+    expect(account.positions.single.canAllocate('20'), isTrue);
+  });
+
+  test('account and session preserve ineligible source capacity', () async {
+    final repository = FundingRepositoryImpl(
+      _MappedSessionFunding(eligible: false),
+    );
+    final account = await repository.getUnifiedFundingAccount();
+    final session = await repository.getFundingSession('session-1');
+
+    for (final position in [
+      account.positions.single,
+      session.positions.single,
+    ]) {
+      expect(position.availableAmount.value, '20');
+      expect(position.eligible, isFalse);
+      expect(position.canAllocate('1'), isFalse);
+    }
+  });
 
   test('funding session wraps the order draft in the trade variant', () async {
     final service = _CaptureFunding();
@@ -350,14 +383,67 @@ final class _DepositFunding implements FundingService {
 }
 
 final class _MappedSessionFunding implements FundingService {
+  _MappedSessionFunding({this.eligible = true});
+  final bool eligible;
+
   @override
-  Future<api.FundingSession> getFundingSession(String id) async => api
+  Future<api.UnifiedFundingAccount> getUnifiedFundingAccount() async => api
       .standardSerializers
-      .deserializeWith(api.FundingSession.serializer, _fundingSessionBody(id))!;
+      .deserializeWith(api.UnifiedFundingAccount.serializer, {
+        'account_id': 'account-1',
+        'valuation_currency': 'USD',
+        'valued_total_usd': '100',
+        'available_to_fund_value_usd': '20',
+        'reserved_value_usd': '80',
+        'in_transit_value_usd': '0',
+        'unavailable_value_usd': '0',
+        'unvalued_position_count': 0,
+        'positions': [_fundingPositionBody(eligible: eligible)],
+        'transfers': <Object?>[],
+        'data_status': 'complete',
+        'blockers': <Object?>[],
+        'calculated_at': '2026-09-28T08:27:18.098Z',
+      })!;
+
+  @override
+  Future<api.FundingSession> getFundingSession(String id) async =>
+      api.standardSerializers.deserializeWith(api.FundingSession.serializer, {
+        ..._fundingSessionBody(id),
+        'positions': [_fundingPositionBody(eligible: eligible)],
+      })!;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+Map<String, Object?> _fundingPositionBody({required bool eligible}) => {
+  'position_id': 'position-1',
+  'custody': 'embedded_wallet',
+  'wallet_id': 'wallet-1',
+  'wallet_address': '0x1111111111111111111111111111111111111111',
+  'asset': {
+    'asset_id': 'eip155:56/erc20:0x1111111111111111111111111111111111111111',
+    'namespace': 'eip155',
+    'network': 'BSC',
+    'chain_id': 56,
+    'token': 'USDC',
+    'token_contract': '0x1111111111111111111111111111111111111111',
+    'token_decimals': 18,
+    'provenance': 'wallet_rpc',
+  },
+  'total_amount': '100',
+  'available_amount': '20',
+  'reserved_amount': '80',
+  'in_transit_amount': '0',
+  'value_usd': '100',
+  'freshness': 'live',
+  'eligibility': {
+    'status': eligible ? 'eligible' : 'ineligible',
+    'blockers': <Object?>[],
+  },
+  'observed_at': '2026-09-28T08:27:18.098Z',
+  'valid_until': '2026-09-28T08:28:18.098Z',
+};
 
 Map<String, Object?> _fundingSessionBody(String id) => {
   'funding_session_id': id,

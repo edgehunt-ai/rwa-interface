@@ -102,23 +102,22 @@ final class FundingRepositoryImpl implements FundingRepository {
       ),
       dataStatus: value.dataStatus.name,
       calculatedAt: value.calculatedAt.toUtc(),
-      positions: value.positions
-          .map(
-            (position) => FundingSourcePosition(
-              positionId: position.positionId,
-              token: position.asset.token,
-              network: position.asset.network,
-              availableAmount: DecimalValue(
-                position.availableAmount,
-                asset: position.asset.token,
-                unit: 'token',
-              ),
-              eligible: position.eligibility.status.name == 'eligible',
-            ),
-          )
-          .toList(growable: false),
+      positions: value.positions.map(_sourcePosition).toList(growable: false),
     );
   }
+
+  FundingSourcePosition _sourcePosition(api.UnifiedFundingPosition position) =>
+      FundingSourcePosition(
+        positionId: position.positionId,
+        token: position.asset.token,
+        network: position.asset.network,
+        availableAmount: DecimalValue(
+          position.availableAmount,
+          asset: position.asset.token,
+          unit: 'token',
+        ),
+        eligible: position.eligibility.status.name == 'eligible',
+      );
 
   @override
   Future<FundingSessionSummary> getFundingSession(String id) async {
@@ -237,6 +236,7 @@ final class FundingRepositoryImpl implements FundingRepository {
           for (final allocation in value.allocations)
             allocation.sourcePositionId: allocation.inputAmount,
         },
+        positions: value.positions.map(_sourcePosition).toList(growable: false),
         crossLiquidationImpacts: List.unmodifiable(
           value.riskPreview?.crossLiquidationImpacts.map(_fundingImpact) ??
               const <Hip3CrossLiquidationImpact>[],

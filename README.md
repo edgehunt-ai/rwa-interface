@@ -151,6 +151,17 @@ Preparation reads fresh availability before creating an intent; execution still
 uses the server's immutable transaction. Regenerate the client when updating the
 contract submodule; older BSC responses without availability must not enable Max.
 
+### Transfer availability
+
+The Spot-to-Perps transfer form uses eligible `available_amount` from the funding
+account and refreshed session positions. Exact decimal inputs above that amount
+do not request a quote or enable confirmation. Reduced, missing, ineligible or
+failed capacity refreshes invalidate an editable quote; submitted transfers keep
+their existing progress polling. Total portfolio value is not rewritten or
+subtracted again in the client. The backend retains raw balances separately for
+its transactional reservation check, so funds are deducted once.
+
+
 
 ## Repository Layout
 
