@@ -223,8 +223,8 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     final totalQuantity = order.quantity?.value ?? conditional?.quantity ?? '—';
     final filledQuantity = order.filledQuantity?.value ?? '0';
     final price =
-        order.limitPrice?.value ??
         conditional?.triggerPrice.value ??
+        order.limitPrice?.value ??
         l10n.market;
     final hasProtectionException =
         conditional != null &&

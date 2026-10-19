@@ -630,18 +630,18 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _error = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
-          ? (withdrawal.failureReason ??
-                AppLocalizations.of(context).transferFailed)
+          ? errorMessage(
+              withdrawal.failureReason ?? '',
+              fallback: AppLocalizations.of(context).transferFailed,
+            )
           : null;
     });
-    if (withdrawal.isPending &&
-        !withdrawal.requiresManualReview &&
-        _withdrawalRefresh == null) {
+    if (withdrawal.isPending && _withdrawalRefresh == null) {
       _withdrawalRefresh = Timer.periodic(
         const Duration(seconds: 3),
         (_) => unawaited(_pollWithdrawal()),
       );
-    } else if (!withdrawal.isPending || withdrawal.requiresManualReview) {
+    } else if (!withdrawal.isPending) {
       _withdrawalRefresh?.cancel();
       _withdrawalRefresh = null;
     }
@@ -957,11 +957,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _SectionLabel(
-                          _quoting || _quote?.estimatedReceived != null
-                              ? l10n.estimatedReceived
-                              : l10n.minimumReceived,
-                        ),
+                        _SectionLabel(l10n.receiveAmount),
                         options.when(
                           data: (value) {
                             final target = value.catalog?.transferTarget;
@@ -1052,15 +1048,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                 .extension<AppSemanticColors>()!
                                 .success,
                           ),
-                        ),
-                      ],
-                      if (_withdrawal?.requiresManualReview == true) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          key: const Key('transfer-withdrawal-refresh'),
-                          onPressed: _pollWithdrawal,
-                          icon: const Icon(Icons.refresh),
-                          label: Text(l10n.hip3PendingCheck),
                         ),
                       ],
                       if (_transferPending) ...[
@@ -1894,6 +1881,7 @@ class _ReceiveAmountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
+      key: const Key('transfer-receive-amount-card'),
       constraints: const BoxConstraints(minHeight: 59),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
@@ -1943,7 +1931,7 @@ class _ReceiveAmountCard extends StatelessWidget {
               radius: 4,
             )
           else
-            Flexible(
+            Expanded(
               child: AnimatedNumberText(
                 TokenAmountFormatter.formatText(value),
                 key: const Key('transfer-receive-amount-value'),
@@ -1986,19 +1974,15 @@ class _FeeSummary extends StatelessWidget {
             loading: loading,
             skeletonKey: const Key('transfer-quote-eta-skeleton'),
           ),
-          if (quote?.estimatedReceived != null || loading) ...[
-            const SizedBox(height: 8),
-            _FeeRow(
-              AppLocalizations.of(context).minimumReceived,
-              _formatAmount(quote?.minimumReceived, quote?.targetToken),
-              valueKey: const Key('transfer-minimum-received-value'),
-              comparisonValue: quote?.minimumReceived,
-              loading: loading,
-              skeletonKey: const Key(
-                'transfer-quote-minimum-received-skeleton',
-              ),
-            ),
-          ],
+          const SizedBox(height: 8),
+          _FeeRow(
+            AppLocalizations.of(context).minimumReceived,
+            _formatAmount(quote?.minimumReceived, quote?.targetToken),
+            valueKey: const Key('transfer-minimum-received-value'),
+            comparisonValue: quote?.minimumReceived,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-minimum-received-skeleton'),
+          ),
           const SizedBox(height: 8),
           _FeeRow(
             AppLocalizations.of(context).slippageTolerance,

@@ -154,6 +154,32 @@ void main() {
       isNull,
     );
   });
+  for (final conditional in [true, false]) {
+    testWidgets(
+      'open order price prefers ${conditional ? 'conditional trigger' : 'limit'} price',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: buildTestApp(
+              Hip3OpenOrderCard(
+                order: _order(
+                  'price-priority',
+                  conditional: conditional,
+                  executionType: 'limit',
+                  limitPrice: '125',
+                ),
+                onChanged: () {},
+              ),
+            ),
+          ),
+        );
+        expect(find.text(conditional ? '130' : '125'), findsOneWidget);
+        expect(find.text(conditional ? '125' : '130'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('parent omits the cancellation protection warning', (
     tester,
   ) async {
@@ -2670,6 +2696,7 @@ TradingOrder _order(
   TradingSide side = TradingSide.long,
   TakeProfitStopLoss? tpSl,
   String executionType = 'market',
+  String limitPrice = '130',
   String activationStatus = 'unknown',
   String? warningCode,
   TradingOrderStatus status = TradingOrderStatus.open,
@@ -2685,7 +2712,7 @@ TradingOrder _order(
   status: status,
   createdAt: DateTime.utc(2026),
   quantity: DecimalValue('1'),
-  limitPrice: executionType == 'limit' ? DecimalValue('130') : null,
+  limitPrice: executionType == 'limit' ? DecimalValue(limitPrice) : null,
   filledQuantity: DecimalValue(conditional ? '0.25' : '0'),
   conditional: conditional
       ? ConditionalOrder(
