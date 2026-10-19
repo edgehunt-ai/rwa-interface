@@ -30,7 +30,7 @@ class TransferAccountPair extends StatelessWidget {
       required bool isSpot,
     }) => Expanded(
       child: Container(
-        height: 78,
+        constraints: const BoxConstraints(minHeight: 78),
         padding: EdgeInsets.fromLTRB(receiveSide ? 28 : 12, 12, 12, 12),
         decoration: BoxDecoration(
           color: colors.surface,
@@ -41,31 +41,32 @@ class TransferAccountPair extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 16,
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(color: colors.secondaryText),
-              ),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: colors.secondaryText),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 24,
-              child: Row(
-                children: [
-                  SizedBox.square(
-                    dimension: 24,
-                    child: SvgPicture.asset(
-                      isSpot
-                          ? 'assets/figma/funding/venue_bnb_chain_24.svg'
-                          : 'assets/figma/home_markets/venue_hyperliquid.svg',
-                    ),
+            Row(
+              children: [
+                SizedBox.square(
+                  dimension: 24,
+                  child: SvgPicture.asset(
+                    isSpot
+                        ? 'assets/figma/funding/venue_bnb_chain_24.svg'
+                        : 'assets/figma/home_markets/venue_hyperliquid.svg',
                   ),
-                  const SizedBox(width: 4),
-                  Text(value, style: Theme.of(context).textTheme.titleMedium),
-                ],
-              ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

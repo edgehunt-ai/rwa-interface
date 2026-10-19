@@ -119,7 +119,7 @@ void main() {
     expect(find.byKey(const Key('transfer-token-chevron')), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
-    expect(find.text('-'), findsNWidgets(4));
+    expect(find.text('-'), findsNWidgets(7));
     expect(find.text('--'), findsNothing);
     expect(find.text('Sign & Transfer'), findsOneWidget);
     expect(
@@ -585,6 +585,10 @@ void main() {
     tester,
   ) async {
     final funding = _PendingTransferQuoteRepository();
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -614,6 +618,11 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.light,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.4)),
+            child: child!,
+          ),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const TransferScreen(),
@@ -629,13 +638,21 @@ void main() {
 
     expect(find.byKey(const Key('transfer-loading-skeleton')), findsNothing);
     expect(find.text('Estimate time'), findsOneWidget);
+    expect(find.text('Minimum received'), findsOneWidget);
+    expect(find.text('Slippage tolerance'), findsOneWidget);
+    expect(find.text('Provider fee'), findsOneWidget);
     expect(find.text('Bridge Fee'), findsOneWidget);
+    expect(find.text('Swap cost'), findsOneWidget);
     expect(find.text('Network fee'), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
     for (final key in const [
       Key('transfer-receive-amount-skeleton'),
       Key('transfer-quote-eta-skeleton'),
+      Key('transfer-quote-minimum-received-skeleton'),
+      Key('transfer-quote-slippage-skeleton'),
+      Key('transfer-quote-provider-fee-skeleton'),
       Key('transfer-quote-bridge-fee-skeleton'),
+      Key('transfer-quote-swap-fee-skeleton'),
       Key('transfer-quote-network-fee-skeleton'),
       Key('transfer-quote-total-fee-skeleton'),
     ]) {
@@ -650,7 +667,15 @@ void main() {
       find.byKey(const Key('transfer-quote-total-fee-skeleton')),
       findsNothing,
     );
-    expect(find.text('0.3 USDC'), findsOneWidget);
+    expect(find.text('Estimated received'), findsOneWidget);
+    expect(find.text('123,456,789.123456'), findsOneWidget);
+    expect(find.text('123,456,789.000001 USDC'), findsOneWidget);
+    expect(find.text('1.25%'), findsOneWidget);
+    expect(find.text('0.05 USD'), findsNWidgets(2));
+    expect(find.text('0.1 USD'), findsOneWidget);
+    expect(find.text('0.2 USD'), findsOneWidget);
+    expect(find.text('0.4 USD'), findsOneWidget);
+    expect(tester.takeException(), isNull);
     expect(
       find.byKey(const Key('hip3-cross-liquidation-impacts')),
       findsOneWidget,
@@ -720,8 +745,17 @@ void main() {
     );
     expect(
       tester.widget<AnimatedNumberText>(find.byKey(totalKey)).value,
-      '0.3 USDC',
+      '0.3 USD',
     );
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-slippage-value')),
+          )
+          .value,
+      '-',
+    );
+    expect(find.text('0%'), findsNothing);
 
     await tester.pump(const Duration(seconds: 5));
     expect(funding.refreshCalls, 1);
@@ -749,7 +783,7 @@ void main() {
     );
     expect(
       tester.widget<AnimatedNumberText>(find.byKey(totalKey)).value,
-      '0.4 USDC',
+      '0.4 USD',
     );
     await tester.pumpWidget(const SizedBox());
   });
@@ -806,11 +840,13 @@ void main() {
     await tester.enterText(find.byType(TextField), '10');
     await tester.pump(const Duration(milliseconds: 501));
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign & Transfer'));
+    final action = find.widgetWithText(FilledButton, 'Sign & Transfer');
+    await tester.ensureVisible(action);
+    await tester.pumpAndSettle();
+    await tester.tap(action);
     await tester.pumpAndSettle();
 
     final error = find.byKey(const Key('transfer-error'));
-    final action = find.widgetWithText(FilledButton, 'Sign & Transfer');
     expect(error, findsOneWidget);
     expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
   });
@@ -1368,10 +1404,13 @@ final class _RefreshingTransferQuoteRepository implements FundingRepository {
     fees: bridgeFee == null || networkFee == null || totalFee == null
         ? null
         : FundingSessionFees(
-            asset: 'USDC',
+            asset: 'USD',
+            providerFee: '0',
             bridgeFee: bridgeFee,
+            swapFee: '0',
             networkFee: networkFee,
             totalFee: totalFee,
+            totalCostUsd: totalFee,
           ),
   );
 
@@ -1385,10 +1424,15 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
   void completeQuote() => _quote.complete(
     _session(
       version: 2,
-      minimumReceived: '9.7',
+      estimatedReceived: '123456789.123456',
+      minimumReceived: '123456789.000001',
+      slippageBps: 125,
+      providerFee: '0.05',
       bridgeFee: '0.1',
+      swapFee: '0.05',
       networkFee: '0.2',
-      totalFee: '0.3',
+      totalFee: '0.4',
+      totalCostUsd: '0.35',
       allocations: const {'usdc': '10'},
       crossLiquidationImpacts: [
         Hip3CrossLiquidationImpact(
@@ -1420,10 +1464,15 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
 
   FundingSessionSummary _session({
     required int version,
+    String? estimatedReceived,
     String? minimumReceived,
+    int? slippageBps,
+    String? providerFee,
     String? bridgeFee,
+    String? swapFee,
     String? networkFee,
     String? totalFee,
+    String? totalCostUsd,
     Map<String, String> allocations = const {},
     List<Hip3CrossLiquidationImpact> crossLiquidationImpacts = const [],
   }) => FundingSessionSummary(
@@ -1432,7 +1481,9 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
     version: version,
     canConfirmTransfer: true,
     expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    estimatedReceived: estimatedReceived,
     minimumReceived: minimumReceived,
+    slippageBps: slippageBps,
     targetToken: 'USDC',
     targetNetwork: 'Hyperliquid',
     allocations: allocations,
@@ -1441,10 +1492,13 @@ final class _PendingTransferQuoteRepository implements FundingRepository {
     fees: bridgeFee == null || networkFee == null || totalFee == null
         ? null
         : FundingSessionFees(
-            asset: 'USDC',
+            asset: 'USD',
+            providerFee: providerFee ?? '0',
             bridgeFee: bridgeFee,
+            swapFee: swapFee ?? '0',
             networkFee: networkFee,
             totalFee: totalFee,
+            totalCostUsd: totalCostUsd ?? totalFee,
           ),
   );
 

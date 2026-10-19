@@ -932,7 +932,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _SectionLabel(l10n.receiveAmount),
+                        _SectionLabel(
+                          _quoting || _quote?.estimatedReceived != null
+                              ? l10n.estimatedReceived
+                              : l10n.minimumReceived,
+                        ),
                         options.when(
                           data: (value) {
                             final target = value.catalog?.transferTarget;
@@ -945,7 +949,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                             return _ReceiveAmountCard(
                               asset: asset,
                               network: network,
-                              value: _quote?.minimumReceived ?? '',
+                              value:
+                                  _quote?.estimatedReceived ??
+                                  _quote?.minimumReceived ??
+                                  '',
                               loading: _quoting,
                             );
                           },
@@ -1274,8 +1281,8 @@ class _AssetAmountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return SizedBox(
-      height: 64,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 64),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -1854,7 +1861,7 @@ class _ReceiveAmountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
-      height: 59,
+      constraints: const BoxConstraints(minHeight: 59),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
         color: colors.surface,
@@ -1903,13 +1910,17 @@ class _ReceiveAmountCard extends StatelessWidget {
               radius: 4,
             )
           else
-            AnimatedNumberText(
-              TokenAmountFormatter.formatText(value),
-              key: const Key('transfer-receive-amount-value'),
-              style: const TextStyle(
-                fontSize: 15,
-                height: 22 / 15,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: AnimatedNumberText(
+                TokenAmountFormatter.formatText(value),
+                key: const Key('transfer-receive-amount-value'),
+                textAlign: TextAlign.end,
+                softWrap: true,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 22 / 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
         ],
@@ -1942,6 +1953,37 @@ class _FeeSummary extends StatelessWidget {
             loading: loading,
             skeletonKey: const Key('transfer-quote-eta-skeleton'),
           ),
+          if (quote?.estimatedReceived != null || loading) ...[
+            const SizedBox(height: 8),
+            _FeeRow(
+              AppLocalizations.of(context).minimumReceived,
+              _formatAmount(quote?.minimumReceived, quote?.targetToken),
+              valueKey: const Key('transfer-minimum-received-value'),
+              comparisonValue: quote?.minimumReceived,
+              loading: loading,
+              skeletonKey: const Key(
+                'transfer-quote-minimum-received-skeleton',
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          _FeeRow(
+            AppLocalizations.of(context).slippageTolerance,
+            _formatSlippage(quote?.slippageBps),
+            valueKey: const Key('transfer-slippage-value'),
+            comparisonValue: quote?.slippageBps?.toString(),
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-slippage-skeleton'),
+          ),
+          const SizedBox(height: 8),
+          _FeeRow(
+            AppLocalizations.of(context).providerFee,
+            _formatFee(fees?.providerFee, fees?.asset),
+            valueKey: const Key('transfer-provider-fee-value'),
+            comparisonValue: fees?.providerFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-provider-fee-skeleton'),
+          ),
           const SizedBox(height: 8),
           _FeeRow(
             AppLocalizations.of(context).bridgeFee,
@@ -1950,6 +1992,15 @@ class _FeeSummary extends StatelessWidget {
             comparisonValue: fees?.bridgeFee,
             loading: loading,
             skeletonKey: const Key('transfer-quote-bridge-fee-skeleton'),
+          ),
+          const SizedBox(height: 8),
+          _FeeRow(
+            AppLocalizations.of(context).swapFee,
+            _formatFee(fees?.swapFee, fees?.asset),
+            valueKey: const Key('transfer-swap-fee-value'),
+            comparisonValue: fees?.swapFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-swap-fee-skeleton'),
           ),
           const SizedBox(height: 8),
           _FeeRow(
@@ -1985,6 +2036,20 @@ class _FeeSummary extends StatelessWidget {
     if (amount == null || asset == null) return '-';
     return '${TokenAmountFormatter.formatText(amount)} $asset';
   }
+
+  static String _formatAmount(String? amount, String? asset) =>
+      _formatFee(amount, asset);
+
+  static String _formatSlippage(int? basisPoints) {
+    if (basisPoints == null) return '-';
+    final whole = basisPoints ~/ 100;
+    final remainder = basisPoints % 100;
+    if (remainder == 0) return '$whole%';
+    final decimals = remainder % 10 == 0
+        ? '${remainder ~/ 10}'
+        : remainder.toString().padLeft(2, '0');
+    return '$whole.$decimals%';
+  }
 }
 
 class _FeeRow extends StatelessWidget {
@@ -2010,35 +2075,45 @@ class _FeeRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            height: 18 / 13,
-            fontWeight: FontWeight.w500,
-            color: colors.secondaryText,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: FontWeight.w500,
+              color: colors.secondaryText,
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         if (loading)
           SkeletonBlock(key: skeletonKey, width: 56, height: 14, radius: 4)
         else if (valueKey == null)
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              height: 18 / 13,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 18 / 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           )
         else
-          AnimatedNumberText(
-            value,
-            key: valueKey,
-            comparisonValue: comparisonValue,
-            style: const TextStyle(
-              fontSize: 13,
-              height: 18 / 13,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: AnimatedNumberText(
+              value,
+              key: valueKey,
+              comparisonValue: comparisonValue,
+              textAlign: TextAlign.end,
+              softWrap: true,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 18 / 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
       ],

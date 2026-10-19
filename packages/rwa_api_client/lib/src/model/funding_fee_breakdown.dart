@@ -8,59 +8,67 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_fee_breakdown.g.dart';
 
-/// FundingFeeBreakdown
+/// Normalized quote-cost breakdown. `provider_fee`, `bridge_fee`, `swap_fee`, and `network_fee` are component costs expressed in `fee_asset`; current funding Providers normalize these components to USD. `swap_fee` is the quoted currency conversion price-impact cost, not necessarily a separately charged fee. `total_fee` is the gross sum of the components. `total_cost_usd` is the net normalized comparison cost after favorable signed price improvement is credited and the result is floored at zero, so it may be less than `total_fee`. Components explain the quote and must not be deducted again from `minimum_received`.
 ///
 /// Properties:
-/// * [feeAsset] 
-/// * [providerFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [bridgeFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [swapFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [networkFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [totalFee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [totalCostUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [feeAsset] - Unit used by the component and total fee fields; current funding Providers return USD.
+/// * [providerFee] - Provider cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
+/// * [bridgeFee] - Bridge cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
+/// * [swapFee] - Currency-conversion price-impact cost normalized to `fee_asset`, not necessarily a separately charged fee; do not deduct it again.
+/// * [networkFee] - Network cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
+/// * [totalFee] - Gross sum of the component costs in `fee_asset`; informational and already reflected in the quote.
+/// * [totalCostUsd] - Net USD-normalized comparison cost for route ranking and audit after favorable signed price improvement is credited and the result is floored at zero; it may be less than the gross total_fee and must not be reconstructed by summing or deducted in addition to the component costs.
 @BuiltValue()
-abstract class FundingFeeBreakdown implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
+abstract class FundingFeeBreakdown
+    implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
+  /// Unit used by the component and total fee fields; current funding Providers return USD.
   @BuiltValueField(wireName: r'fee_asset')
   String get feeAsset;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Provider cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
   @BuiltValueField(wireName: r'provider_fee')
   String get providerFee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Bridge cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
   @BuiltValueField(wireName: r'bridge_fee')
   String get bridgeFee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Currency-conversion price-impact cost normalized to `fee_asset`, not necessarily a separately charged fee; do not deduct it again.
   @BuiltValueField(wireName: r'swap_fee')
   String get swapFee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Network cost normalized to `fee_asset`; already reflected in the quote and not deducted again.
   @BuiltValueField(wireName: r'network_fee')
   String get networkFee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Gross sum of the component costs in `fee_asset`; informational and already reflected in the quote.
   @BuiltValueField(wireName: r'total_fee')
   String get totalFee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Net USD-normalized comparison cost for route ranking and audit after favorable signed price improvement is credited and the result is floored at zero; it may be less than the gross total_fee and must not be reconstructed by summing or deducted in addition to the component costs.
   @BuiltValueField(wireName: r'total_cost_usd')
   String get totalCostUsd;
 
   FundingFeeBreakdown._();
 
-  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) = _$FundingFeeBreakdown;
+  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) =
+      _$FundingFeeBreakdown;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingFeeBreakdownBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingFeeBreakdown> get serializer => _$FundingFeeBreakdownSerializer();
+  static Serializer<FundingFeeBreakdown> get serializer =>
+      _$FundingFeeBreakdownSerializer();
 }
 
-class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeBreakdown> {
+class _$FundingFeeBreakdownSerializer
+    implements PrimitiveSerializer<FundingFeeBreakdown> {
   @override
-  final Iterable<Type> types = const [FundingFeeBreakdown, _$FundingFeeBreakdown];
+  final Iterable<Type> types = const [
+    FundingFeeBreakdown,
+    _$FundingFeeBreakdown
+  ];
 
   @override
   final String wireName = r'FundingFeeBreakdown';
@@ -113,7 +121,9 @@ class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeB
     FundingFeeBreakdown object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -205,4 +215,3 @@ class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeB
     return result.build();
   }
 }
-

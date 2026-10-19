@@ -12,7 +12,9 @@ final class FundingSessionSummary {
     this.targetAvailableAmount,
     this.remainingMinimumTopUp,
     this.selectedTargetAmount,
+    this.estimatedReceived,
     this.minimumReceived,
+    this.slippageBps,
     this.fees,
     this.etaSeconds,
     this.targetToken,
@@ -30,7 +32,9 @@ final class FundingSessionSummary {
   final String? targetAvailableAmount;
   final String? remainingMinimumTopUp;
   final String? selectedTargetAmount;
+  final String? estimatedReceived;
   final String? minimumReceived;
+  final int? slippageBps;
   final FundingSessionFees? fees;
   final int? etaSeconds;
   final String? targetToken;
@@ -43,13 +47,19 @@ final class FundingSessionSummary {
 final class FundingSessionFees {
   const FundingSessionFees({
     required this.asset,
+    required this.providerFee,
     required this.bridgeFee,
+    required this.swapFee,
     required this.networkFee,
     required this.totalFee,
+    required this.totalCostUsd,
   });
 
   final String asset;
+  final String providerFee;
   final String bridgeFee;
+  final String swapFee;
   final String networkFee;
   final String totalFee;
+  final String totalCostUsd;
 }

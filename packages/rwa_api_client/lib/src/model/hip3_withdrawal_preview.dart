@@ -15,28 +15,30 @@ part 'hip3_withdrawal_preview.g.dart';
 /// Hip3WithdrawalPreview
 ///
 /// Properties:
-/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [fee] - 用户承担并从 amount 中扣除的 USDC 总费用；不包含平台承担的 ETH Gas。到账金额为 amount - fee，明细不能再重复扣费。
-/// * [minimumReceived] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [rail] 
-/// * [destinationAddress] 
-/// * [chainId] - 自有 Arbitrum 钱包所在链，主网 42161 / 测试网 421614。
-/// * [maximumTransferable] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [blockers] 
+/// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [fee] - amount 与 minimum_received 的 USDC 差额；Relay exact-input 包含报价费用及滑点保留，是保守最大扣减，不表示实际已收费。不包含平台承担的ETH Gas，明细不能再重复扣费。
+/// * [minimumReceived] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [rail]
+/// * [destinationAddress]
+/// * [chainId] - 冻结的到账链，Arbitrum主网42161 / 测试网421614；旧版BSC USDT relay为56。创建时必须回传此目标链，不能用Hyperliquid签名链代替。
+/// * [payoutAsset] - 冻结的到账资产；Arbitrum为USDC（测试网Bridge2对应USDC2代币），BSC relay为USDT。旧版响应可省略；创建后仍须核对payout_chain_id和payout_asset。
+/// * [maximumTransferable] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [blockers]
 /// * [estimatedArrivalSeconds] - 从成功提交算起的静态展示预估秒数；当前 float 暂定为 120、bridge2 为 300（官方 withdraw3 约 5 分钟）。不包含用户签名等待；不是实测延迟、截止时间或 SLA，拥堵和资金池异常可能延长到账时间。
 /// * [feeDetails] - 按实际通道返回的费用解释。float 返回用户 USDC 提现费 0 和平台承担的 ETH 网络费（未知金额为 null）；bridge2 仅返回用户承担的官方桥提现费，不拆分、不重复增加网络费。仅 user/USDC 项计入 fee，不能跨币种求和。
-/// * [riskPreview] 
+/// * [riskPreview]
 @BuiltValue()
-abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip3WithdrawalPreviewBuilder> {
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+abstract class Hip3WithdrawalPreview
+    implements Built<Hip3WithdrawalPreview, Hip3WithdrawalPreviewBuilder> {
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 用户承担并从 amount 中扣除的 USDC 总费用；不包含平台承担的 ETH Gas。到账金额为 amount - fee，明细不能再重复扣费。
+  /// amount 与 minimum_received 的 USDC 差额；Relay exact-input 包含报价费用及滑点保留，是保守最大扣减，不表示实际已收费。不包含平台承担的ETH Gas，明细不能再重复扣费。
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
@@ -47,11 +49,16 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
   @BuiltValueField(wireName: r'destination_address')
   String get destinationAddress;
 
-  /// 自有 Arbitrum 钱包所在链，主网 42161 / 测试网 421614。
+  /// 冻结的到账链，Arbitrum主网42161 / 测试网421614；旧版BSC USDT relay为56。创建时必须回传此目标链，不能用Hyperliquid签名链代替。
   @BuiltValueField(wireName: r'chain_id')
   String get chainId;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 冻结的到账资产；Arbitrum为USDC（测试网Bridge2对应USDC2代币），BSC relay为USDT。旧版响应可省略；创建后仍须核对payout_chain_id和payout_asset。
+  @BuiltValueField(wireName: r'payout_asset')
+  Hip3WithdrawalPreviewPayoutAssetEnum? get payoutAsset;
+  // enum payoutAssetEnum {  USDC,  USDT,  };
+
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'maximum_transferable')
   String get maximumTransferable;
 
@@ -72,18 +79,24 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
 
   Hip3WithdrawalPreview._();
 
-  factory Hip3WithdrawalPreview([void updates(Hip3WithdrawalPreviewBuilder b)]) = _$Hip3WithdrawalPreview;
+  factory Hip3WithdrawalPreview(
+      [void updates(Hip3WithdrawalPreviewBuilder b)]) = _$Hip3WithdrawalPreview;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3WithdrawalPreviewBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3WithdrawalPreview> get serializer => _$Hip3WithdrawalPreviewSerializer();
+  static Serializer<Hip3WithdrawalPreview> get serializer =>
+      _$Hip3WithdrawalPreviewSerializer();
 }
 
-class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3WithdrawalPreview> {
+class _$Hip3WithdrawalPreviewSerializer
+    implements PrimitiveSerializer<Hip3WithdrawalPreview> {
   @override
-  final Iterable<Type> types = const [Hip3WithdrawalPreview, _$Hip3WithdrawalPreview];
+  final Iterable<Type> types = const [
+    Hip3WithdrawalPreview,
+    _$Hip3WithdrawalPreview
+  ];
 
   @override
   final String wireName = r'Hip3WithdrawalPreview';
@@ -123,6 +136,13 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
       object.chainId,
       specifiedType: const FullType(String),
     );
+    if (object.payoutAsset != null) {
+      yield r'payout_asset';
+      yield serializers.serialize(
+        object.payoutAsset,
+        specifiedType: const FullType(Hip3WithdrawalPreviewPayoutAssetEnum),
+      );
+    }
     yield r'maximum_transferable';
     yield serializers.serialize(
       object.maximumTransferable,
@@ -131,7 +151,8 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
     yield r'blockers';
     yield serializers.serialize(
       object.blockers,
-      specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
+      specifiedType: const FullType(
+          BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
     );
     yield r'estimated_arrival_seconds';
     yield serializers.serialize(
@@ -141,7 +162,8 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
     yield r'fee_details';
     yield serializers.serialize(
       object.feeDetails,
-      specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
+      specifiedType:
+          const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
     );
     yield r'risk_preview';
     yield serializers.serialize(
@@ -156,7 +178,9 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
     Hip3WithdrawalPreview object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -213,6 +237,15 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
           ) as String;
           result.chainId = valueDes;
           break;
+        case r'payout_asset':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType.nullable(Hip3WithdrawalPreviewPayoutAssetEnum),
+          ) as Hip3WithdrawalPreviewPayoutAssetEnum?;
+          if (valueDes == null) continue;
+          result.payoutAsset = valueDes;
+          break;
         case r'maximum_transferable':
           final valueDes = serializers.deserialize(
             value,
@@ -223,7 +256,8 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
         case r'blockers':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
+            specifiedType: const FullType(
+                BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
           ) as BuiltList<Hip3WithdrawalPreviewBlockersEnum>;
           result.blockers.replace(valueDes);
           break;
@@ -237,7 +271,8 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
         case r'fee_details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
           ) as BuiltList<Hip3WithdrawalFeeDetail>;
           result.feeDetails.replace(valueDes);
           break;
@@ -277,16 +312,41 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
   }
 }
 
-class Hip3WithdrawalPreviewBlockersEnum extends EnumClass {
+class Hip3WithdrawalPreviewPayoutAssetEnum extends EnumClass {
+  /// 冻结的到账资产；Arbitrum为USDC（测试网Bridge2对应USDC2代币），BSC relay为USDT。旧版响应可省略；创建后仍须核对payout_chain_id和payout_asset。
+  @BuiltValueEnumConst(wireName: r'USDC')
+  static const Hip3WithdrawalPreviewPayoutAssetEnum USDC =
+      _$hip3WithdrawalPreviewPayoutAssetEnum_USDC;
 
-  @BuiltValueEnumConst(wireName: r'insufficient_withdrawable_balance')
-  static const Hip3WithdrawalPreviewBlockersEnum insufficientWithdrawableBalance = _$hip3WithdrawalPreviewBlockersEnum_insufficientWithdrawableBalance;
+  /// 冻结的到账资产；Arbitrum为USDC（测试网Bridge2对应USDC2代币），BSC relay为USDT。旧版响应可省略；创建后仍须核对payout_chain_id和payout_asset。
+  @BuiltValueEnumConst(wireName: r'USDT')
+  static const Hip3WithdrawalPreviewPayoutAssetEnum USDT =
+      _$hip3WithdrawalPreviewPayoutAssetEnum_USDT;
 
-  static Serializer<Hip3WithdrawalPreviewBlockersEnum> get serializer => _$hip3WithdrawalPreviewBlockersEnumSerializer;
+  static Serializer<Hip3WithdrawalPreviewPayoutAssetEnum> get serializer =>
+      _$hip3WithdrawalPreviewPayoutAssetEnumSerializer;
 
-  const Hip3WithdrawalPreviewBlockersEnum._(String name): super(name);
+  const Hip3WithdrawalPreviewPayoutAssetEnum._(String name) : super(name);
 
-  static BuiltSet<Hip3WithdrawalPreviewBlockersEnum> get values => _$hip3WithdrawalPreviewBlockersEnumValues;
-  static Hip3WithdrawalPreviewBlockersEnum valueOf(String name) => _$hip3WithdrawalPreviewBlockersEnumValueOf(name);
+  static BuiltSet<Hip3WithdrawalPreviewPayoutAssetEnum> get values =>
+      _$hip3WithdrawalPreviewPayoutAssetEnumValues;
+  static Hip3WithdrawalPreviewPayoutAssetEnum valueOf(String name) =>
+      _$hip3WithdrawalPreviewPayoutAssetEnumValueOf(name);
 }
 
+class Hip3WithdrawalPreviewBlockersEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'insufficient_withdrawable_balance')
+  static const Hip3WithdrawalPreviewBlockersEnum
+      insufficientWithdrawableBalance =
+      _$hip3WithdrawalPreviewBlockersEnum_insufficientWithdrawableBalance;
+
+  static Serializer<Hip3WithdrawalPreviewBlockersEnum> get serializer =>
+      _$hip3WithdrawalPreviewBlockersEnumSerializer;
+
+  const Hip3WithdrawalPreviewBlockersEnum._(String name) : super(name);
+
+  static BuiltSet<Hip3WithdrawalPreviewBlockersEnum> get values =>
+      _$hip3WithdrawalPreviewBlockersEnumValues;
+  static Hip3WithdrawalPreviewBlockersEnum valueOf(String name) =>
+      _$hip3WithdrawalPreviewBlockersEnumValueOf(name);
+}
