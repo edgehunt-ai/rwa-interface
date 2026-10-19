@@ -34,7 +34,11 @@ class _$FundingSession extends FundingSession {
   @override
   final String selectedTargetAmount;
   @override
+  final String? estimatedReceived;
+  @override
   final String minimumReceived;
+  @override
+  final int? slippageBps;
   @override
   final String maximumSelectableTargetAmount;
   @override
@@ -79,7 +83,9 @@ class _$FundingSession extends FundingSession {
       required this.recommendedTopUp,
       required this.safetyBufferBps,
       required this.selectedTargetAmount,
+      this.estimatedReceived,
       required this.minimumReceived,
+      this.slippageBps,
       required this.maximumSelectableTargetAmount,
       required this.totalSourceValueUsd,
       required this.estimatedFees,
@@ -118,7 +124,9 @@ class _$FundingSession extends FundingSession {
         recommendedTopUp == other.recommendedTopUp &&
         safetyBufferBps == other.safetyBufferBps &&
         selectedTargetAmount == other.selectedTargetAmount &&
+        estimatedReceived == other.estimatedReceived &&
         minimumReceived == other.minimumReceived &&
+        slippageBps == other.slippageBps &&
         maximumSelectableTargetAmount == other.maximumSelectableTargetAmount &&
         totalSourceValueUsd == other.totalSourceValueUsd &&
         estimatedFees == other.estimatedFees &&
@@ -150,7 +158,9 @@ class _$FundingSession extends FundingSession {
     _$hash = $jc(_$hash, recommendedTopUp.hashCode);
     _$hash = $jc(_$hash, safetyBufferBps.hashCode);
     _$hash = $jc(_$hash, selectedTargetAmount.hashCode);
+    _$hash = $jc(_$hash, estimatedReceived.hashCode);
     _$hash = $jc(_$hash, minimumReceived.hashCode);
+    _$hash = $jc(_$hash, slippageBps.hashCode);
     _$hash = $jc(_$hash, maximumSelectableTargetAmount.hashCode);
     _$hash = $jc(_$hash, totalSourceValueUsd.hashCode);
     _$hash = $jc(_$hash, estimatedFees.hashCode);
@@ -184,7 +194,9 @@ class _$FundingSession extends FundingSession {
           ..add('recommendedTopUp', recommendedTopUp)
           ..add('safetyBufferBps', safetyBufferBps)
           ..add('selectedTargetAmount', selectedTargetAmount)
+          ..add('estimatedReceived', estimatedReceived)
           ..add('minimumReceived', minimumReceived)
+          ..add('slippageBps', slippageBps)
           ..add('maximumSelectableTargetAmount', maximumSelectableTargetAmount)
           ..add('totalSourceValueUsd', totalSourceValueUsd)
           ..add('estimatedFees', estimatedFees)
@@ -270,10 +282,19 @@ class FundingSessionBuilder
   set selectedTargetAmount(String? selectedTargetAmount) =>
       _$this._selectedTargetAmount = selectedTargetAmount;
 
+  String? _estimatedReceived;
+  String? get estimatedReceived => _$this._estimatedReceived;
+  set estimatedReceived(String? estimatedReceived) =>
+      _$this._estimatedReceived = estimatedReceived;
+
   String? _minimumReceived;
   String? get minimumReceived => _$this._minimumReceived;
   set minimumReceived(String? minimumReceived) =>
       _$this._minimumReceived = minimumReceived;
+
+  int? _slippageBps;
+  int? get slippageBps => _$this._slippageBps;
+  set slippageBps(int? slippageBps) => _$this._slippageBps = slippageBps;
 
   String? _maximumSelectableTargetAmount;
   String? get maximumSelectableTargetAmount =>
@@ -364,7 +385,9 @@ class FundingSessionBuilder
       _recommendedTopUp = $v.recommendedTopUp;
       _safetyBufferBps = $v.safetyBufferBps;
       _selectedTargetAmount = $v.selectedTargetAmount;
+      _estimatedReceived = $v.estimatedReceived;
       _minimumReceived = $v.minimumReceived;
+      _slippageBps = $v.slippageBps;
       _maximumSelectableTargetAmount = $v.maximumSelectableTargetAmount;
       _totalSourceValueUsd = $v.totalSourceValueUsd;
       _estimatedFees = $v.estimatedFees.toBuilder();
@@ -427,8 +450,10 @@ class FundingSessionBuilder
                 selectedTargetAmount,
                 r'FundingSession',
                 'selectedTargetAmount'),
+            estimatedReceived: estimatedReceived,
             minimumReceived: BuiltValueNullFieldError.checkNotNull(
                 minimumReceived, r'FundingSession', 'minimumReceived'),
+            slippageBps: slippageBps,
             maximumSelectableTargetAmount:
                 BuiltValueNullFieldError.checkNotNull(
                     maximumSelectableTargetAmount,

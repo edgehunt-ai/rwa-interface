@@ -4062,11 +4062,35 @@ abstract class AppLocalizations {
   /// **'Estimate time'**
   String get estimateTime;
 
+  /// No description provided for @estimatedReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated received'**
+  String get estimatedReceived;
+
+  /// No description provided for @minimumReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum received'**
+  String get minimumReceived;
+
+  /// No description provided for @providerFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider fee'**
+  String get providerFee;
+
   /// No description provided for @bridgeFee.
   ///
   /// In en, this message translates to:
   /// **'Bridge Fee'**
   String get bridgeFee;
+
+  /// No description provided for @swapFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap cost'**
+  String get swapFee;
 
   /// No description provided for @sendAccount.
   ///
