@@ -45,65 +45,142 @@ final class Hip3WithdrawalCommands {
     }
   }
 
+  Future<int> _payoutChainId() async {
+    final environment = await _ref.read(deploymentEnvironmentProvider.future);
+    _checkSession();
+    return switch (environment.hip3Environment) {
+      'mainnet' => 42161,
+      'testnet' => 421614,
+      _ => throw StateError('Unsupported Perps network.'),
+    };
+  }
+
+  bool _sameAmount(String left, String right) =>
+      DecimalValue(left).compareTo(DecimalValue(right)) == 0;
+
   Future<Hip3WithdrawalPreview> preview(
     String amount, {
     bool forceRefresh = false,
   }) async {
     _checkSession();
     _validateAmount(amount);
+    final payoutChainId = await _payoutChainId();
     final current = _preview;
     if (!forceRefresh &&
-        current?.amount == amount &&
-        current?.isRiskExpired == false) {
-      return current!;
+        current != null &&
+        _sameAmount(current.amount, amount) &&
+        current.chainId == payoutChainId.toString() &&
+        current.isRiskExpired == false) {
+      return current;
     }
     final result = await _ref
         .read(hip3WithdrawalRepositoryProvider)
-        .preview(amount: amount);
+        .preview(amount: amount, payoutChainId: payoutChainId);
     _checkSession();
+    if (result.chainId != payoutChainId.toString() ||
+        (result.payoutAsset != null && result.payoutAsset != 'USDC') ||
+        !_sameAmount(result.amount, amount)) {
+      throw StateError(
+        'Withdrawal quote target or amount changed. Please refresh.',
+      );
+    }
     _preview = result;
     return result;
   }
 
-  Future<Hip3Withdrawal> prepare(String amount, {required String rail}) async {
+  Future<Hip3Withdrawal> prepare(
+    String amount, {
+    required String rail,
+    int? payoutChainId,
+  }) async {
     _checkSession();
     _validateAmount(amount);
     return _runObserved(
       operation: 'hip3_withdrawal_prepare',
       context: {'rail': rail, 'stage': 'prepare'},
       successContext: (withdrawal) => {'withdrawal_id': withdrawal.id},
-      command: () => _prepare(amount, rail: rail),
+      command: () => _prepare(amount, rail: rail, payoutChainId: payoutChainId),
     );
   }
 
-  Future<Hip3Withdrawal> _prepare(String amount, {required String rail}) async {
+  Future<Hip3Withdrawal> _prepare(
+    String amount, {
+    required String rail,
+    int? payoutChainId,
+  }) async {
+    final expectedChainId = await _payoutChainId();
+    final quote = _preview;
+    if (payoutChainId != null && payoutChainId != expectedChainId) {
+      throw StateError('Withdrawal destination changed. Please refresh.');
+    }
     final current = _prepared;
-    if (current != null &&
-        current.amount == amount &&
-        current.rail == rail &&
-        current.status == 'awaiting_signature' &&
-        current.expiresAt.isAfter(DateTime.now())) {
-      final latest = await _ref
+    Hip3Withdrawal? latest;
+    if (current != null) {
+      latest = await _ref
           .read(hip3WithdrawalRepositoryProvider)
           .get(current.id);
       _checkSession();
-      if (latest.status == 'awaiting_signature') return current;
-      _prepared = null;
-      if (latest.isPending || latest.status == 'completed') return latest;
+      // The venue may have accepted an earlier submission whose response was
+      // lost. Reconcile it even after its signature TTL or quote has changed.
+      if (latest.isPending) return latest;
+      if (latest.status == 'completed') {
+        _prepared = null;
+        return latest;
+      }
     }
+    if (quote == null ||
+        quote.chainId != expectedChainId.toString() ||
+        quote.rail != rail ||
+        !_sameAmount(quote.amount, amount) ||
+        !quote.canProceed ||
+        quote.isRiskExpired) {
+      throw StateError(
+        'Please refresh the withdrawal quote before continuing.',
+      );
+    }
+    if (current != null &&
+        latest?.status == 'awaiting_signature' &&
+        current.expiresAt.isAfter(DateTime.now()) &&
+        _matchesQuote(current, quote, expectedChainId)) {
+      return current;
+    }
+    _prepared = null;
     final generation = _generation;
     final prepared = await _guard.run(
       operation: 'hip3-withdrawal-create',
-      fingerprint: '$amount|$generation',
+      fingerprint: '$amount|$rail|$expectedChainId|$generation',
       command: (key) => _ref
           .read(hip3WithdrawalRepositoryProvider)
-          .create(amount: amount, rail: rail, idempotencyKey: key),
+          .create(
+            amount: amount,
+            rail: rail,
+            payoutChainId: expectedChainId,
+            idempotencyKey: key,
+          ),
     );
     _checkSession();
-    _prepared = prepared;
     _generation++;
+    if (!_matchesQuote(prepared, quote, expectedChainId)) {
+      _preview = null;
+      throw const Hip3WithdrawalQuoteChanged();
+    }
+    _prepared = prepared;
     return prepared;
   }
+
+  bool _matchesQuote(
+    Hip3Withdrawal prepared,
+    Hip3WithdrawalPreview quote,
+    int chainId,
+  ) =>
+      prepared.payoutChainId == chainId &&
+      prepared.payoutAsset == (quote.payoutAsset ?? 'USDC') &&
+      prepared.rail == quote.rail &&
+      prepared.destinationAddress.toLowerCase() ==
+          quote.destinationAddress.toLowerCase() &&
+      _sameAmount(prepared.amount, quote.amount) &&
+      _sameAmount(prepared.fee, quote.fee) &&
+      _sameAmount(prepared.minimumReceived, quote.minimumReceived);
 
   Future<Hip3Withdrawal> submit(Hip3Withdrawal prepared) async {
     _checkSession();

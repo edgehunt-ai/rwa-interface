@@ -9,6 +9,8 @@ final class Hip3Withdrawal {
     required this.status,
     required this.rail,
     required this.expiresAt,
+    this.payoutChainId,
+    this.payoutAsset,
     this.failureReason,
     this.typedDataJson,
     this.payloadHash,
@@ -25,11 +27,17 @@ final class Hip3Withdrawal {
   final String status;
   final String rail;
   final DateTime expiresAt;
+  final int? payoutChainId;
+  final String? payoutAsset;
   final String? failureReason;
   final String? typedDataJson;
   final String? payloadHash;
   final String? nonceMappingTypedDataJson;
   final String? nonceMappingPayloadHash;
 
-  bool get isPending => status == 'submitted' || status == 'payout';
+  bool get isPending =>
+      status == 'submitting' || status == 'submitted' || status == 'payout';
+
+  bool get requiresManualReview =>
+      isPending && (failureReason?.contains('requires_manual_review') ?? false);
 }

@@ -28,6 +28,7 @@ final class Hip3WithdrawalPreview {
     required this.feeDetails,
     required this.crossLiquidationImpacts,
     required this.riskStatus,
+    this.payoutAsset,
     this.riskValidUntil,
     this.riskUnavailableReason,
   });
@@ -38,6 +39,7 @@ final class Hip3WithdrawalPreview {
   final String rail;
   final String destinationAddress;
   final String chainId;
+  final String? payoutAsset;
   final String maximumTransferable;
   final List<String> blockers;
   final int estimatedArrivalSeconds;
@@ -51,4 +53,9 @@ final class Hip3WithdrawalPreview {
 
   bool get isRiskExpired =>
       riskValidUntil?.isAfter(DateTime.now().toUtc()) == false;
+}
+
+/// The frozen transfer differs from the facts the user last reviewed.
+final class Hip3WithdrawalQuoteChanged implements Exception {
+  const Hip3WithdrawalQuoteChanged();
 }

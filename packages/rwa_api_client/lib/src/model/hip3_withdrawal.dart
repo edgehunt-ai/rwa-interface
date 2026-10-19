@@ -20,13 +20,13 @@ part 'hip3_withdrawal.g.dart';
 /// * [withdrawalId] 
 /// * [ownerAddress] 
 /// * [destinationAddress] 
-/// * [amount] - venue 实际扣款金额（USDC）。relay rail 为 solver quote 的输入额，可能大于请求的到账金额。
+/// * [amount] - venue 实际扣款金额（USDC）。Arbitrum目标等于请求总扣减额；旧版BSC USDT relay为solver报价输入额，可能大于请求到账金额。
 /// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [minimumReceived] - 链上到账金额（amount - fee）。relay rail 为请求时的目标 BSC USDT 额。
+/// * [minimumReceived] - 目标链资产到账金额（amount - fee）。Arbitrum目标为报价净USDC；旧版BSC USDT relay为请求期望到账额。
 /// * [status] 
 /// * [rail] 
-/// * [payoutChainId] - 链上到账所在 chain id——bridge2/float 为 Arbitrum（42161/421614），relay 为 BSC（56）。
-/// * [payoutAsset] - 到账资产符号——bridge2/float 为 USDC（测试网 USDC2），relay 为 USDT。仅创建响应返回。
+/// * [payoutChainId] - 冻结的到账 chain id：bridge2/float 为 Arbitrum（42161/421614），relay 为 Arbitrum（42161）或BSC（56）。
+/// * [payoutAsset] - 到账资产符号——Arbitrum 为USDC（bridge2测试网为USDC2），BSC relay为USDT。仅创建响应返回。
 /// * [relayRequestId] - relay rail 的 solver request id，用于 `/intents/status` 跟踪；其它 rail 为 null。
 /// * [nonceMapping] 
 /// * [nonce] - HL action nonce（创建时间毫秒），同时是 typed-data `time`。
@@ -58,7 +58,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'destination_address')
   String get destinationAddress;
 
-  /// venue 实际扣款金额（USDC）。relay rail 为 solver quote 的输入额，可能大于请求的到账金额。
+  /// venue 实际扣款金额（USDC）。Arbitrum目标等于请求总扣减额；旧版BSC USDT relay为solver报价输入额，可能大于请求到账金额。
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -66,7 +66,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  /// 链上到账金额（amount - fee）。relay rail 为请求时的目标 BSC USDT 额。
+  /// 目标链资产到账金额（amount - fee）。Arbitrum目标为报价净USDC；旧版BSC USDT relay为请求期望到账额。
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
@@ -78,11 +78,11 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   Hip3WithdrawalRail get rail;
   // enum railEnum {  bridge2,  float,  relay,  };
 
-  /// 链上到账所在 chain id——bridge2/float 为 Arbitrum（42161/421614），relay 为 BSC（56）。
+  /// 冻结的到账 chain id：bridge2/float 为 Arbitrum（42161/421614），relay 为 Arbitrum（42161）或BSC（56）。
   @BuiltValueField(wireName: r'payout_chain_id')
   int? get payoutChainId;
 
-  /// 到账资产符号——bridge2/float 为 USDC（测试网 USDC2），relay 为 USDT。仅创建响应返回。
+  /// 到账资产符号——Arbitrum 为USDC（bridge2测试网为USDC2），BSC relay为USDT。仅创建响应返回。
   @BuiltValueField(wireName: r'payout_asset')
   String? get payoutAsset;
 

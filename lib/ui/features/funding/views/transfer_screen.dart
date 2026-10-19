@@ -218,6 +218,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
   }
 
+  bool _sameWithdrawalAmount(String? left, String right) {
+    if (left == null) return false;
+    try {
+      return DecimalValue(left).compareTo(DecimalValue(right)) == 0;
+    } on FormatException {
+      return false;
+    }
+  }
+
   void _scheduleHip3Preview() {
     _withdrawalPreviewDebounce?.cancel();
     _withdrawalPreviewRefresh?.cancel();
@@ -276,7 +285,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             : AppLocalizations.of(context).transferFailed;
       });
       final current = _withdrawalPreview;
-      if (current != null && current.amount == amount) {
+      if (current != null && _sameWithdrawalAmount(current.amount, amount)) {
         _scheduleHip3PreviewRefresh(current, sequence, amount);
       }
     }
@@ -492,7 +501,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     try {
       final commands = ref.read(hip3WithdrawalCommandsProvider);
       final preview = _withdrawalPreview;
-      if (preview == null || preview.amount != amount || !preview.canProceed) {
+      if (preview == null ||
+          !_sameWithdrawalAmount(preview.amount, amount) ||
+          !preview.canProceed) {
         throw StateError(AppLocalizations.of(context).transferWaitForQuote);
       }
       if (preview.isRiskExpired) {
@@ -506,7 +517,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _scheduleHip3PreviewRefresh(refreshed, sequence, amount);
         return;
       }
-      final prepared = await commands.prepare(amount, rail: preview.rail);
+      final prepared = await commands.prepare(
+        amount,
+        rail: preview.rail,
+        payoutChainId: int.parse(preview.chainId),
+      );
       if (!mounted) return;
       if (prepared.status != 'awaiting_signature') {
         _handleWithdrawalStatus(prepared);
@@ -525,7 +540,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                 '${l10n.sendAmount}: ${TokenAmountFormatter.formatText(prepared.amount)} USDC',
               ),
               Text(
-                '${l10n.totalFee}: ${TokenAmountFormatter.formatText(prepared.fee)} USDC',
+                '${prepared.rail == 'relay' ? l10n.estimatedFee : l10n.totalFee}: ${TokenAmountFormatter.formatText(prepared.fee)} USDC',
               ),
               Text(
                 '${l10n.receiveAmount}: ${TokenAmountFormatter.formatText(prepared.minimumReceived)} USDC',
@@ -565,6 +580,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         }
         rethrow;
       }
+    } on Hip3WithdrawalQuoteChanged {
+      if (mounted) _scheduleHip3Preview();
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -606,20 +623,24 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     setState(() {
       _withdrawal = withdrawal;
       _transferPending = withdrawal.isPending;
-      _statusMessage = withdrawal.isPending
+      _statusMessage = withdrawal.isPending && !withdrawal.requiresManualReview
           ? AppLocalizations.of(context).transferWaitingArrival
           : null;
-      _error = withdrawal.status == 'failed' || withdrawal.status == 'expired'
+      _error = withdrawal.requiresManualReview
+          ? AppLocalizations.of(context).hip3PendingReview
+          : withdrawal.status == 'failed' || withdrawal.status == 'expired'
           ? (withdrawal.failureReason ??
                 AppLocalizations.of(context).transferFailed)
           : null;
     });
-    if (withdrawal.isPending && _withdrawalRefresh == null) {
+    if (withdrawal.isPending &&
+        !withdrawal.requiresManualReview &&
+        _withdrawalRefresh == null) {
       _withdrawalRefresh = Timer.periodic(
         const Duration(seconds: 3),
         (_) => unawaited(_pollWithdrawal()),
       );
-    } else if (!withdrawal.isPending) {
+    } else if (!withdrawal.isPending || withdrawal.requiresManualReview) {
       _withdrawalRefresh?.cancel();
       _withdrawalRefresh = null;
     }
@@ -832,7 +853,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   !_withdrawalPreviewing &&
                   _withdrawalPreview?.canProceed == true &&
                   _withdrawalPreview?.isRiskExpired == false &&
-                  _withdrawalPreview?.amount == _withdrawalAmount.text.trim());
+                  _sameWithdrawalAmount(
+                    _withdrawalPreview?.amount,
+                    _withdrawalAmount.text.trim(),
+                  ));
 
     if (_selectingToken) {
       return PopScope(
@@ -1020,6 +1044,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                 .extension<AppSemanticColors>()!
                                 .success,
                           ),
+                        ),
+                      ],
+                      if (_withdrawal?.requiresManualReview == true) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          key: const Key('transfer-withdrawal-refresh'),
+                          onPressed: _pollWithdrawal,
+                          icon: const Icon(Icons.refresh),
+                          label: Text(l10n.hip3PendingCheck),
                         ),
                       ],
                       if (_transferPending) ...[
@@ -1805,7 +1838,9 @@ class _Hip3FeeSummary extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _FeeRow(
-            AppLocalizations.of(context).totalFee,
+            (preview?.rail ?? withdrawal?.rail) == 'relay'
+                ? AppLocalizations.of(context).estimatedFee
+                : AppLocalizations.of(context).totalFee,
             fee,
             loading: loading,
             skeletonKey: const Key('transfer-quote-total-fee-skeleton'),
