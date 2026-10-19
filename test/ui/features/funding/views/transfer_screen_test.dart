@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/hip3_withdrawal.dart';
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
 import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
@@ -38,6 +39,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           transferOptionsProvider.overrideWith(
             (ref) async => TransferOptions(
               account: UnifiedFundingAccountSummary(
@@ -198,6 +200,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
           hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
           transferOptionsProvider.overrideWith(
@@ -343,6 +346,19 @@ void main() {
     expect(withdrawals.submissions, 1);
     expect(find.text('转账处理中…'), findsOneWidget);
     expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    withdrawals.failureReason =
+        'relay_intent_failed_or_refunded_requires_manual_review';
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(find.textContaining('人工'), findsOneWidget);
+    final checks = withdrawals.getCalls;
+    await tester.pump(const Duration(seconds: 10));
+    expect(withdrawals.getCalls, checks);
+    expect(withdrawals.submissions, 1);
+    expect(
+      find.byKey(const Key('transfer-withdrawal-refresh')),
+      findsOneWidget,
+    );
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -351,6 +367,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           fundingRepositoryProvider.overrideWithValue(funding),
           transferOptionsProvider.overrideWith(
             (ref) async => TransferOptions(
@@ -430,6 +447,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           transferOptionsProvider.overrideWith(
             (ref) => Completer<TransferOptions>().future,
           ),
@@ -461,6 +479,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3TransferBalanceProvider.overrideWith((ref) => balance.future),
           transferOptionsProvider.overrideWith(
             (ref) async => TransferOptions(
@@ -517,6 +536,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
           hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
           transferOptionsProvider.overrideWith(
@@ -592,6 +612,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           fundingRepositoryProvider.overrideWithValue(funding),
           transferOptionsProvider.overrideWith(
             (ref) async => TransferOptions(
@@ -690,6 +711,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           fundingRepositoryProvider.overrideWithValue(funding),
           transferOptionsProvider.overrideWith(
             (ref) async => TransferOptions(
@@ -794,6 +816,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           fundingRepositoryProvider.overrideWithValue(
             _RejectedTransferRepository(),
           ),
@@ -1196,6 +1219,7 @@ Future<ProviderContainer> _pumpCapacityTransfer(
   addTearDown(tester.view.resetDevicePixelRatio);
   final container = ProviderContainer(
     overrides: [
+      deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
       fundingRepositoryProvider.overrideWithValue(funding),
       transferOptionsProvider.overrideWith(
         (ref) async => options?.call() ?? _capacityOptions(),
@@ -1512,9 +1536,14 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   final createdAmounts = <String>[];
   final createdRails = <String>[];
   int submissions = 0;
+  int getCalls = 0;
+  String? failureReason;
 
   @override
-  Future<Hip3WithdrawalPreview> preview({required String amount}) async {
+  Future<Hip3WithdrawalPreview> preview({
+    required String amount,
+    required int payoutChainId,
+  }) async {
     previewAmounts.add(amount);
     return Hip3WithdrawalPreview(
       amount: amount,
@@ -1548,6 +1577,8 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     minimumReceived: '50.22',
     status: 'awaiting_signature',
     rail: 'float',
+    payoutChainId: 42161,
+    payoutAsset: 'USDC',
     expiresAt: DateTime.now().add(const Duration(minutes: 5)),
     typedDataJson: '{}',
     payloadHash: 'hash',
@@ -1557,6 +1588,7 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   Future<Hip3Withdrawal> create({
     required String amount,
     required String rail,
+    required int payoutChainId,
     required String idempotencyKey,
   }) async {
     createdAmounts.add(amount);
@@ -1565,7 +1597,10 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   }
 
   @override
-  Future<Hip3Withdrawal> get(String id) async => prepared;
+  Future<Hip3Withdrawal> get(String id) async {
+    getCalls++;
+    return submissions == 0 ? prepared : _submitted(prepared);
+  }
 
   @override
   Future<Hip3Withdrawal> signAndSubmit(
@@ -1573,26 +1608,31 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     required String idempotencyKey,
   }) async {
     submissions++;
-    return Hip3Withdrawal(
-      id: prepared.id,
-      ownerAddress: prepared.ownerAddress,
-      destinationAddress: prepared.destinationAddress,
-      amount: prepared.amount,
-      fee: prepared.fee,
-      minimumReceived: prepared.minimumReceived,
-      status: 'submitted',
-      rail: prepared.rail,
-      expiresAt: prepared.expiresAt,
-    );
+    return _submitted(prepared);
   }
+
+  Hip3Withdrawal _submitted(Hip3Withdrawal prepared) => Hip3Withdrawal(
+    id: prepared.id,
+    ownerAddress: prepared.ownerAddress,
+    destinationAddress: prepared.destinationAddress,
+    amount: prepared.amount,
+    fee: prepared.fee,
+    minimumReceived: prepared.minimumReceived,
+    status: 'submitted',
+    failureReason: failureReason,
+    rail: prepared.rail,
+    expiresAt: prepared.expiresAt,
+  );
 }
 
 class _PendingHip3Withdrawals implements Hip3WithdrawalRepository {
   final _preview = Completer<Hip3WithdrawalPreview>();
 
   @override
-  Future<Hip3WithdrawalPreview> preview({required String amount}) =>
-      _preview.future;
+  Future<Hip3WithdrawalPreview> preview({
+    required String amount,
+    required int payoutChainId,
+  }) => _preview.future;
 
   void completePreview() {
     _preview.complete(
@@ -1623,3 +1663,10 @@ class _PendingHip3Withdrawals implements Hip3WithdrawalRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+Future<DeploymentEnvironment> _mainnetEnvironment(Ref ref) async =>
+    const DeploymentEnvironment(
+      environment: 'mainnet',
+      hip3Environment: 'mainnet',
+      bstocksConfigured: false,
+    );

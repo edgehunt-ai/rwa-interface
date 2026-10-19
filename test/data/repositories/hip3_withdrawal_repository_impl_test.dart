@@ -11,8 +11,12 @@ void main() {
     final preview = await Hip3WithdrawalRepositoryImpl(
       service,
       _Signer(),
-    ).preview(amount: '51.4');
+    ).preview(amount: '51.4', payoutChainId: 42161);
     expect(service.previewRequest!.amount, '51.4');
+    expect(
+      service.previewRequest!.payoutChainId,
+      api.Hip3WithdrawalCreateRequestPayoutChainIdEnum.number42161,
+    );
     expect(
       service.previewRequest!.rail,
       api.Hip3WithdrawalCreateRequestRailEnum.auto,
@@ -28,13 +32,39 @@ void main() {
     );
   });
 
+  test(
+    'serializes both supported Arbitrum destination selectors as integers',
+    () async {
+      for (final (chainId, wireChain) in [(42161, 42161), (421614, 421614)]) {
+        final service = _Service();
+        await Hip3WithdrawalRepositoryImpl(
+          service,
+          _Signer(),
+        ).preview(amount: '51.4', payoutChainId: chainId);
+        final json = api.standardSerializers.serializeWith(
+          api.Hip3WithdrawalCreateRequest.serializer,
+          service.previewRequest!,
+        );
+        expect(json, isA<Map<Object?, Object?>>());
+        expect((json! as Map<Object?, Object?>)['payout_chain_id'], wireChain);
+      }
+    },
+  );
+
   test('creates using the rail selected by preview', () async {
     final service = _Service();
-    final prepared = await Hip3WithdrawalRepositoryImpl(
-      service,
-      _Signer(),
-    ).create(amount: '51.4', rail: 'float', idempotencyKey: 'create-key');
+    final prepared = await Hip3WithdrawalRepositoryImpl(service, _Signer())
+        .create(
+          amount: '51.4',
+          rail: 'float',
+          payoutChainId: 42161,
+          idempotencyKey: 'create-key',
+        );
     expect(service.request!.amount, '51.4');
+    expect(
+      service.request!.payoutChainId,
+      api.Hip3WithdrawalCreateRequestPayoutChainIdEnum.number42161,
+    );
     expect(
       service.request!.rail,
       api.Hip3WithdrawalCreateRequestRailEnum.float,
@@ -53,6 +83,7 @@ void main() {
     final prepared = await repository.create(
       amount: '1',
       rail: 'relay',
+      payoutChainId: 42161,
       idempotencyKey: 'create-key',
     );
     await repository.signAndSubmit(prepared, idempotencyKey: 'submit-key');
@@ -84,6 +115,7 @@ void main() {
       final prepared = await repo.create(
         amount: '51.4',
         rail: 'float',
+        payoutChainId: 42161,
         idempotencyKey: 'create-key',
       );
       final submitted = await repo.signAndSubmit(
@@ -111,6 +143,7 @@ void main() {
       final base = await repo.create(
         amount: '51.4',
         rail: 'float',
+        payoutChainId: 42161,
         idempotencyKey: 'key',
       );
       Future<void> rejects(domain.Hip3Withdrawal intent) async {
@@ -144,6 +177,7 @@ void main() {
       final prepared = await repo.create(
         amount: '51.4',
         rail: 'float',
+        payoutChainId: 42161,
         idempotencyKey: 'key',
       );
       await expectLater(
@@ -216,6 +250,8 @@ class _Service implements Hip3WithdrawalService {
           ..minimumReceived = '50.22'
           ..status = status
           ..rail = resourceRail
+          ..payoutChainId = 42161
+          ..payoutAsset = 'USDC'
           ..nonce = 1
           ..typedDataJson =
               '{"domain":{"name":"Hyperliquid"},"message":{"amount":"51.4"}}'
