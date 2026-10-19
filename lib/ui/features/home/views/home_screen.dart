@@ -91,7 +91,8 @@ class HomeScreen extends ConsumerWidget {
               if (authenticated)
                 portfolio!.when(
                   loading: () => const _HomeStateCard(),
-                  error: (_, _) => FailureState(
+                  error: (error, _) => FailureState(
+                    error: error,
                     title: AppLocalizations.of(context).portfolioUnavailable,
                     description: AppLocalizations.of(context)
                         .checkConnectionRetry,
@@ -537,7 +538,8 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
         const SizedBox(height: 8),
         products.when(
           loading: () => const _HomeStateCard(height: 240),
-          error: (_, _) => FailureState(
+          error: (error, _) => FailureState(
+            error: error,
             height: 340,
             title: l10n.marketsLoadFailed,
             description: l10n.checkConnectionRetry,

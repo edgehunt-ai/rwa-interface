@@ -23,6 +23,8 @@ import 'package:nobell/ui/features/account/views/private_key_export_sheet.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -54,7 +56,8 @@ class SettingsScreen extends ConsumerWidget {
                   state: DesignState.loading,
                   title: AppLocalizations.of(context).settingsLoading,
                 ),
-                error: (_, _) => DesignStateFeedback(
+                error: (error, _) => DesignStateFeedback(
+                  error: error,
                   state: DesignState.failure,
                   title: AppLocalizations.of(context).settingsUnavailable,
                   message: AppLocalizations.of(context).settingsRetry,
@@ -754,13 +757,16 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
         await ref.read(passkeyProvider.notifier).link();
         if (mounted) Navigator.of(context).pop(_PasskeyAction.linked);
       }
-    } on Object {
+    } on Object catch (error) {
       if (mounted) {
         AppToast.showFailure(
           context,
-          widget.passkey == null
-              ? AppLocalizations.of(context).settingsPasskeySetupFailed
-              : AppLocalizations.of(context).settingsPasskeyRemoveFailed,
+          errorMessage(
+            error,
+            fallback: widget.passkey == null
+                ? AppLocalizations.of(context).settingsPasskeySetupFailed
+                : AppLocalizations.of(context).settingsPasskeyRemoveFailed,
+          ),
         );
       }
     } finally {

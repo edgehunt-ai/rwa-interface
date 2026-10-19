@@ -16,6 +16,7 @@ import '../../../core/feedback/loading_skeleton.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/order_providers.dart';
+import 'hip3_order_messages.dart';
 
 class Hip3OpenOrdersPanel extends ConsumerStatefulWidget {
   const Hip3OpenOrdersPanel({
@@ -162,10 +163,14 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
           () => _message = AppLocalizations.of(context).cancellationPending,
         );
       }
-    } on Object {
+    } on Object catch (error) {
       if (mounted) {
         setState(
-          () => _message = AppLocalizations.of(context).cancellationFailed,
+          () => _message = hip3ErrorMessage(
+            context,
+            error,
+            fallback: AppLocalizations.of(context).cancellationFailed,
+          ),
         );
       }
     } finally {

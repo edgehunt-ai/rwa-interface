@@ -275,6 +275,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('parent cancellation displays the actual server rejection', (
+    tester,
+  ) async {
+    final execution = _CancellingHip3Orders()
+      ..error = const ServerFailure(
+        statusCode: 409,
+        code: 'order_already_filled',
+        failureReason: 'This order has already filled and cannot be cancelled.',
+      );
+    var changed = false;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+        ],
+        child: buildTestApp(
+          Hip3OpenOrderCard(
+            order: _order('parent'),
+            onChanged: () => changed = true,
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('This order has already filled and cannot be cancelled.'),
+      findsOneWidget,
+    );
+    expect(changed, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('successful parent cancellation shows a success toast', (
     tester,
   ) async {
@@ -2912,6 +2945,7 @@ class _Orders implements OrdersRepository {
 
 class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
   String? cancelledOrderId;
+  Object? error;
 
   @override
   Future<ResourceResult<TradingOrder>> cancelOrder(
@@ -2919,6 +2953,7 @@ class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
     required String idempotencyKey,
   }) async {
     cancelledOrderId = orderId;
+    if (error case final failure?) throw failure;
     return ResourceResult(
       resource: _order(orderId, status: TradingOrderStatus.cancelled),
     );

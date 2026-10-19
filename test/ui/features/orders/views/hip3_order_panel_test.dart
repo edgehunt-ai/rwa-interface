@@ -1964,6 +1964,75 @@ void main() {
     expect(find.text('3'), findsOneWidget);
   });
 
+  for (final (name, failure, message) in <(String, Object, String)>[
+    (
+      'server message',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'insufficient_margin',
+        message: 'Available margin is below the order requirement.',
+      ),
+      'Available margin is below the order requirement.',
+    ),
+    (
+      'server failure reason',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'order_rejected',
+        failureReason: 'Order quantity exceeds the venue limit.',
+      ),
+      'Order quantity exceeds the venue limit.',
+    ),
+    (
+      'response parsing error',
+      const FormatException('Missing order identifier'),
+      '订单响应解析失败: Missing order identifier',
+    ),
+    (
+      'domain failure',
+      const CompatibilityFailure(
+        userAction: 'Unsupported order response version',
+      ),
+      'Unsupported order response version',
+    ),
+    (
+      'unexpected error',
+      StateError('Wallet transport disconnected'),
+      '订单提交失败: Bad state: Wallet transport disconnected',
+    ),
+  ]) {
+    testWidgets('confirmation displays the actual $name from create order', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(600, 1200));
+      final orders = _ExecutableHip3Orders(createError: failure);
+      final intent = OrderIntent(
+        symbol: 'NVDA',
+        kind: MarketProductKind.perp,
+        side: TradingSide.long,
+        type: TradingOrderType.market,
+        amount: DecimalValue('100'),
+      );
+      final preview = await orders.preview(intent, idempotencyKey: 'preview');
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+          child: _app(Hip3ConfirmSheet(preview: preview)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('hip3-confirm-button')));
+      await tester.pumpAndSettle();
+      expect(find.text(message), findsOneWidget);
+      expect(
+        find.text('The server did not return a submitted HIP-3 order.'),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('hip3-confirm-button')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('confirmation error sits eight pixels above its action', (
     tester,
   ) async {
@@ -3091,6 +3160,7 @@ final class _ExecutableHip3Orders implements OrdersRepository {
     this.everyQuoteLifetime,
     this.holdRequote,
     this.changingRequoteValues = false,
+    this.createError,
   });
   final bool expired;
   final bool missingExecution;
@@ -3105,6 +3175,7 @@ final class _ExecutableHip3Orders implements OrdersRepository {
   /// Holds every quote after the first, so a re-request can be observed.
   final Completer<void>? holdRequote;
   final bool changingRequoteValues;
+  final Object? createError;
   var previews = 0;
 
   final intents = <OrderIntent>[];
@@ -3149,17 +3220,20 @@ final class _ExecutableHip3Orders implements OrdersRepository {
     OrderIntent intent, {
     required String idempotencyKey,
     String? previewId,
-  }) async => ResourceResult(
-    resource: TradingOrder(
-      orderId: 'order-1',
-      symbol: intent.symbol,
-      kind: MarketProductKind.perp,
-      side: intent.side,
-      type: intent.type,
-      status: TradingOrderStatus.pendingSignature,
-      createdAt: DateTime.utc(2026),
-    ),
-  );
+  }) async {
+    if (createError case final error?) throw error;
+    return ResourceResult(
+      resource: TradingOrder(
+        orderId: 'order-1',
+        symbol: intent.symbol,
+        kind: MarketProductKind.perp,
+        side: intent.side,
+        type: intent.type,
+        status: TradingOrderStatus.pendingSignature,
+        createdAt: DateTime.utc(2026),
+      ),
+    );
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

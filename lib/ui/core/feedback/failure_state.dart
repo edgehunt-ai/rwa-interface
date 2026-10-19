@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 
 import '../theme/app_theme.dart';
+import 'error_message.dart';
 
 typedef RetryCallback = FutureOr<void> Function();
 
@@ -12,6 +13,7 @@ class FailureState extends StatefulWidget {
     super.key,
     this.title,
     this.description,
+    this.error,
     this.supportingMessage,
     this.onRetry,
     this.height,
@@ -19,6 +21,7 @@ class FailureState extends StatefulWidget {
 
   final String? title;
   final String? description;
+  final Object? error;
   final String? supportingMessage;
   final RetryCallback? onRetry;
   final double? height;
@@ -47,6 +50,12 @@ class _FailureStateState extends State<FailureState> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final description = widget.error == null
+        ? widget.description
+        : errorMessage(
+            widget.error!,
+            fallback: widget.description ?? l10n.requestFailed,
+          );
     final content = Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -54,7 +63,7 @@ class _FailureStateState extends State<FailureState> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
-              label: widget.title ?? widget.description ?? l10n.requestFailed,
+              label: widget.title ?? description ?? l10n.requestFailed,
               child: Image.asset(
                 'assets/figma/common/error_state_illustration.webp',
                 width: 120,
@@ -73,10 +82,10 @@ class _FailureStateState extends State<FailureState> {
                 ),
               ),
             ],
-            if (widget.description != null) ...[
+            if (description != null) ...[
               const SizedBox(height: 12),
               Text(
-                widget.description!,
+                description,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: colors.secondaryText,

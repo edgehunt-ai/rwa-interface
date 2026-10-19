@@ -1,3 +1,5 @@
+import 'package:nobell/domain/models/api_failure.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +10,30 @@ import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('shows the actual failure instead of generic retry copy', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        const DesignStateFeedback(
+          state: DesignState.failure,
+          title: 'Assets unavailable',
+          message: 'Try again.',
+          error: ServerFailure(
+            statusCode: 503,
+            code: 'venue_unavailable',
+            message: 'Hyperliquid account observation timed out.',
+          ),
+        ),
+      ),
+    );
+    expect(
+      find.text('Hyperliquid account observation timed out.'),
+      findsOneWidget,
+    );
+    expect(find.text('Try again.'), findsNothing);
+  });
+
   testWidgets('shows recoverable failure feedback', (tester) async {
     await tester.pumpWidget(
       buildTestApp(

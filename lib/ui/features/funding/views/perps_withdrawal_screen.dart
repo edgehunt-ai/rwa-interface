@@ -24,6 +24,8 @@ import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 class PerpsWithdrawalScreen extends ConsumerStatefulWidget {
   const PerpsWithdrawalScreen({super.key});
 
@@ -258,7 +260,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 l10n.walletConnectRequired,
               _ => l10n.hip3SigningRequestInvalid,
             },
-      _ => l10n.prepareWithdrawalFailed,
+      _ => errorMessage(failure, fallback: l10n.prepareWithdrawalFailed),
     };
   }
 

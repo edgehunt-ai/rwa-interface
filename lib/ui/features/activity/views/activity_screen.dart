@@ -48,7 +48,8 @@ class ActivityDetailScreen extends ConsumerWidget {
           state: DesignState.loading,
           title: l10n.activityLoading,
         ),
-        error: (_, _) => DesignStateFeedback(
+        error: (error, _) => DesignStateFeedback(
+          error: error,
           state: DesignState.failure,
           title: l10n.activityUnavailable,
           message: l10n.activityRetry,

@@ -106,6 +106,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                   error: (error, _) => SizedBox(
                     height: 340,
                     child: DesignStateFeedback(
+                      error: error,
                       state: DesignState.failure,
                       title: l10n.depositRoutesUnavailable,
                       message: error.toString(),
@@ -346,7 +347,8 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
             state: DesignState.loading,
             title: AppLocalizations.of(context).loadingDepositInstructions,
           ),
-          error: (_, _) => DesignStateFeedback(
+          error: (error, _) => DesignStateFeedback(
+            error: error,
             state: DesignState.failure,
             title: AppLocalizations.of(context).depositInstructionsUnavailable,
             message: AppLocalizations.of(context).returnToDepositRoutes,
@@ -824,7 +826,8 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
             state: DesignState.loading,
             title: AppLocalizations.of(context).loadingSupportedAssets,
           ),
-          error: (_, _) => DesignStateFeedback(
+          error: (error, _) => DesignStateFeedback(
+            error: error,
             state: DesignState.failure,
             title: AppLocalizations.of(context).supportedAssetsUnavailable,
             onRetry: () => ref.refresh(depositDirectoryProvider.future),

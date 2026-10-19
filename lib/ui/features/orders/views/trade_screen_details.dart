@@ -200,7 +200,8 @@ class _OpenOrdersTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     return orders.when(
       loading: () => const LoadingSkeleton(rows: 2),
-      error: (_, _) => DesignStateFeedback(
+      error: (error, _) => DesignStateFeedback(
+        error: error,
         state: DesignState.failure,
         title: l10n.openOrdersUnavailable,
         message: l10n.openOrdersRefreshHint,
@@ -571,7 +572,8 @@ class _PositionTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     return positions.when(
       loading: () => const LoadingSkeleton(rows: 2),
-      error: (_, _) => DesignStateFeedback(
+      error: (error, _) => DesignStateFeedback(
+        error: error,
         state: DesignState.failure,
         title: l10n.positionsUnavailable,
         message: l10n.positionRefreshHint,
@@ -1475,7 +1477,8 @@ class MarketHoursSheet extends ConsumerWidget {
                   const SizedBox(height: 8),
                   state.when(
                     loading: () => const LoadingSkeleton(rows: 5),
-                    error: (_, _) => DesignStateFeedback(
+                    error: (error, _) => DesignStateFeedback(
+                      error: error,
                       state: DesignState.failure,
                       title: l10n.marketHoursUnavailable,
                       message: l10n.marketHoursRefreshHint,

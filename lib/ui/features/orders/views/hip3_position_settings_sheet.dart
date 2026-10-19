@@ -98,7 +98,7 @@ class _Hip3PositionSettingsSheetState
                   height: 360,
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (_, _) => const _SettingsUnavailable(),
+                error: (error, _) => _SettingsUnavailable(error: error),
                 data: (settings) => _SettingsContent(
                   settings: settings,
                   position: widget.position,
@@ -411,7 +411,8 @@ class _MarginModeCard extends StatelessWidget {
 }
 
 class _SettingsUnavailable extends StatelessWidget {
-  const _SettingsUnavailable();
+  const _SettingsUnavailable({this.error});
+  final Object? error;
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +427,15 @@ class _SettingsUnavailable extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          Text(l10n.settingsUnavailable),
+          Text(
+            error == null
+                ? l10n.settingsUnavailable
+                : hip3ErrorMessage(
+                    context,
+                    error!,
+                    fallback: l10n.settingsUnavailable,
+                  ),
+          ),
         ],
       ),
     );

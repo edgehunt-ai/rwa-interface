@@ -15,12 +15,14 @@ class DesignStateFeedback extends StatelessWidget {
     required this.state,
     required this.title,
     this.message,
+    this.error,
     this.onRetry,
   });
 
   final DesignState state;
   final String title;
   final String? message;
+  final Object? error;
   final FutureOr<void> Function()? onRetry;
 
   @override
@@ -42,6 +44,7 @@ class DesignStateFeedback extends StatelessWidget {
       DesignState.unavailable || DesignState.failure => FailureState(
         title: title,
         description: message,
+        error: error,
         onRetry: onRetry,
       ),
     };

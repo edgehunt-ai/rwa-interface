@@ -31,6 +31,8 @@ import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart'
 import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 /// Presents the internal Spot/Perps transfer flow.
 ///
 /// Quotes and executes an internal Spot-to-Perps transfer through Riverpod.
@@ -268,12 +270,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
         _withdrawalPreviewing = false;
-        _error = error is ApiFailure
-            ? apiFailureMessage(
-                error,
-                fallback: AppLocalizations.of(context).transferFailed,
-              )
-            : AppLocalizations.of(context).transferFailed;
+        _error = errorMessage(
+          error,
+          fallback: AppLocalizations.of(context).transferFailed,
+        );
       });
       final current = _withdrawalPreview;
       if (current != null && current.amount == amount) {
@@ -332,9 +332,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _quoteSequence) return;
       setState(() {
         _quote = null;
-        _error = error is ApiFailure
-            ? apiFailureMessage(error, fallback: 'Unable to get a quote.')
-            : 'Unable to get a quote.';
+        _error = errorMessage(error, fallback: 'Unable to get a quote.');
       });
     } finally {
       if (mounted && sequence == _quoteSequence) {
@@ -383,7 +381,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _quoteSequence) return;
       setState(() => _applyQuote(quote));
       if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
-    } catch (_) {
+    } catch (error) {
       if (!mounted || sequence != _quoteSequence) return;
       final current = _quote;
       if (_transferPending && current != null) {
@@ -391,7 +389,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       } else {
         setState(() {
           _quote = null;
-          _error = AppLocalizations.of(context).transferQuoteChanged;
+          _error = errorMessage(
+            error,
+            fallback: AppLocalizations.of(context).transferQuoteChanged,
+          );
         });
       }
     }
@@ -457,7 +458,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             fallback: l10n.transferStartFailed,
           ),
           StateError stateError => stateError.message.toString(),
-          _ => l10n.transferStartFailed,
+          _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
         _statusMessage = null;
         _transferPending = false;
@@ -589,7 +590,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     l10n.transferStartFailed,
                 },
           StateError failure => failure.message.toString(),
-          _ => l10n.transferStartFailed,
+          _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
       });
     } finally {
@@ -1100,13 +1101,10 @@ class _LoadError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            error is ApiFailure
-                ? apiFailureMessage(
-                    error as ApiFailure,
-                    fallback: AppLocalizations.of(context)
-                        .transferOptionsLoadFailed,
-                  )
-                : AppLocalizations.of(context).transferOptionsLoadFailed,
+            errorMessage(
+              error,
+              fallback: AppLocalizations.of(context).transferOptionsLoadFailed,
+            ),
           ),
           TextButton.icon(
             onPressed: onRetry,
