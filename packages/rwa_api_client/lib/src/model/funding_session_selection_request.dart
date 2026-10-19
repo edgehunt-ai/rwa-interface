@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_session_selection_request.g.dart';
 
-/// Replaces the editable source selection for the expected session version. A selection below the minimum may be saved, but the returned session must keep transfer confirmation disabled. 非null的amount仅用于standalone account_transfer会话，且必须提供：按最新余额之上的净补资额重设minimum。 订单驱动会话必须省略amount或传null，不允许覆盖冻结订单资金需求。HIP3补资须正数且精确到8位小数（末尾零等价）。 allocations最多三项，source_position_id必须互不相同；同一ID即使input_amount不同也会返回422。 
+/// Replaces the editable source selection for the expected session version. A selection below the minimum may be saved, but the returned session must keep transfer confirmation disabled. standalone account_transfer会话省略amount或传null时，由服务端按本次allocations报价的minimum_received 重设最新余额之上的净补资目标；用户只填写转出数量，无需先获取到账金额再发起第二次selection请求。 显式非null的amount仍表示最低净到账约束，仅用于standalone会话；报价不足时不得确认。 空allocations仅清空选择并保留原目标，不自动成为可确认或已到账状态。 订单驱动会话必须省略amount或传null，不允许覆盖冻结订单资金需求。HIP3补资须正数且精确到8位小数（末尾零等价）。 allocations最多三项，source_position_id必须互不相同；同一ID即使input_amount不同也会返回422。
 ///
 /// Properties:
 /// * [version] 

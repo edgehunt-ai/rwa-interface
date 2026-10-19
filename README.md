@@ -36,6 +36,11 @@ Key capabilities include:
 - Native performance CI for page loading and buy/sell order journeys.
 - Sentry observability and Firebase Cloud Messaging integration.
 
+Standalone transfers send source allocations without a minimum-received override;
+the backend returns the net quote used for confirmation. Cash activity uses the
+contract's `cash_flow` source/destination assets and networks, while retaining
+server titles and a single known network for legacy records without endpoints.
+
 ## Platform Support
 
 Market detail links use `/trade?symbol=TSLA&kind=bstock` for bStocks and

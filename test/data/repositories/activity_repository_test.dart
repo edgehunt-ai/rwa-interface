@@ -18,6 +18,53 @@ void main() {
     expect(record.fields.single.value, 'Free');
   });
 
+  for (final (source, sourceId, destination, destinationId) in [
+    ('BSC', '56', 'Hyperliquid', null),
+    ('Arbitrum', '42161', 'Hyperliquid', null),
+    ('Hyperliquid', null, 'Arbitrum', '42161'),
+    ('Hyperliquid', null, 'BSC', '97'),
+  ]) {
+    test('maps cash flow $source to $destination from wire JSON', () async {
+      final wire = <String, Object?>{
+        'id': 'cash-1',
+        'category': 'cash',
+        'type': 'bridge',
+        'status': 'success',
+        'title': 'USDT → USDC',
+        'created_at': '2026-10-17T00:00:00Z',
+        'updated_at': '2026-10-17T00:00:00Z',
+        'cash_flow': {
+          'source': {'asset': 'USDT', 'chain': source, 'chain_id': sourceId},
+          'destination': {
+            'asset': 'USDC',
+            'chain': destination,
+            'chain_id': destinationId,
+          },
+        },
+      };
+      final value = api.standardSerializers.deserializeWith(
+        api.ActivityRecord.serializer,
+        wire,
+      )!;
+      final record = (await ActivityRepositoryImpl(
+        _ActivityService([value]),
+      ).list()).items.single;
+      expect(record.cashFlow!.source.asset, 'USDT');
+      expect(record.cashFlow!.source.chain, source);
+      expect(record.cashFlow!.source.chainId, sourceId);
+      expect(record.cashFlow!.destination.asset, 'USDC');
+      expect(record.cashFlow!.destination.chain, destination);
+      expect(record.cashFlow!.destination.chainId, destinationId);
+    });
+  }
+
+  test('legacy activity without cash flow stays absent', () async {
+    final record = (await ActivityRepositoryImpl(
+      _Activity(),
+    ).list()).items.single;
+    expect(record.cashFlow, isNull);
+  });
+
   test('maps preview and wallet-signature activity continuations', () async {
     final preview = api.BstocksPreviewContinuation(
       (builder) => builder

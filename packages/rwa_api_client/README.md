@@ -207,6 +207,8 @@ Class | Method | HTTP request | Description
  - [AccountDeletionRequest](doc/AccountDeletionRequest.md)
  - [AccountDeletionStatus](doc/AccountDeletionStatus.md)
  - [AccountKind](doc/AccountKind.md)
+ - [ActivityCashFlow](doc/ActivityCashFlow.md)
+ - [ActivityCashFlowEndpoint](doc/ActivityCashFlowEndpoint.md)
  - [ActivityCategory](doc/ActivityCategory.md)
  - [ActivityPage](doc/ActivityPage.md)
  - [ActivityRecord](doc/ActivityRecord.md)

@@ -134,32 +134,35 @@ void main() {
     },
   );
 
-  test('standalone transfer selection restates the intended top-up', () async {
-    final service = _CaptureFunding();
-    final repository = FundingRepositoryImpl(service);
+  test(
+    'selection amount is an explicit minimum net received constraint',
+    () async {
+      final service = _CaptureFunding();
+      final repository = FundingRepositoryImpl(service);
 
-    await expectLater(
-      repository.updateFundingSessionSelection(
-        fundingSessionId: 'session-1',
-        version: 3,
-        allocations: const {'position-1': '5'},
-        amount: '5',
-        idempotencyKey: 'selection-key',
-      ),
-      throwsStateError,
-    );
+      await expectLater(
+        repository.updateFundingSessionSelection(
+          fundingSessionId: 'session-1',
+          version: 3,
+          allocations: const {'position-1': '5.25'},
+          amount: '5',
+          idempotencyKey: 'selection-key',
+        ),
+        throwsStateError,
+      );
 
-    expect(service.selection, {
-      'version': 3,
-      'amount': '5',
-      'allocations': [
-        {'source_position_id': 'position-1', 'input_amount': '5'},
-      ],
-    });
-  });
+      expect(service.selection, {
+        'version': 3,
+        'amount': '5',
+        'allocations': [
+          {'source_position_id': 'position-1', 'input_amount': '5.25'},
+        ],
+      });
+    },
+  );
 
   test(
-    'order-driven selection omits the frozen requirement override',
+    'selection omits amount when allocations determine the quoted output',
     () async {
       final service = _CaptureFunding();
       final repository = FundingRepositoryImpl(service);

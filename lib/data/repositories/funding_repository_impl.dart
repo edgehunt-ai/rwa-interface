@@ -191,8 +191,8 @@ final class FundingRepositoryImpl implements FundingRepository {
       fundingSessionId,
       api.FundingSessionSelectionRequest((request) {
         request.version = version;
-        // Standalone account_transfer sessions must retarget the top-up
-        // requirement; the server rejects a selection without it.
+        // An explicit amount is a minimum net received constraint. When it is
+        // omitted, the server quotes minimum net output from the allocations.
         if (amount != null) request.amount = amount;
         request.allocations.addAll(
           allocations.entries.map(

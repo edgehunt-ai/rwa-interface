@@ -95,6 +95,110 @@ void main() {
     },
   );
 
+  for (final (
+        source,
+        sourceId,
+        destination,
+        destinationId,
+        sourceLabel,
+        destinationLabel,
+      )
+      in [
+        ('BSC', '56', 'Hyperliquid', null, 'BNB Smart Chain', 'Hyperliquid'),
+        ('Hyperliquid', null, 'Arbitrum', '42161', 'Hyperliquid', 'Arbitrum'),
+        ('BSC', '97', 'Arbitrum', '421614', 'BSC Testnet', 'Arbitrum Sepolia'),
+      ]) {
+    testWidgets('cash flow $source to $destination uses endpoints on mobile', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            activityRepositoryProvider.overrideWithValue(
+              _OrderActivityRepository([
+                ActivityRecord(
+                  id: 'flow',
+                  category: ActivityCategory.cash,
+                  type: 'bridge',
+                  status: ActivityState.success,
+                  title: 'Transfer',
+                  asset: 'USDT',
+                  chain: 'Ethereum',
+                  context: 'Ethereum → Polygon',
+                  amount: DecimalValue('4.95', asset: 'USDC'),
+                  cashFlow: ActivityCashFlow(
+                    source: ActivityCashFlowEndpoint(
+                      asset: 'USDT',
+                      chain: source,
+                      chainId: sourceId,
+                    ),
+                    destination: ActivityCashFlowEndpoint(
+                      asset: 'USDC',
+                      chain: destination,
+                      chainId: destinationId,
+                    ),
+                  ),
+                  createdAt: DateTime.utc(2026),
+                ),
+              ]),
+            ),
+          ],
+          child: buildTestApp(
+            const ActivityScreen(initialCategory: ActivityCategory.cash),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('USDT → USDC'), findsOneWidget);
+      expect(find.text(sourceLabel), findsOneWidget);
+      expect(find.text(destinationLabel), findsOneWidget);
+      expect(find.text('Ethereum'), findsNothing);
+      expect(find.text('Polygon'), findsNothing);
+      expect(find.text('4.95'), findsOneWidget);
+      expect(find.text('4.95 USDC'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('legacy cash keeps server title and only its evidence network', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          activityRepositoryProvider.overrideWithValue(
+            _OrderActivityRepository([
+              ActivityRecord(
+                id: 'legacy',
+                category: ActivityCategory.cash,
+                type: 'bridge',
+                status: ActivityState.success,
+                title: 'USDT → USDC',
+                asset: 'USDT',
+                chain: 'Arbitrum',
+                context: 'BSC → Hyperliquid',
+                createdAt: DateTime.utc(2026),
+              ),
+            ]),
+          ),
+        ],
+        child: buildTestApp(
+          const ActivityScreen(initialCategory: ActivityCategory.cash),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('USDT → USDC'), findsOneWidget);
+    expect(find.text('Arbitrum'), findsOneWidget);
+    expect(find.text('BNB Smart Chain'), findsNothing);
+    expect(find.text('Hyperliquid'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final language in ['zh', 'en']) {
     for (final (side, chinese) in [
       ('Long', '做多'),

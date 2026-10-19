@@ -19,6 +19,8 @@ import 'package:rwa_api_client/src/model/account_deletion_blocker.dart';
 import 'package:rwa_api_client/src/model/account_deletion_request.dart';
 import 'package:rwa_api_client/src/model/account_deletion_status.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/activity_cash_flow.dart';
+import 'package:rwa_api_client/src/model/activity_cash_flow_endpoint.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
 import 'package:rwa_api_client/src/model/activity_page.dart';
 import 'package:rwa_api_client/src/model/activity_record.dart';
@@ -518,6 +520,8 @@ part 'serializers.g.dart';
   AccountDeletionRequest,
   AccountDeletionStatus,
   AccountKind,
+  ActivityCashFlow,
+  ActivityCashFlowEndpoint,
   ActivityCategory,
   ActivityPage,
   ActivityRecord,
