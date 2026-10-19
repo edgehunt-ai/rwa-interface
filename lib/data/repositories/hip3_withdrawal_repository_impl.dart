@@ -25,11 +25,13 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
   @override
   Future<domain_preview.Hip3WithdrawalPreview> preview({
     required String amount,
+    required int payoutChainId,
   }) async => _mapPreview(
     await _service.preview(
       api.Hip3WithdrawalCreateRequest(
         (b) => b
           ..amount = amount
+          ..payoutChainId = _payoutChain(payoutChainId)
           ..rail = api.Hip3WithdrawalCreateRequestRailEnum.auto,
       ),
     ),
@@ -39,12 +41,14 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
   Future<domain.Hip3Withdrawal> create({
     required String amount,
     required String rail,
+    required int payoutChainId,
     required String idempotencyKey,
   }) async => _map(
     await _service.create(
       api.Hip3WithdrawalCreateRequest(
         (b) => b
           ..amount = amount
+          ..payoutChainId = _payoutChain(payoutChainId)
           ..rail = _rail(rail),
       ),
       idempotencyKey: idempotencyKey,
@@ -107,6 +111,13 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
   Future<domain.Hip3Withdrawal> get(String id) async =>
       _map(await _service.get(id));
 
+  api.Hip3WithdrawalCreateRequestPayoutChainIdEnum _payoutChain(int value) =>
+      switch (value) {
+        42161 => api.Hip3WithdrawalCreateRequestPayoutChainIdEnum.number42161,
+        421614 => api.Hip3WithdrawalCreateRequestPayoutChainIdEnum.number421614,
+        _ => throw FormatException('Unsupported Arbitrum payout chain: $value'),
+      };
+
   api.Hip3WithdrawalCreateRequestRailEnum _rail(String value) =>
       switch (value) {
         'auto' => api.Hip3WithdrawalCreateRequestRailEnum.auto,
@@ -143,6 +154,7 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
       rail: value.rail.name,
       destinationAddress: value.destinationAddress,
       chainId: value.chainId,
+      payoutAsset: value.payoutAsset?.name,
       maximumTransferable: value.maximumTransferable,
       blockers: List.unmodifiable(value.blockers.map((item) => item.name)),
       estimatedArrivalSeconds: value.estimatedArrivalSeconds,
@@ -213,5 +225,7 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
     payloadHash: value.payloadHash,
     nonceMappingTypedDataJson: value.nonceMapping?.typedData,
     nonceMappingPayloadHash: value.nonceMapping?.payloadHash,
+    payoutChainId: value.payoutChainId,
+    payoutAsset: value.payoutAsset,
   );
 }

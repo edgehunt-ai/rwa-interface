@@ -366,7 +366,7 @@ class FundingApi {
   }
 
   /// 创建 HIP-3 统一账户提现
-  /// 冻结所选通道的 Hyperliquid 统一账户 action：bridge2 使用 withdraw3，float/relay 使用 sendAsset， 固定金额、owner、nonce、目标及过期时间。响应返回服务端生成的通道对应精确 EIP-712 typed data 与 &#x60;payload_hash&#x60;；客户端必须把 &#x60;typed_data_json&#x60; 原样交给 Privy 钱包签名，不得修改任何 字段、不得自行组装 action。  最终到账地址固定为账户自己的 unified EVM 地址：bridge2 在 Arbitrum 支付主网USDC/测试网USDC2， float 在 Arbitrum 垫付原生USDC，relay 在BSC支付USDT。sendAsset 的冻结收款方是平台池或Relay depository， 不是客户端指定的任意地址。请求不接受 destination、signature 或任意action字段；服务端持有签名后才提交 /exchange。 
+  /// 冻结所选通道的 Hyperliquid 统一账户 action：bridge2 使用 withdraw3，float/relay 使用 sendAsset， 固定金额、owner、nonce、目标及过期时间。响应返回服务端生成的通道对应精确 EIP-712 typed data 与 &#x60;payload_hash&#x60;；客户端必须把 &#x60;typed_data_json&#x60; 原样交给 Privy 钱包签名，不得修改任何 字段、不得自行组装 action。  最终到账地址固定为账户自己的 unified EVM 地址：bridge2 在 Arbitrum 支付主网USDC/测试网USDC2， float 在 Arbitrum 垫付原生USDC，relay 按冻结目标在 Arbitrum 支付原生USDC或在BSC支付USDT。sendAsset 的冻结收款方是平台池或Relay depository， 不是客户端指定的任意地址。请求不接受 destination、signature 或任意action字段；服务端持有签名后才提交 /exchange。
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -2397,7 +2397,7 @@ class FundingApi {
   }
 
   /// 预览 Perps 转出金额及 Cross 强平价影响
-  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 bridge2/float 请求 amount 为 HL USDC 总扣减额；relay 请求 amount 为 BSC USDT 期望到账额（exact output）。 所有通道响应 amount 为实际 HL USDC 总扣减额，minimum_received 为扣费后目标资产到账额。 风险按实际 HL 总扣减额计算，不能按 relay 请求金额或净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为用户承担且从 amount 中扣除的 USDC 总费用；fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
+  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 显式 payout_chain_id&#x3D;42161 时，所有通道请求 amount 均为 HL USDC 总扣减额（exact input）。 未传 payout_chain_id 时保留旧语义：bridge2/float 为总扣减额，relay 为 BSC USDT 期望到账额（exact output）。 所有通道响应 amount 为实际 HL USDC 总扣减额，minimum_received 为扣费后目标资产到账额。 风险按实际 HL 总扣减额计算，不能按 relay 请求金额或净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为 amount 与 minimum_received 的 USDC 差额；Relay exact-input 含报价费用及滑点保留，是保守最大扣减而非已收费用。fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。
   ///
   /// Parameters:
   /// * [hip3WithdrawalCreateRequest] 

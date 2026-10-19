@@ -151,6 +151,17 @@ Preparation reads fresh availability before creating an intent; execution still
 uses the server's immutable transaction. Regenerate the client when updating the
 contract submodule; older BSC responses without availability must not enable Max.
 
+Perps-to-Arbitrum previews explicitly request the mainnet/testnet Arbitrum chain
+from the API deployment environment. The backend chooses the configured rail;
+Arbitrum Relay uses the entered gross USDC amount. Creation reuses the preview
+rail and payout chain, and rejects changed destinations, amounts, fees or minimum
+receipts before signing. Expired previews return to review. Relay preserves the
+server-provided nonce-mapping and Hyperliquid signatures; fees are estimates
+including the quoted slippage reserve, not a claim that funds were charged.
+Submitting/submitted/payout retain the frozen intent; only completed means
+arrival. A manual-review flag stops automatic polling, keeps replacement
+submissions blocked, and offers a status refresh.
+
 ### Transfer availability
 
 The Spot-to-Perps transfer form uses eligible `available_amount` from the funding

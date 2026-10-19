@@ -6,6 +6,38 @@ part of 'hip3_withdrawal_create_request.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const Hip3WithdrawalCreateRequestPayoutChainIdEnum
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number56 =
+    const Hip3WithdrawalCreateRequestPayoutChainIdEnum._('number56');
+const Hip3WithdrawalCreateRequestPayoutChainIdEnum
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number42161 =
+    const Hip3WithdrawalCreateRequestPayoutChainIdEnum._('number42161');
+const Hip3WithdrawalCreateRequestPayoutChainIdEnum
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number421614 =
+    const Hip3WithdrawalCreateRequestPayoutChainIdEnum._('number421614');
+
+Hip3WithdrawalCreateRequestPayoutChainIdEnum
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number56':
+      return _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number56;
+    case 'number42161':
+      return _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number42161;
+    case 'number421614':
+      return _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number421614;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<Hip3WithdrawalCreateRequestPayoutChainIdEnum>
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnumValues = BuiltSet<
+        Hip3WithdrawalCreateRequestPayoutChainIdEnum>(const <Hip3WithdrawalCreateRequestPayoutChainIdEnum>[
+  _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number56,
+  _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number42161,
+  _$hip3WithdrawalCreateRequestPayoutChainIdEnum_number421614,
+]);
+
 const Hip3WithdrawalCreateRequestRailEnum
     _$hip3WithdrawalCreateRequestRailEnum_auto =
     const Hip3WithdrawalCreateRequestRailEnum._('auto');
@@ -44,9 +76,47 @@ final BuiltSet<Hip3WithdrawalCreateRequestRailEnum>
   _$hip3WithdrawalCreateRequestRailEnum_relay,
 ]);
 
+Serializer<Hip3WithdrawalCreateRequestPayoutChainIdEnum>
+    _$hip3WithdrawalCreateRequestPayoutChainIdEnumSerializer =
+    _$Hip3WithdrawalCreateRequestPayoutChainIdEnumSerializer();
 Serializer<Hip3WithdrawalCreateRequestRailEnum>
     _$hip3WithdrawalCreateRequestRailEnumSerializer =
     _$Hip3WithdrawalCreateRequestRailEnumSerializer();
+
+class _$Hip3WithdrawalCreateRequestPayoutChainIdEnumSerializer
+    implements
+        PrimitiveSerializer<Hip3WithdrawalCreateRequestPayoutChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number56': 56,
+    'number42161': 42161,
+    'number421614': 421614,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    56: 'number56',
+    42161: 'number42161',
+    421614: 'number421614',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    Hip3WithdrawalCreateRequestPayoutChainIdEnum
+  ];
+  @override
+  final String wireName = 'Hip3WithdrawalCreateRequestPayoutChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          Hip3WithdrawalCreateRequestPayoutChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3WithdrawalCreateRequestPayoutChainIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3WithdrawalCreateRequestPayoutChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$Hip3WithdrawalCreateRequestRailEnumSerializer
     implements PrimitiveSerializer<Hip3WithdrawalCreateRequestRailEnum> {
@@ -88,13 +158,16 @@ class _$Hip3WithdrawalCreateRequest extends Hip3WithdrawalCreateRequest {
   @override
   final String amount;
   @override
+  final Hip3WithdrawalCreateRequestPayoutChainIdEnum? payoutChainId;
+  @override
   final Hip3WithdrawalCreateRequestRailEnum? rail;
 
   factory _$Hip3WithdrawalCreateRequest(
           [void Function(Hip3WithdrawalCreateRequestBuilder)? updates]) =>
       (Hip3WithdrawalCreateRequestBuilder()..update(updates))._build();
 
-  _$Hip3WithdrawalCreateRequest._({required this.amount, this.rail})
+  _$Hip3WithdrawalCreateRequest._(
+      {required this.amount, this.payoutChainId, this.rail})
       : super._();
   @override
   Hip3WithdrawalCreateRequest rebuild(
@@ -110,6 +183,7 @@ class _$Hip3WithdrawalCreateRequest extends Hip3WithdrawalCreateRequest {
     if (identical(other, this)) return true;
     return other is Hip3WithdrawalCreateRequest &&
         amount == other.amount &&
+        payoutChainId == other.payoutChainId &&
         rail == other.rail;
   }
 
@@ -117,6 +191,7 @@ class _$Hip3WithdrawalCreateRequest extends Hip3WithdrawalCreateRequest {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, amount.hashCode);
+    _$hash = $jc(_$hash, payoutChainId.hashCode);
     _$hash = $jc(_$hash, rail.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -126,6 +201,7 @@ class _$Hip3WithdrawalCreateRequest extends Hip3WithdrawalCreateRequest {
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3WithdrawalCreateRequest')
           ..add('amount', amount)
+          ..add('payoutChainId', payoutChainId)
           ..add('rail', rail))
         .toString();
   }
@@ -141,6 +217,13 @@ class Hip3WithdrawalCreateRequestBuilder
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
+  Hip3WithdrawalCreateRequestPayoutChainIdEnum? _payoutChainId;
+  Hip3WithdrawalCreateRequestPayoutChainIdEnum? get payoutChainId =>
+      _$this._payoutChainId;
+  set payoutChainId(
+          Hip3WithdrawalCreateRequestPayoutChainIdEnum? payoutChainId) =>
+      _$this._payoutChainId = payoutChainId;
+
   Hip3WithdrawalCreateRequestRailEnum? _rail;
   Hip3WithdrawalCreateRequestRailEnum? get rail => _$this._rail;
   set rail(Hip3WithdrawalCreateRequestRailEnum? rail) => _$this._rail = rail;
@@ -153,6 +236,7 @@ class Hip3WithdrawalCreateRequestBuilder
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
+      _payoutChainId = $v.payoutChainId;
       _rail = $v.rail;
       _$v = null;
     }
@@ -177,6 +261,7 @@ class Hip3WithdrawalCreateRequestBuilder
         _$Hip3WithdrawalCreateRequest._(
           amount: BuiltValueNullFieldError.checkNotNull(
               amount, r'Hip3WithdrawalCreateRequest', 'amount'),
+          payoutChainId: payoutChainId,
           rail: rail,
         );
     replace(_$result);

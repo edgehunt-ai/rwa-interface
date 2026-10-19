@@ -6,6 +6,32 @@ part of 'hip3_withdrawal_preview.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const Hip3WithdrawalPreviewPayoutAssetEnum
+    _$hip3WithdrawalPreviewPayoutAssetEnum_USDC =
+    const Hip3WithdrawalPreviewPayoutAssetEnum._('USDC');
+const Hip3WithdrawalPreviewPayoutAssetEnum
+    _$hip3WithdrawalPreviewPayoutAssetEnum_USDT =
+    const Hip3WithdrawalPreviewPayoutAssetEnum._('USDT');
+
+Hip3WithdrawalPreviewPayoutAssetEnum
+    _$hip3WithdrawalPreviewPayoutAssetEnumValueOf(String name) {
+  switch (name) {
+    case 'USDC':
+      return _$hip3WithdrawalPreviewPayoutAssetEnum_USDC;
+    case 'USDT':
+      return _$hip3WithdrawalPreviewPayoutAssetEnum_USDT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<Hip3WithdrawalPreviewPayoutAssetEnum>
+    _$hip3WithdrawalPreviewPayoutAssetEnumValues = BuiltSet<
+        Hip3WithdrawalPreviewPayoutAssetEnum>(const <Hip3WithdrawalPreviewPayoutAssetEnum>[
+  _$hip3WithdrawalPreviewPayoutAssetEnum_USDC,
+  _$hip3WithdrawalPreviewPayoutAssetEnum_USDT,
+]);
+
 const Hip3WithdrawalPreviewBlockersEnum
     _$hip3WithdrawalPreviewBlockersEnum_insufficientWithdrawableBalance =
     const Hip3WithdrawalPreviewBlockersEnum._(
@@ -27,9 +53,44 @@ final BuiltSet<Hip3WithdrawalPreviewBlockersEnum>
   _$hip3WithdrawalPreviewBlockersEnum_insufficientWithdrawableBalance,
 ]);
 
+Serializer<Hip3WithdrawalPreviewPayoutAssetEnum>
+    _$hip3WithdrawalPreviewPayoutAssetEnumSerializer =
+    _$Hip3WithdrawalPreviewPayoutAssetEnumSerializer();
 Serializer<Hip3WithdrawalPreviewBlockersEnum>
     _$hip3WithdrawalPreviewBlockersEnumSerializer =
     _$Hip3WithdrawalPreviewBlockersEnumSerializer();
+
+class _$Hip3WithdrawalPreviewPayoutAssetEnumSerializer
+    implements PrimitiveSerializer<Hip3WithdrawalPreviewPayoutAssetEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'USDC': 'USDC',
+    'USDT': 'USDT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'USDC': 'USDC',
+    'USDT': 'USDT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    Hip3WithdrawalPreviewPayoutAssetEnum
+  ];
+  @override
+  final String wireName = 'Hip3WithdrawalPreviewPayoutAssetEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, Hip3WithdrawalPreviewPayoutAssetEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3WithdrawalPreviewPayoutAssetEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3WithdrawalPreviewPayoutAssetEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$Hip3WithdrawalPreviewBlockersEnumSerializer
     implements PrimitiveSerializer<Hip3WithdrawalPreviewBlockersEnum> {
@@ -73,6 +134,8 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
   @override
   final String chainId;
   @override
+  final Hip3WithdrawalPreviewPayoutAssetEnum? payoutAsset;
+  @override
   final String maximumTransferable;
   @override
   final BuiltList<Hip3WithdrawalPreviewBlockersEnum> blockers;
@@ -94,6 +157,7 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
       required this.rail,
       required this.destinationAddress,
       required this.chainId,
+      this.payoutAsset,
       required this.maximumTransferable,
       required this.blockers,
       required this.estimatedArrivalSeconds,
@@ -119,6 +183,7 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
         rail == other.rail &&
         destinationAddress == other.destinationAddress &&
         chainId == other.chainId &&
+        payoutAsset == other.payoutAsset &&
         maximumTransferable == other.maximumTransferable &&
         blockers == other.blockers &&
         estimatedArrivalSeconds == other.estimatedArrivalSeconds &&
@@ -135,6 +200,7 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
     _$hash = $jc(_$hash, rail.hashCode);
     _$hash = $jc(_$hash, destinationAddress.hashCode);
     _$hash = $jc(_$hash, chainId.hashCode);
+    _$hash = $jc(_$hash, payoutAsset.hashCode);
     _$hash = $jc(_$hash, maximumTransferable.hashCode);
     _$hash = $jc(_$hash, blockers.hashCode);
     _$hash = $jc(_$hash, estimatedArrivalSeconds.hashCode);
@@ -153,6 +219,7 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
           ..add('rail', rail)
           ..add('destinationAddress', destinationAddress)
           ..add('chainId', chainId)
+          ..add('payoutAsset', payoutAsset)
           ..add('maximumTransferable', maximumTransferable)
           ..add('blockers', blockers)
           ..add('estimatedArrivalSeconds', estimatedArrivalSeconds)
@@ -191,6 +258,11 @@ class Hip3WithdrawalPreviewBuilder
   String? _chainId;
   String? get chainId => _$this._chainId;
   set chainId(String? chainId) => _$this._chainId = chainId;
+
+  Hip3WithdrawalPreviewPayoutAssetEnum? _payoutAsset;
+  Hip3WithdrawalPreviewPayoutAssetEnum? get payoutAsset => _$this._payoutAsset;
+  set payoutAsset(Hip3WithdrawalPreviewPayoutAssetEnum? payoutAsset) =>
+      _$this._payoutAsset = payoutAsset;
 
   String? _maximumTransferable;
   String? get maximumTransferable => _$this._maximumTransferable;
@@ -233,6 +305,7 @@ class Hip3WithdrawalPreviewBuilder
       _rail = $v.rail;
       _destinationAddress = $v.destinationAddress;
       _chainId = $v.chainId;
+      _payoutAsset = $v.payoutAsset;
       _maximumTransferable = $v.maximumTransferable;
       _blockers = $v.blockers.toBuilder();
       _estimatedArrivalSeconds = $v.estimatedArrivalSeconds;
@@ -275,6 +348,7 @@ class Hip3WithdrawalPreviewBuilder
                 'destinationAddress'),
             chainId: BuiltValueNullFieldError.checkNotNull(
                 chainId, r'Hip3WithdrawalPreview', 'chainId'),
+            payoutAsset: payoutAsset,
             maximumTransferable: BuiltValueNullFieldError.checkNotNull(
                 maximumTransferable,
                 r'Hip3WithdrawalPreview',
