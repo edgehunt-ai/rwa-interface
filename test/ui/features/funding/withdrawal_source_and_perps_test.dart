@@ -1,3 +1,5 @@
+import 'package:nobell/domain/models/deployment_environment.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -82,6 +84,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           portfolioRailAllocationProvider.overrideWith(
             (_) => allocation.future,
           ),
@@ -128,6 +131,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           portfolioRailAllocationProvider.overrideWith(
             (_) async => _allocation,
           ),
@@ -148,11 +152,12 @@ void main() {
     tester,
   ) async {
     await configureDisplay(tester, size: const Size(393, 852));
-    final repository = _TestHip3WithdrawalRepository(previewChainId: '56');
+    final repository = _TestHip3WithdrawalRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
           hip3TransferBalanceProvider.overrideWith((_) async => '1200'),
           tradingAccountsProvider.overrideWith(
@@ -257,7 +262,7 @@ void main() {
     expect(find.text('Review withdrawal'), findsOneWidget);
     expect(find.text('51.4 USDC'), findsWidgets);
     expect(find.text('0x11111111...1111'), findsNWidgets(2));
-    expect(find.text('BNB Smart Chain'), findsOneWidget);
+    expect(find.text('Arbitrum'), findsOneWidget);
     expect(find.text('56'), findsNothing);
     final recipientValue = find.byKey(
       const Key('perps-withdrawal-recipient-receives-value'),
@@ -297,6 +302,10 @@ void main() {
     await tester.pump();
 
     expect(repository.createdAmounts, ['51.4']);
+    expect(find.text('Withdrawal successful'), findsNothing);
+    repository.resourceStatus = 'completed';
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
     expect(find.text('Withdrawal successful'), findsOneWidget);
     expect(
       find.byKey(const Key('perps-withdrawal-amount-field')),
@@ -322,6 +331,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3TransferBalanceProvider.overrideWith((_) async => '1200'),
           tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
           walletsProvider(null).overrideWith((_) async => _currentWallets),
@@ -362,6 +372,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3TransferBalanceProvider.overrideWith((_) => balance.future),
           tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
           walletsProvider(null).overrideWith((_) async => _currentWallets),
@@ -402,6 +413,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
           hip3TransferBalanceProvider.overrideWith((_) async => '100'),
           tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
@@ -471,63 +483,106 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Perps review tracks the requested amount, not total deducted', (
-    tester,
-  ) async {
-    await configureDisplay(tester, size: const Size(393, 852));
-    final repository = _TestHip3WithdrawalRepository(
-      previewAmount: '1.025179',
-      previewRail: 'relay',
-      previewChainId: '56',
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
-          hip3TransferBalanceProvider.overrideWith((_) async => '1.957788'),
-          tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
-          walletsProvider(null).overrideWith((_) async => _currentWallets),
-        ],
-        child: buildTestApp(const PerpsWithdrawalScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Perps Relay review accepts equivalent gross amounts with trailing zeros',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      final repository =
+          _TestHip3WithdrawalRepository(
+              previewAmount: '1.000000',
+              previewRail: 'relay',
+              previewChainId: '42161',
+            )
+            ..resourceStatus = 'submitting'
+            ..createFee = '1.19';
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+            hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
+            hip3TransferBalanceProvider.overrideWith((_) async => '1.957788'),
+            tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
+            walletsProvider(null).overrideWith((_) async => _currentWallets),
+          ],
+          child: buildTestApp(const PerpsWithdrawalScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const Key('perps-withdrawal-amount-field')),
-      '1',
-    );
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump();
+      await tester.enterText(
+        find.byKey(const Key('perps-withdrawal-amount-field')),
+        '1',
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
 
-    final reviewButton = find.byKey(
-      const Key('perps-withdrawal-review-button'),
-    );
-    expect(repository.previewAmounts, ['1']);
-    expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
-    expect(
-      find.text('Unable to prepare this withdrawal. Try again.'),
-      findsNothing,
-    );
+      final reviewButton = find.byKey(
+        const Key('perps-withdrawal-review-button'),
+      );
+      expect(repository.previewAmounts, ['1']);
+      expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
+      expect(
+        find.text('Unable to prepare this withdrawal. Try again.'),
+        findsNothing,
+      );
 
-    await tester.tap(reviewButton);
-    await tester.pumpAndSettle();
-    final submitButton = find.byKey(
-      const Key('perps-withdrawal-submit-button'),
-    );
-    await tester.scrollUntilVisible(
-      submitButton,
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(submitButton);
-    await tester.pump();
-    await tester.pump();
+      await tester.tap(reviewButton);
+      await tester.pumpAndSettle();
+      final submitButton = find.byKey(
+        const Key('perps-withdrawal-submit-button'),
+      );
+      await tester.scrollUntilVisible(
+        submitButton,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(submitButton);
+      await tester.pump();
+      await tester.pump();
 
-    expect(repository.createdAmounts, ['1']);
-    expect(find.text('Withdrawal successful'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(repository.createdAmounts, ['1']);
+      expect(
+        find.byKey(const Key('perps-withdrawal-amount-field')),
+        findsOneWidget,
+      );
+      repository.createFee = '1.18';
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      await tester.tap(reviewButton);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        submitButton,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(submitButton);
+      await tester.pump();
+      await tester.pump();
+      expect(repository.createdAmounts, ['1', '1']);
+      expect(find.text('Withdrawal successful'), findsNothing);
+      expect(
+        find.text('Transfer submitted. Waiting for funds to arrive.'),
+        findsOneWidget,
+      );
+      expect(tester.widget<FilledButton>(submitButton).onPressed, isNull);
+      repository.failureReason =
+          'relay_intent_failed_or_refunded_requires_manual_review';
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump();
+      expect(find.textContaining('Needs manual review.'), findsOneWidget);
+      final checks = repository.getCalls;
+      await tester.pump(const Duration(seconds: 10));
+      expect(repository.getCalls, checks);
+      expect(repository.createdAmounts, ['1', '1']);
+      repository.failureReason = null;
+      repository.resourceStatus = 'completed';
+      await tester.tap(find.byKey(const Key('perps-withdrawal-refresh')));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Withdrawal successful'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'Perps preview destination enables review without active wallet',
@@ -537,6 +592,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
             hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
             hip3TransferBalanceProvider.overrideWith((_) async => '1.957788'),
             tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
@@ -593,6 +649,7 @@ Future<void> _pumpSourceEntry(WidgetTester tester, GoRouter router) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
         portfolioRailAllocationProvider.overrideWith((_) async => _allocation),
       ],
       child: buildRouterTestApp(router),
@@ -727,9 +784,16 @@ final class _TestHip3WithdrawalRepository implements Hip3WithdrawalRepository {
   final String previewChainId;
   final previewAmounts = <String>[];
   final createdAmounts = <String>[];
+  String resourceStatus = 'submitted';
+  String createFee = '1.18';
+  String? failureReason;
+  int getCalls = 0;
 
   @override
-  Future<Hip3WithdrawalPreview> preview({required String amount}) async {
+  Future<Hip3WithdrawalPreview> preview({
+    required String amount,
+    required int payoutChainId,
+  }) async {
     previewAmounts.add(amount);
     await previewGate;
     return Hip3WithdrawalPreview(
@@ -760,24 +824,38 @@ final class _TestHip3WithdrawalRepository implements Hip3WithdrawalRepository {
   Future<Hip3Withdrawal> create({
     required String amount,
     required String rail,
+    required int payoutChainId,
     required String idempotencyKey,
   }) async {
     createdAmounts.add(amount);
-    return Hip3Withdrawal(
-      id: 'withdrawal-1',
-      ownerAddress: _perpsAccounts.single.address!,
-      destinationAddress: _perpsAccounts.single.address!,
-      amount: amount,
-      fee: '1.18',
-      minimumReceived: '50.22',
-      status: 'submitted',
-      rail: rail,
-      expiresAt: DateTime.now().add(const Duration(minutes: 5)),
-    );
+    return _resource(amount, payoutChainId, rail);
   }
 
+  Hip3Withdrawal _resource(String amount, int payoutChainId, String rail) =>
+      Hip3Withdrawal(
+        id: 'withdrawal-1',
+        ownerAddress: _perpsAccounts.single.address!,
+        destinationAddress: _perpsAccounts.single.address!,
+        amount: amount,
+        fee: createFee,
+        minimumReceived: '50.22',
+        status: resourceStatus,
+        failureReason: failureReason,
+        rail: rail,
+        payoutChainId: payoutChainId,
+        payoutAsset: 'USDC',
+        expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+      );
+
   @override
-  Future<Hip3Withdrawal> get(String id) => throw UnimplementedError();
+  Future<Hip3Withdrawal> get(String id) async {
+    getCalls++;
+    return _resource(
+      createdAmounts.last,
+      int.parse(previewChainId),
+      previewRail,
+    );
+  }
 
   @override
   Future<Hip3Withdrawal> signAndSubmit(
@@ -785,3 +863,10 @@ final class _TestHip3WithdrawalRepository implements Hip3WithdrawalRepository {
     required String idempotencyKey,
   }) => throw UnimplementedError();
 }
+
+Future<DeploymentEnvironment> _mainnetEnvironment(Ref ref) async =>
+    const DeploymentEnvironment(
+      environment: 'mainnet',
+      hip3Environment: 'mainnet',
+      bstocksConfigured: false,
+    );

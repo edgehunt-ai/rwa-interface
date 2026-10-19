@@ -7,6 +7,7 @@ import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/domain/models/hip3_withdrawal.dart';
 import 'package:nobell/domain/models/portfolio_allocation.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/wallet.dart';
@@ -35,6 +36,9 @@ class PerpsWithdrawalScreen extends ConsumerStatefulWidget {
 class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
   final _amount = TextEditingController();
   Hip3WithdrawalPreview? _preview;
+  Hip3Withdrawal? _withdrawal;
+  Timer? _withdrawalRefresh;
+  bool _withdrawalPolling = false;
   String? _previewInputAmount;
   String? _error;
   Timer? _previewDebounce;
@@ -54,6 +58,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
   void dispose() {
     _previewDebounce?.cancel();
     _previewRefresh?.cancel();
+    _withdrawalRefresh?.cancel();
     _amount
       ..removeListener(_schedulePreview)
       ..dispose();
@@ -61,6 +66,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
   }
 
   void _schedulePreview() {
+    if (_withdrawal?.isPending == true) return;
     _previewDebounce?.cancel();
     _previewRefresh?.cancel();
     final sequence = ++_previewSequence;
@@ -189,7 +195,9 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
 
   Future<void> _submit() async {
     var preview = _preview;
-    if (preview == null || _submitting) return;
+    if (preview == null || _submitting || _withdrawal?.isPending == true) {
+      return;
+    }
     final requestedAmount = _previewInputAmount ?? _amount.text.trim();
     setState(() {
       _submitting = true;
@@ -209,17 +217,39 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
         setState(() {
           _preview = preview;
           _error = blocker;
+          _reviewing = false;
         });
-        if (blocker != null || !preview.canProceed) return;
+        _schedulePreviewRefresh(preview, _previewSequence, requestedAmount);
+        return;
       }
       final prepared = await commands.prepare(
         requestedAmount,
         rail: preview.rail,
+        payoutChainId: int.parse(preview.chainId),
       );
-      if (prepared.status == 'awaiting_signature') {
-        await commands.submit(prepared);
-      }
+      final submitted = prepared.status == 'awaiting_signature'
+          ? await commands.submit(prepared)
+          : prepared;
       if (!mounted) return;
+      _handleWithdrawalStatus(submitted);
+    } on Hip3WithdrawalQuoteChanged {
+      if (!mounted) return;
+      setState(() => _reviewing = false);
+      _schedulePreview();
+    } on Object catch (failure) {
+      if (mounted) setState(() => _error = _failureMessage(failure));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  void _handleWithdrawalStatus(Hip3Withdrawal withdrawal) {
+    if (!mounted) return;
+    _withdrawalRefresh?.cancel();
+    _withdrawalRefresh = null;
+    final l10n = AppLocalizations.of(context);
+    if (withdrawal.status == 'completed') {
+      _withdrawal = null;
       ref.invalidate(portfolioSummaryProvider);
       _amount.clear();
       setState(() {
@@ -227,16 +257,39 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
         _previewInputAmount = null;
         _error = null;
         _reviewing = false;
-        _submitting = false;
       });
-      AppToast.showSuccess(
-        context,
-        AppLocalizations.of(context).withdrawalSucceeded,
+      AppToast.showSuccess(context, l10n.withdrawalSucceeded);
+      return;
+    }
+    setState(() {
+      _withdrawal = withdrawal;
+      _error = withdrawal.requiresManualReview
+          ? l10n.hip3PendingReview
+          : withdrawal.status == 'failed' || withdrawal.status == 'expired'
+          ? l10n.transferFailed
+          : null;
+    });
+    if (withdrawal.isPending && !withdrawal.requiresManualReview) {
+      _withdrawalRefresh = Timer.periodic(
+        const Duration(seconds: 3),
+        (_) => unawaited(_pollWithdrawal()),
       );
-    } on Object catch (failure) {
-      if (mounted) setState(() => _error = _failureMessage(failure));
+    }
+  }
+
+  Future<void> _pollWithdrawal() async {
+    final current = _withdrawal;
+    if (!mounted || current == null || _withdrawalPolling) return;
+    setState(() => _withdrawalPolling = true);
+    try {
+      final withdrawal = await ref
+          .read(hip3WithdrawalCommandsProvider)
+          .refresh(current.id);
+      _handleWithdrawalStatus(withdrawal);
+    } on Object {
+      // Keep the submitted intent visible; a read failure cannot release it.
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) setState(() => _withdrawalPolling = false);
     }
   }
 
@@ -291,6 +344,10 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 preview: _preview!,
                 sourceAddress: sourceAddress,
                 onBack: () {
+                  if (_withdrawal?.isPending == true) {
+                    Navigator.of(context).maybePop();
+                    return;
+                  }
                   setState(() {
                     _reviewing = false;
                     _error = null;
@@ -299,6 +356,9 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 },
                 onSubmit: _submit,
                 submitting: _submitting,
+                pending: _withdrawal?.isPending == true,
+                checkingStatus: _withdrawalPolling,
+                onRefresh: _pollWithdrawal,
                 error: _error,
               )
             : _PerpsWithdrawalForm(
@@ -606,6 +666,9 @@ class _PerpsWithdrawalReview extends StatelessWidget {
     required this.onSubmit,
     required this.submitting,
     required this.error,
+    required this.pending,
+    required this.checkingStatus,
+    required this.onRefresh,
   });
 
   final Hip3WithdrawalPreview preview;
@@ -613,6 +676,9 @@ class _PerpsWithdrawalReview extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onSubmit;
   final bool submitting;
+  final bool pending;
+  final bool checkingStatus;
+  final VoidCallback onRefresh;
   final String? error;
 
   @override
@@ -663,7 +729,9 @@ class _PerpsWithdrawalReview extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _DetailRow(
-                label: l10n.networkFee,
+                label: preview.rail == 'relay'
+                    ? l10n.estimatedFee
+                    : l10n.networkFee,
                 value: '≈ ${TokenAmountFormatter.formatText(preview.fee)} USDC',
               ),
             ],
@@ -689,6 +757,16 @@ class _PerpsWithdrawalReview extends StatelessWidget {
             impacts: preview.crossLiquidationImpacts,
           ),
         ],
+        if (pending) ...[
+          const SizedBox(height: 12),
+          if (error == null) Text(l10n.transferWaitingArrival),
+          OutlinedButton.icon(
+            key: const Key('perps-withdrawal-refresh'),
+            onPressed: checkingStatus ? null : onRefresh,
+            icon: const Icon(Icons.refresh),
+            label: Text(l10n.hip3PendingCheck),
+          ),
+        ],
         if (error != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -703,7 +781,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           height: 48,
           child: FilledButton(
             key: const Key('perps-withdrawal-submit-button'),
-            onPressed: submitting ? null : onSubmit,
+            onPressed: submitting || pending ? null : onSubmit,
             child: submitting
                 ? const SizedBox.square(
                     key: Key('perps-withdrawal-submit-progress'),

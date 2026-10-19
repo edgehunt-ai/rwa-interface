@@ -5,6 +5,7 @@ import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/app/providers/session_scope.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/hip3_withdrawal.dart';
@@ -21,7 +22,10 @@ void main() {
     () async {
       final repository = _AvailableBalancePortfolio();
       final container = ProviderContainer(
-        overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          portfolioRepositoryProvider.overrideWithValue(repository),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -31,10 +35,171 @@ void main() {
     },
   );
 
+  ProviderContainer makeContainer(
+    _Repository repo, {
+    String network = 'mainnet',
+  }) => ProviderContainer(
+    overrides: [
+      deploymentEnvironmentProvider.overrideWith(
+        (_) async => DeploymentEnvironment(
+          environment: network,
+          hip3Environment: network,
+          bstocksConfigured: false,
+        ),
+      ),
+      hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+    ],
+  );
+
+  test(
+    'Arbitrum gross amount is exact decimal and destination is frozen',
+    () async {
+      final repo = _Repository();
+      final container = makeContainer(repo);
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      await commands.preview('51.400000');
+      await commands.prepare('51.40', rail: 'float', payoutChainId: 42161);
+      expect(repo.previewChains, [42161]);
+      expect(repo.creationChains, [42161]);
+    },
+  );
+
+  test('Testnet selects Arbitrum Sepolia from the API environment', () async {
+    final repo = _Repository()..chainId = 421614;
+    final container = makeContainer(repo, network: 'testnet');
+    addTearDown(container.dispose);
+    final commands = container.read(hip3WithdrawalCommandsProvider);
+    await commands.preview('51.4');
+    await commands.prepare('51.4', rail: 'float', payoutChainId: 421614);
+    expect(repo.previewChains, [421614]);
+    expect(repo.creationChains, [421614]);
+  });
+
+  test(
+    'a venue submission with an unknown result cannot create or sign again',
+    () async {
+      final repo = _Repository();
+      final container = makeContainer(repo);
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      await commands.preview('51.4');
+      final prepared = await commands.prepare('51.4', rail: 'float');
+      repo.status = 'submitting';
+      final repeated = await commands.prepare('51.4', rail: 'float');
+      expect(repeated.status, 'submitting');
+      expect(repeated.isPending, isTrue);
+      expect((await commands.submit(prepared)).status, 'submitting');
+      expect(repo.creationKeys, hasLength(1));
+      expect(repo.submitted, 0);
+    },
+  );
+
+  for (final changed in ['signature expiry', 'quote fee', 'input amount']) {
+    test(
+      'reconciles a lost submission response after $changed before creating again',
+      () async {
+        final repo = _Repository();
+        if (changed == 'signature expiry') {
+          repo.intentExpiresAt = DateTime.now().add(
+            const Duration(milliseconds: 5),
+          );
+        }
+        final container = makeContainer(repo);
+        addTearDown(container.dispose);
+        final commands = container.read(hip3WithdrawalCommandsProvider);
+        await commands.preview('51.4');
+        await commands.prepare('51.4', rail: 'float');
+        repo.status = 'submitting';
+        if (changed == 'signature expiry') {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        if (changed == 'quote fee') {
+          repo.quotedFee = '2';
+          await commands.preview('51.4', forceRefresh: true);
+        }
+        final current = await commands.prepare(
+          changed == 'input amount' ? '52' : '51.4',
+          rail: 'float',
+        );
+        expect(current.status, 'submitting');
+        expect(repo.creationKeys, hasLength(1));
+        expect(repo.submitted, 0);
+      },
+    );
+  }
+
+  test('unknown environments fail before any quote request', () async {
+    final repo = _Repository();
+    final container = makeContainer(repo, network: 'unknown');
+    addTearDown(container.dispose);
+    await expectLater(
+      container.read(hip3WithdrawalCommandsProvider).preview('51.4'),
+      throwsStateError,
+    );
+    expect(repo.previewAmounts, isEmpty);
+  });
+
+  test('a BSC preview cannot change the Arbitrum destination', () async {
+    final repo = _Repository()..chainId = 56;
+    final container = makeContainer(repo);
+    addTearDown(container.dispose);
+    await expectLater(
+      container.read(hip3WithdrawalCommandsProvider).preview('51.4'),
+      throwsStateError,
+    );
+    expect(repo.creationKeys, isEmpty);
+  });
+
+  test(
+    'an unexpected quote asset is rejected before creating an intent',
+    () async {
+      final repo = _Repository()..previewAsset = 'USDT';
+      final container = makeContainer(repo);
+      addTearDown(container.dispose);
+      await expectLater(
+        container.read(hip3WithdrawalCommandsProvider).preview('51.4'),
+        throwsStateError,
+      );
+      expect(repo.creationKeys, isEmpty);
+    },
+  );
+
+  for (final field in [
+    'chain',
+    'asset',
+    'amount',
+    'fee',
+    'minimum',
+    'rail',
+    'destination',
+  ]) {
+    test('changed frozen $field rejects preparation before signing', () async {
+      final repo = _Repository()..changedField = field;
+      final container = makeContainer(repo);
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      await commands.preview('51.4');
+      await expectLater(
+        commands.prepare('51.4', rail: 'float', payoutChainId: 42161),
+        throwsA(isA<Hip3WithdrawalQuoteChanged>()),
+      );
+      expect(repo.submitted, 0);
+      expect(repo.creationKeys, hasLength(1));
+      repo.changedField = null;
+      await commands.preview('51.4', forceRefresh: true);
+      await commands.prepare('51.4', rail: 'float', payoutChainId: 42161);
+      expect(repo.creationKeys.toSet(), hasLength(2));
+    });
+  }
+
   test('preparation reuses the frozen intent and submits it once', () async {
     final repo = _Repository();
     final container = ProviderContainer(
-      overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+      ],
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -64,7 +229,10 @@ void main() {
           const Duration(seconds: 1),
         );
       final container = ProviderContainer(
-        overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+        ],
       );
       addTearDown(container.dispose);
       final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -80,7 +248,10 @@ void main() {
     final repo = _Repository()
       ..riskValidUntil = DateTime.now().toUtc().add(const Duration(minutes: 1));
     final container = ProviderContainer(
-      overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+      ],
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -98,6 +269,7 @@ void main() {
       final observability = _RecordingObservabilityReporter();
       final container = ProviderContainer(
         overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
           hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
           observabilityReporterProvider.overrideWithValue(observability),
         ],
@@ -130,16 +302,17 @@ void main() {
     final observability = _RecordingObservabilityReporter();
     final container = ProviderContainer(
       overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
         hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
         observabilityReporterProvider.overrideWithValue(observability),
       ],
     );
     addTearDown(container.dispose);
 
+    final commands = container.read(hip3WithdrawalCommandsProvider);
+    await commands.preview('51.4');
     await expectLater(
-      container
-          .read(hip3WithdrawalCommandsProvider)
-          .prepare('51.4', rail: 'float'),
+      commands.prepare('51.4', rail: 'float'),
       throwsA(isA<UnknownFailure>()),
     );
 
@@ -153,7 +326,10 @@ void main() {
   test('a terminal intent gets a new creation key', () async {
     final repo = _Repository();
     final container = ProviderContainer(
-      overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+      ],
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -168,7 +344,10 @@ void main() {
   test('an old account session cannot submit its frozen intent', () async {
     final repo = _Repository();
     final container = ProviderContainer(
-      overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+      ],
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -205,6 +384,13 @@ final class _AvailableBalancePortfolio implements PortfolioRepository {
 
 class _Repository implements Hip3WithdrawalRepository {
   final previewAmounts = <String>[];
+  final previewChains = <int>[];
+  final creationChains = <int>[];
+  int chainId = 42161;
+  String? previewAsset;
+  String quotedFee = '1.18';
+  DateTime? intentExpiresAt;
+  String? changedField;
   final creationKeys = <String>[];
   final creationRails = <String>[];
   final submissionKeys = <String>[];
@@ -216,15 +402,20 @@ class _Repository implements Hip3WithdrawalRepository {
   DateTime? riskValidUntil;
 
   @override
-  Future<Hip3WithdrawalPreview> preview({required String amount}) async {
+  Future<Hip3WithdrawalPreview> preview({
+    required String amount,
+    required int payoutChainId,
+  }) async {
     previewAmounts.add(amount);
+    previewChains.add(payoutChainId);
     return Hip3WithdrawalPreview(
       amount: '51.4',
-      fee: '1.18',
+      fee: quotedFee,
       minimumReceived: '50.22',
       rail: 'float',
       destinationAddress: '0x1111111111111111111111111111111111111111',
-      chainId: '42161',
+      chainId: chainId.toString(),
+      payoutAsset: previewAsset,
       maximumTransferable: '100',
       blockers: [],
       estimatedArrivalSeconds: 120,
@@ -238,13 +429,18 @@ class _Repository implements Hip3WithdrawalRepository {
   Hip3Withdrawal _intent(String status) => Hip3Withdrawal(
     id: 'id',
     ownerAddress: '0x1111111111111111111111111111111111111111',
-    destinationAddress: '0x1111111111111111111111111111111111111111',
-    amount: '51.4',
-    fee: '1.18',
-    minimumReceived: '50.22',
+    destinationAddress: changedField == 'destination'
+        ? '0x2222222222222222222222222222222222222222'
+        : '0x1111111111111111111111111111111111111111',
+    amount: changedField == 'amount' ? '52' : '51.400000',
+    fee: changedField == 'fee' ? '1.19' : '1.180000',
+    minimumReceived: changedField == 'minimum' ? '50' : '50.220000',
     status: status,
-    rail: 'float',
-    expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+    rail: changedField == 'rail' ? 'relay' : 'float',
+    payoutChainId: changedField == 'chain' ? 56 : chainId,
+    payoutAsset: changedField == 'asset' ? 'USDT' : 'USDC',
+    expiresAt:
+        intentExpiresAt ?? DateTime.now().add(const Duration(minutes: 5)),
     typedDataJson: '{}',
     payloadHash: 'hash',
   );
@@ -253,11 +449,13 @@ class _Repository implements Hip3WithdrawalRepository {
   Future<Hip3Withdrawal> create({
     required String amount,
     required String rail,
+    required int payoutChainId,
     required String idempotencyKey,
   }) async {
     if (createFailure case final failure?) throw failure;
     creationKeys.add(idempotencyKey);
     creationRails.add(rail);
+    creationChains.add(payoutChainId);
     return _intent('awaiting_signature');
   }
 
@@ -327,3 +525,10 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
   @override
   Future<void> setUserId(String userId) async {}
 }
+
+Future<DeploymentEnvironment> _mainnetEnvironment(Ref ref) async =>
+    const DeploymentEnvironment(
+      environment: 'mainnet',
+      hip3Environment: 'mainnet',
+      bstocksConfigured: false,
+    );
