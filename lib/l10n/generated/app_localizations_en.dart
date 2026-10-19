@@ -2242,7 +2242,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get estimateTime => 'Estimate time';
 
   @override
+  String get estimatedReceived => 'Estimated received';
+
+  @override
+  String get minimumReceived => 'Minimum received';
+
+  @override
+  String get providerFee => 'Provider fee';
+
+  @override
   String get bridgeFee => 'Bridge Fee';
+
+  @override
+  String get swapFee => 'Swap cost';
 
   @override
   String get sendAccount => 'Send account';

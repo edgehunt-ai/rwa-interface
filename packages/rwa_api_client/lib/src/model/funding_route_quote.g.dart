@@ -16,7 +16,11 @@ class _$FundingRouteQuote extends FundingRouteQuote {
   @override
   final String maximumInputAmount;
   @override
+  final String? estimatedReceived;
+  @override
   final String minimumReceived;
+  @override
+  final int? slippageBps;
   @override
   final FundingFeeBreakdown fees;
   @override
@@ -39,7 +43,9 @@ class _$FundingRouteQuote extends FundingRouteQuote {
       required this.provider,
       required this.inputAmount,
       required this.maximumInputAmount,
+      this.estimatedReceived,
       required this.minimumReceived,
+      this.slippageBps,
       required this.fees,
       required this.etaSeconds,
       required this.quotedAt,
@@ -63,7 +69,9 @@ class _$FundingRouteQuote extends FundingRouteQuote {
         provider == other.provider &&
         inputAmount == other.inputAmount &&
         maximumInputAmount == other.maximumInputAmount &&
+        estimatedReceived == other.estimatedReceived &&
         minimumReceived == other.minimumReceived &&
+        slippageBps == other.slippageBps &&
         fees == other.fees &&
         etaSeconds == other.etaSeconds &&
         quotedAt == other.quotedAt &&
@@ -79,7 +87,9 @@ class _$FundingRouteQuote extends FundingRouteQuote {
     _$hash = $jc(_$hash, provider.hashCode);
     _$hash = $jc(_$hash, inputAmount.hashCode);
     _$hash = $jc(_$hash, maximumInputAmount.hashCode);
+    _$hash = $jc(_$hash, estimatedReceived.hashCode);
     _$hash = $jc(_$hash, minimumReceived.hashCode);
+    _$hash = $jc(_$hash, slippageBps.hashCode);
     _$hash = $jc(_$hash, fees.hashCode);
     _$hash = $jc(_$hash, etaSeconds.hashCode);
     _$hash = $jc(_$hash, quotedAt.hashCode);
@@ -97,7 +107,9 @@ class _$FundingRouteQuote extends FundingRouteQuote {
           ..add('provider', provider)
           ..add('inputAmount', inputAmount)
           ..add('maximumInputAmount', maximumInputAmount)
+          ..add('estimatedReceived', estimatedReceived)
           ..add('minimumReceived', minimumReceived)
+          ..add('slippageBps', slippageBps)
           ..add('fees', fees)
           ..add('etaSeconds', etaSeconds)
           ..add('quotedAt', quotedAt)
@@ -129,10 +141,19 @@ class FundingRouteQuoteBuilder
   set maximumInputAmount(String? maximumInputAmount) =>
       _$this._maximumInputAmount = maximumInputAmount;
 
+  String? _estimatedReceived;
+  String? get estimatedReceived => _$this._estimatedReceived;
+  set estimatedReceived(String? estimatedReceived) =>
+      _$this._estimatedReceived = estimatedReceived;
+
   String? _minimumReceived;
   String? get minimumReceived => _$this._minimumReceived;
   set minimumReceived(String? minimumReceived) =>
       _$this._minimumReceived = minimumReceived;
+
+  int? _slippageBps;
+  int? get slippageBps => _$this._slippageBps;
+  set slippageBps(int? slippageBps) => _$this._slippageBps = slippageBps;
 
   FundingFeeBreakdownBuilder? _fees;
   FundingFeeBreakdownBuilder get fees =>
@@ -171,7 +192,9 @@ class FundingRouteQuoteBuilder
       _provider = $v.provider;
       _inputAmount = $v.inputAmount;
       _maximumInputAmount = $v.maximumInputAmount;
+      _estimatedReceived = $v.estimatedReceived;
       _minimumReceived = $v.minimumReceived;
+      _slippageBps = $v.slippageBps;
       _fees = $v.fees.toBuilder();
       _etaSeconds = $v.etaSeconds;
       _quotedAt = $v.quotedAt;
@@ -209,8 +232,10 @@ class FundingRouteQuoteBuilder
                 inputAmount, r'FundingRouteQuote', 'inputAmount'),
             maximumInputAmount: BuiltValueNullFieldError.checkNotNull(
                 maximumInputAmount, r'FundingRouteQuote', 'maximumInputAmount'),
+            estimatedReceived: estimatedReceived,
             minimumReceived: BuiltValueNullFieldError.checkNotNull(
                 minimumReceived, r'FundingRouteQuote', 'minimumReceived'),
+            slippageBps: slippageBps,
             fees: fees.build(),
             etaSeconds: BuiltValueNullFieldError.checkNotNull(
                 etaSeconds, r'FundingRouteQuote', 'etaSeconds'),

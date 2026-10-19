@@ -36,6 +36,16 @@ void main() {
       expect(session.requiredTargetBalance, '20');
       expect(session.targetAvailableAmount, '15');
       expect(session.remainingMinimumTopUp, '5');
+      expect(session.estimatedReceived, '4.9');
+      expect(session.minimumReceived, '0');
+      expect(session.slippageBps, 125);
+      expect(session.fees?.asset, 'USD');
+      expect(session.fees?.providerFee, '0.1');
+      expect(session.fees?.bridgeFee, '0.2');
+      expect(session.fees?.swapFee, '0.3');
+      expect(session.fees?.networkFee, '0.4');
+      expect(session.fees?.totalFee, '1');
+      expect(session.fees?.totalCostUsd, '0.75');
       expect(session.targetToken, 'USDC-PERPS');
       expect(session.targetNetwork, 'Hyperliquid');
       expect(session.positions.single.availableAmount.value, '20');
@@ -51,6 +61,16 @@ void main() {
       );
     },
   );
+
+  test('funding session preserves unknown optional quote fields', () async {
+    final session = await FundingRepositoryImpl(
+      _MappedSessionFunding(includeQuoteDetails: false),
+    ).getFundingSession('legacy-session');
+
+    expect(session.estimatedReceived, isNull);
+    expect(session.slippageBps, isNull);
+    expect(session.minimumReceived, '0');
+  });
 
   test('net funding capacity preserves total account valuation', () async {
     final account = await FundingRepositoryImpl(_MappedSessionFunding())
@@ -383,8 +403,12 @@ final class _DepositFunding implements FundingService {
 }
 
 final class _MappedSessionFunding implements FundingService {
-  _MappedSessionFunding({this.eligible = true});
+  _MappedSessionFunding({
+    this.eligible = true,
+    this.includeQuoteDetails = true,
+  });
   final bool eligible;
+  final bool includeQuoteDetails;
 
   @override
   Future<api.UnifiedFundingAccount> getUnifiedFundingAccount() async => api
@@ -408,7 +432,7 @@ final class _MappedSessionFunding implements FundingService {
   @override
   Future<api.FundingSession> getFundingSession(String id) async =>
       api.standardSerializers.deserializeWith(api.FundingSession.serializer, {
-        ..._fundingSessionBody(id),
+        ..._fundingSessionBody(id, includeQuoteDetails: includeQuoteDetails),
         'positions': [_fundingPositionBody(eligible: eligible)],
       })!;
 
@@ -445,7 +469,10 @@ Map<String, Object?> _fundingPositionBody({required bool eligible}) => {
   'valid_until': '2026-09-28T08:28:18.098Z',
 };
 
-Map<String, Object?> _fundingSessionBody(String id) => {
+Map<String, Object?> _fundingSessionBody(
+  String id, {
+  bool includeQuoteDetails = true,
+}) => {
   'funding_session_id': id,
   'status': 'editing',
   'version': 1,
@@ -501,17 +528,19 @@ Map<String, Object?> _fundingSessionBody(String id) => {
   'recommended_top_up': '6',
   'safety_buffer_bps': 2000,
   'selected_target_amount': '0',
+  if (includeQuoteDetails) 'estimated_received': '4.9',
   'minimum_received': '0',
+  if (includeQuoteDetails) 'slippage_bps': 125,
   'maximum_selectable_target_amount': '0',
   'total_source_value_usd': '0',
   'estimated_fees': {
-    'fee_asset': 'USDC',
-    'provider_fee': '0',
-    'bridge_fee': '0',
-    'swap_fee': '0',
-    'network_fee': '0',
-    'total_fee': '0',
-    'total_cost_usd': '0',
+    'fee_asset': 'USD',
+    'provider_fee': '0.1',
+    'bridge_fee': '0.2',
+    'swap_fee': '0.3',
+    'network_fee': '0.4',
+    'total_fee': '1',
+    'total_cost_usd': '0.75',
   },
   'eta_seconds': 0,
   'positions': <Object?>[],

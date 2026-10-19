@@ -2127,7 +2127,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get estimateTime => '预计时间';
 
   @override
+  String get estimatedReceived => '预计到账';
+
+  @override
+  String get minimumReceived => '最小到账';
+
+  @override
+  String get providerFee => '服务商费用';
+
+  @override
   String get bridgeFee => '跨链费用';
+
+  @override
+  String get swapFee => '兑换成本';
 
   @override
   String get sendAccount => '转出账户';
