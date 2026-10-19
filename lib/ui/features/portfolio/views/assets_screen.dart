@@ -35,6 +35,8 @@ import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart'
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 class AssetsScreen extends ConsumerStatefulWidget {
   const AssetsScreen({super.key});
   @override
@@ -196,7 +198,8 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                       state: DesignState.loading,
                       title: l10n.loadingAssets,
                     ),
-                    error: (_, _) => DesignStateFeedback(
+                    error: (error, _) => DesignStateFeedback(
+                      error: error,
                       state: DesignState.failure,
                       title: l10n.assetsUnavailable,
                       message: l10n.pullToRefreshRetry,
@@ -794,8 +797,8 @@ class _Allocation extends StatelessWidget {
               height: 6,
               radius: 3,
             ),
-            error: (_, _) => Text(
-              l10n.allocationUnavailable,
+            error: (error, _) => Text(
+              errorMessage(error, fallback: l10n.allocationUnavailable),
               style: TextStyle(fontSize: 12, color: colors.secondaryText),
             ),
             data: (allocation) => _AllocationValues(
@@ -1435,10 +1438,15 @@ class _TrendExpanded extends StatelessWidget {
             height: 150,
             child: LoadingSkeleton(rows: 2, padding: EdgeInsets.zero),
           ),
-          error: (_, _) => SizedBox(
+          error: (error, _) => SizedBox(
             height: 150,
             child: Center(
-              child: Text(AppLocalizations.of(context).portfolioUnavailable),
+              child: Text(
+                errorMessage(
+                  error,
+                  fallback: AppLocalizations.of(context).portfolioUnavailable,
+                ),
+              ),
             ),
           ),
           data: (value) => _TrendChart(history: value),
@@ -1808,11 +1816,14 @@ class _SpotBalances extends ConsumerWidget {
       return SliverToBoxAdapter(child: _loading(context));
     }
     if (holdings.initialError != null) {
-      return SliverToBoxAdapter(child: _failure(context, ref));
+      return SliverToBoxAdapter(
+        child: _failure(context, ref, holdings.initialError),
+      );
     }
     return accounts.when(
       loading: () => SliverToBoxAdapter(child: _loading(context)),
-      error: (_, _) => SliverToBoxAdapter(child: _failure(context, ref)),
+      error: (error, _) =>
+          SliverToBoxAdapter(child: _failure(context, ref, error)),
       data: (accountItems) => _content(
         context,
         accountItems,
@@ -1830,17 +1841,19 @@ class _SpotBalances extends ConsumerWidget {
     ),
   );
 
-  Widget _failure(BuildContext context, WidgetRef ref) => SizedBox(
-    height: 340,
-    child: DesignStateFeedback(
-      state: DesignState.failure,
-      title: AppLocalizations.of(context).assetsUnavailable,
-      onRetry: () {
-        ref.invalidate(tradingAccountsProvider);
-        ref.invalidate(holdingsProvider(null));
-      },
-    ),
-  );
+  Widget _failure(BuildContext context, WidgetRef ref, Object? error) =>
+      SizedBox(
+        height: 340,
+        child: DesignStateFeedback(
+          state: DesignState.failure,
+          title: AppLocalizations.of(context).assetsUnavailable,
+          error: error,
+          onRetry: () {
+            ref.invalidate(tradingAccountsProvider);
+            ref.invalidate(holdingsProvider(null));
+          },
+        ),
+      );
 
   Widget _content(
     BuildContext context,
@@ -2497,7 +2510,9 @@ class _PerpsBalances extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (holdings.initialLoading) return _loading(context);
-    if (holdings.initialError != null) return _failure(context, ref);
+    if (holdings.initialError != null) {
+      return _failure(context, ref, holdings.initialError);
+    }
     final ordersById = <String, TradingOrder>{};
     for (final result in openOrders.items) {
       final order = result.resource;
@@ -2505,7 +2520,7 @@ class _PerpsBalances extends ConsumerWidget {
     }
     return allocation.when(
       loading: () => _loading(context),
-      error: (_, _) => _failure(context, ref),
+      error: (error, _) => _failure(context, ref, error),
       data: (allocationValue) => _content(
         context,
         allocationValue,
@@ -2524,18 +2539,20 @@ class _PerpsBalances extends ConsumerWidget {
     ),
   );
 
-  Widget _failure(BuildContext context, WidgetRef ref) => SizedBox(
-    height: 340,
-    child: DesignStateFeedback(
-      state: DesignState.failure,
-      title: AppLocalizations.of(context).holdingsUnavailable,
-      onRetry: () {
-        ref.invalidate(portfolioRailAllocationProvider);
-        ref.invalidate(holdingsProvider(null));
-        ref.invalidate(perpsOpenOrdersProvider);
-      },
-    ),
-  );
+  Widget _failure(BuildContext context, WidgetRef ref, Object? error) =>
+      SizedBox(
+        height: 340,
+        child: DesignStateFeedback(
+          state: DesignState.failure,
+          title: AppLocalizations.of(context).holdingsUnavailable,
+          error: error,
+          onRetry: () {
+            ref.invalidate(portfolioRailAllocationProvider);
+            ref.invalidate(holdingsProvider(null));
+            ref.invalidate(perpsOpenOrdersProvider);
+          },
+        ),
+      );
 
   Widget _content(
     BuildContext context,

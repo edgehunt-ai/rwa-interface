@@ -19,6 +19,7 @@ import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../positions/providers/position_providers.dart';
 import 'hip3_segmented_control.dart';
+import '../../../core/feedback/error_message.dart' as feedback;
 
 /// Closes only the selected HIP-3 position using a reduce-only order.
 class Hip3ClosePositionSheet extends ConsumerStatefulWidget {
@@ -309,12 +310,10 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
             : null) ??
         (previewError == null
             ? null
-            : previewError is ApiFailure
-            ? apiFailureMessage(
+            : feedback.errorMessage(
                 previewError,
                 fallback: l10n.closePreviewUnavailable,
-              )
-            : l10n.closePreviewUnavailable);
+              ));
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final side = switch (position.side) {

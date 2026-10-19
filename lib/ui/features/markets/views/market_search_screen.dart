@@ -180,7 +180,8 @@ class _MarketDiscoverySearchScreenState
       state: DesignState.loading,
       title: AppLocalizations.of(context).loadingMarkets,
     ),
-    error: (_, _) => DesignStateFeedback(
+    error: (error, _) => DesignStateFeedback(
+      error: error,
       state: DesignState.failure,
       title: AppLocalizations.of(context).marketsUnavailable,
       message: AppLocalizations.of(context).marketCatalogUnavailable,
@@ -222,7 +223,8 @@ class _MarketDiscoverySearchScreenState
       products: const [],
       isLoadingMore: true,
     ),
-    error: (_, _) => DesignStateFeedback(
+    error: (error, _) => DesignStateFeedback(
+      error: error,
       state: DesignState.failure,
       title: AppLocalizations.of(context).marketsUnavailable,
       message: AppLocalizations.of(context).marketCatalogUnavailable,

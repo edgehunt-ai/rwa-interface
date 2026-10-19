@@ -9,6 +9,7 @@ import '../../../core/feedback/app_toast.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
 import '../providers/position_providers.dart';
 import 'hip3_protection_order_results.dart';
+import '../../orders/views/hip3_order_messages.dart';
 
 /// Operate: extend the assets page's themed, linear list. Show frozen workflow
 /// identity and status before an explicit recovery action; never create an order.
@@ -46,9 +47,14 @@ class _PendingActionsState extends ConsumerState<_PendingActions> {
       message = pending.requiresReview
           ? l10n.hip3PendingReview
           : l10n.hip3PendingStillActive;
-    } catch (_) {
+    } catch (error) {
+      if (!mounted) return;
       succeeded = false;
-      message = l10n.hip3PendingError;
+      message = hip3ErrorMessage(
+        context,
+        error,
+        fallback: l10n.hip3PendingError,
+      );
     }
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
     setState(() => _busyAction = null);

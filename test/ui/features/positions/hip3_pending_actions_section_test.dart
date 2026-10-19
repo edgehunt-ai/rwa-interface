@@ -1,3 +1,6 @@
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/ui/core/feedback/app_toast.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,6 +15,29 @@ import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/features/positions/views/hip3_pending_actions_section.dart';
 
 void main() {
+  testWidgets('resuming an action displays the actual server rejection', (
+    tester,
+  ) async {
+    addTearDown(AppToast.dismiss);
+    final repository = _Repository();
+    await _mount(tester, repository);
+    await tester.tap(find.byKey(const ValueKey('resume-pending')));
+    await tester.pump();
+    repository.completion.completeError(
+      const ServerFailure(
+        statusCode: 409,
+        code: 'action_expired',
+        failureReason: 'This wallet action expired before signing.',
+      ),
+    );
+    await tester.pump();
+    expect(
+      find.text('This wallet action expired before signing.'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'resumes the original ID once and never offers manual review retry',
     (tester) async {

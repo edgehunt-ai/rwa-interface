@@ -25,6 +25,8 @@ import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 class PerpsWithdrawalScreen extends ConsumerStatefulWidget {
   const PerpsWithdrawalScreen({super.key});
 
@@ -245,6 +247,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
 
   void _handleWithdrawalStatus(Hip3Withdrawal withdrawal) {
     if (!mounted) return;
+    final wasPending = _withdrawal?.isPending == true;
     _withdrawalRefresh?.cancel();
     _withdrawalRefresh = null;
     final l10n = AppLocalizations.of(context);
@@ -266,10 +269,18 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
       _error = withdrawal.requiresManualReview
           ? l10n.hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
-          ? l10n.transferFailed
+          ? errorMessage(
+              withdrawal.failureReason ?? '',
+              fallback: l10n.transferFailed,
+            )
           : null;
     });
-    if (withdrawal.isPending && !withdrawal.requiresManualReview) {
+    if (withdrawal.isPending &&
+        !wasPending &&
+        !withdrawal.requiresManualReview) {
+      AppToast.showSuccess(context, l10n.transferWaitingArrival);
+    }
+    if (withdrawal.isPending) {
       _withdrawalRefresh = Timer.periodic(
         const Duration(seconds: 3),
         (_) => unawaited(_pollWithdrawal()),
@@ -311,7 +322,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 l10n.walletConnectRequired,
               _ => l10n.hip3SigningRequestInvalid,
             },
-      _ => l10n.prepareWithdrawalFailed,
+      _ => errorMessage(failure, fallback: l10n.prepareWithdrawalFailed),
     };
   }
 
@@ -357,8 +368,6 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 onSubmit: _submit,
                 submitting: _submitting,
                 pending: _withdrawal?.isPending == true,
-                checkingStatus: _withdrawalPolling,
-                onRefresh: _pollWithdrawal,
                 error: _error,
               )
             : _PerpsWithdrawalForm(
@@ -667,8 +676,6 @@ class _PerpsWithdrawalReview extends StatelessWidget {
     required this.submitting,
     required this.error,
     required this.pending,
-    required this.checkingStatus,
-    required this.onRefresh,
   });
 
   final Hip3WithdrawalPreview preview;
@@ -677,8 +684,6 @@ class _PerpsWithdrawalReview extends StatelessWidget {
   final VoidCallback onSubmit;
   final bool submitting;
   final bool pending;
-  final bool checkingStatus;
-  final VoidCallback onRefresh;
   final String? error;
 
   @override
@@ -755,16 +760,6 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           const SizedBox(height: 20),
           Hip3CrossLiquidationImpactsCard(
             impacts: preview.crossLiquidationImpacts,
-          ),
-        ],
-        if (pending) ...[
-          const SizedBox(height: 12),
-          if (error == null) Text(l10n.transferWaitingArrival),
-          OutlinedButton.icon(
-            key: const Key('perps-withdrawal-refresh'),
-            onPressed: checkingStatus ? null : onRefresh,
-            icon: const Icon(Icons.refresh),
-            label: Text(l10n.hip3PendingCheck),
           ),
         ],
         if (error != null) ...[

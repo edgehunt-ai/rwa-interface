@@ -31,6 +31,8 @@ import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart'
 import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 
+import '../../../core/feedback/error_message.dart';
+
 /// Presents the internal Spot/Perps transfer flow.
 ///
 /// Quotes and executes an internal Spot-to-Perps transfer through Riverpod.
@@ -277,12 +279,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
         _withdrawalPreviewing = false;
-        _error = error is ApiFailure
-            ? apiFailureMessage(
-                error,
-                fallback: AppLocalizations.of(context).transferFailed,
-              )
-            : AppLocalizations.of(context).transferFailed;
+        _error = errorMessage(
+          error,
+          fallback: AppLocalizations.of(context).transferFailed,
+        );
       });
       final current = _withdrawalPreview;
       if (current != null && _sameWithdrawalAmount(current.amount, amount)) {
@@ -341,9 +341,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _quoteSequence) return;
       setState(() {
         _quote = null;
-        _error = error is ApiFailure
-            ? apiFailureMessage(error, fallback: 'Unable to get a quote.')
-            : 'Unable to get a quote.';
+        _error = errorMessage(error, fallback: 'Unable to get a quote.');
       });
     } finally {
       if (mounted && sequence == _quoteSequence) {
@@ -392,7 +390,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _quoteSequence) return;
       setState(() => _applyQuote(quote));
       if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
-    } catch (_) {
+    } catch (error) {
       if (!mounted || sequence != _quoteSequence) return;
       final current = _quote;
       if (_transferPending && current != null) {
@@ -400,7 +398,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       } else {
         setState(() {
           _quote = null;
-          _error = AppLocalizations.of(context).transferQuoteChanged;
+          _error = errorMessage(
+            error,
+            fallback: AppLocalizations.of(context).transferQuoteChanged,
+          );
         });
       }
     }
@@ -466,7 +467,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             fallback: l10n.transferStartFailed,
           ),
           StateError stateError => stateError.message.toString(),
-          _ => l10n.transferStartFailed,
+          _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
         _statusMessage = null;
         _transferPending = false;
@@ -606,7 +607,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     l10n.transferStartFailed,
                 },
           StateError failure => failure.message.toString(),
-          _ => l10n.transferStartFailed,
+          _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
       });
     } finally {
@@ -629,18 +630,18 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _error = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
-          ? (withdrawal.failureReason ??
-                AppLocalizations.of(context).transferFailed)
+          ? errorMessage(
+              withdrawal.failureReason ?? '',
+              fallback: AppLocalizations.of(context).transferFailed,
+            )
           : null;
     });
-    if (withdrawal.isPending &&
-        !withdrawal.requiresManualReview &&
-        _withdrawalRefresh == null) {
+    if (withdrawal.isPending && _withdrawalRefresh == null) {
       _withdrawalRefresh = Timer.periodic(
         const Duration(seconds: 3),
         (_) => unawaited(_pollWithdrawal()),
       );
-    } else if (!withdrawal.isPending || withdrawal.requiresManualReview) {
+    } else if (!withdrawal.isPending) {
       _withdrawalRefresh?.cancel();
       _withdrawalRefresh = null;
     }
@@ -956,11 +957,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _SectionLabel(
-                          _quoting || _quote?.estimatedReceived != null
-                              ? l10n.estimatedReceived
-                              : l10n.minimumReceived,
-                        ),
+                        _SectionLabel(l10n.receiveAmount),
                         options.when(
                           data: (value) {
                             final target = value.catalog?.transferTarget;
@@ -1053,15 +1050,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ),
                       ],
-                      if (_withdrawal?.requiresManualReview == true) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          key: const Key('transfer-withdrawal-refresh'),
-                          onPressed: _pollWithdrawal,
-                          icon: const Icon(Icons.refresh),
-                          label: Text(l10n.hip3PendingCheck),
-                        ),
-                      ],
                       if (_transferPending) ...[
                         const SizedBox(height: 12),
                         OutlinedButton(
@@ -1140,13 +1128,10 @@ class _LoadError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            error is ApiFailure
-                ? apiFailureMessage(
-                    error as ApiFailure,
-                    fallback: AppLocalizations.of(context)
-                        .transferOptionsLoadFailed,
-                  )
-                : AppLocalizations.of(context).transferOptionsLoadFailed,
+            errorMessage(
+              error,
+              fallback: AppLocalizations.of(context).transferOptionsLoadFailed,
+            ),
           ),
           TextButton.icon(
             onPressed: onRetry,
@@ -1896,6 +1881,7 @@ class _ReceiveAmountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
+      key: const Key('transfer-receive-amount-card'),
       constraints: const BoxConstraints(minHeight: 59),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
@@ -1945,7 +1931,7 @@ class _ReceiveAmountCard extends StatelessWidget {
               radius: 4,
             )
           else
-            Flexible(
+            Expanded(
               child: AnimatedNumberText(
                 TokenAmountFormatter.formatText(value),
                 key: const Key('transfer-receive-amount-value'),
@@ -1988,19 +1974,15 @@ class _FeeSummary extends StatelessWidget {
             loading: loading,
             skeletonKey: const Key('transfer-quote-eta-skeleton'),
           ),
-          if (quote?.estimatedReceived != null || loading) ...[
-            const SizedBox(height: 8),
-            _FeeRow(
-              AppLocalizations.of(context).minimumReceived,
-              _formatAmount(quote?.minimumReceived, quote?.targetToken),
-              valueKey: const Key('transfer-minimum-received-value'),
-              comparisonValue: quote?.minimumReceived,
-              loading: loading,
-              skeletonKey: const Key(
-                'transfer-quote-minimum-received-skeleton',
-              ),
-            ),
-          ],
+          const SizedBox(height: 8),
+          _FeeRow(
+            AppLocalizations.of(context).minimumReceived,
+            _formatAmount(quote?.minimumReceived, quote?.targetToken),
+            valueKey: const Key('transfer-minimum-received-value'),
+            comparisonValue: quote?.minimumReceived,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-minimum-received-skeleton'),
+          ),
           const SizedBox(height: 8),
           _FeeRow(
             AppLocalizations.of(context).slippageTolerance,

@@ -76,6 +76,48 @@ void main() {
     expect(repo.creationChains, [421614]);
   });
 
+  for (final previewAsset in <String?>['USDC', null]) {
+    test(
+      'testnet Bridge2 matches USDC2 against preview $previewAsset',
+      () async {
+        final repo = _Repository()
+          ..chainId = 421614
+          ..rail = 'bridge2'
+          ..previewAsset = previewAsset
+          ..createdAsset = 'USDC2';
+        final container = makeContainer(repo, network: 'testnet');
+        addTearDown(container.dispose);
+        final commands = container.read(hip3WithdrawalCommandsProvider);
+        await commands.preview('51.4');
+        final prepared = await commands.prepare('51.4', rail: 'bridge2');
+        expect(prepared.payoutAsset, 'USDC2');
+        expect(repo.creationChains, [421614]);
+      },
+    );
+  }
+
+  for (final target in [
+    (network: 'mainnet', chainId: 42161, rail: 'bridge2'),
+    (network: 'testnet', chainId: 421614, rail: 'relay'),
+  ]) {
+    test('USDC2 is rejected outside testnet Bridge2: $target', () async {
+      final repo = _Repository()
+        ..chainId = target.chainId
+        ..rail = target.rail
+        ..previewAsset = 'USDC'
+        ..createdAsset = 'USDC2';
+      final container = makeContainer(repo, network: target.network);
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      await commands.preview('51.4');
+      await expectLater(
+        commands.prepare('51.4', rail: target.rail),
+        throwsA(isA<Hip3WithdrawalQuoteChanged>()),
+      );
+      expect(repo.submitted, 0);
+    });
+  }
+
   test(
     'a venue submission with an unknown result cannot create or sign again',
     () async {
@@ -101,18 +143,18 @@ void main() {
       () async {
         final repo = _Repository();
         if (changed == 'signature expiry') {
-          repo.intentExpiresAt = DateTime.now().add(
-            const Duration(milliseconds: 5),
+          repo.intentExpiresAt = DateTime.now().subtract(
+            const Duration(minutes: 1),
           );
         }
         final container = makeContainer(repo);
         addTearDown(container.dispose);
         final commands = container.read(hip3WithdrawalCommandsProvider);
         await commands.preview('51.4');
-        await commands.prepare('51.4', rail: 'float');
+        final prepared = await commands.prepare('51.4', rail: 'float');
         repo.status = 'submitting';
         if (changed == 'signature expiry') {
-          await Future<void>.delayed(const Duration(milliseconds: 10));
+          expect(prepared.expiresAt.isBefore(DateTime.now()), isTrue);
         }
         if (changed == 'quote fee') {
           repo.quotedFee = '2';
@@ -388,6 +430,8 @@ class _Repository implements Hip3WithdrawalRepository {
   final creationChains = <int>[];
   int chainId = 42161;
   String? previewAsset;
+  String createdAsset = 'USDC';
+  String rail = 'float';
   String quotedFee = '1.18';
   DateTime? intentExpiresAt;
   String? changedField;
@@ -412,7 +456,7 @@ class _Repository implements Hip3WithdrawalRepository {
       amount: '51.4',
       fee: quotedFee,
       minimumReceived: '50.22',
-      rail: 'float',
+      rail: rail,
       destinationAddress: '0x1111111111111111111111111111111111111111',
       chainId: chainId.toString(),
       payoutAsset: previewAsset,
@@ -436,9 +480,9 @@ class _Repository implements Hip3WithdrawalRepository {
     fee: changedField == 'fee' ? '1.19' : '1.180000',
     minimumReceived: changedField == 'minimum' ? '50' : '50.220000',
     status: status,
-    rail: changedField == 'rail' ? 'relay' : 'float',
+    rail: changedField == 'rail' ? 'relay' : rail,
     payoutChainId: changedField == 'chain' ? 56 : chainId,
-    payoutAsset: changedField == 'asset' ? 'USDT' : 'USDC',
+    payoutAsset: changedField == 'asset' ? 'USDT' : createdAsset,
     expiresAt:
         intentExpiresAt ?? DateTime.now().add(const Duration(minutes: 5)),
     typedDataJson: '{}',

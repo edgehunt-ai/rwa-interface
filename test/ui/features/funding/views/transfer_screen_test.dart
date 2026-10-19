@@ -121,7 +121,7 @@ void main() {
     expect(find.byKey(const Key('transfer-token-chevron')), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
-    expect(find.text('-'), findsNWidgets(7));
+    expect(find.text('-'), findsNWidgets(8));
     expect(find.text('--'), findsNothing);
     expect(find.text('Sign & Transfer'), findsOneWidget);
     expect(
@@ -353,12 +353,9 @@ void main() {
     expect(find.textContaining('人工'), findsOneWidget);
     final checks = withdrawals.getCalls;
     await tester.pump(const Duration(seconds: 10));
-    expect(withdrawals.getCalls, checks);
+    expect(withdrawals.getCalls, greaterThan(checks));
     expect(withdrawals.submissions, 1);
-    expect(
-      find.byKey(const Key('transfer-withdrawal-refresh')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('transfer-withdrawal-refresh')), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -688,9 +685,21 @@ void main() {
       find.byKey(const Key('transfer-quote-total-fee-skeleton')),
       findsNothing,
     );
-    expect(find.text('Estimated received'), findsOneWidget);
+    expect(find.text('Receive amount'), findsOneWidget);
+    expect(find.text('Minimum received'), findsOneWidget);
     expect(find.text('123,456,789.123456'), findsOneWidget);
     expect(find.text('123,456,789.000001 USDC'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('123,456,789.123456')).right,
+      closeTo(
+        tester
+                .getRect(find.byKey(const Key('transfer-receive-amount-card')))
+                .right -
+            17,
+        1,
+      ),
+    );
     expect(find.text('1.25%'), findsOneWidget);
     expect(find.text('0.05 USD'), findsNWidgets(2));
     expect(find.text('0.1 USD'), findsOneWidget);
@@ -702,6 +711,56 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('1 Cross position will be affected'), findsOneWidget);
+  });
+
+  testWidgets('minimum received stays visible without an estimated amount', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..quoteResponse = Completer<FundingSessionSummary>();
+    await _pumpCapacityTransfer(tester, funding);
+    expect(find.text('Receive amount'), findsOneWidget);
+    expect(find.text('Minimum received'), findsOneWidget);
+    expect(
+      find.byKey(const Key('transfer-minimum-received-value')),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(find.text('Minimum received'), findsOneWidget);
+    expect(
+      find.byKey(const Key('transfer-quote-minimum-received-skeleton')),
+      findsOneWidget,
+    );
+
+    funding.quoteResponse!.complete(funding._session);
+    await tester.pumpAndSettle();
+    expect(find.text('Receive amount'), findsOneWidget);
+    expect(find.text('Minimum received'), findsOneWidget);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-minimum-received-value')),
+          )
+          .value,
+      '19.5 USDC',
+    );
+    expect(
+      tester.getRect(find.text('19.5')).right,
+      closeTo(
+        tester
+                .getRect(find.byKey(const Key('transfer-receive-amount-card')))
+                .right -
+            17,
+        1,
+      ),
+    );
+    expect(
+      find.byKey(const Key('transfer-quote-minimum-received-skeleton')),
+      findsNothing,
+    );
   });
 
   testWidgets('refreshed transfer quote animates amounts and fees', (
@@ -1264,6 +1323,7 @@ final class _CapacityTransferRepository implements FundingRepository {
     canConfirmTransfer: true,
     expiresAt: DateTime.utc(2027),
     minimumReceived: '19.5',
+    targetToken: 'USDC',
     allocations: {'usdc': amounts.last},
     positions: missing
         ? const []

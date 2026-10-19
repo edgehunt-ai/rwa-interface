@@ -193,12 +193,13 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     ),
                   ),
                 ),
-                error: (_, _) => SliverPadding(
+                error: (error, _) => SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   sliver: SliverToBoxAdapter(
                     child: SizedBox(
                       height: 340,
                       child: DesignStateFeedback(
+                        error: error,
                         state: DesignState.failure,
                         title: l10n.marketsUnavailable,
                         message: l10n.pullToRefreshRetry,

@@ -147,13 +147,8 @@ void main() {
         platform: () => 'android',
       );
       addTearDown(coordinator.dispose);
-      final messages = <PushMessage>[];
       final routes = <String>[];
-      final messageSubscription = coordinator.foregroundMessages.listen(
-        messages.add,
-      );
       final routeSubscription = coordinator.routes.listen(routes.add);
-      addTearDown(messageSubscription.cancel);
       addTearDown(routeSubscription.cancel);
       const message = PushMessage(
         {'route': '/activity'},
@@ -165,10 +160,10 @@ void main() {
       await coordinator.activate(_settings);
       messaging.foreground.add(message);
       await Future<void>.delayed(Duration.zero);
-      expect(messages, [message]);
+      expect(messaging.shown, [message]);
       expect(routes, isEmpty);
 
-      coordinator.openMessage(message);
+      messaging.opened.add(message);
       coordinator.openMessage(
         const PushMessage({'route': 'https://invalid.example'}),
       );
@@ -179,7 +174,7 @@ void main() {
       messaging.foreground.add(message);
       coordinator.openMessage(message);
       await Future<void>.delayed(Duration.zero);
-      expect(messages, [message]);
+      expect(messaging.shown, [message]);
       expect(routes, ['/activity']);
     },
   );
@@ -260,6 +255,12 @@ final class _Messaging implements PushMessagingGateway {
   final opened = StreamController<PushMessage>.broadcast();
   final foreground = StreamController<PushMessage>.broadcast();
   var permissionRequests = 0;
+  final shown = <PushMessage>[];
+
+  @override
+  Future<void> showForegroundMessage(PushMessage message) async {
+    shown.add(message);
+  }
 
   @override
   bool get isSupported => true;

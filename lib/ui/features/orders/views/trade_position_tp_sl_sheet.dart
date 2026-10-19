@@ -336,6 +336,13 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         ? null
         : ref.watch(hip3ProtectionActionProvider(initialResult.actionId));
     final result = refreshedResult?.value ?? initialResult;
+    // Keep the frozen request locked, but let the user retry its existing action
+    // after a cancelled signature or transport failure instead of creating one.
+    final retryResult =
+        _pending && _error != null && result?.canResumePositionAction == true
+        ? result
+        : null;
+    final waiting = _pending && retryResult == null;
     if (refreshedResult?.isLoading == false &&
         refreshedResult?.hasError == false &&
         result?.status == 'awaitingSignature' &&
@@ -507,14 +514,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                           backgroundColor: colors.primaryAction,
                           foregroundColor: colors.onPrimaryAction,
                         ),
-                        onPressed:
-                            _submitting ||
-                                _pending ||
-                                _consentLoading ||
-                                sizeDecimals == null
+                        onPressed: _submitting || waiting
+                            ? null
+                            : retryResult != null
+                            ? () => _resumeProtection(retryResult)
+                            : _consentLoading || sizeDecimals == null
                             ? null
                             : () => _save(sizeDecimals),
-                        child: _submitting || _pending
+                        child: _submitting || waiting
                             ? const SizedBox.square(
                                 dimension: 18,
                                 child: CircularProgressIndicator(

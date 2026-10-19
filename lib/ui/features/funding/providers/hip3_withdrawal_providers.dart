@@ -174,13 +174,22 @@ final class Hip3WithdrawalCommands {
     int chainId,
   ) =>
       prepared.payoutChainId == chainId &&
-      prepared.payoutAsset == (quote.payoutAsset ?? 'USDC') &&
+      prepared.payoutAsset == _expectedPayoutAsset(quote, chainId) &&
       prepared.rail == quote.rail &&
       prepared.destinationAddress.toLowerCase() ==
           quote.destinationAddress.toLowerCase() &&
       _sameAmount(prepared.amount, quote.amount) &&
       _sameAmount(prepared.fee, quote.fee) &&
       _sameAmount(prepared.minimumReceived, quote.minimumReceived);
+
+  String _expectedPayoutAsset(Hip3WithdrawalPreview quote, int chainId) {
+    final asset = quote.payoutAsset ?? 'USDC';
+    // Preview calls the testnet token USDC; Bridge2 create returns its actual
+    // symbol USDC2. Keep this alias scoped to Arbitrum Sepolia Bridge2.
+    return chainId == 421614 && quote.rail == 'bridge2' && asset == 'USDC'
+        ? 'USDC2'
+        : asset;
+  }
 
   Future<Hip3Withdrawal> submit(Hip3Withdrawal prepared) async {
     _checkSession();

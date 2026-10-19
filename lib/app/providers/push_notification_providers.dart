@@ -35,10 +35,6 @@ final pushNotificationRouteProvider = StreamProvider<String>((ref) {
   return ref.watch(pushNotificationCoordinatorProvider).routes;
 });
 
-final foregroundPushMessageProvider = StreamProvider<PushMessage>((ref) {
-  return ref.watch(pushNotificationCoordinatorProvider).foregroundMessages;
-});
-
 final class PushNotificationCoordinator {
   PushNotificationCoordinator(
     this._messaging,
@@ -52,7 +48,6 @@ final class PushNotificationCoordinator {
   final AccountRepository _accountRepository;
   final String? Function() _platform;
   final _routes = StreamController<String>.broadcast();
-  final _foregroundMessages = StreamController<PushMessage>.broadcast();
   StreamSubscription<PushMessage>? _foregroundMessageSubscription;
   bool _foregroundEnabled = false;
   StreamSubscription<String>? _tokenRefreshSubscription;
@@ -62,10 +57,17 @@ final class PushNotificationCoordinator {
   int? _activeActivationGeneration;
 
   Stream<String> get routes => _routes.stream;
-  Stream<PushMessage> get foregroundMessages => _foregroundMessages.stream;
 
   void openMessage(PushMessage message) {
     if (_foregroundEnabled) _handleMessage(message);
+  }
+
+  Future<void> _showForegroundMessage(PushMessage message) async {
+    try {
+      await _messaging.showForegroundMessage(message);
+    } catch (_) {
+      // Notification delivery must not interrupt the current user operation.
+    }
   }
 
   Future<void> activate(UserPreferences preferences) async {
@@ -79,7 +81,7 @@ final class PushNotificationCoordinator {
       _foregroundMessageSubscription ??= _messaging.foregroundMessages.listen((
         message,
       ) {
-        if (_foregroundEnabled) _foregroundMessages.add(message);
+        if (_foregroundEnabled) unawaited(_showForegroundMessage(message));
       });
       _openedMessageSubscription ??= _messaging.openedMessages.listen(
         _handleMessage,
@@ -137,7 +139,6 @@ final class PushNotificationCoordinator {
     _foregroundMessageSubscription = null;
     await _tokenRefreshSubscription?.cancel();
     await _openedMessageSubscription?.cancel();
-    await _foregroundMessages.close();
     await _routes.close();
   }
 

@@ -572,17 +572,67 @@ void main() {
       expect(find.textContaining('Needs manual review.'), findsOneWidget);
       final checks = repository.getCalls;
       await tester.pump(const Duration(seconds: 10));
-      expect(repository.getCalls, checks);
+      expect(repository.getCalls, greaterThan(checks));
       expect(repository.createdAmounts, ['1', '1']);
       repository.failureReason = null;
       repository.resourceStatus = 'completed';
-      await tester.tap(find.byKey(const Key('perps-withdrawal-refresh')));
+      expect(find.byKey(const Key('perps-withdrawal-refresh')), findsNothing);
+      await tester.pump(const Duration(seconds: 3));
       await tester.pump();
       await tester.pump();
       expect(find.text('Withdrawal successful'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+
+  for (final status in ['failed', 'expired']) {
+    testWidgets('Perps $status displays the actual failure reason', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      final reason = 'Withdrawal $status: venue rejected the destination';
+      final repository = _TestHip3WithdrawalRepository()
+        ..resourceStatus = status
+        ..failureReason = reason;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+            hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
+            hip3TransferBalanceProvider.overrideWith((_) async => '100'),
+            tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
+            walletsProvider(null).overrideWith((_) async => _currentWallets),
+          ],
+          child: buildTestApp(const PerpsWithdrawalScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final amountField = find.byKey(
+        const Key('perps-withdrawal-amount-field'),
+      );
+      await tester.enterText(amountField, '1');
+      final amountController = tester
+          .widget<TextField>(amountField)
+          .controller!;
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('perps-withdrawal-review-button')));
+      await tester.pumpAndSettle();
+      final submitButton = find.byKey(
+        const Key('perps-withdrawal-submit-button'),
+      );
+      await tester.scrollUntilVisible(
+        submitButton,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+      expect(find.text(reason), findsOneWidget);
+      expect(find.text('Transfer failed'), findsNothing);
+      expect(amountController.text, '1');
+    });
+  }
 
   testWidgets(
     'Perps preview destination enables review without active wallet',

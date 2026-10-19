@@ -1103,7 +1103,8 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                   padding: EdgeInsets.only(top: 16),
                 ),
               ),
-              error: (_, _) => FailureState(
+              error: (error, _) => FailureState(
+                error: error,
                 height: 420,
                 title: l10n.unableToLoadAssets,
                 description: l10n.checkConnectionRetry,

@@ -7,7 +7,6 @@ import 'package:nobell/app/providers/locale_provider.dart';
 import 'package:nobell/app/providers/push_notification_providers.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/domain/auth/authentication.dart';
-import 'package:nobell/domain/notifications/push_messaging_gateway.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/motion/launch_animation.dart';
 import 'package:nobell/ui/core/layout/foldable_adaptive_shell.dart';
@@ -37,40 +36,6 @@ final class _AppView extends ConsumerStatefulWidget {
 final class _AppViewState extends ConsumerState<_AppView> {
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  void _showForegroundMessage(PushMessage message) {
-    final title = message.title?.trim() ?? '';
-    final body = message.body?.trim() ?? '';
-    if (title.isEmpty && body.isEmpty) return;
-    final messenger = _messengerKey.currentState;
-    if (messenger == null) return;
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 6),
-        showCloseIcon: true,
-        content: InkWell(
-          onTap: () {
-            messenger.hideCurrentSnackBar();
-            ref.read(pushNotificationCoordinatorProvider).openMessage(message);
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (title.isNotEmpty)
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              if (body.isNotEmpty) Text(body),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -88,12 +53,6 @@ final class _AppViewState extends ConsumerState<_AppView> {
       if (next is! AuthenticationAuthenticated) {
         _messengerKey.currentState?.hideCurrentSnackBar();
       }
-    });
-    ref.listen<AsyncValue<PushMessage>>(foregroundPushMessageProvider, (
-      _,
-      next,
-    ) {
-      next.whenData(_showForegroundMessage);
     });
     ref.listen<AsyncValue<String>>(pushNotificationRouteProvider, (_, next) {
       next.whenData((route) => widget.router.go(route));

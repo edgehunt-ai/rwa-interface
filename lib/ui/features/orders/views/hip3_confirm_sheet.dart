@@ -7,9 +7,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
+import '../../../../domain/models/application_state.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/order_preview.dart';
+import '../../../../domain/models/resource_result.dart';
 import '../../../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -203,8 +205,13 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
       if (!isCurrent()) return;
       ref.invalidate(hip3OrdersProvider);
       if (submitted == null) {
+        final state = ref.read(orderCommandProvider);
+        if (state
+            is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>) {
+          throw state.failure;
+        }
         setState(
-          () => _error = 'The server did not return a submitted HIP-3 order.',
+          () => _error = AppLocalizations.of(context).orderSubmissionFailed,
         );
         return;
       }

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../domain/models/api_failure.dart';
+import '../../../core/feedback/error_message.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
@@ -46,18 +46,9 @@ String hip3ErrorMessage(
   Object error, {
   String? fallback,
 }) {
-  if (error is ApiFailure) {
-    return apiFailureMessage(
-      error,
-      fallback: fallback ?? 'HIP-3 request failed.',
-    );
-  }
-  if (error is FormatException) {
-    final message = error.message.toString().trim();
-    if (message.isNotEmpty) return message;
-  }
   if (error is Hip3SigningFailure) return hip3SigningError(context, error);
-  final message = error.toString().trim();
-  if (message.isNotEmpty && message != 'null') return message;
-  return fallback ?? 'HIP-3 request failed for an unknown reason.';
+  return errorMessage(
+    error,
+    fallback: fallback ?? 'HIP-3 request failed for an unknown reason.',
+  );
 }

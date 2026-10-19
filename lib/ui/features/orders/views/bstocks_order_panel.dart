@@ -32,6 +32,7 @@ import 'order_funding_confirmation_header.dart';
 import 'limit_price_loss_notice.dart';
 import 'slippage_controls.dart';
 import 'tp_sl_editor_card.dart';
+import '../../../core/feedback/error_message.dart';
 
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
@@ -505,13 +506,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
   }
 
-  String _errorMessage({required Object error, required String fallback}) {
-    if (error is ApiFailure) {
-      return apiFailureMessage(error, fallback: fallback);
-    }
-    final message = error.toString().trim();
-    return message.isEmpty ? fallback : message;
-  }
+  String _errorMessage({required Object error, required String fallback}) =>
+      errorMessage(error, fallback: fallback);
 
   void _setError(String message, {required _BstocksErrorSource source}) {
     error = message;

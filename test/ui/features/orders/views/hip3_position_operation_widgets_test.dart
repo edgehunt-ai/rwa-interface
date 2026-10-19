@@ -154,6 +154,32 @@ void main() {
       isNull,
     );
   });
+  for (final conditional in [true, false]) {
+    testWidgets(
+      'open order price prefers ${conditional ? 'conditional trigger' : 'limit'} price',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: buildTestApp(
+              Hip3OpenOrderCard(
+                order: _order(
+                  'price-priority',
+                  conditional: conditional,
+                  executionType: 'limit',
+                  limitPrice: '125',
+                ),
+                onChanged: () {},
+              ),
+            ),
+          ),
+        );
+        expect(find.text(conditional ? '130' : '125'), findsOneWidget);
+        expect(find.text(conditional ? '125' : '130'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('parent omits the cancellation protection warning', (
     tester,
   ) async {
@@ -272,6 +298,39 @@ void main() {
     expect(find.text('价格'), findsOneWidget);
     expect(find.text('进度'), findsOneWidget);
     expect(find.text('止盈 200 / 止损 130'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('parent cancellation displays the actual server rejection', (
+    tester,
+  ) async {
+    final execution = _CancellingHip3Orders()
+      ..error = const ServerFailure(
+        statusCode: 409,
+        code: 'order_already_filled',
+        failureReason: 'This order has already filled and cannot be cancelled.',
+      );
+    var changed = false;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+        ],
+        child: buildTestApp(
+          Hip3OpenOrderCard(
+            order: _order('parent'),
+            onChanged: () => changed = true,
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('This order has already filled and cannot be cancelled.'),
+      findsOneWidget,
+    );
+    expect(changed, isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -411,6 +470,150 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  for (final (failure, message) in <(Object, String)>[
+    (
+      const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      'Signature request was cancelled.',
+    ),
+    (
+      const NetworkFailure(),
+      'Network unavailable. Check your connection and try again.',
+    ),
+    (
+      const TimeoutFailure(),
+      'The TP/SL request timed out. Check protection orders before retrying.',
+    ),
+  ]) {
+    testWidgets(
+      'failed automatic protection signature can retry the same action: $failure',
+      (tester) async {
+        addTearDown(AppToast.dismiss);
+        await configureDisplay(tester, size: const Size(600, 1200));
+        const awaiting = Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: 'awaitingSignature',
+          effectsApplied: false,
+          canResumePositionAction: true,
+        );
+        final repo = _Positions()
+          ..protectionResult = const Hip3ActionSummary(
+            actionId: 'protection-result',
+            productId: 'xyz:TSLA',
+            operation: 'manageTpsl',
+            status: 'reconciling',
+            effectsApplied: false,
+            canResumePositionAction: true,
+          );
+        final resume = Completer<void>();
+        repo.resumeDelay = resume.future;
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+            child: buildTestApp(
+              Builder(
+                builder: (context) => FilledButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => PositionTpSlSheet(
+                      position: _position(withProtection: false),
+                    ),
+                  ),
+                  child: const Text('Open protection'),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open protection'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('position-protection-take-profit')),
+          '111',
+        );
+        final submit = find.widgetWithText(FilledButton, 'Sign and confirm');
+        await tester.ensureVisible(submit);
+        await tester.tap(submit);
+        await tester.pump();
+        await tester.pump();
+        expect(repo.protectionReads, 1);
+        repo.protectionResult = awaiting;
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('Waiting for your signature'), findsNothing);
+        expect(find.text('Continue action'), findsNothing);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(repo.protectionReads, 2);
+        await tester.pump(const Duration(seconds: 6));
+        await tester.pump();
+        expect(repo.protectionReads, 2);
+
+        expect(repo.resumedActions, ['protection-result']);
+        expect(repo.protectionCalls, 1);
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed,
+          isNull,
+        );
+        resume.completeError(failure);
+        for (var frame = 0; frame < 10; frame++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(find.text(message), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        final retry = find.widgetWithText(FilledButton, 'Sign and confirm');
+        expect(find.text('Retry'), findsNothing);
+        expect(tester.widget<FilledButton>(retry).onPressed, isNotNull);
+        // An error must wait for an explicit retry, without reopening the wallet.
+        await tester.pump(const Duration(seconds: 6));
+        expect(repo.resumedActions, ['protection-result']);
+        expect(repo.protectionCalls, 1);
+        for (final card in tester.widgetList<TpSlEditorCard>(
+          find.byType(TpSlEditorCard),
+        )) {
+          expect(card.onEnabledChanged, isNull);
+        }
+
+        final retried = Completer<void>();
+        repo.resumeDelay = retried.future;
+        await tester.ensureVisible(retry);
+        await tester.tap(retry);
+        await tester.pump();
+        expect(find.text(message), findsNothing);
+        expect(repo.resumedActions, ['protection-result', 'protection-result']);
+        expect(repo.protectionCalls, 1);
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed,
+          isNull,
+        );
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        repo.protectionResult = const Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: 'succeeded',
+          effectsApplied: true,
+          canResumePositionAction: false,
+        );
+        retried.complete();
+        await tester.pump();
+        for (
+          var frame = 0;
+          frame < 10 && find.byType(PositionTpSlSheet).evaluate().isNotEmpty;
+          frame++
+        ) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(repo.protectionCalls, 1);
+        expect(find.byType(PositionTpSlSheet), findsNothing);
+        expect(find.text('Confirmed'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   for (final initiallyPending in [false, true]) {
     testWidgets(
@@ -2493,6 +2696,7 @@ TradingOrder _order(
   TradingSide side = TradingSide.long,
   TakeProfitStopLoss? tpSl,
   String executionType = 'market',
+  String limitPrice = '130',
   String activationStatus = 'unknown',
   String? warningCode,
   TradingOrderStatus status = TradingOrderStatus.open,
@@ -2508,7 +2712,7 @@ TradingOrder _order(
   status: status,
   createdAt: DateTime.utc(2026),
   quantity: DecimalValue('1'),
-  limitPrice: executionType == 'limit' ? DecimalValue('130') : null,
+  limitPrice: executionType == 'limit' ? DecimalValue(limitPrice) : null,
   filledQuantity: DecimalValue(conditional ? '0.25' : '0'),
   conditional: conditional
       ? ConditionalOrder(
@@ -2768,6 +2972,7 @@ class _Orders implements OrdersRepository {
 
 class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
   String? cancelledOrderId;
+  Object? error;
 
   @override
   Future<ResourceResult<TradingOrder>> cancelOrder(
@@ -2775,6 +2980,7 @@ class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
     required String idempotencyKey,
   }) async {
     cancelledOrderId = orderId;
+    if (error case final failure?) throw failure;
     return ResourceResult(
       resource: _order(orderId, status: TradingOrderStatus.cancelled),
     );
