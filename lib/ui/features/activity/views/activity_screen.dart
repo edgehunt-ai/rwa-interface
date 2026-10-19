@@ -736,6 +736,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
     final record = widget.record;
     final isOrder = record.category == ActivityCategory.orders;
     final isFunding = record.category == ActivityCategory.funding;
+    final isCash = record.category == ActivityCategory.cash;
     final type = isOrder
         ? _orderTypeLabel(record, AppLocalizations.of(context))
         : _activityTypeLabel(record.type, AppLocalizations.of(context));
@@ -753,120 +754,134 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
           children: [
             SizedBox(
               height: 72,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                title,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  height: 22 / 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            if (isFunding) ...[
-                              Flexible(
-                                child: _TypeBadge(
-                                  label: _fundingSide(
-                                    record,
-                                    AppLocalizations.of(context),
-                                  ),
-                                  order: true,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: _TypeBadge(
-                                  label: _fundingDirection(
-                                    record,
-                                    AppLocalizations.of(context),
-                                  ),
-                                  order: true,
-                                  positive: true,
-                                ),
-                              ),
-                            ] else
-                              Flexible(
-                                child: _TypeBadge(label: type, order: isOrder),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (!isFunding) ...[
+              child: LayoutBuilder(
+                builder: (context, constraints) => Row(
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
                               Flexible(
                                 child: Text(
-                                  _statusLabel(context, record.status),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    height: 16 / 12,
-                                    color: widget.statusColor,
+                                  title,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    height: 22 / 15,
+                                    fontWeight: FontWeight.w600,
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Container(
-                                width: 1,
-                                height: 8,
-                                color: colors.subtleSurface,
-                              ),
-                              const SizedBox(width: 4),
-                            ],
-                            isOrder || isFunding
-                                ? _VenueLabel(kind: record.kind)
-                                : Flexible(
-                                    child: _NetworkPath(networks: networks),
+                              if (isFunding) ...[
+                                Flexible(
+                                  child: _TypeBadge(
+                                    label: _fundingSide(
+                                      record,
+                                      AppLocalizations.of(context),
+                                    ),
+                                    order: true,
                                   ),
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: _TypeBadge(
+                                    label: _fundingDirection(
+                                      record,
+                                      AppLocalizations.of(context),
+                                    ),
+                                    order: true,
+                                    positive: true,
+                                  ),
+                                ),
+                              ] else if (isCash)
+                                _TypeBadge(label: type, order: false)
+                              else
+                                Flexible(
+                                  child: _TypeBadge(
+                                    label: type,
+                                    order: isOrder,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (!isFunding) ...[
+                                Flexible(
+                                  flex: isCash ? 0 : 1,
+                                  child: Text(
+                                    _statusLabel(context, record.status),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      height: 16 / 12,
+                                      color: widget.statusColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  width: 1,
+                                  height: 8,
+                                  color: colors.subtleSurface,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              isOrder || isFunding
+                                  ? _VenueLabel(kind: record.kind)
+                                  : Flexible(
+                                      child: _NetworkPath(networks: networks),
+                                    ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: isCash ? 0 : 4,
+                      fit: isCash ? FlexFit.loose : FlexFit.tight,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth * 0.4,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              widget.amount,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                height: 22 / 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              DateFormat('HH:mm')
+                                  .format(record.createdAt.toLocal()),
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 16 / 12,
+                                color: colors.secondaryText,
+                              ),
+                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          widget.amount,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 22 / 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          DateFormat('HH:mm')
-                              .format(record.createdAt.toLocal()),
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 16 / 12,
-                            color: colors.secondaryText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             if (expanded) ...[
@@ -934,6 +949,12 @@ class _NetworkPath extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     if (networks.isEmpty) return const SizedBox.shrink();
+    // Share constrained space in proportion to each label's natural width.
+    // Equal shares can truncate a long name while its shorter neighbor has room.
+    final widths = [
+      for (final network in networks)
+        _networkLabelWidth(context, network.label),
+    ];
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -951,6 +972,7 @@ class _NetworkPath extends StatelessWidget {
               ),
             ),
           Flexible(
+            flex: widths[index],
             child: _NetworkLabel(
               network: networks[index].chain,
               label: networks[index].label,
@@ -960,6 +982,22 @@ class _NetworkPath extends StatelessWidget {
       ],
     );
   }
+}
+
+int _networkLabelWidth(BuildContext context, String label) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: label,
+      style: DefaultTextStyle.of(context).style
+          .copyWith(fontSize: 12, height: 16 / 12),
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: 1,
+  )..layout();
+  final width = (painter.width + 18).ceil();
+  painter.dispose();
+  return width;
 }
 
 class _VenueLabel extends StatelessWidget {

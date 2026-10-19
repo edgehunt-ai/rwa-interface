@@ -412,6 +412,150 @@ void main() {
     },
   );
 
+  for (final (failure, message) in <(Object, String)>[
+    (
+      const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      'Signature request was cancelled.',
+    ),
+    (
+      const NetworkFailure(),
+      'Network unavailable. Check your connection and try again.',
+    ),
+    (
+      const TimeoutFailure(),
+      'The TP/SL request timed out. Check protection orders before retrying.',
+    ),
+  ]) {
+    testWidgets(
+      'failed automatic protection signature can retry the same action: $failure',
+      (tester) async {
+        addTearDown(AppToast.dismiss);
+        await configureDisplay(tester, size: const Size(600, 1200));
+        const awaiting = Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: 'awaitingSignature',
+          effectsApplied: false,
+          canResumePositionAction: true,
+        );
+        final repo = _Positions()
+          ..protectionResult = const Hip3ActionSummary(
+            actionId: 'protection-result',
+            productId: 'xyz:TSLA',
+            operation: 'manageTpsl',
+            status: 'reconciling',
+            effectsApplied: false,
+            canResumePositionAction: true,
+          );
+        final resume = Completer<void>();
+        repo.resumeDelay = resume.future;
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+            child: buildTestApp(
+              Builder(
+                builder: (context) => FilledButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => PositionTpSlSheet(
+                      position: _position(withProtection: false),
+                    ),
+                  ),
+                  child: const Text('Open protection'),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open protection'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('position-protection-take-profit')),
+          '111',
+        );
+        final submit = find.widgetWithText(FilledButton, 'Sign and confirm');
+        await tester.ensureVisible(submit);
+        await tester.tap(submit);
+        await tester.pump();
+        await tester.pump();
+        expect(repo.protectionReads, 1);
+        repo.protectionResult = awaiting;
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('Waiting for your signature'), findsNothing);
+        expect(find.text('Continue action'), findsNothing);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(repo.protectionReads, 2);
+        await tester.pump(const Duration(seconds: 6));
+        await tester.pump();
+        expect(repo.protectionReads, 2);
+
+        expect(repo.resumedActions, ['protection-result']);
+        expect(repo.protectionCalls, 1);
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed,
+          isNull,
+        );
+        resume.completeError(failure);
+        for (var frame = 0; frame < 10; frame++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(find.text(message), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        final retry = find.widgetWithText(FilledButton, 'Sign and confirm');
+        expect(find.text('Retry'), findsNothing);
+        expect(tester.widget<FilledButton>(retry).onPressed, isNotNull);
+        // An error must wait for an explicit retry, without reopening the wallet.
+        await tester.pump(const Duration(seconds: 6));
+        expect(repo.resumedActions, ['protection-result']);
+        expect(repo.protectionCalls, 1);
+        for (final card in tester.widgetList<TpSlEditorCard>(
+          find.byType(TpSlEditorCard),
+        )) {
+          expect(card.onEnabledChanged, isNull);
+        }
+
+        final retried = Completer<void>();
+        repo.resumeDelay = retried.future;
+        await tester.ensureVisible(retry);
+        await tester.tap(retry);
+        await tester.pump();
+        expect(find.text(message), findsNothing);
+        expect(repo.resumedActions, ['protection-result', 'protection-result']);
+        expect(repo.protectionCalls, 1);
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton).last).onPressed,
+          isNull,
+        );
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        repo.protectionResult = const Hip3ActionSummary(
+          actionId: 'protection-result',
+          productId: 'xyz:TSLA',
+          operation: 'manageTpsl',
+          status: 'succeeded',
+          effectsApplied: true,
+          canResumePositionAction: false,
+        );
+        retried.complete();
+        await tester.pump();
+        for (
+          var frame = 0;
+          frame < 10 && find.byType(PositionTpSlSheet).evaluate().isNotEmpty;
+          frame++
+        ) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(repo.protectionCalls, 1);
+        expect(find.byType(PositionTpSlSheet), findsNothing);
+        expect(find.text('Confirmed'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   for (final initiallyPending in [false, true]) {
     testWidgets(
       'protection success closes the sheet and uses the existing toast, initiallyPending=$initiallyPending',

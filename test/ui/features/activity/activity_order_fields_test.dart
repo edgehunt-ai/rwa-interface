@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
@@ -152,6 +153,31 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('USDT → USDC'), findsOneWidget);
+      final titleParagraph = tester.renderObject<RenderParagraph>(
+        find.descendant(
+          of: find.text('USDT → USDC'),
+          matching: find.byType(RichText),
+        ),
+      );
+      // Use the room left by the amount and badge, including with the wider
+      // synthetic font used by widget tests.
+      final amountBounds = tester.getRect(find.text('4.95'));
+      final titleBounds = tester.getRect(find.text('USDT → USDC'));
+      final badgeBounds = tester.getRect(
+        find
+            .ancestor(
+              of: find.text('Transfer'),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      expect(
+        titleParagraph.constraints.maxWidth,
+        closeTo(
+          amountBounds.left - 8 - titleBounds.left - badgeBounds.width - 4,
+          1,
+        ),
+      );
       expect(find.text(sourceLabel), findsOneWidget);
       expect(find.text(destinationLabel), findsOneWidget);
       expect(find.text('Ethereum'), findsNothing);
