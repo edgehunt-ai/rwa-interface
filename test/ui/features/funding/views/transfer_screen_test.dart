@@ -121,7 +121,7 @@ void main() {
     expect(find.byKey(const Key('transfer-token-chevron')), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
-    expect(find.text('-'), findsNWidgets(8));
+    expect(find.text('-'), findsNWidgets(6));
     expect(find.text('--'), findsNothing);
     expect(find.text('Sign & Transfer'), findsOneWidget);
     expect(
@@ -282,7 +282,7 @@ void main() {
     expect(find.text('USDC'), findsWidgets);
     expect(find.text('USDC (Arbitrum)'), findsNothing);
     expect(find.text('总费用'), findsOneWidget);
-    expect(find.text('-'), findsNWidgets(4));
+    expect(find.text('-'), findsNWidgets(3));
     expect(find.text('--'), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -312,6 +312,7 @@ void main() {
       '50.22',
     );
     expect(find.text('1.18 USDC'), findsNWidgets(2));
+    expect(find.text('0 USDC'), findsOneWidget);
     expect(find.text('总费用: 1.18 USDC'), findsOneWidget);
     expect(find.text('接收数量: 50.22 USDC'), findsOneWidget);
     expect(find.text(withdrawals.destination), findsOneWidget);
@@ -526,77 +527,96 @@ void main() {
     expect(find.text('Available: 123.45'), findsOneWidget);
   });
 
-  testWidgets('shows skeletons while withdrawal quote details are loading', (
-    tester,
-  ) async {
-    final withdrawals = _PendingHip3Withdrawals();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
-          hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
-          hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
-          transferOptionsProvider.overrideWith(
-            (ref) async => TransferOptions(
-              account: UnifiedFundingAccountSummary(
-                totalUsd: DecimalValue('100', asset: 'USD'),
-                availableToFundUsd: DecimalValue('100', asset: 'USD'),
-                reservedUsd: DecimalValue('0', asset: 'USD'),
-                inTransitUsd: DecimalValue('0', asset: 'USD'),
-                dataStatus: 'complete',
-                calculatedAt: DateTime.utc(2026),
-                positions: [
-                  FundingSourcePosition(
-                    positionId: 'usdc',
-                    token: 'USDC',
-                    network: 'Arbitrum',
-                    availableAmount: DecimalValue('100', asset: 'USDC'),
-                    eligible: true,
+  for (final networkAmount in <String?>[null, '0.05']) {
+    testWidgets(
+      'withdrawal network fee handles nullable amount $networkAmount',
+      (tester) async {
+        final withdrawals = _PendingHip3Withdrawals();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+              hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+              hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
+              transferOptionsProvider.overrideWith(
+                (ref) async => TransferOptions(
+                  account: UnifiedFundingAccountSummary(
+                    totalUsd: DecimalValue('100', asset: 'USD'),
+                    availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                    reservedUsd: DecimalValue('0', asset: 'USD'),
+                    inTransitUsd: DecimalValue('0', asset: 'USD'),
+                    dataStatus: 'complete',
+                    calculatedAt: DateTime.utc(2026),
+                    positions: [
+                      FundingSourcePosition(
+                        positionId: 'usdc',
+                        token: 'USDC',
+                        network: 'Arbitrum',
+                        availableAmount: DecimalValue('100', asset: 'USDC'),
+                        eligible: true,
+                      ),
+                    ],
                   ),
-                ],
+                  catalog: null,
+                ),
               ),
-              catalog: null,
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const TransferScreen(),
             ),
           ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const TransferScreen(),
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
-    await tester.pump();
-    await tester.enterText(find.byKey(const Key('hip3-transfer-amount')), '10');
-    await tester.pump(const Duration(milliseconds: 501));
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const Key('hip3-transfer-amount')),
+          '10',
+        );
+        await tester.pump(const Duration(milliseconds: 501));
 
-    expect(
-      find.byKey(const Key('transfer-receive-amount-skeleton')),
-      findsOneWidget,
-    );
-    for (final key in const [
-      Key('transfer-quote-eta-skeleton'),
-      Key('transfer-quote-bridge-fee-skeleton'),
-      Key('transfer-quote-network-fee-skeleton'),
-      Key('transfer-quote-total-fee-skeleton'),
-    ]) {
-      expect(find.byKey(key), findsOneWidget);
-    }
+        expect(
+          find.byKey(const Key('transfer-receive-amount-skeleton')),
+          findsOneWidget,
+        );
+        for (final key in const [
+          Key('transfer-quote-eta-skeleton'),
+          Key('transfer-quote-bridge-fee-skeleton'),
+          Key('transfer-quote-network-fee-skeleton'),
+          Key('transfer-quote-total-fee-skeleton'),
+        ]) {
+          expect(find.byKey(key), findsOneWidget);
+        }
 
-    withdrawals.completePreview();
-    await tester.pump();
+        withdrawals.completePreview(
+          networkFees: [
+            Hip3WithdrawalFeeDetail(
+              type: 'network',
+              amount: networkAmount,
+              currency: 'USDC',
+              payer: 'user',
+            ),
+          ],
+        );
+        await tester.pump();
 
-    expect(
-      find.byKey(const Key('transfer-receive-amount-skeleton')),
-      findsNothing,
+        expect(
+          find.byKey(const Key('transfer-receive-amount-skeleton')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('transfer-quote-eta-skeleton')),
+          findsNothing,
+        );
+        expect(find.text('~2min'), findsOneWidget);
+        expect(find.text('1.18 USDC'), findsNWidgets(2));
+        expect(find.text('${networkAmount ?? '0'} USDC'), findsOneWidget);
+      },
     );
-    expect(find.byKey(const Key('transfer-quote-eta-skeleton')), findsNothing);
-    expect(find.text('~2min'), findsOneWidget);
-    expect(find.text('1.18 USDC'), findsNWidgets(2));
-  });
+  }
 
   testWidgets('only quote values load during a spot transfer quote', (
     tester,
@@ -658,9 +678,9 @@ void main() {
     expect(find.text('Estimate time'), findsOneWidget);
     expect(find.text('Minimum received'), findsOneWidget);
     expect(find.text('Slippage tolerance'), findsOneWidget);
-    expect(find.text('Provider fee'), findsOneWidget);
+    expect(find.text('Provider fee'), findsNothing);
     expect(find.text('Bridge Fee'), findsOneWidget);
-    expect(find.text('Swap cost'), findsOneWidget);
+    expect(find.text('Swap cost'), findsNothing);
     expect(find.text('Network fee'), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
     for (final key in const [
@@ -668,9 +688,7 @@ void main() {
       Key('transfer-quote-eta-skeleton'),
       Key('transfer-quote-minimum-received-skeleton'),
       Key('transfer-quote-slippage-skeleton'),
-      Key('transfer-quote-provider-fee-skeleton'),
       Key('transfer-quote-bridge-fee-skeleton'),
-      Key('transfer-quote-swap-fee-skeleton'),
       Key('transfer-quote-network-fee-skeleton'),
       Key('transfer-quote-total-fee-skeleton'),
     ]) {
@@ -701,9 +719,17 @@ void main() {
       ),
     );
     expect(find.text('1.25%'), findsOneWidget);
-    expect(find.text('0.05 USD'), findsNWidgets(2));
-    expect(find.text('0.1 USD'), findsOneWidget);
-    expect(find.text('0.2 USD'), findsOneWidget);
+    expect(find.text('0.05 USD'), findsNothing);
+    expect(find.text('0.1 USD'), findsNothing);
+    expect(find.text('0.2 USD'), findsNWidgets(2));
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-bridge-fee-value')),
+          )
+          .value,
+      '0.2 USD',
+    );
     expect(find.text('0.4 USD'), findsOneWidget);
     expect(tester.takeException(), isNull);
     expect(
@@ -1694,7 +1720,7 @@ class _PendingHip3Withdrawals implements Hip3WithdrawalRepository {
     required int payoutChainId,
   }) => _preview.future;
 
-  void completePreview() {
+  void completePreview({List<Hip3WithdrawalFeeDetail> networkFees = const []}) {
     _preview.complete(
       Hip3WithdrawalPreview(
         amount: '10',
@@ -1706,13 +1732,14 @@ class _PendingHip3Withdrawals implements Hip3WithdrawalRepository {
         maximumTransferable: '100',
         blockers: const [],
         estimatedArrivalSeconds: 120,
-        feeDetails: const [
-          Hip3WithdrawalFeeDetail(
+        feeDetails: [
+          const Hip3WithdrawalFeeDetail(
             type: 'withdrawal',
             amount: '1.18',
             currency: 'USDC',
             payer: 'user',
           ),
+          ...networkFees,
         ],
         crossLiquidationImpacts: const [],
         riskStatus: 'available',

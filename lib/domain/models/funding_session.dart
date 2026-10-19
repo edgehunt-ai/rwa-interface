@@ -1,3 +1,4 @@
+import 'decimal_value.dart';
 import 'funding_catalog.dart';
 import 'order_preview.dart';
 
@@ -62,4 +63,10 @@ final class FundingSessionFees {
   final String networkFee;
   final String totalFee;
   final String totalCostUsd;
+
+  /// Combined route costs, excluding the separately displayed network fee.
+  String get crossChainFee => DecimalValue(providerFee, asset: asset)
+      .plus(DecimalValue(bridgeFee, asset: asset))
+      .plus(DecimalValue(swapFee, asset: asset))
+      .value;
 }

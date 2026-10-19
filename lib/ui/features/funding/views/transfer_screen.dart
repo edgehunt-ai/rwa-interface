@@ -1799,7 +1799,12 @@ class _Hip3FeeSummary extends StatelessWidget {
       type: 'withdrawal',
       payer: 'user',
     );
-    final networkFee = _formatDetail(details, type: 'network', payer: 'user');
+    final networkFee = _formatDetail(
+      details,
+      type: 'network',
+      payer: 'user',
+      zeroWhenMissing: true,
+    );
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1852,15 +1857,18 @@ class _Hip3FeeSummary extends StatelessWidget {
     List<Hip3WithdrawalFeeDetail> details, {
     required String type,
     required String payer,
+    bool zeroWhenMissing = false,
   }) {
     for (final detail in details) {
       if (detail.type == type && detail.payer == payer) {
         final amount = detail.amount;
-        if (amount == null) return '-';
+        if (amount == null) {
+          return zeroWhenMissing ? '0 ${detail.currency}' : '-';
+        }
         return '${TokenAmountFormatter.formatText(amount)} ${detail.currency}';
       }
     }
-    return '-';
+    return zeroWhenMissing ? '0 USDC' : '-';
   }
 }
 
@@ -1994,30 +2002,12 @@ class _FeeSummary extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _FeeRow(
-            AppLocalizations.of(context).providerFee,
-            _formatFee(fees?.providerFee, fees?.asset),
-            valueKey: const Key('transfer-provider-fee-value'),
-            comparisonValue: fees?.providerFee,
-            loading: loading,
-            skeletonKey: const Key('transfer-quote-provider-fee-skeleton'),
-          ),
-          const SizedBox(height: 8),
-          _FeeRow(
             AppLocalizations.of(context).bridgeFee,
-            _formatFee(fees?.bridgeFee, fees?.asset),
+            _formatFee(fees?.crossChainFee, fees?.asset),
             valueKey: const Key('transfer-bridge-fee-value'),
-            comparisonValue: fees?.bridgeFee,
+            comparisonValue: fees?.crossChainFee,
             loading: loading,
             skeletonKey: const Key('transfer-quote-bridge-fee-skeleton'),
-          ),
-          const SizedBox(height: 8),
-          _FeeRow(
-            AppLocalizations.of(context).swapFee,
-            _formatFee(fees?.swapFee, fees?.asset),
-            valueKey: const Key('transfer-swap-fee-value'),
-            comparisonValue: fees?.swapFee,
-            loading: loading,
-            skeletonKey: const Key('transfer-quote-swap-fee-skeleton'),
           ),
           const SizedBox(height: 8),
           _FeeRow(
