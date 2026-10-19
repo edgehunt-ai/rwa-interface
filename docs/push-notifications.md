@@ -21,13 +21,18 @@ Before testing a physical device, configure the Firebase project for the app:
    `/funding/deposit`, `/trade`, or `/activity/<encoded-record-id>`.
 
 The backend remains authoritative for event eligibility and user preferences.
-The client registers the device and handles notification taps. While the app is
-in the foreground, FCM messages show a floating in-app notice with the notification
-title and body (falling back to `data.title` and `data.body` for data messages).
-Messages without display text are ignored. Tapping the notice opens only one of
-the supported paths above; receiving a message does not navigate automatically.
-The notice can be dismissed and otherwise expires after six seconds. Foreground
-listening stops on logout. No notification settings UI is required.
+While the app is in the foreground, Firebase messages are displayed as system
+notifications using `flutter_local_notifications`, without an in-app snackbar.
+Android uses the high-importance `account_updates` channel; iOS presents a local
+notification banner and sound. Firebase's automatic iOS foreground presentation
+is disabled to avoid duplicate notifications. Background remote notifications
+continue to be displayed by the OS.
+
+Tapping a notification opens only one of the supported paths above, including
+when a foreground notification is tapped after the app has been terminated.
+Receiving a message does not navigate automatically. Foreground listening stops
+on logout. Display and sound remain subject to OS notification permissions,
+channel settings and Do Not Disturb. No notification settings UI is required.
 
 ### Activity detail links
 

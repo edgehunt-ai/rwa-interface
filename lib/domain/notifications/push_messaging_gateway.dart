@@ -3,6 +3,7 @@ abstract interface class PushMessagingGateway {
 
   Future<PushPermission> requestPermission();
   Future<String?> getToken();
+  Future<void> showForegroundMessage(PushMessage message);
   Future<PushMessage?> getInitialMessage();
   Stream<String> get tokenRefreshes;
   Stream<PushMessage> get openedMessages;
