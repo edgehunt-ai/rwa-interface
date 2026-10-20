@@ -40,7 +40,6 @@ part 'cross_chain_funding_transfer.g.dart';
 /// * [planId] 
 /// * [legId] - Required by the server for a Transfer created from an `auto_multi_source` plan and null for legacy or single-source plans. Together with `plan_id`, it permanently identifies one leg. 
 /// * [amount] - Frozen target shortfall covered by this Transfer.
-/// * [targetReceivedAmount] - Current exact aggregate of distinct attributed target-credit events in target asset units. Not wallet availability, quoted amount, or merely the last event. Null/absent means unknown, never zero.
 /// * [source_] 
 /// * [provider] 
 /// * [refundStatus] 
@@ -115,10 +114,6 @@ abstract class CrossChainFundingTransfer implements Built<CrossChainFundingTrans
   /// Frozen target shortfall covered by this Transfer.
   @BuiltValueField(wireName: r'amount')
   String get amount;
-
-  /// Current exact aggregate of distinct attributed target-credit events in target asset units. Not wallet availability, quoted amount, or merely the last event. Null/absent means unknown, never zero.
-  @BuiltValueField(wireName: r'target_received_amount')
-  String? get targetReceivedAmount;
 
   @BuiltValueField(wireName: r'source')
   FundingSourceBalanceSnapshot get source_;
@@ -267,13 +262,6 @@ class _$CrossChainFundingTransferSerializer implements PrimitiveSerializer<Cross
       object.amount,
       specifiedType: const FullType(String),
     );
-    if (object.targetReceivedAmount != null) {
-      yield r'target_received_amount';
-      yield serializers.serialize(
-        object.targetReceivedAmount,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
     yield r'source';
     yield serializers.serialize(
       object.source_,
@@ -480,14 +468,6 @@ class _$CrossChainFundingTransferSerializer implements PrimitiveSerializer<Cross
             specifiedType: const FullType(String),
           ) as String;
           result.amount = valueDes;
-          break;
-        case r'target_received_amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.targetReceivedAmount = valueDes;
           break;
         case r'source':
           final valueDes = serializers.deserialize(

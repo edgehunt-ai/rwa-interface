@@ -68,7 +68,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
   }
 
   void _schedulePreview() {
-    if (_withdrawal != null) return;
+    if (_withdrawal?.isPending == true) return;
     _previewDebounce?.cancel();
     _previewRefresh?.cancel();
     final sequence = ++_previewSequence;
@@ -204,7 +204,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
 
   Future<void> _submit() async {
     var preview = _preview;
-    if (preview == null || _submitting || _withdrawal != null) {
+    if (preview == null || _submitting || _withdrawal?.isPending == true) {
       return;
     }
     final requestedAmount = _previewInputAmount ?? _amount.text.trim();
@@ -258,9 +258,18 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
     _withdrawalRefresh?.cancel();
     _withdrawalRefresh = null;
     final l10n = AppLocalizations.of(context);
-    if (withdrawal.isCompleted && _withdrawal?.isCompleted != true) {
+    if (withdrawal.status == 'completed') {
+      _withdrawal = null;
       ref.invalidate(portfolioSummaryProvider);
+      _amount.clear();
+      setState(() {
+        _preview = null;
+        _previewInputAmount = null;
+        _error = null;
+        _reviewing = false;
+      });
       AppToast.showSuccess(context, l10n.withdrawalSucceeded);
+      return;
     }
     setState(() {
       _withdrawal = withdrawal;
@@ -353,7 +362,7 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 preview: _preview!,
                 sourceAddress: sourceAddress,
                 onBack: () {
-                  if (_withdrawal != null) {
+                  if (_withdrawal?.isPending == true) {
                     Navigator.of(context).maybePop();
                     return;
                   }
@@ -366,9 +375,6 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
                 onSubmit: _submit,
                 submitting: _submitting,
                 pending: _withdrawal?.isPending == true,
-                withdrawal: _withdrawal,
-                checkingStatus: _withdrawalPolling,
-                onRefresh: _pollWithdrawal,
                 error: _error,
               )
             : _PerpsWithdrawalForm(
@@ -679,9 +685,6 @@ class _PerpsWithdrawalReview extends StatelessWidget {
     required this.submitting,
     required this.error,
     required this.pending,
-    required this.withdrawal,
-    required this.checkingStatus,
-    required this.onRefresh,
   });
 
   final Hip3WithdrawalPreview preview;
@@ -690,33 +693,13 @@ class _PerpsWithdrawalReview extends StatelessWidget {
   final VoidCallback onSubmit;
   final bool submitting;
   final bool pending;
-  final Hip3Withdrawal? withdrawal;
-  final bool checkingStatus;
-  final VoidCallback onRefresh;
   final String? error;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final current = withdrawal;
-    final amount =
-        '${TokenAmountFormatter.formatText(current?.amount ?? preview.amount)} USDC';
-    final status = current == null
-        ? null
-        : current.requiresManualReview
-        ? l10n.hip3PendingReview
-        : switch (current.status) {
-            'completed' => l10n.withdrawalSucceeded,
-            'submitting' || 'submitted' || 'payout' => l10n.withdrawalSubmitted,
-            'failed' || 'expired' => l10n.withdrawalFailed,
-            'refund_pending' => l10n.withdrawalRefundPending,
-            'refunded' => l10n.withdrawalRefunded,
-            'credited' => l10n.withdrawalCredited,
-            'partial' || 'partially_completed' => l10n.withdrawalPartial,
-            'recovering' => l10n.withdrawalRecovering,
-            _ => l10n.withdrawalUnresolved,
-          };
+    final amount = '${TokenAmountFormatter.formatText(preview.amount)} USDC';
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
@@ -726,7 +709,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
         const SizedBox(height: 4),
         Text(amount, style: _amountText),
         Text(
-          '≈ \$${TokenAmountFormatter.formatText(current?.amount ?? preview.amount)}',
+          '≈ \$${TokenAmountFormatter.formatText(preview.amount)}',
           style: Theme.of(context).textTheme.bodyLarge
               ?.copyWith(color: colors.secondaryText),
         ),
@@ -745,32 +728,25 @@ class _PerpsWithdrawalReview extends StatelessWidget {
               _DetailRow(
                 label: l10n.fromPerpsAccount,
                 value: _shortAddress(
-                  current?.ownerAddress ??
-                      sourceAddress ??
-                      preview.destinationAddress,
+                  sourceAddress ?? preview.destinationAddress,
                 ),
               ),
               const SizedBox(height: 8),
               _DetailRow(
                 label: l10n.to,
-                value: _shortAddress(
-                  current?.destinationAddress ?? preview.destinationAddress,
-                ),
+                value: _shortAddress(preview.destinationAddress),
               ),
               const SizedBox(height: 8),
               _DetailRow(
                 label: l10n.network,
-                value: _chainName(
-                  current?.payoutChainId?.toString() ?? preview.chainId,
-                ),
+                value: _chainName(preview.chainId),
               ),
               const SizedBox(height: 8),
               _DetailRow(
-                label: (current?.rail ?? preview.rail) == 'relay'
+                label: preview.rail == 'relay'
                     ? l10n.estimatedFee
                     : l10n.networkFee,
-                value:
-                    '≈ ${TokenAmountFormatter.formatText(current?.fee ?? preview.fee)} USDC',
+                value: '≈ ${TokenAmountFormatter.formatText(preview.fee)} USDC',
               ),
             ],
           ),
@@ -779,7 +755,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
         _BreakdownRow(
           label: l10n.recipientReceives,
           value:
-              '${TokenAmountFormatter.formatText(current?.minimumReceived ?? preview.minimumReceived)} ${current?.payoutAsset ?? preview.payoutAsset ?? 'USDC'}',
+              '${TokenAmountFormatter.formatText(preview.minimumReceived)} USDC',
           valueKey: const Key('perps-withdrawal-recipient-receives-value'),
           muted: true,
         ),
@@ -789,45 +765,16 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           value: amount,
           valueKey: const Key('perps-withdrawal-total-deducted-value'),
         ),
-        if (current == null && preview.crossLiquidationImpacts.isNotEmpty) ...[
+        if (preview.crossLiquidationImpacts.isNotEmpty) ...[
           const SizedBox(height: 20),
           Hip3CrossLiquidationImpactsCard(
             impacts: preview.crossLiquidationImpacts,
           ),
         ],
-        if (current != null) ...[
-          const SizedBox(height: 12),
-          if (status != error)
-            Text(status!, key: const Key('perps-withdrawal-status')),
-          SelectableText('${l10n.withdrawalIdLabel}: ${current.id}'),
-          SelectableText('${current.amount} USDC'),
-          SelectableText('${l10n.networkFee}: ${current.fee}'),
-          SelectableText('${l10n.to}: ${current.destinationAddress}'),
-          if (current.payoutTxHash != null)
-            SelectableText(
-              '${l10n.withdrawalTransactionLabel}: ${current.payoutTxHash}',
-            ),
-          if (current.relayRequestId != null)
-            SelectableText(current.relayRequestId!),
-          if (current.failureReason != null && current.failureReason != error)
-            Text(current.failureReason!),
-          if (current.submittedAt != null)
-            Text(current.submittedAt!.toIso8601String()),
-          if (current.confirmedAt != null)
-            Text(current.confirmedAt!.toIso8601String()),
-          if (!current.isPending)
-            OutlinedButton.icon(
-              key: const Key('perps-withdrawal-refresh'),
-              onPressed: checkingStatus ? null : onRefresh,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.hip3PendingCheck),
-            ),
-        ],
         if (error != null) ...[
           const SizedBox(height: 12),
           Text(
             error!,
-            key: error == status ? const Key('perps-withdrawal-status') : null,
             style: TextStyle(
               color: Theme.of(context).extension<AppSemanticColors>()!.loss,
             ),
@@ -838,7 +785,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           height: 48,
           child: FilledButton(
             key: const Key('perps-withdrawal-submit-button'),
-            onPressed: submitting || current != null ? null : onSubmit,
+            onPressed: submitting || pending ? null : onSubmit,
             child: submitting || pending
                 ? const SizedBox.square(
                     key: Key('perps-withdrawal-submit-progress'),

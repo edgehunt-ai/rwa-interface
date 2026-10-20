@@ -1623,42 +1623,6 @@ void main() {
     expect(tab('Details').left, greaterThan(tab('Position (1)').right));
   });
 
-  for (final (status, label) in [
-    (TradingOrderStatus.pending, 'In Progress'),
-    (TradingOrderStatus.awaitingConfirmation, 'Awaiting confirmation'),
-    (TradingOrderStatus.submitted, 'Order submitted'),
-    (TradingOrderStatus.ambiguous, 'Outcome uncertain'),
-    (TradingOrderStatus.manualReview, 'Manual review'),
-    (TradingOrderStatus.unknown, 'Unknown'),
-  ]) {
-    testWidgets('Trade keeps $status visible without enabling cancellation', (
-      tester,
-    ) async {
-      final repository = _OpenOrderRepository(status: status);
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
-          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await _scrollToTradeTab(tester, 'Open');
-      await tester.tap(_tradeTab('Open'));
-      await tester.pumpAndSettle();
-      expect(find.text('Open (1)'), findsOneWidget);
-      expect(find.text(label), findsOneWidget);
-      expect(find.text('open-order'), findsOneWidget);
-      expect(find.text('— / 200'), findsOneWidget);
-      expect(find.text('0%'), findsNothing);
-      final cancel = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Cancel'),
-      );
-      expect(cancel.onPressed, isNull);
-      expect(repository.lastStatusGroup, isNull);
-      expect(tester.takeException(), isNull);
-    });
-  }
-
   testWidgets(
     'Trade open tab cancels a live bStocks order through its provider',
     (tester) async {
@@ -1671,6 +1635,7 @@ void main() {
               BstocksOrderExecutionRepositoryImpl(
                 repository,
                 _UnusedOrderActions(),
+                null,
               ),
             ),
           ],
@@ -1722,7 +1687,7 @@ void main() {
         ),
         const Size(40, 8),
       );
-      expect(repository.lastStatusGroup, isNull);
+      expect(repository.lastStatusGroup, 'open');
       expect(repository.lastSymbol, 'NVDAB');
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
@@ -1745,6 +1710,7 @@ void main() {
             BstocksOrderExecutionRepositoryImpl(
               repository,
               _UnusedOrderActions(),
+              null,
             ),
           ),
         ],
@@ -1805,6 +1771,7 @@ void main() {
             BstocksOrderExecutionRepositoryImpl(
               repository,
               _UnusedOrderActions(),
+              null,
             ),
           ),
         ],
@@ -2478,13 +2445,11 @@ final class _OpenOrderRepository implements OrdersRepository {
   _OpenOrderRepository({
     this.type = TradingOrderType.limit,
     this.settlementAsset = 'TUSDT',
-    this.status = TradingOrderStatus.open,
     this.cancelFailure,
     this.cancelGate,
   });
   final TradingOrderType type;
   final String? settlementAsset;
-  final TradingOrderStatus status;
   final ApiFailure? cancelFailure;
   final Completer<void>? cancelGate;
   int cancelCallCount = 0;
@@ -2498,15 +2463,13 @@ final class _OpenOrderRepository implements OrdersRepository {
     kind: MarketProductKind.bstock,
     side: TradingSide.buy,
     type: type,
-    status: status,
+    status: TradingOrderStatus.open,
     settlementAsset: settlementAsset,
     limitPrice: type == TradingOrderType.limit
         ? DecimalValue('123.45', asset: settlementAsset, unit: 'price')
         : null,
     quantity: DecimalValue('200', asset: 'NVDAB', unit: 'token'),
-    filledQuantity: status == TradingOrderStatus.open
-        ? DecimalValue('40', asset: 'NVDAB', unit: 'token')
-        : null,
+    filledQuantity: DecimalValue('40', asset: 'NVDAB', unit: 'token'),
     createdAt: DateTime.utc(2026),
   );
 

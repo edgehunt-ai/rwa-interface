@@ -5,7 +5,6 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/unified_funding_transfer.dart';
-import 'package:rwa_api_client/src/model/financial_obligation_page.dart';
 import 'package:rwa_api_client/src/model/unified_funding_position.dart';
 import 'package:rwa_api_client/src/model/unified_funding_data_status.dart';
 import 'package:rwa_api_client/src/model/unified_funding_blocker.dart';
@@ -17,7 +16,6 @@ part 'unified_funding_account.g.dart';
 /// Non-custodial aggregate read model over supported stablecoins held in the current account's Embedded EVM Wallet. Values are evidence-backed snapshots, not an omnibus platform balance. 
 ///
 /// Properties:
-/// * [financialObligations] - First unresolved-obligation page, including holds not represented by positions or transfers. Continue via /v1/funding/obligations using next_cursor; never treat a partial page or an omitted legacy field as an empty account.
 /// * [accountId] 
 /// * [valuationCurrency] 
 /// * [valuedTotalUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
@@ -33,10 +31,6 @@ part 'unified_funding_account.g.dart';
 /// * [calculatedAt] 
 @BuiltValue()
 abstract class UnifiedFundingAccount implements Built<UnifiedFundingAccount, UnifiedFundingAccountBuilder> {
-  /// First unresolved-obligation page, including holds not represented by positions or transfers. Continue via /v1/funding/obligations using next_cursor; never treat a partial page or an omitted legacy field as an empty account.
-  @BuiltValueField(wireName: r'financial_obligations')
-  FinancialObligationPage? get financialObligations;
-
   @BuiltValueField(wireName: r'account_id')
   String get accountId;
 
@@ -106,13 +100,6 @@ class _$UnifiedFundingAccountSerializer implements PrimitiveSerializer<UnifiedFu
     UnifiedFundingAccount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.financialObligations != null) {
-      yield r'financial_obligations';
-      yield serializers.serialize(
-        object.financialObligations,
-        specifiedType: const FullType(FinancialObligationPage),
-      );
-    }
     yield r'account_id';
     yield serializers.serialize(
       object.accountId,
@@ -201,14 +188,6 @@ class _$UnifiedFundingAccountSerializer implements PrimitiveSerializer<UnifiedFu
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'financial_obligations':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(FinancialObligationPage),
-          ) as FinancialObligationPage?;
-          if (valueDes == null) continue;
-          result.financialObligations.replace(valueDes);
-          break;
         case r'account_id':
           final valueDes = serializers.deserialize(
             value,

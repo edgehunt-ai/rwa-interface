@@ -69,8 +69,6 @@ class _$PrivyAuthorizationTransaction extends PrivyAuthorizationTransaction {
   final String data;
   @override
   final PrivyAuthorizationTransactionValueEnum value;
-  @override
-  final String? nonce;
 
   factory _$PrivyAuthorizationTransaction(
           [void Function(PrivyAuthorizationTransactionBuilder)? updates]) =>
@@ -80,8 +78,7 @@ class _$PrivyAuthorizationTransaction extends PrivyAuthorizationTransaction {
       {required this.from,
       required this.to,
       required this.data,
-      required this.value,
-      this.nonce})
+      required this.value})
       : super._();
   @override
   PrivyAuthorizationTransaction rebuild(
@@ -99,8 +96,7 @@ class _$PrivyAuthorizationTransaction extends PrivyAuthorizationTransaction {
         from == other.from &&
         to == other.to &&
         data == other.data &&
-        value == other.value &&
-        nonce == other.nonce;
+        value == other.value;
   }
 
   @override
@@ -110,7 +106,6 @@ class _$PrivyAuthorizationTransaction extends PrivyAuthorizationTransaction {
     _$hash = $jc(_$hash, to.hashCode);
     _$hash = $jc(_$hash, data.hashCode);
     _$hash = $jc(_$hash, value.hashCode);
-    _$hash = $jc(_$hash, nonce.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -121,8 +116,7 @@ class _$PrivyAuthorizationTransaction extends PrivyAuthorizationTransaction {
           ..add('from', from)
           ..add('to', to)
           ..add('data', data)
-          ..add('value', value)
-          ..add('nonce', nonce))
+          ..add('value', value))
         .toString();
   }
 }
@@ -150,10 +144,6 @@ class PrivyAuthorizationTransactionBuilder
   set value(PrivyAuthorizationTransactionValueEnum? value) =>
       _$this._value = value;
 
-  String? _nonce;
-  String? get nonce => _$this._nonce;
-  set nonce(String? nonce) => _$this._nonce = nonce;
-
   PrivyAuthorizationTransactionBuilder() {
     PrivyAuthorizationTransaction._defaults(this);
   }
@@ -165,7 +155,6 @@ class PrivyAuthorizationTransactionBuilder
       _to = $v.to;
       _data = $v.data;
       _value = $v.value;
-      _nonce = $v.nonce;
       _$v = null;
     }
     return this;
@@ -195,7 +184,6 @@ class PrivyAuthorizationTransactionBuilder
               data, r'PrivyAuthorizationTransaction', 'data'),
           value: BuiltValueNullFieldError.checkNotNull(
               value, r'PrivyAuthorizationTransaction', 'value'),
-          nonce: nonce,
         );
     replace(_$result);
     return _$result;

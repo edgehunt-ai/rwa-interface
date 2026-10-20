@@ -139,15 +139,6 @@ import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
 import 'package:rwa_api_client/src/model/ended_session_info.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
-import 'package:rwa_api_client/src/model/financial_asset_identity.dart';
-import 'package:rwa_api_client/src/model/financial_business_reference.dart';
-import 'package:rwa_api_client/src/model/financial_economic_status.dart';
-import 'package:rwa_api_client/src/model/financial_obligation.dart';
-import 'package:rwa_api_client/src/model/financial_obligation_amounts.dart';
-import 'package:rwa_api_client/src/model/financial_obligation_page.dart';
-import 'package:rwa_api_client/src/model/financial_raw_amount.dart';
-import 'package:rwa_api_client/src/model/financial_responsibility.dart';
-import 'package:rwa_api_client/src/model/financial_settlement_evidence.dart';
 import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
 import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
 import 'package:rwa_api_client/src/model/funding_asset_provenance.dart';
@@ -305,10 +296,6 @@ import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
-import 'package:rwa_api_client/src/model/known_financial_asset_identity.dart';
-import 'package:rwa_api_client/src/model/known_financial_asset_identity_not.dart';
-import 'package:rwa_api_client/src/model/known_financial_asset_identity_not_not.dart';
-import 'package:rwa_api_client/src/model/known_financial_raw_amount.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_rail.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_order_preview.dart';
@@ -337,9 +324,6 @@ import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart'
 import 'package:rwa_api_client/src/model/multi_source_funding_plan_status.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_transfer_request.dart';
 import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
-import 'package:rwa_api_client/src/model/native_cancellation.dart';
-import 'package:rwa_api_client/src/model/native_cancellation_status.dart';
-import 'package:rwa_api_client/src/model/native_delivery_state.dart';
 import 'package:rwa_api_client/src/model/network_portfolio_allocation.dart';
 import 'package:rwa_api_client/src/model/network_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dart';
@@ -462,6 +446,7 @@ import 'package:rwa_api_client/src/model/session_kind.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
 import 'package:rwa_api_client/src/model/session_response.dart';
 import 'package:rwa_api_client/src/model/session_segment.dart';
+import 'package:rwa_api_client/src/model/sponsored_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/stock.dart';
 import 'package:rwa_api_client/src/model/stock_group.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
@@ -499,17 +484,15 @@ import 'package:rwa_api_client/src/model/unified_funding_blocker.dart';
 import 'package:rwa_api_client/src/model/unified_funding_data_status.dart';
 import 'package:rwa_api_client/src/model/unified_funding_position.dart';
 import 'package:rwa_api_client/src/model/unified_funding_transfer.dart';
-import 'package:rwa_api_client/src/model/unknown_financial_asset_identity.dart';
-import 'package:rwa_api_client/src/model/unknown_financial_raw_amount.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_language.dart';
+import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
-import 'package:rwa_api_client/src/model/wallet_action_authorization_submission_request.dart';
 import 'package:rwa_api_client/src/model/wallet_action_chain_observation.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution_create_request.dart';
@@ -519,7 +502,6 @@ import 'package:rwa_api_client/src/model/wallet_action_execution_submission_requ
 import 'package:rwa_api_client/src/model/wallet_action_kind.dart';
 import 'package:rwa_api_client/src/model/wallet_action_provider_status.dart';
 import 'package:rwa_api_client/src/model/wallet_action_resource_type.dart';
-import 'package:rwa_api_client/src/model/wallet_action_transaction_evidence_request.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization_request.dart';
 import 'package:rwa_api_client/src/model/wallet_page.dart';
@@ -658,15 +640,6 @@ part 'serializers.g.dart';
   DisclosuresSessionsInner,
   EndedSessionInfo,
   Erc20ApprovalAction,
-  FinancialAssetIdentity,
-  FinancialBusinessReference,
-  FinancialEconomicStatus,
-  FinancialObligation,
-  FinancialObligationAmounts,
-  FinancialObligationPage,
-  FinancialRawAmount,
-  FinancialResponsibility,
-  FinancialSettlementEvidence,
   FrozenEvmTransaction,
   FundingAssetIdentity,
   FundingAssetProvenance,
@@ -824,10 +797,6 @@ part 'serializers.g.dart';
   HyperliquidSignature,
   HyperliquidUsdcCollateral,
   KeyValue,
-  KnownFinancialAssetIdentity,
-  KnownFinancialAssetIdentityNot,
-  KnownFinancialAssetIdentityNotNot,
-  KnownFinancialRawAmount,
   LegacyBstockFundingPlan,
   LegacyBstockFundingRail,
   LegacyBstockOrderPreview,
@@ -856,9 +825,6 @@ part 'serializers.g.dart';
   MultiSourceFundingPlanStatus,
   MultiSourceFundingTransferRequest,
   MultiSourcePerpFundingPlan,
-  NativeCancellation,
-  NativeCancellationStatus,
-  NativeDeliveryState,
   NetworkPortfolioAllocation,
   NetworkPortfolioAllocationItem,
   NoExecutableActionTransferState,
@@ -981,6 +947,7 @@ part 'serializers.g.dart';
   SessionRequest,
   SessionResponse,
   SessionSegment,
+  SponsoredWalletActionExecutionSubmissionRequest,
   Stock,
   StockGroup,
   StockPage,
@@ -1018,17 +985,15 @@ part 'serializers.g.dart';
   UnifiedFundingDataStatus,
   UnifiedFundingPosition,
   UnifiedFundingTransfer,
-  UnknownFinancialAssetIdentity,
-  UnknownFinancialRawAmount,
   User,
   UserLanguage,
+  UserPaidWalletActionExecutionSubmissionRequest,
   UserSelectedMultiSourceBstockFundingPlan,
   UserSelectedMultiSourceBstockTestnetFundingPlan,
   UserSelectedMultiSourcePerpFundingPlan,
   UserSettings,
   UserSettingsUpdate,
   Wallet,
-  WalletActionAuthorizationSubmissionRequest,
   WalletActionChainObservation,
   WalletActionExecution,
   WalletActionExecutionCreateRequest,
@@ -1038,7 +1003,6 @@ part 'serializers.g.dart';
   WalletActionKind,
   WalletActionProviderStatus,
   WalletActionResourceType,
-  WalletActionTransactionEvidenceRequest,
   WalletAuthorization,
   WalletAuthorizationRequest,
   WalletPage,
@@ -1147,10 +1111,6 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<Hip3Liquidation>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FinancialBusinessReference)]),
-        () => ListBuilder<FinancialBusinessReference>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DepositObservation)]),
         () => ListBuilder<DepositObservation>(),
       )
@@ -1175,10 +1135,6 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<TradeIntentFundingLegBinding>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltSet, [FullType(int)]),
-        () => SetBuilder<int>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DisclosuresSessionsInner)]),
         () => ListBuilder<DisclosuresSessionsInner>(),
       )
@@ -1193,10 +1149,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioNotice)]),
         () => ListBuilder<PortfolioNotice>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FinancialObligation)]),
-        () => ListBuilder<FinancialObligation>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
@@ -1237,10 +1189,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Order)]),
         () => ListBuilder<Order>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FinancialSettlementEvidence)]),
-        () => ListBuilder<FinancialSettlementEvidence>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Wallet)]),
@@ -1361,10 +1309,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(String)]),
         () => ListBuilder<String>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FinancialObligationAmounts)]),
-        () => ListBuilder<FinancialObligationAmounts>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AccountBalance)]),

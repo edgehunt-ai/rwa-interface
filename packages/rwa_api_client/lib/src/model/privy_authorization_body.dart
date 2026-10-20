@@ -16,7 +16,7 @@ part 'privy_authorization_body.g.dart';
 /// * [method] 
 /// * [caip2] 
 /// * [chainType] 
-/// * [sponsor] - True only for app_sponsored; privy_native is false and the user pays native gas.
+/// * [sponsor] 
 /// * [referenceId] - Stable server-generated execution correlation identifier. It is included in Privy transaction Webhooks and is never supplied or overridden by the client. 
 /// * [params] 
 @BuiltValue()
@@ -33,7 +33,6 @@ abstract class PrivyAuthorizationBody implements Built<PrivyAuthorizationBody, P
   PrivyAuthorizationBodyChainTypeEnum get chainType;
   // enum chainTypeEnum {  ethereum,  };
 
-  /// True only for app_sponsored; privy_native is false and the user pays native gas.
   @BuiltValueField(wireName: r'sponsor')
   bool get sponsor;
 

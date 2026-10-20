@@ -122,8 +122,9 @@ final class Hip3WithdrawalCommands {
       _checkSession();
       // The venue may have accepted an earlier submission whose response was
       // lost. Reconcile it even after its signature TTL or quote has changed.
-      if (latest.status != 'awaiting_signature') {
-        if (!latest.isPending && !latest.requiresManualReview) _prepared = null;
+      if (latest.isPending) return latest;
+      if (latest.status == 'completed') {
+        _prepared = null;
         return latest;
       }
     }
@@ -230,7 +231,7 @@ final class Hip3WithdrawalCommands {
       command: (key) => repository.signAndSubmit(prepared, idempotencyKey: key),
     );
     _checkSession();
-    _prepared = result;
+    _prepared = null;
     return result;
   }
 

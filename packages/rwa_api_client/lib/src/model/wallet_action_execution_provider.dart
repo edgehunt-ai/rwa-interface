@@ -13,8 +13,6 @@ class WalletActionExecutionProvider extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'privy')
   static const WalletActionExecutionProvider privy = _$privy;
-  @BuiltValueEnumConst(wireName: r'privy_native')
-  static const WalletActionExecutionProvider privyNative = _$privyNative;
   @BuiltValueEnumConst(wireName: r'user_wallet')
   static const WalletActionExecutionProvider userWallet = _$userWallet;
 

@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,17 +12,12 @@ part 'funding_refund_policy.g.dart';
 /// FundingRefundPolicy
 ///
 /// Properties:
-/// * [asset] - Exact refund asset frozen by the selected route. May differ from source (for example Across USDT to USDC). Null/absent historical identity stays unknown; never substitute source asset or same symbol.
 /// * [address] 
 /// * [addressRole] 
 /// * [mayDeductGas] 
 /// * [timingNote] - Must not promise an instant or full refund.
 @BuiltValue()
 abstract class FundingRefundPolicy implements Built<FundingRefundPolicy, FundingRefundPolicyBuilder> {
-  /// Exact refund asset frozen by the selected route. May differ from source (for example Across USDT to USDC). Null/absent historical identity stays unknown; never substitute source asset or same symbol.
-  @BuiltValueField(wireName: r'asset')
-  FundingAssetIdentity? get asset;
-
   @BuiltValueField(wireName: r'address')
   String get address;
 
@@ -61,13 +55,6 @@ class _$FundingRefundPolicySerializer implements PrimitiveSerializer<FundingRefu
     FundingRefundPolicy object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.asset != null) {
-      yield r'asset';
-      yield serializers.serialize(
-        object.asset,
-        specifiedType: const FullType.nullable(FundingAssetIdentity),
-      );
-    }
     yield r'address';
     yield serializers.serialize(
       object.address,
@@ -111,14 +98,6 @@ class _$FundingRefundPolicySerializer implements PrimitiveSerializer<FundingRefu
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'asset':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(FundingAssetIdentity),
-          ) as FundingAssetIdentity?;
-          if (valueDes == null) continue;
-          result.asset.replace(valueDes);
-          break;
         case r'address':
           final valueDes = serializers.deserialize(
             value,

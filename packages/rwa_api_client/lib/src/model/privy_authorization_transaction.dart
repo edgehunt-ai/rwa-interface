@@ -16,7 +16,6 @@ part 'privy_authorization_transaction.g.dart';
 /// * [to] 
 /// * [data] 
 /// * [value] 
-/// * [nonce] - Exact native nonce as a canonical Ethereum hexadecimal quantity; absent for sponsorship.
 @BuiltValue()
 abstract class PrivyAuthorizationTransaction implements Built<PrivyAuthorizationTransaction, PrivyAuthorizationTransactionBuilder> {
   /// Exact server-bound Privy wallet address; the client cannot override it.
@@ -32,10 +31,6 @@ abstract class PrivyAuthorizationTransaction implements Built<PrivyAuthorization
   @BuiltValueField(wireName: r'value')
   PrivyAuthorizationTransactionValueEnum get value;
   // enum valueEnum {  0x0,  };
-
-  /// Exact native nonce as a canonical Ethereum hexadecimal quantity; absent for sponsorship.
-  @BuiltValueField(wireName: r'nonce')
-  String? get nonce;
 
   PrivyAuthorizationTransaction._();
 
@@ -80,13 +75,6 @@ class _$PrivyAuthorizationTransactionSerializer implements PrimitiveSerializer<P
       object.value,
       specifiedType: const FullType(PrivyAuthorizationTransactionValueEnum),
     );
-    if (object.nonce != null) {
-      yield r'nonce';
-      yield serializers.serialize(
-        object.nonce,
-        specifiedType: const FullType(String),
-      );
-    }
   }
 
   @override
@@ -137,14 +125,6 @@ class _$PrivyAuthorizationTransactionSerializer implements PrimitiveSerializer<P
             specifiedType: const FullType(PrivyAuthorizationTransactionValueEnum),
           ) as PrivyAuthorizationTransactionValueEnum;
           result.value = valueDes;
-          break;
-        case r'nonce':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.nonce = valueDes;
           break;
         default:
           unhandled.add(key);

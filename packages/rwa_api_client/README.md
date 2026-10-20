@@ -125,7 +125,6 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**createWithdrawalQuote**](doc/FundingApi.md#createwithdrawalquote) | **POST** /v1/withdrawal-quotes | 创建提现报价
 [*FundingApi*](doc/FundingApi.md) | [**getDeposit**](doc/FundingApi.md#getdeposit) | **GET** /v1/deposits/{deposit_id} | 入金详情与权威状态
 [*FundingApi*](doc/FundingApi.md) | [**getDepositInstruction**](doc/FundingApi.md#getdepositinstruction) | **GET** /v1/deposit-instructions | 获取多链稳定币只读入金目录
-[*FundingApi*](doc/FundingApi.md) | [**getFinancialObligation**](doc/FundingApi.md#getfinancialobligation) | **GET** /v1/funding/obligations/{obligation_id} | Read a financial obligation including settled history
 [*FundingApi*](doc/FundingApi.md) | [**getFundingCatalog**](doc/FundingApi.md#getfundingcatalog) | **GET** /v1/funding/catalog | 资金网络与结算资产目录
 [*FundingApi*](doc/FundingApi.md) | [**getFundingPlan**](doc/FundingApi.md#getfundingplan) | **GET** /v1/funding/plans/{plan_id} | 资金准备计划详情与权威状态
 [*FundingApi*](doc/FundingApi.md) | [**getFundingSession**](doc/FundingApi.md#getfundingsession) | **GET** /v1/funding/sessions/{funding_session_id} | 获取资金准备会话
@@ -136,7 +135,6 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**getWithdrawal**](doc/FundingApi.md#getwithdrawal) | **GET** /v1/withdrawals/{withdrawal_id} | 提现详情与权威状态
 [*FundingApi*](doc/FundingApi.md) | [**listDepositObservations**](doc/FundingApi.md#listdepositobservations) | **GET** /v1/deposit-observations | 获取脱敏入金观察进度
 [*FundingApi*](doc/FundingApi.md) | [**listDeposits**](doc/FundingApi.md#listdeposits) | **GET** /v1/deposits | 入金记录列表
-[*FundingApi*](doc/FundingApi.md) | [**listFinancialObligations**](doc/FundingApi.md#listfinancialobligations) | **GET** /v1/funding/obligations | List the current account&#39;s financial obligations
 [*FundingApi*](doc/FundingApi.md) | [**listWithdrawals**](doc/FundingApi.md#listwithdrawals) | **GET** /v1/withdrawals | 提现列表
 [*FundingApi*](doc/FundingApi.md) | [**previewHip3Withdrawal**](doc/FundingApi.md#previewhip3withdrawal) | **POST** /v1/hip3/withdrawals/preview | 预览 Perps 转出金额及 Cross 强平价影响
 [*FundingApi*](doc/FundingApi.md) | [**submitHip3Withdrawal**](doc/FundingApi.md#submithip3withdrawal) | **POST** /v1/hip3/withdrawals/{withdrawal_id}/submission | 提交 HIP-3 提现签名
@@ -198,8 +196,6 @@ Class | Method | HTTP request | Description
 [*WalletsApi*](doc/WalletsApi.md) | [**createWalletAuthorization**](doc/WalletsApi.md#createwalletauthorization) | **POST** /v1/me/wallets/{wallet_id}/authorizations | 创建一次性钱包授权
 [*WalletsApi*](doc/WalletsApi.md) | [**getWalletActionExecution**](doc/WalletsApi.md#getwalletactionexecution) | **GET** /v1/wallet-action-executions/{execution_id} | 获取钱包动作执行权威状态
 [*WalletsApi*](doc/WalletsApi.md) | [**listWallets**](doc/WalletsApi.md#listwallets) | **GET** /v1/me/wallets | 列出当前用户钱包
-[*WalletsApi*](doc/WalletsApi.md) | [**prepareWalletActionCancellation**](doc/WalletsApi.md#preparewalletactioncancellation) | **POST** /v1/wallet-action-executions/{execution_id}/cancellation | Abort undispatched native execution or prepare exact-nonce cancellation
-[*WalletsApi*](doc/WalletsApi.md) | [**submitWalletActionCancellation**](doc/WalletsApi.md#submitwalletactioncancellation) | **POST** /v1/wallet-action-executions/{execution_id}/cancellation/submissions | Authorize the server-owned exact-nonce native cancellation
 [*WalletsApi*](doc/WalletsApi.md) | [**submitWalletActionExecution**](doc/WalletsApi.md#submitwalletactionexecution) | **POST** /v1/wallet-action-executions/{execution_id}/submissions | 提交钱包动作执行授权或交易定位符
 [*WalletsApi*](doc/WalletsApi.md) | [**syncWallet**](doc/WalletsApi.md#syncwallet) | **POST** /v1/me/wallets/sync | 从 Privy 权威账户同步主钱包
 
@@ -331,15 +327,6 @@ Class | Method | HTTP request | Description
  - [DisclosuresSessionsInner](doc/DisclosuresSessionsInner.md)
  - [EndedSessionInfo](doc/EndedSessionInfo.md)
  - [Erc20ApprovalAction](doc/Erc20ApprovalAction.md)
- - [FinancialAssetIdentity](doc/FinancialAssetIdentity.md)
- - [FinancialBusinessReference](doc/FinancialBusinessReference.md)
- - [FinancialEconomicStatus](doc/FinancialEconomicStatus.md)
- - [FinancialObligation](doc/FinancialObligation.md)
- - [FinancialObligationAmounts](doc/FinancialObligationAmounts.md)
- - [FinancialObligationPage](doc/FinancialObligationPage.md)
- - [FinancialRawAmount](doc/FinancialRawAmount.md)
- - [FinancialResponsibility](doc/FinancialResponsibility.md)
- - [FinancialSettlementEvidence](doc/FinancialSettlementEvidence.md)
  - [FrozenEvmTransaction](doc/FrozenEvmTransaction.md)
  - [FundingAssetIdentity](doc/FundingAssetIdentity.md)
  - [FundingAssetProvenance](doc/FundingAssetProvenance.md)
@@ -497,10 +484,6 @@ Class | Method | HTTP request | Description
  - [HyperliquidSignature](doc/HyperliquidSignature.md)
  - [HyperliquidUsdcCollateral](doc/HyperliquidUsdcCollateral.md)
  - [KeyValue](doc/KeyValue.md)
- - [KnownFinancialAssetIdentity](doc/KnownFinancialAssetIdentity.md)
- - [KnownFinancialAssetIdentityNot](doc/KnownFinancialAssetIdentityNot.md)
- - [KnownFinancialAssetIdentityNotNot](doc/KnownFinancialAssetIdentityNotNot.md)
- - [KnownFinancialRawAmount](doc/KnownFinancialRawAmount.md)
  - [LegacyBstockFundingPlan](doc/LegacyBstockFundingPlan.md)
  - [LegacyBstockFundingRail](doc/LegacyBstockFundingRail.md)
  - [LegacyBstockOrderPreview](doc/LegacyBstockOrderPreview.md)
@@ -529,9 +512,6 @@ Class | Method | HTTP request | Description
  - [MultiSourceFundingPlanStatus](doc/MultiSourceFundingPlanStatus.md)
  - [MultiSourceFundingTransferRequest](doc/MultiSourceFundingTransferRequest.md)
  - [MultiSourcePerpFundingPlan](doc/MultiSourcePerpFundingPlan.md)
- - [NativeCancellation](doc/NativeCancellation.md)
- - [NativeCancellationStatus](doc/NativeCancellationStatus.md)
- - [NativeDeliveryState](doc/NativeDeliveryState.md)
  - [NetworkPortfolioAllocation](doc/NetworkPortfolioAllocation.md)
  - [NetworkPortfolioAllocationItem](doc/NetworkPortfolioAllocationItem.md)
  - [NoExecutableActionTransferState](doc/NoExecutableActionTransferState.md)
@@ -654,6 +634,7 @@ Class | Method | HTTP request | Description
  - [SessionRequest](doc/SessionRequest.md)
  - [SessionResponse](doc/SessionResponse.md)
  - [SessionSegment](doc/SessionSegment.md)
+ - [SponsoredWalletActionExecutionSubmissionRequest](doc/SponsoredWalletActionExecutionSubmissionRequest.md)
  - [Stock](doc/Stock.md)
  - [StockGroup](doc/StockGroup.md)
  - [StockPage](doc/StockPage.md)
@@ -691,17 +672,15 @@ Class | Method | HTTP request | Description
  - [UnifiedFundingDataStatus](doc/UnifiedFundingDataStatus.md)
  - [UnifiedFundingPosition](doc/UnifiedFundingPosition.md)
  - [UnifiedFundingTransfer](doc/UnifiedFundingTransfer.md)
- - [UnknownFinancialAssetIdentity](doc/UnknownFinancialAssetIdentity.md)
- - [UnknownFinancialRawAmount](doc/UnknownFinancialRawAmount.md)
  - [User](doc/User.md)
  - [UserLanguage](doc/UserLanguage.md)
+ - [UserPaidWalletActionExecutionSubmissionRequest](doc/UserPaidWalletActionExecutionSubmissionRequest.md)
  - [UserSelectedMultiSourceBstockFundingPlan](doc/UserSelectedMultiSourceBstockFundingPlan.md)
  - [UserSelectedMultiSourceBstockTestnetFundingPlan](doc/UserSelectedMultiSourceBstockTestnetFundingPlan.md)
  - [UserSelectedMultiSourcePerpFundingPlan](doc/UserSelectedMultiSourcePerpFundingPlan.md)
  - [UserSettings](doc/UserSettings.md)
  - [UserSettingsUpdate](doc/UserSettingsUpdate.md)
  - [Wallet](doc/Wallet.md)
- - [WalletActionAuthorizationSubmissionRequest](doc/WalletActionAuthorizationSubmissionRequest.md)
  - [WalletActionChainObservation](doc/WalletActionChainObservation.md)
  - [WalletActionExecution](doc/WalletActionExecution.md)
  - [WalletActionExecutionCreateRequest](doc/WalletActionExecutionCreateRequest.md)
@@ -711,7 +690,6 @@ Class | Method | HTTP request | Description
  - [WalletActionKind](doc/WalletActionKind.md)
  - [WalletActionProviderStatus](doc/WalletActionProviderStatus.md)
  - [WalletActionResourceType](doc/WalletActionResourceType.md)
- - [WalletActionTransactionEvidenceRequest](doc/WalletActionTransactionEvidenceRequest.md)
  - [WalletAuthorization](doc/WalletAuthorization.md)
  - [WalletAuthorizationRequest](doc/WalletAuthorizationRequest.md)
  - [WalletPage](doc/WalletPage.md)

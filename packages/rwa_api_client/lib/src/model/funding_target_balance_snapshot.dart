@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/funding_target_balance_source.dart';
-import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
 import 'package:built_value/built_value.dart';
@@ -18,7 +17,6 @@ part 'funding_target_balance_snapshot.g.dart';
 /// * [account] 
 /// * [accountRef] 
 /// * [asset] 
-/// * [targetEnvironment] - Frozen target venue environment. Null/absent historical scope stays unknown; signing-domain chain 1337 never selects an environment.
 /// * [availableAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [source_] 
 /// * [observedAt] 
@@ -34,11 +32,6 @@ abstract class FundingTargetBalanceSnapshot implements Built<FundingTargetBalanc
 
   @BuiltValueField(wireName: r'asset')
   FundingAssetIdentity get asset;
-
-  /// Frozen target venue environment. Null/absent historical scope stays unknown; signing-domain chain 1337 never selects an environment.
-  @BuiltValueField(wireName: r'target_environment')
-  FundingTargetBalanceSnapshotTargetEnvironmentEnum? get targetEnvironment;
-  // enum targetEnvironmentEnum {  mainnet,  testnet,  };
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_amount')
@@ -92,13 +85,6 @@ class _$FundingTargetBalanceSnapshotSerializer implements PrimitiveSerializer<Fu
       object.asset,
       specifiedType: const FullType(FundingAssetIdentity),
     );
-    if (object.targetEnvironment != null) {
-      yield r'target_environment';
-      yield serializers.serialize(
-        object.targetEnvironment,
-        specifiedType: const FullType.nullable(FundingTargetBalanceSnapshotTargetEnvironmentEnum),
-      );
-    }
     yield r'available_amount';
     yield serializers.serialize(
       object.availableAmount,
@@ -163,14 +149,6 @@ class _$FundingTargetBalanceSnapshotSerializer implements PrimitiveSerializer<Fu
           ) as FundingAssetIdentity;
           result.asset.replace(valueDes);
           break;
-        case r'target_environment':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(FundingTargetBalanceSnapshotTargetEnvironmentEnum),
-          ) as FundingTargetBalanceSnapshotTargetEnvironmentEnum?;
-          if (valueDes == null) continue;
-          result.targetEnvironment = valueDes;
-          break;
         case r'available_amount':
           final valueDes = serializers.deserialize(
             value,
@@ -226,22 +204,5 @@ class _$FundingTargetBalanceSnapshotSerializer implements PrimitiveSerializer<Fu
     );
     return result.build();
   }
-}
-
-class FundingTargetBalanceSnapshotTargetEnvironmentEnum extends EnumClass {
-
-  /// Frozen target venue environment. Null/absent historical scope stays unknown; signing-domain chain 1337 never selects an environment.
-  @BuiltValueEnumConst(wireName: r'mainnet')
-  static const FundingTargetBalanceSnapshotTargetEnvironmentEnum mainnet = _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
-  /// Frozen target venue environment. Null/absent historical scope stays unknown; signing-domain chain 1337 never selects an environment.
-  @BuiltValueEnumConst(wireName: r'testnet')
-  static const FundingTargetBalanceSnapshotTargetEnvironmentEnum testnet = _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
-
-  static Serializer<FundingTargetBalanceSnapshotTargetEnvironmentEnum> get serializer => _$fundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer;
-
-  const FundingTargetBalanceSnapshotTargetEnvironmentEnum._(String name): super(name);
-
-  static BuiltSet<FundingTargetBalanceSnapshotTargetEnvironmentEnum> get values => _$fundingTargetBalanceSnapshotTargetEnvironmentEnumValues;
-  static FundingTargetBalanceSnapshotTargetEnvironmentEnum valueOf(String name) => _$fundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(name);
 }
 

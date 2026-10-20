@@ -16,10 +16,6 @@ class _$FundingRefundObservation extends FundingRefundObservation {
   @override
   final String? amount;
   @override
-  final int? logIndex;
-  @override
-  final String? actualFeeAmount;
-  @override
   final String? txHash;
   @override
   final DateTime? observedAt;
@@ -33,8 +29,6 @@ class _$FundingRefundObservation extends FundingRefundObservation {
       this.asset,
       this.address,
       this.amount,
-      this.logIndex,
-      this.actualFeeAmount,
       this.txHash,
       this.observedAt})
       : super._();
@@ -55,8 +49,6 @@ class _$FundingRefundObservation extends FundingRefundObservation {
         asset == other.asset &&
         address == other.address &&
         amount == other.amount &&
-        logIndex == other.logIndex &&
-        actualFeeAmount == other.actualFeeAmount &&
         txHash == other.txHash &&
         observedAt == other.observedAt;
   }
@@ -68,8 +60,6 @@ class _$FundingRefundObservation extends FundingRefundObservation {
     _$hash = $jc(_$hash, asset.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
-    _$hash = $jc(_$hash, logIndex.hashCode);
-    _$hash = $jc(_$hash, actualFeeAmount.hashCode);
     _$hash = $jc(_$hash, txHash.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
     _$hash = $jf(_$hash);
@@ -83,8 +73,6 @@ class _$FundingRefundObservation extends FundingRefundObservation {
           ..add('asset', asset)
           ..add('address', address)
           ..add('amount', amount)
-          ..add('logIndex', logIndex)
-          ..add('actualFeeAmount', actualFeeAmount)
           ..add('txHash', txHash)
           ..add('observedAt', observedAt))
         .toString();
@@ -113,15 +101,6 @@ class FundingRefundObservationBuilder
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
-  int? _logIndex;
-  int? get logIndex => _$this._logIndex;
-  set logIndex(int? logIndex) => _$this._logIndex = logIndex;
-
-  String? _actualFeeAmount;
-  String? get actualFeeAmount => _$this._actualFeeAmount;
-  set actualFeeAmount(String? actualFeeAmount) =>
-      _$this._actualFeeAmount = actualFeeAmount;
-
   String? _txHash;
   String? get txHash => _$this._txHash;
   set txHash(String? txHash) => _$this._txHash = txHash;
@@ -141,8 +120,6 @@ class FundingRefundObservationBuilder
       _asset = $v.asset?.toBuilder();
       _address = $v.address;
       _amount = $v.amount;
-      _logIndex = $v.logIndex;
-      _actualFeeAmount = $v.actualFeeAmount;
       _txHash = $v.txHash;
       _observedAt = $v.observedAt;
       _$v = null;
@@ -173,8 +150,6 @@ class FundingRefundObservationBuilder
             asset: _asset?.build(),
             address: address,
             amount: amount,
-            logIndex: logIndex,
-            actualFeeAmount: actualFeeAmount,
             txHash: txHash,
             observedAt: observedAt,
           );

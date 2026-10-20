@@ -17,8 +17,6 @@ import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/wallet_action_execution.dart';
 import '../../activity/providers/activity_provider.dart';
 
-import 'funding_execution_validation.dart';
-
 final fundingCatalogProvider =
     FutureProvider.autoDispose<FundingCatalogSummary>(
       (ref) => ref.watch(fundingRepositoryProvider).getFundingCatalog(),
@@ -110,8 +108,6 @@ final class FundingTransferCommands {
   final Ref _ref;
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
   final Set<String> _submittedTransferActions = <String>{};
-  final Set<String> _authorizationSubmissions = <String>{};
-  final Map<String, WalletActionExecution> _executions = {};
   Future<void> _quoteTail = Future<void>.value();
   FundingSessionSummary? _transferDraft;
   String? _transferDraftDestination;
@@ -166,7 +162,7 @@ final class FundingTransferCommands {
         ),
       );
     }
-    if (!session.canSubmit) {
+    if (!session.canConfirmTransfer) {
       // Use the session snapshot only to display funding requirements. This
       // blocked value has no executable legs and must never create a transfer.
       return OrderFundingRequirement(
@@ -183,9 +179,7 @@ final class FundingTransferCommands {
               : DecimalValue(session.targetAvailableAmount!),
           targetAsset: session.targetToken,
           targetNetwork: session.targetNetwork,
-          status: session.requiresReview
-              ? FundingPlanState.manualReview
-              : FundingPlanState.blocked,
+          status: FundingPlanState.blocked,
         ),
       );
     }
@@ -394,9 +388,6 @@ final class FundingTransferCommands {
   }
 
   Future<FundingPlan> planForSession(FundingSessionSummary session) async {
-    if (!session.canSubmit && session.status != 'transferring') {
-      throw StateError('Funding session does not allow transfer confirmation');
-    }
     final result = await _run(
       operation: 'funding_plan',
       context: {'funding_session_id': session.sessionId},
@@ -424,9 +415,7 @@ final class FundingTransferCommands {
   );
 
   Future<FundingPlan> reconcile(FundingPlan plan) async {
-    var refreshed = await refresh(plan.planId);
-    if (!refreshed.shouldPoll) return refreshed;
-    for (final leg in refreshed.legs) {
+    for (final leg in plan.legs) {
       final transferId = leg.transferId;
       if (transferId == null) continue;
       final transfer = await _run(
@@ -436,10 +425,9 @@ final class FundingTransferCommands {
             _ref.read(fundingRepositoryProvider).getFundingTransfer(transferId),
       );
       await _executeNextAction(transfer);
-      _ref.invalidate(fundingTransferProvider(transferId));
     }
 
-    refreshed = await refresh(plan.planId);
+    var refreshed = await refresh(plan.planId);
     if (refreshed.isActionable) {
       final authorization = await authorize(refreshed);
       await create(plan: refreshed, authorization: authorization);
@@ -503,9 +491,6 @@ final class FundingTransferCommands {
     required FundingPlan plan,
     required WalletAuthorization authorization,
   }) async {
-    if (!plan.isActionable) {
-      throw StateError('Funding plan does not allow transfer creation');
-    }
     if (!authorization.isUsable) {
       throw StateError('Funding transfer authorization is not usable');
     }
@@ -534,103 +519,81 @@ final class FundingTransferCommands {
 
   Future<void> _executeNextAction(FundingTransfer transfer) async {
     final actionId = transfer.nextActionId;
-    if (actionId == null || !transfer.canExecuteNextAction) return;
-    final action = transfer.nextAction;
-    if (action == null || action.actionId != actionId || action.mode == null) {
-      throw StateError(
-        'Transfer has no authoritative wallet action or gas mode',
-      );
-    }
+    if (actionId == null) return;
     final actionKey = '${transfer.transferId}|$actionId';
+    if (_submittedTransferActions.contains(actionKey)) return;
 
     await _run(
       operation: 'funding_transfer_execute',
       context: {
         'transfer_id': transfer.transferId,
         'action_id': actionId,
-        'mode': action.mode!.name,
+        'mode': GasPaymentMode.appSponsored.name,
         'stage': 'execute',
       },
-      command: () => _commands.run(
-        operation: 'funding-transfer-execute',
-        fingerprint: actionKey,
-        command: (_) => _executeNextActionCommand(
-          transfer: transfer,
-          action: action,
-          actionKey: actionKey,
-        ),
+      command: () => _executeNextActionCommand(
+        transfer: transfer,
+        actionId: actionId,
+        actionKey: actionKey,
       ),
     );
   }
 
   Future<void> _executeNextActionCommand({
     required FundingTransfer transfer,
-    required FundingTransferAction action,
+    required String actionId,
     required String actionKey,
   }) async {
     final executions = _ref.read(walletActionExecutionRepositoryProvider);
-    final created =
-        _executions[actionKey] ??
-        await executions.createTransferWalletActionExecution(
-          transferId: transfer.transferId,
-          actionId: action.actionId,
-          mode: action.mode!,
-          idempotencyKey: scopedIdempotencyKey(
-            'funding-transfer-execution-${transfer.transferId}-${action.actionId}',
-          ),
-        );
-    _validateTransferExecution(created, transfer, action);
-    _executions[actionKey] = created;
-    // A create replay is historical; only a fresh GET can grant signing authority.
-    final execution = await executions.get(created.executionId);
-    _validateTransferExecution(execution, transfer, action, previous: created);
-    _executions[actionKey] = execution;
-    if (_authorizationSubmissions.contains(execution.executionId) ||
-        !execution.awaitsAuthorization) {
-      return;
+    final execution = await executions.createTransferWalletActionExecution(
+      transferId: transfer.transferId,
+      actionId: actionId,
+      mode: GasPaymentMode.appSponsored,
+      idempotencyKey: scopedIdempotencyKey(
+        'funding-transfer-execution-${transfer.transferId}-$actionId',
+      ),
+    );
+    if (execution.requiresUserPaidFallback) {
+      throw StateError('Sponsored transfer execution is unavailable');
     }
-    if (action.status != 'ready' ||
-        !action.validUntil.isAfter(DateTime.now().toUtc())) {
-      throw StateError('Transfer wallet action is no longer ready');
-    }
-    validateFundingAuthorization(execution);
-    if (execution.authorizationExpiresAt!.isAfter(action.validUntil)) {
+    final authorization = execution.authorization;
+    if (!execution.awaitsAuthorization || authorization == null) {
       throw StateError(
-        'Authorization exceeds the frozen transfer action lifetime',
+        'Transfer execution is not awaiting wallet authorization',
       );
     }
     final signature = await _ref
         .read(walletAuthorizationSignerProvider)
         .signWalletAuthorization(
-          expectedSigner: action.from,
-          request: execution.authorization!,
+          expectedSigner: authorization.transaction.from,
+          request: authorization,
         );
-    // Submission may reach the provider even when its response is lost.
-    _authorizationSubmissions.add(execution.executionId);
-    _submittedTransferActions.add(actionKey);
-    await executions.submitAuthorization(
+    final submitted = await executions.submitAuthorization(
       executionId: execution.executionId,
       signature: signature,
       idempotencyKey: scopedIdempotencyKey(
         'funding-transfer-execution-submit-${execution.executionId}',
       ),
     );
+    switch (submitted.status) {
+      case WalletActionExecutionState.submitting ||
+          WalletActionExecutionState.providerSubmitted ||
+          WalletActionExecutionState.chainConfirmed ||
+          WalletActionExecutionState.completed:
+        _submittedTransferActions.add(actionKey);
+        return;
+      case WalletActionExecutionState.awaitingUserAuthorization ||
+          WalletActionExecutionState.userGasConfirmationRequired ||
+          WalletActionExecutionState.failed ||
+          WalletActionExecutionState.ambiguous ||
+          WalletActionExecutionState.manualReview ||
+          WalletActionExecutionState.unknown:
+        throw StateError(
+          submitted.failureReason ??
+              'Transfer wallet execution did not start: ${submitted.status.name}',
+        );
+    }
   }
-
-  void _validateTransferExecution(
-    WalletActionExecution execution,
-    FundingTransfer transfer,
-    FundingTransferAction action, {
-    WalletActionExecution? previous,
-  }) => validateFundingExecution(
-    execution: execution,
-    resourceId: transfer.transferId,
-    mode: action.mode!,
-    chainId: action.chainId,
-    from: action.from,
-    transaction: action.transaction,
-    previous: previous,
-  );
 
   Future<T> _run<T>({
     required String operation,

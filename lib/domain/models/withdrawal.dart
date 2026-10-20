@@ -196,9 +196,6 @@ final class Withdrawal {
     this.txHash,
     this.failureReason,
     this.createdAt,
-    this.completedAt,
-    this.activityId,
-    this.memo,
   });
   final String withdrawalId;
   final String chain;
@@ -210,9 +207,4 @@ final class Withdrawal {
   final String? txHash;
   final String? failureReason;
   final DateTime? createdAt;
-  final DateTime? completedAt;
-  final String? activityId;
-  final String? memo;
-
-  bool get isCompleted => status == WithdrawalState.completed;
 }

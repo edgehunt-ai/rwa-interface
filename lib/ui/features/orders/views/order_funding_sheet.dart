@@ -43,18 +43,6 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   bool _transferStep = false;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _transferSubmitted = _plan.legs.any((leg) => leg.transferId != null);
-    _transferStep =
-        _transferSubmitted ||
-        _plan.status == FundingPlanState.failed ||
-        _plan.status == FundingPlanState.manualReview;
-    _pending = _transferStep && _plan.shouldPoll;
-    if (_pending) _startPolling();
-  }
-
   String get _targetAsset => _displayTargetAsset(
     _plan.targetAsset ??
         (widget.kind == MarketProductKind.bstock ? 'USDT' : 'USDC'),
@@ -72,10 +60,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   }
 
   Future<void> _continue({bool refresh = false}) async {
-    if (_busy ||
-        (!refresh && (!widget.canConfirmTransfer || !_plan.isActionable))) {
-      return;
-    }
+    if (_busy || !widget.canConfirmTransfer) return;
     setState(() {
       _busy = true;
       if (!refresh) _pending = true;
@@ -94,7 +79,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         if (!mounted) return;
         setState(() {
           _transferSubmitted = true;
-          _error = transfer.reason;
+          _error = transfer.failureReason;
         });
         _plan = await commands.refresh(_plan.planId);
       }
@@ -103,7 +88,8 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         Navigator.of(context).pop(true);
         return;
       }
-      _pending = _plan.shouldPoll;
+      _pending =
+          _plan.isExecuting || _plan.legs.any((leg) => leg.transferId != null);
     } on Object catch (error) {
       if (mounted) {
         _error = error is ApiFailure
@@ -112,16 +98,12 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 fallback: AppLocalizations.of(context).transferStartFailed,
               )
             : error.toString();
-        _pending = false;
+        _pending = _transferSubmitted;
       }
     } finally {
       if (mounted) {
         setState(() => _busy = false);
-        if (_pending) {
-          _startPolling();
-        } else {
-          _stopPolling();
-        }
+        if (_pending) _startPolling();
       }
     }
   }
@@ -148,12 +130,14 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         Navigator.of(context).pop(true);
         return;
       }
-      final remainsPending = plan.shouldPoll;
+      final remainsPending =
+          plan.isExecuting || plan.legs.any((leg) => leg.transferId != null);
       setState(() {
         _plan = plan;
         _pending = remainsPending;
         if (!remainsPending) {
-          _error = plan.blocker;
+          _error =
+              plan.blocker ?? AppLocalizations.of(context).transferStartFailed;
         }
       });
       if (!remainsPending) _stopPolling();
@@ -169,20 +153,6 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   void _stopPolling() {
     _pollTimer?.cancel();
     _pollTimer = null;
-  }
-
-  String? _recoveryMessage(BuildContext context) {
-    if (_plan.isActionable || _pending) return null;
-    final l10n = AppLocalizations.of(context);
-    return _plan.blocker ??
-        switch (_plan.status) {
-          FundingPlanState.failed => l10n.transferFailed,
-          FundingPlanState.manualReview => l10n.transferRequiresManualReview,
-          FundingPlanState.partiallyFunded => l10n.transferPartiallySettled,
-          FundingPlanState.expired => l10n.transferQuoteExpired,
-          FundingPlanState.cancelled => l10n.transferCancelled,
-          _ => l10n.transferUnresolved,
-        };
   }
 
   @override
@@ -235,26 +205,24 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                       plan: _plan,
                       fallbackTargetAsset: _targetAsset,
                       busy: _busy,
-                      error: _error ?? _recoveryMessage(context),
+                      pending: _pending,
+                      error: _error,
                       availableByPositionId: {
                         for (final position in value.account.positions)
                           position.positionId: position.availableAmount,
                       },
                       onBack: () => setState(() => _transferStep = false),
-                      onConfirm: widget.canConfirmTransfer
-                          ? () => _continue()
-                          : null,
+                      onConfirm: () => _continue(),
                       onRetry: () => _continue(refresh: true),
                     ),
                     _ => _TransferContent(
                       plan: _plan,
                       fallbackTargetAsset: _targetAsset,
                       busy: _busy,
-                      error: _error ?? _recoveryMessage(context),
+                      pending: _pending,
+                      error: _error,
                       onBack: () => setState(() => _transferStep = false),
-                      onConfirm: widget.canConfirmTransfer
-                          ? () => _continue()
-                          : null,
+                      onConfirm: () => _continue(),
                       onRetry: () => _continue(refresh: true),
                     ),
                   }
@@ -845,6 +813,7 @@ class _TransferContent extends StatelessWidget {
     required this.plan,
     required this.fallbackTargetAsset,
     required this.busy,
+    required this.pending,
     required this.error,
     required this.onBack,
     required this.onConfirm,
@@ -853,10 +822,9 @@ class _TransferContent extends StatelessWidget {
   });
   final FundingPlan plan;
   final String fallbackTargetAsset;
-  final bool busy;
+  final bool busy, pending;
   final String? error;
-  final VoidCallback onBack, onRetry;
-  final VoidCallback? onConfirm;
+  final VoidCallback onBack, onConfirm, onRetry;
   final Map<String, DecimalValue> availableByPositionId;
 
   @override
@@ -884,8 +852,6 @@ class _TransferContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _RouteRows(leg: leg),
-        for (final leg in plan.legs)
-          if (leg.transferId case final id?) SelectableText(id),
         const SizedBox(height: 28),
         if (error != null) ...[
           InlineErrorNotice(
@@ -909,24 +875,19 @@ class _TransferContent extends StatelessWidget {
               child: SizedBox(
                 height: 48,
                 child: FilledButton(
-                  key: plan.isActionable
-                      ? null
-                      : const Key('order-funding-check-status'),
                   onPressed: busy
                       ? null
+                      : pending
+                      ? onRetry
                       : plan.isActionable
                       ? onConfirm
-                      : onRetry,
+                      : null,
                   child: busy
                       ? const SizedBox.square(
                           dimension: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(
-                          plan.isActionable
-                              ? l10n.confirm
-                              : l10n.transferCheckStatus,
-                        ),
+                      : Text(pending ? l10n.retry : l10n.confirm),
                 ),
               ),
             ),
@@ -1437,10 +1398,6 @@ class _RouteRows extends StatelessWidget {
           label: l10n.networkFee,
           value: _fee(leg?.networkFee, leg?.feeAsset),
         ),
-        if (leg?.targetEnvironment != null)
-          SelectableText('target_environment: ${leg!.targetEnvironment}'),
-        if (leg?.refundAsset != null)
-          SelectableText('refund_asset: ${leg!.refundAsset}'),
       ],
     );
   }

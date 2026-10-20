@@ -50,11 +50,7 @@ class _Details extends ConsumerWidget {
         .map((item) => item.resource)
         .where(
           (order) =>
-              order.kind == kind &&
-              order.symbol == symbol &&
-              (kind == MarketProductKind.bstock
-                  ? !order.isTerminal
-                  : order.isOpen),
+              order.kind == kind && order.symbol == symbol && order.isOpen,
         )
         .length;
     const tabs = ['Open', 'Position', 'Details'];
@@ -223,11 +219,7 @@ class _OpenOrdersTab extends ConsumerWidget {
             .map((item) => item.resource)
             .where(
               (order) =>
-                  order.kind == kind &&
-                  order.symbol == symbol &&
-                  (kind == MarketProductKind.bstock
-                      ? !order.isTerminal
-                      : order.isOpen),
+                  order.kind == kind && order.symbol == symbol && order.isOpen,
             )
             .toList(growable: false);
         if (openOrders.isEmpty) {
@@ -314,7 +306,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
     final quantity = order.quantity;
     final filled = order.filledQuantity;
     final total = double.tryParse(quantity?.value ?? '');
-    final filledValue = double.tryParse(filled?.value ?? '');
+    final filledValue = double.tryParse(filled?.value ?? '0');
     final progress =
         total != null &&
             total.isFinite &&
@@ -444,33 +436,13 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(switch (order.status) {
-            TradingOrderStatus.pending => l10n.activityInProgress,
-            TradingOrderStatus.awaitingConfirmation =>
-              l10n.orderAwaitingConfirmation,
-            TradingOrderStatus.pendingSignature => l10n.hip3PendingSignature,
-            TradingOrderStatus.submitted => l10n.orderSubmitted,
-            TradingOrderStatus.open => l10n.openTab,
-            TradingOrderStatus.partiallyFilled => l10n.orderPartiallyFilled,
-            TradingOrderStatus.ambiguous => l10n.orderAmbiguous,
-            TradingOrderStatus.manualReview => l10n.activityManualReview,
-            TradingOrderStatus.filled => l10n.filled,
-            TradingOrderStatus.cancelled => l10n.activityCancelled,
-            TradingOrderStatus.failed => l10n.activityFailed,
-            TradingOrderStatus.unknown => l10n.activityUnknown,
-          }, key: ValueKey('trade-order-status-${order.orderId}')),
-          if (!order.isOpen) ...[
-            SelectableText(order.orderId),
-            if (order.failureReason case final reason?) Text(reason),
-          ],
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _TradeMetric(
                   l10n.orderFilledTotalLabel,
-                  '${filled == null ? '—' : TokenAmountFormatter.formatValue(filled)} / '
+                  '${filled == null ? '0' : TokenAmountFormatter.formatValue(filled)} / '
                   '${quantity == null ? '—' : TokenAmountFormatter.formatValue(quantity)}',
                 ),
               ),

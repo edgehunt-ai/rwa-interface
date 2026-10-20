@@ -3,25 +3,23 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/wallet_action_kind.dart';
-import 'package:rwa_api_client/src/model/native_delivery_state.dart';
-import 'package:rwa_api_client/src/model/privy_authorization_payload.dart';
-import 'package:rwa_api_client/src/model/wallet_action_chain_observation.dart';
-import 'package:rwa_api_client/src/model/wallet_action_execution_status.dart';
 import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
 import 'package:rwa_api_client/src/model/wallet_action_provider_status.dart';
 import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
-import 'package:rwa_api_client/src/model/native_cancellation.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/wallet_action_kind.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution_provider.dart';
 import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_payload.dart';
+import 'package:rwa_api_client/src/model/wallet_action_chain_observation.dart';
 import 'package:rwa_api_client/src/model/wallet_action_resource_type.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'wallet_action_execution.g.dart';
 
-/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  New bStocks approval, IOC market trade, GTC placement and cancellation executions choose `app_sponsored` / `privy` or `user_paid_native` / `privy_native` through the request `mode`. Sponsorship remains subject to existing eligibility, budget and circuit controls. Primary user-paid native BNB requires no prior sponsored execution or fallback gate. Creation retries may recover the same execution idempotently; pending or ambiguous existing executions fence a second delivery even if another payment mode is requested.  Both providers durably persist dispatch identity before synchronously relaying user authorization to Privy; signatures are never persisted. Native authorization uses sponsor=false with a frozen nonce; gas remains paid by the user and never consumes sponsorship quota. A timeout, 5xx or crash becomes ambiguous/manual_review, never permission for a direct or alternate publisher. Historical user_wallet executions accept tx_hash only as read-only evidence and never expose fresh authorization. Original transaction identity is preserved through cancellation and reorg.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. An existing sponsored execution must be proven rejected before broadcast before explicit native fallback. Admitted primary native executions do not require first attempting sponsorship. A definitely rejected sponsored execution may be linked by a user-paid execution. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation. 
+/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  New bStocks approval, IOC market trade, GTC placement and cancellation executions choose `app_sponsored` / `privy` or `user_paid_native` / `user_wallet` through the request `mode`. Sponsorship remains subject to existing eligibility, budget and circuit controls. Primary user-paid native BNB requires no prior sponsored execution or fallback gate. Creation retries may recover the same execution idempotently; pending or ambiguous existing executions fence a second delivery even if another payment mode is requested.  Sponsored submission performs a compare-and-set to `submitting` before synchronously relaying the signature to Privy; the signature is never persisted. Privy acceptance stores `privy_transaction_id` and/or `user_operation_hash` for provider polling/reconciliation. A timeout, 5xx or crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay. User-paid submission accepts only `tx_hash` as an untrusted locator; the server independently verifies the frozen transaction and canonical receipt evidence.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. Transfer and self-custodial withdrawal user-paid fallback still requires a deterministic pre-broadcast rejection and the existing runtime gate. A definitely rejected legacy sponsored order execution may also be linked by a user-paid execution. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation. 
 ///
 /// Properties:
 /// * [executionId] 
@@ -35,15 +33,12 @@ part 'wallet_action_execution.g.dart';
 /// * [businessExpiresAt] 
 /// * [mode] 
 /// * [executionProvider] 
-/// * [nativeNonce] - Immutable decimal nonce for server-owned native delivery; unknown legacy nonce stays null.
-/// * [nativeDeliveryState] 
-/// * [nativeCancellation] 
 /// * [status] 
 /// * [providerStatus] 
 /// * [gasPayment] 
 /// * [frozenTransaction] 
-/// * [fallbackFromExecutionId] - Null for app-sponsored and admitted primary user-paid native executions. When replacing an existing sponsored execution, contains the server-derived id of the matching execution that ended in user_gas_confirmation_required after definite pre-broadcast rejection. Unknown delivery never authorizes fallback. 
-/// * [privyAuthorizationPayload] - Non-null only for a privy or privy_native execution awaiting_user_authorization and with current server delivery authority. Historical user_wallet never exposes authorization. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
+/// * [fallbackFromExecutionId] - Null for app-sponsored executions and primary user-paid bStocks order executions. Transfer and self-custodial withdrawal user-paid fallback must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required` after a definite pre-broadcast rejection. A user-paid bStocks order execution may also link such a definitely rejected legacy sponsored execution. 
+/// * [privyAuthorizationPayload] - Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
 /// * [authorizationExpiresAt] - Mirrors the structured Privy request expiry; null when no authorization is exposed.
 /// * [privyTransactionId] 
 /// * [userOperationHash] 
@@ -96,18 +91,7 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
 
   @BuiltValueField(wireName: r'execution_provider')
   WalletActionExecutionProvider get executionProvider;
-  // enum executionProviderEnum {  privy,  privy_native,  user_wallet,  };
-
-  /// Immutable decimal nonce for server-owned native delivery; unknown legacy nonce stays null.
-  @BuiltValueField(wireName: r'native_nonce')
-  String? get nativeNonce;
-
-  @BuiltValueField(wireName: r'native_delivery_state')
-  NativeDeliveryState? get nativeDeliveryState;
-  // enum nativeDeliveryStateEnum {  prepared,  dispatching,  rejected,  voided,  cancelled,  };
-
-  @BuiltValueField(wireName: r'native_cancellation')
-  NativeCancellation? get nativeCancellation;
+  // enum executionProviderEnum {  privy,  user_wallet,  };
 
   @BuiltValueField(wireName: r'status')
   WalletActionExecutionStatus get status;
@@ -123,11 +107,11 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
   @BuiltValueField(wireName: r'frozen_transaction')
   FrozenEvmTransaction get frozenTransaction;
 
-  /// Null for app-sponsored and admitted primary user-paid native executions. When replacing an existing sponsored execution, contains the server-derived id of the matching execution that ended in user_gas_confirmation_required after definite pre-broadcast rejection. Unknown delivery never authorizes fallback. 
+  /// Null for app-sponsored executions and primary user-paid bStocks order executions. Transfer and self-custodial withdrawal user-paid fallback must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required` after a definite pre-broadcast rejection. A user-paid bStocks order execution may also link such a definitely rejected legacy sponsored execution. 
   @BuiltValueField(wireName: r'fallback_from_execution_id')
   String? get fallbackFromExecutionId;
 
-  /// Non-null only for a privy or privy_native execution awaiting_user_authorization and with current server delivery authority. Historical user_wallet never exposes authorization. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
+  /// Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
   @BuiltValueField(wireName: r'privy_authorization_payload')
   PrivyAuthorizationPayload? get privyAuthorizationPayload;
 
@@ -240,27 +224,6 @@ class _$WalletActionExecutionSerializer implements PrimitiveSerializer<WalletAct
       object.executionProvider,
       specifiedType: const FullType(WalletActionExecutionProvider),
     );
-    if (object.nativeNonce != null) {
-      yield r'native_nonce';
-      yield serializers.serialize(
-        object.nativeNonce,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.nativeDeliveryState != null) {
-      yield r'native_delivery_state';
-      yield serializers.serialize(
-        object.nativeDeliveryState,
-        specifiedType: const FullType.nullable(NativeDeliveryState),
-      );
-    }
-    if (object.nativeCancellation != null) {
-      yield r'native_cancellation';
-      yield serializers.serialize(
-        object.nativeCancellation,
-        specifiedType: const FullType.nullable(NativeCancellation),
-      );
-    }
     yield r'status';
     yield serializers.serialize(
       object.status,
@@ -440,30 +403,6 @@ class _$WalletActionExecutionSerializer implements PrimitiveSerializer<WalletAct
             specifiedType: const FullType(WalletActionExecutionProvider),
           ) as WalletActionExecutionProvider;
           result.executionProvider = valueDes;
-          break;
-        case r'native_nonce':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.nativeNonce = valueDes;
-          break;
-        case r'native_delivery_state':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(NativeDeliveryState),
-          ) as NativeDeliveryState?;
-          if (valueDes == null) continue;
-          result.nativeDeliveryState = valueDes;
-          break;
-        case r'native_cancellation':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(NativeCancellation),
-          ) as NativeCancellation?;
-          if (valueDes == null) continue;
-          result.nativeCancellation.replace(valueDes);
           break;
         case r'status':
           final valueDes = serializers.deserialize(

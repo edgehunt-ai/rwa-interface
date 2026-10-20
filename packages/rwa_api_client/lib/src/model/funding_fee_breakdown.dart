@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_fee_breakdown.g.dart';
 
-/// Normalized quote-cost breakdown. `provider_fee`, `bridge_fee`, `swap_fee`, and `network_fee` are component costs expressed in `fee_asset`; current funding Providers normalize these components to USD. `swap_fee` is the quoted currency conversion price-impact cost, not necessarily a separately charged fee. `total_fee` is the gross sum of the components. `total_cost_usd` is the net normalized comparison cost after favorable signed price improvement is credited and the result is floored at zero, so it may be less than `total_fee`. Components explain the quote and must not be deducted again from `minimum_received`. 
+/// Normalized quote-cost breakdown. `provider_fee`, `bridge_fee`, `swap_fee`, and `network_fee` are component costs expressed in `fee_asset`; current funding Providers normalize these components to USD. `swap_fee` is the quoted currency conversion price-impact cost, not necessarily a separately charged fee. `total_fee` is the gross sum of the components. `total_cost_usd` is the net normalized comparison cost after favorable signed price improvement is credited and the result is floored at zero, so it may be less than `total_fee`. Components explain the quote and must not be deducted again from `minimum_received`.
 ///
 /// Properties:
 /// * [feeAsset] - Unit used by the component and total fee fields; current funding Providers return USD.
@@ -19,7 +19,8 @@ part 'funding_fee_breakdown.g.dart';
 /// * [totalFee] - Gross sum of the component costs in `fee_asset`; informational and already reflected in the quote.
 /// * [totalCostUsd] - Net USD-normalized comparison cost for route ranking and audit after favorable signed price improvement is credited and the result is floored at zero; it may be less than the gross total_fee and must not be reconstructed by summing or deducted in addition to the component costs.
 @BuiltValue()
-abstract class FundingFeeBreakdown implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
+abstract class FundingFeeBreakdown
+    implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
   /// Unit used by the component and total fee fields; current funding Providers return USD.
   @BuiltValueField(wireName: r'fee_asset')
   String get feeAsset;
@@ -50,18 +51,24 @@ abstract class FundingFeeBreakdown implements Built<FundingFeeBreakdown, Funding
 
   FundingFeeBreakdown._();
 
-  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) = _$FundingFeeBreakdown;
+  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) =
+      _$FundingFeeBreakdown;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingFeeBreakdownBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingFeeBreakdown> get serializer => _$FundingFeeBreakdownSerializer();
+  static Serializer<FundingFeeBreakdown> get serializer =>
+      _$FundingFeeBreakdownSerializer();
 }
 
-class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeBreakdown> {
+class _$FundingFeeBreakdownSerializer
+    implements PrimitiveSerializer<FundingFeeBreakdown> {
   @override
-  final Iterable<Type> types = const [FundingFeeBreakdown, _$FundingFeeBreakdown];
+  final Iterable<Type> types = const [
+    FundingFeeBreakdown,
+    _$FundingFeeBreakdown
+  ];
 
   @override
   final String wireName = r'FundingFeeBreakdown';
@@ -114,7 +121,9 @@ class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeB
     FundingFeeBreakdown object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -206,4 +215,3 @@ class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeB
     return result.build();
   }
 }
-

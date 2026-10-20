@@ -3,22 +3,22 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/wallet_action_transaction_evidence_request.dart';
-import 'package:rwa_api_client/src/model/wallet_action_authorization_submission_request.dart';
+import 'package:rwa_api_client/src/model/sponsored_wallet_action_execution_submission_request.dart';
+import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
 
 part 'wallet_action_execution_submission_request.g.dart';
 
-/// The accepted variant is determined by the server-stored execution provider, not gas payer. privy and privy_native require authorization; historical user_wallet accepts evidence only. Supplying both fields or any transaction/resource override is rejected fail-closed. 
+/// The accepted variant is determined by the execution's server-stored mode. Supplying the other variant, both fields or any transaction/resource field is rejected fail-closed. 
 ///
 /// Properties:
 /// * [privyAuthorizationSignature] 
 /// * [txHash] 
 @BuiltValue()
 abstract class WalletActionExecutionSubmissionRequest implements Built<WalletActionExecutionSubmissionRequest, WalletActionExecutionSubmissionRequestBuilder> {
-  /// One Of [WalletActionAuthorizationSubmissionRequest], [WalletActionTransactionEvidenceRequest]
+  /// One Of [SponsoredWalletActionExecutionSubmissionRequest], [UserPaidWalletActionExecutionSubmissionRequest]
   OneOf get oneOf;
 
   WalletActionExecutionSubmissionRequest._();
@@ -64,7 +64,7 @@ class _$WalletActionExecutionSubmissionRequestSerializer implements PrimitiveSer
   }) {
     final result = WalletActionExecutionSubmissionRequestBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(WalletActionAuthorizationSubmissionRequest), FullType(WalletActionTransactionEvidenceRequest), ]);
+    final targetType = const FullType(OneOf, [FullType(SponsoredWalletActionExecutionSubmissionRequest), FullType(UserPaidWalletActionExecutionSubmissionRequest), ]);
     oneOfDataSrc = serialized;
     result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();

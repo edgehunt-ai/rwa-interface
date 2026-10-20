@@ -2,25 +2,7 @@ import 'decimal_value.dart';
 
 enum ActivityCategory { orders, cash, funding, unknown }
 
-enum ActivityState {
-  pending,
-  success,
-  refundPending,
-  reserved,
-  sourceDebited,
-  inTransit,
-  refunded,
-  credited,
-  settled,
-  partiallySettled,
-  partiallyRefunded,
-  compensated,
-  released,
-  manualReview,
-  failed,
-  cancelled,
-  unknown,
-}
+enum ActivityState { pending, success, failed, cancelled, unknown }
 
 enum ActivityBusinessType { opening, closing, takeProfit, stopLoss, unknown }
 
@@ -88,14 +70,12 @@ final class ActivityRecord {
     required this.title,
     this.businessType,
     this.rawStatus,
-    this.economicStatus,
     required this.createdAt,
     this.amount,
     this.context,
     this.failureReason,
     this.reference,
     this.fields = const [],
-    this.financialObligationIds = const [],
     this.relatedId,
     this.selfCustodialWithdrawalId,
     this.continuation,
@@ -115,15 +95,14 @@ final class ActivityRecord {
   final String title;
   final ActivityBusinessType? businessType;
 
-  /// The API status wire value, retained separately from its display state.
+  /// The API status wire value, retained until presentation supports every
+  /// server status (including `manual_review`).
   final String? rawStatus;
-  final String? economicStatus;
   final DecimalValue? amount;
   final String? context;
   final String? failureReason;
   final ActivityReference? reference;
   final List<ActivityField> fields;
-  final List<String> financialObligationIds;
   final String? relatedId;
   final String? selfCustodialWithdrawalId;
   final ActivityContinuation? continuation;

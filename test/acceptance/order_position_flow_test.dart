@@ -181,6 +181,7 @@ void main() {
               BstocksOrderActionRepositoryImpl(
                 GeneratedOrdersService(source.client.getOrdersApi()),
               ),
+              null,
             ),
           ),
           positionsRepositoryProvider.overrideWithValue(

@@ -88,8 +88,8 @@ final class WalletActionExecutionRepositoryImpl
       api.WalletActionExecutionSubmissionRequest(
         (request) => request.oneOf = OneOfDynamic(
           typeIndex: 0,
-          types: const [api.WalletActionAuthorizationSubmissionRequest],
-          value: api.WalletActionAuthorizationSubmissionRequest(
+          types: const [api.SponsoredWalletActionExecutionSubmissionRequest],
+          value: api.SponsoredWalletActionExecutionSubmissionRequest(
             (submission) => submission.privyAuthorizationSignature = signature,
           ),
         ),
@@ -109,37 +109,11 @@ final class WalletActionExecutionRepositoryImpl
       api.WalletActionExecutionSubmissionRequest(
         (request) => request.oneOf = OneOfDynamic(
           typeIndex: 0,
-          types: const [api.WalletActionTransactionEvidenceRequest],
-          value: api.WalletActionTransactionEvidenceRequest(
+          types: const [api.UserPaidWalletActionExecutionSubmissionRequest],
+          value: api.UserPaidWalletActionExecutionSubmissionRequest(
             (submission) => submission.txHash = txHash,
           ),
         ),
-      ),
-      idempotencyKey: idempotencyKey,
-    ),
-  );
-
-  @override
-  Future<WalletActionExecution> prepareCancellation({
-    required String executionId,
-    required String idempotencyKey,
-  }) async => _execution(
-    await _service.prepareCancellation(
-      executionId,
-      idempotencyKey: idempotencyKey,
-    ),
-  );
-
-  @override
-  Future<WalletActionExecution> submitCancellationAuthorization({
-    required String executionId,
-    required String signature,
-    required String idempotencyKey,
-  }) async => _execution(
-    await _service.submitCancellation(
-      executionId,
-      api.WalletActionAuthorizationSubmissionRequest(
-        (request) => request.privyAuthorizationSignature = signature,
       ),
       idempotencyKey: idempotencyKey,
     ),
@@ -152,16 +126,6 @@ final class WalletActionExecutionRepositoryImpl
         chainId: _chainId(value.chainId),
         walletAddress: value.walletAddress,
         mode: _mode(value.mode),
-        executionProvider: switch (value.executionProvider) {
-          api.WalletActionExecutionProvider.privy => 'privy',
-          api.WalletActionExecutionProvider.privyNative => 'privy_native',
-          api.WalletActionExecutionProvider.userWallet => 'user_wallet',
-          _ => 'unknown',
-        },
-        nativeNonce: value.nativeNonce,
-        nativeDeliveryState: value.nativeDeliveryState?.name,
-        nativeCancellation: _cancellation(value.nativeCancellation),
-        chainObservation: _observation(value.chainObservation),
         status: switch (value.status) {
           api.WalletActionExecutionStatus.awaitingUserAuthorization =>
             WalletActionExecutionState.awaitingUserAuthorization,
@@ -187,7 +151,6 @@ final class WalletActionExecutionRepositoryImpl
         transaction: FrozenTransaction(
           to: value.frozenTransaction.to,
           data: value.frozenTransaction.data,
-          nonce: value.frozenTransaction.nonce,
           value: switch (value.frozenTransaction.value) {
             api.FrozenEvmTransactionValueEnum.n0x0 => '0x0',
             final other => other.name,
@@ -198,44 +161,6 @@ final class WalletActionExecutionRepositoryImpl
         txHash: value.txHash,
         failureReason: value.failureReason,
       );
-
-  NativeCancellation? _cancellation(api.NativeCancellation? value) =>
-      value == null
-      ? null
-      : NativeCancellation(
-          cancellationId: value.cancellationId,
-          nonce: value.nonce,
-          to: value.to,
-          status: switch (value.status) {
-            api.NativeCancellationStatus.awaitingUserAuthorization =>
-              'awaiting_user_authorization',
-            api.NativeCancellationStatus.providerSubmitted =>
-              'provider_submitted',
-            _ => value.status.name,
-          },
-          authorization: _authorization(value.privyAuthorizationPayload),
-          authorizationExpiresAt: value.authorizationExpiresAt?.toUtc(),
-          txHash: value.txHash,
-          chainObservation: _observation(value.chainObservation),
-        );
-
-  WalletChainObservation? _observation(
-    api.WalletActionChainObservation? value,
-  ) => value == null
-      ? null
-      : WalletChainObservation(
-          txHash: value.txHash,
-          sender: value.sender,
-          recipient: value.recipient,
-          payloadHash: value.payloadHash,
-          value: '0x0',
-          receiptSuccess: value.receiptSuccess,
-          canonical: value.canonical,
-          blockNumber: value.blockNumber,
-          blockHash: value.blockHash,
-          confirmations: value.confirmations,
-          observedAt: value.observedAt.toUtc(),
-        );
 
   GasPaymentMode _mode(api.GasPaymentMode value) => switch (value) {
     api.GasPaymentMode.userPaidNative => GasPaymentMode.userPaidNative,
@@ -324,7 +249,6 @@ final class WalletActionExecutionRepositoryImpl
         from: transaction.from,
         to: transaction.to,
         data: transaction.data,
-        nonce: transaction.nonce,
         value: switch (transaction.value) {
           api.PrivyAuthorizationTransactionValueEnum.n0x0 => '0x0',
           final other => other.name,

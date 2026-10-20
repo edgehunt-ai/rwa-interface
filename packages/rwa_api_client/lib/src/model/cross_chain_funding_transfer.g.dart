@@ -44,8 +44,6 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
   @override
   final String amount;
   @override
-  final String? targetReceivedAmount;
-  @override
   final FundingSourceBalanceSnapshot source_;
   @override
   final FundingProvider provider;
@@ -89,7 +87,6 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
       required this.planId,
       this.legId,
       required this.amount,
-      this.targetReceivedAmount,
       required this.source_,
       required this.provider,
       required this.refundStatus,
@@ -132,7 +129,6 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
         planId == other.planId &&
         legId == other.legId &&
         amount == other.amount &&
-        targetReceivedAmount == other.targetReceivedAmount &&
         source_ == other.source_ &&
         provider == other.provider &&
         refundStatus == other.refundStatus &&
@@ -166,7 +162,6 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
     _$hash = $jc(_$hash, planId.hashCode);
     _$hash = $jc(_$hash, legId.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
-    _$hash = $jc(_$hash, targetReceivedAmount.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, provider.hashCode);
     _$hash = $jc(_$hash, refundStatus.hashCode);
@@ -202,7 +197,6 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
           ..add('planId', planId)
           ..add('legId', legId)
           ..add('amount', amount)
-          ..add('targetReceivedAmount', targetReceivedAmount)
           ..add('source_', source_)
           ..add('provider', provider)
           ..add('refundStatus', refundStatus)
@@ -308,11 +302,6 @@ class CrossChainFundingTransferBuilder
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
-  String? _targetReceivedAmount;
-  String? get targetReceivedAmount => _$this._targetReceivedAmount;
-  set targetReceivedAmount(String? targetReceivedAmount) =>
-      _$this._targetReceivedAmount = targetReceivedAmount;
-
   FundingSourceBalanceSnapshotBuilder? _source_;
   FundingSourceBalanceSnapshotBuilder get source_ =>
       _$this._source_ ??= FundingSourceBalanceSnapshotBuilder();
@@ -384,7 +373,6 @@ class CrossChainFundingTransferBuilder
       _planId = $v.planId;
       _legId = $v.legId;
       _amount = $v.amount;
-      _targetReceivedAmount = $v.targetReceivedAmount;
       _source_ = $v.source_.toBuilder();
       _provider = $v.provider;
       _refundStatus = $v.refundStatus;
@@ -449,7 +437,6 @@ class CrossChainFundingTransferBuilder
             legId: legId,
             amount: BuiltValueNullFieldError.checkNotNull(
                 amount, r'CrossChainFundingTransfer', 'amount'),
-            targetReceivedAmount: targetReceivedAmount,
             source_: source_.build(),
             provider: BuiltValueNullFieldError.checkNotNull(
                 provider, r'CrossChainFundingTransfer', 'provider'),

@@ -65,9 +65,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   bool _withdrawalPolling = false;
   Hip3Withdrawal? _withdrawal;
   FundingPlan? _activePlan;
-  FundingPlan? _recoveryPlan;
-  bool _checkingRecovery = false;
-  bool _showTransferEvidence = false;
   String? _activePlanSessionId;
   bool _planPolling = false;
   int _planGeneration = 0;
@@ -85,13 +82,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   UnifiedFundingAccountSummary? _account;
   String _tokenQuery = '';
   String? _tokenNetworkFilter;
-
-  bool get _operationLocked =>
-      _transferPending ||
-      _activePlan != null ||
-      (_recoveryPlan != null && _isPlanPending(_recoveryPlan!)) ||
-      _quote?.requiresReview == true ||
-      _withdrawal?.isPending == true;
 
   Map<String, String> get _allocations {
     final options = ref.read(transferOptionsProvider);
@@ -150,12 +140,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _openTokenSelector() {
-    if (_positions.length <= 1 ||
-        _submitting ||
-        _operationLocked ||
-        _recoveryPlan != null) {
-      return;
-    }
+    if (_positions.length <= 1 || _submitting || _transferPending) return;
     setState(() => _selectingToken = true);
   }
 
@@ -168,7 +153,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _selectToken(FundingSourcePosition position) {
-    if (_submitting || _operationLocked || _recoveryPlan != null) return;
+    if (_submitting || _transferPending) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -192,7 +177,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _scheduleQuote() {
-    if (_submitting || _operationLocked || _recoveryPlan != null) return;
+    if (_submitting || _transferPending) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -227,7 +212,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _swapAccounts() {
-    if (_submitting || _operationLocked || _recoveryPlan != null) return;
+    if (_submitting || _transferPending) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -359,12 +344,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _requestQuote() async {
-    if (!_sendFromSpot ||
-        _submitting ||
-        _operationLocked ||
-        _recoveryPlan != null) {
-      return;
-    }
+    if (!_sendFromSpot || _submitting || _transferPending) return;
     final allocations = _allocations;
     if (allocations.isEmpty) return;
     final amount = allocations.values.single;
@@ -399,9 +379,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _applyQuote(FundingSessionSummary quote) {
     _quote = quote;
-    if (!quote.requiresReview &&
-        quote.status != 'transferring' &&
-        quote.status != 'funded') {
+    if (quote.status != 'transferring' && quote.status != 'funded') {
       _preparePositions(quote.positions);
       if (_allocations.isEmpty) {
         _quote = null;
@@ -416,7 +394,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteRefresh?.cancel();
     if (_activePlan != null ||
         _planRefresh != null ||
-        (_recoveryPlan != null && !_isPlanPending(_recoveryPlan!)) ||
         quote.status == 'funded' ||
         quote.status == 'manualReview' ||
         quote.status == 'expired' ||
@@ -474,17 +451,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
     if (_transferPending) return;
-    if (_recoveryPlan case final plan?) {
-      if (!_isPlanPending(plan)) return;
-      setState(() {
-        _activePlan = plan;
-        _activePlanSessionId = _quote?.sessionId;
-        _transferPending = true;
-        _planActionRequired = true;
-      });
-      await _continueActivePlan();
-      return;
-    }
     final l10n = AppLocalizations.of(context);
     final allocations = _allocations;
     if (allocations.isEmpty) {
@@ -711,7 +677,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _handleWithdrawalStatus(Hip3Withdrawal withdrawal) {
     if (!mounted) return;
-    if (withdrawal.isCompleted) {
+    if (withdrawal.status == 'completed') {
       _completeTransfer();
       return;
     }
@@ -762,10 +728,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _completeTransfer();
       return;
     }
-    setState(() {
-      _recoveryPlan = current;
-      _showTransferEvidence = false;
-    });
     if (current.isActionable) {
       final authorization = await commands.authorize(current);
       await commands.create(plan: current, authorization: authorization);
@@ -778,7 +740,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
     final pending = _isPlanPending(current);
     setState(() {
-      _recoveryPlan = current;
       _activePlan = pending ? current : null;
       _activePlanSessionId = pending ? sessionId ?? _activePlanSessionId : null;
       _transferPending = pending;
@@ -823,7 +784,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
   }
 
-  bool _isPlanPending(FundingPlan plan) => plan.shouldPoll;
+  bool _isPlanPending(FundingPlan plan) => switch (plan.status) {
+    FundingPlanState.executing || FundingPlanState.partiallyFunded => true,
+    FundingPlanState.ready => plan.isActionable,
+    _ => false,
+  };
 
   bool _sessionIsEditable(String status) =>
       status == 'editing' ||
@@ -863,7 +828,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       }
       final pending = _isPlanPending(refreshed);
       setState(() {
-        _recoveryPlan = refreshed;
         _activePlan = pending ? refreshed : null;
         _transferPending = pending;
         _planActionRequired = pending && progress.requiresUserAction;
@@ -889,55 +853,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
   }
 
-  Future<void> _refreshRecoveryEvidence() async {
-    final plan = _recoveryPlan;
-    if (plan == null || _checkingRecovery || _submitting) return;
-    setState(() => _checkingRecovery = true);
-    try {
-      final refreshed = await ref
-          .read(fundingTransferCommandsProvider)
-          .refresh(plan.planId);
-      if (!mounted) return;
-      if (refreshed.status == FundingPlanState.alreadyFunded) {
-        _completeTransfer();
-        return;
-      }
-      for (final leg in refreshed.legs) {
-        if (leg.transferId case final id?) {
-          ref.invalidate(fundingTransferProvider(id));
-        }
-      }
-      final pending = _isPlanPending(refreshed);
-      _planGeneration++;
-      setState(() {
-        _recoveryPlan = refreshed;
-        _showTransferEvidence = true;
-        _activePlan = pending ? refreshed : null;
-        _activePlanSessionId = pending ? _quote?.sessionId : null;
-        _transferPending = pending;
-        _resumeRequired = false;
-        _planActionRequired = pending && refreshed.isActionable;
-        _error = pending ? null : _planFailureMessage(refreshed);
-      });
-      if (pending) {
-        _startPlanPolling();
-      } else {
-        _stopPlanPolling();
-      }
-    } catch (error) {
-      if (mounted) {
-        setState(
-          () => _error = errorMessage(
-            error,
-            fallback: AppLocalizations.of(context).transferUnresolved,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _checkingRecovery = false);
-    }
-  }
-
   String _planFailureMessage(FundingPlan plan) {
     if (plan.blocker case final blocker? when blocker.isNotEmpty) {
       return blocker;
@@ -945,12 +860,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final l10n = AppLocalizations.of(context);
     return switch (plan.status) {
       FundingPlanState.manualReview => l10n.transferRequiresManualReview,
-      FundingPlanState.partiallyFunded => l10n.transferPartiallySettled,
       FundingPlanState.failed => l10n.transferFailed,
       FundingPlanState.expired => l10n.transferQuoteExpired,
       FundingPlanState.cancelled => l10n.transferCancelled,
       FundingPlanState.blocked => l10n.transferBlocked,
-      _ => l10n.transferUnresolved,
+      _ => l10n.transferStartFailed,
     };
   }
 
@@ -961,7 +875,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _completeTransfer() {
     if (!mounted || _completionToastShown) return;
-    _recoveryPlan = null;
     _completionToastShown = true;
     _stopPlanPolling();
     _withdrawalRefresh?.cancel();
@@ -998,7 +911,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _completeTransfer(),
         );
-      case 'manual_review':
       case 'manualReview':
         _transferPending = false;
         _resumeRequired = false;
@@ -1049,13 +961,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     if (account != null &&
         !identical(account, _account) &&
         !_submitting &&
-        !_operationLocked) {
+        !_transferPending) {
       _account = account;
       _preparePositions(account.positions);
     }
     if (_sendFromSpot &&
         !_submitting &&
-        !_operationLocked &&
+        !_transferPending &&
         (_quote != null || _quoting) &&
         _allocations.isEmpty) {
       _quoteDebounce?.cancel();
@@ -1077,10 +989,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final quote = _quote;
     final canSubmit =
         !_submitting &&
-        (_recoveryPlan == null || _isPlanPending(_recoveryPlan!)) &&
         (_sendFromSpot
-            ? (_recoveryPlan != null && _activePlan == null) ||
-                  (_planActionRequired &&
+            ? (_planActionRequired &&
                       _transferPending &&
                       _activePlan != null) ||
                   _resumeRequired ||
@@ -1161,7 +1071,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         send: send,
                         receive: receive,
                         sendIsSpot: _sendFromSpot,
-                        onSwap: _submitting || _operationLocked
+                        onSwap: _submitting || _transferPending
                             ? null
                             : _swapAccounts,
                       ),
@@ -1182,7 +1092,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                               controller: selected == null
                                   ? null
                                   : _amounts[selected.positionId],
-                              enabled: !_submitting && !_operationLocked,
+                              enabled: !_submitting && !_transferPending,
                               canSelect: positions.length > 1,
                               onSelect: _openTokenSelector,
                             );
@@ -1291,37 +1201,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ],
                       ],
-                      if (_recoveryPlan case final plan?) ...[
-                        if (plan.targetEnvironment != null)
-                          SelectableText(
-                            'target_environment: ${plan.targetEnvironment}',
-                          ),
-                        for (final leg in plan.legs)
-                          if (leg.refundAsset != null)
-                            SelectableText('refund_asset: ${leg.refundAsset}'),
-                        for (final leg in plan.legs)
-                          if (leg.transferId case final id?)
-                            _FundingTransferStatus(
-                              transferId: id,
-                              loadEvidence: _showTransferEvidence,
-                            ),
-                        OutlinedButton.icon(
-                          key: const Key('transfer-plan-refresh'),
-                          onPressed: _submitting || _checkingRecovery
-                              ? null
-                              : _refreshRecoveryEvidence,
-                          icon: const Icon(Icons.refresh),
-                          label: Text(l10n.transferCheckStatus),
-                        ),
-                      ],
-                      if (_activePlan == null && _quote?.requiresReview == true)
-                        OutlinedButton.icon(
-                          key: const Key('transfer-session-refresh'),
-                          onPressed: () =>
-                              _refreshQuote(_quote!.sessionId, _quoteSequence),
-                          icon: const Icon(Icons.refresh),
-                          label: Text(l10n.transferCheckStatus),
-                        ),
                       const Spacer(),
                       if (visibleError case final error?) ...[
                         const SizedBox(height: 28),
@@ -1355,109 +1234,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FundingTransferStatus extends ConsumerWidget {
-  const _FundingTransferStatus({
-    required this.transferId,
-    required this.loadEvidence,
-  });
-
-  final String transferId;
-  final bool loadEvidence;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!loadEvidence) return SelectableText(transferId);
-    final l10n = AppLocalizations.of(context);
-    final state = ref.watch(fundingTransferProvider(transferId));
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SelectableText(transferId),
-          state.when(
-            loading: () => Text(l10n.transferUnresolved),
-            error: (_, _) => Text(l10n.transferUnresolved),
-            data: (transfer) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(switch (transfer.status) {
-                  FundingTransferState.completed => l10n.transferCompleted,
-                  FundingTransferState.refundPending =>
-                    l10n.transferRefundPending,
-                  FundingTransferState.refunded => l10n.transferRefunded,
-                  FundingTransferState.originConfirmed =>
-                    l10n.transferSourceConfirmed,
-                  FundingTransferState.manualReview =>
-                    l10n.transferRequiresManualReview,
-                  FundingTransferState.failed => l10n.transferFailed,
-                  FundingTransferState.ambiguous ||
-                  FundingTransferState.unknown => l10n.transferUnresolved,
-                  _ => l10n.transferSettlementPending,
-                }),
-                SelectableText(
-                  '${l10n.transferAmount}: ${transfer.amount.value} ${transfer.amount.asset ?? ''}',
-                ),
-                if (transfer.targetEnvironment != null)
-                  SelectableText(
-                    'target_environment: ${transfer.targetEnvironment}',
-                  ),
-                if (transfer.reason case final reason?) Text(reason),
-                if (transfer.refundStatus case final status?
-                    when status != 'notApplicable')
-                  SelectableText(
-                    '${status == 'confirmed'
-                        ? l10n.transferRefunded
-                        : status == 'pending'
-                        ? l10n.transferRefundPending
-                        : l10n.transferUnresolved}: ${transfer.refund?['amount'] ?? '-'}',
-                  ),
-                if (transfer.targetReceivedAmount case final amount?)
-                  SelectableText(
-                    '${l10n.transferCredited}: ${amount.value} ${amount.asset ?? ''}',
-                  ),
-                for (final evidence in [
-                  transfer.sourceTransaction,
-                  transfer.refund,
-                  transfer.targetCredit,
-                ])
-                  if (evidence != null)
-                    for (final key in [
-                      'tx_hash',
-                      'address',
-                      'account_ref',
-                      'observed_at',
-                      'required_confirmations',
-                      'actual_debited_amount',
-                      'debit_basis',
-                      'debit_log_indices',
-                      'user_operation_hash',
-                      'block_number',
-                      'block_hash',
-                      'transaction_index',
-                      'canonical',
-                      'finality_satisfied',
-                      'evidence_reference',
-                      'transaction_hash',
-                      'log_index',
-                      'venue_reference',
-                      'actual_fee_amount',
-                      'asset',
-                      'credited_amount',
-                    ])
-                      if (evidence[key] case final value?)
-                        SelectableText('$key: $value'),
-                if (transfer.updatedAt case final time?)
-                  Text(time.toUtc().toIso8601String()),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

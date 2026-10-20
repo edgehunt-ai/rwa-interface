@@ -64,15 +64,13 @@ class _$FrozenEvmTransaction extends FrozenEvmTransaction {
   final String data;
   @override
   final FrozenEvmTransactionValueEnum value;
-  @override
-  final String? nonce;
 
   factory _$FrozenEvmTransaction(
           [void Function(FrozenEvmTransactionBuilder)? updates]) =>
       (FrozenEvmTransactionBuilder()..update(updates))._build();
 
   _$FrozenEvmTransaction._(
-      {required this.to, required this.data, required this.value, this.nonce})
+      {required this.to, required this.data, required this.value})
       : super._();
   @override
   FrozenEvmTransaction rebuild(
@@ -89,8 +87,7 @@ class _$FrozenEvmTransaction extends FrozenEvmTransaction {
     return other is FrozenEvmTransaction &&
         to == other.to &&
         data == other.data &&
-        value == other.value &&
-        nonce == other.nonce;
+        value == other.value;
   }
 
   @override
@@ -99,7 +96,6 @@ class _$FrozenEvmTransaction extends FrozenEvmTransaction {
     _$hash = $jc(_$hash, to.hashCode);
     _$hash = $jc(_$hash, data.hashCode);
     _$hash = $jc(_$hash, value.hashCode);
-    _$hash = $jc(_$hash, nonce.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -109,8 +105,7 @@ class _$FrozenEvmTransaction extends FrozenEvmTransaction {
     return (newBuiltValueToStringHelper(r'FrozenEvmTransaction')
           ..add('to', to)
           ..add('data', data)
-          ..add('value', value)
-          ..add('nonce', nonce))
+          ..add('value', value))
         .toString();
   }
 }
@@ -131,10 +126,6 @@ class FrozenEvmTransactionBuilder
   FrozenEvmTransactionValueEnum? get value => _$this._value;
   set value(FrozenEvmTransactionValueEnum? value) => _$this._value = value;
 
-  String? _nonce;
-  String? get nonce => _$this._nonce;
-  set nonce(String? nonce) => _$this._nonce = nonce;
-
   FrozenEvmTransactionBuilder() {
     FrozenEvmTransaction._defaults(this);
   }
@@ -145,7 +136,6 @@ class FrozenEvmTransactionBuilder
       _to = $v.to;
       _data = $v.data;
       _value = $v.value;
-      _nonce = $v.nonce;
       _$v = null;
     }
     return this;
@@ -173,7 +163,6 @@ class FrozenEvmTransactionBuilder
               data, r'FrozenEvmTransaction', 'data'),
           value: BuiltValueNullFieldError.checkNotNull(
               value, r'FrozenEvmTransaction', 'value'),
-          nonce: nonce,
         );
     replace(_$result);
     return _$result;

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:built_value/json_object.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/api_failure.dart';
@@ -84,31 +83,6 @@ final class GeneratedWalletActionExecutionService
       executionId: executionId,
       idempotencyKey: idempotencyKey,
       walletActionExecutionSubmissionRequest: request,
-    ),
-  );
-
-  @override
-  Future<api.WalletActionExecution> prepareCancellation(
-    String executionId, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _wallets.prepareWalletActionCancellation(
-      executionId: executionId,
-      idempotencyKey: idempotencyKey,
-      body: JsonObject(const <String, Object?>{}),
-    ),
-  );
-
-  @override
-  Future<api.WalletActionExecution> submitCancellation(
-    String executionId,
-    api.WalletActionAuthorizationSubmissionRequest request, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _wallets.submitWalletActionCancellation(
-      executionId: executionId,
-      idempotencyKey: idempotencyKey,
-      walletActionAuthorizationSubmissionRequest: request,
     ),
   );
 

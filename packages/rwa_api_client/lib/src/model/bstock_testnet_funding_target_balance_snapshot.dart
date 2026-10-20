@@ -16,7 +16,6 @@ part 'bstock_testnet_funding_target_balance_snapshot.g.dart';
 /// * [account] 
 /// * [accountRef] 
 /// * [asset] 
-/// * [targetEnvironment] - Frozen target environment when explicitly known; never inferred from a symbol.
 /// * [availableAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [source_] 
 /// * [observedAt] 
@@ -32,11 +31,6 @@ abstract class BstockTestnetFundingTargetBalanceSnapshot implements Built<Bstock
 
   @BuiltValueField(wireName: r'asset')
   BstockTestnetFundingTargetAsset get asset;
-
-  /// Frozen target environment when explicitly known; never inferred from a symbol.
-  @BuiltValueField(wireName: r'target_environment')
-  BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum? get targetEnvironment;
-  // enum targetEnvironmentEnum {  mainnet,  testnet,  };
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_amount')
@@ -90,13 +84,6 @@ class _$BstockTestnetFundingTargetBalanceSnapshotSerializer implements Primitive
       object.asset,
       specifiedType: const FullType(BstockTestnetFundingTargetAsset),
     );
-    if (object.targetEnvironment != null) {
-      yield r'target_environment';
-      yield serializers.serialize(
-        object.targetEnvironment,
-        specifiedType: const FullType.nullable(BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum),
-      );
-    }
     yield r'available_amount';
     yield serializers.serialize(
       object.availableAmount,
@@ -160,14 +147,6 @@ class _$BstockTestnetFundingTargetBalanceSnapshotSerializer implements Primitive
             specifiedType: const FullType(BstockTestnetFundingTargetAsset),
           ) as BstockTestnetFundingTargetAsset;
           result.asset.replace(valueDes);
-          break;
-        case r'target_environment':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum),
-          ) as BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum?;
-          if (valueDes == null) continue;
-          result.targetEnvironment = valueDes;
           break;
         case r'available_amount':
           final valueDes = serializers.deserialize(
@@ -237,23 +216,6 @@ class BstockTestnetFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
 
   static BuiltSet<BstockTestnetFundingTargetBalanceSnapshotAccountEnum> get values => _$bstockTestnetFundingTargetBalanceSnapshotAccountEnumValues;
   static BstockTestnetFundingTargetBalanceSnapshotAccountEnum valueOf(String name) => _$bstockTestnetFundingTargetBalanceSnapshotAccountEnumValueOf(name);
-}
-
-class BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum extends EnumClass {
-
-  /// Frozen target environment when explicitly known; never inferred from a symbol.
-  @BuiltValueEnumConst(wireName: r'mainnet')
-  static const BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum mainnet = _$bstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
-  /// Frozen target environment when explicitly known; never inferred from a symbol.
-  @BuiltValueEnumConst(wireName: r'testnet')
-  static const BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum testnet = _$bstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
-
-  static Serializer<BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum> get serializer => _$bstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer;
-
-  const BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum._(String name): super(name);
-
-  static BuiltSet<BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum> get values => _$bstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnumValues;
-  static BstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnum valueOf(String name) => _$bstockTestnetFundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(name);
 }
 
 class BstockTestnetFundingTargetBalanceSnapshotSource_Enum extends EnumClass {

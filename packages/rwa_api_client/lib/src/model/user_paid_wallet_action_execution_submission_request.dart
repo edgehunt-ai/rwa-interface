@@ -6,39 +6,39 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'wallet_action_transaction_evidence_request.g.dart';
+part 'user_paid_wallet_action_execution_submission_request.g.dart';
 
-/// WalletActionTransactionEvidenceRequest
+/// UserPaidWalletActionExecutionSubmissionRequest
 ///
 /// Properties:
-/// * [txHash] - Read-only historical user_wallet transaction locator, never permission to broadcast. The server independently verifies the frozen call and canonical receipt; new privy_native executions require authorization signatures instead and reject this variant. 
+/// * [txHash] - Untrusted locator for a user-paid transaction. The server must independently match its chain, sender, recipient, input, value, receipt status and logs to the frozen transaction. 
 @BuiltValue()
-abstract class WalletActionTransactionEvidenceRequest implements Built<WalletActionTransactionEvidenceRequest, WalletActionTransactionEvidenceRequestBuilder> {
-  /// Read-only historical user_wallet transaction locator, never permission to broadcast. The server independently verifies the frozen call and canonical receipt; new privy_native executions require authorization signatures instead and reject this variant. 
+abstract class UserPaidWalletActionExecutionSubmissionRequest implements Built<UserPaidWalletActionExecutionSubmissionRequest, UserPaidWalletActionExecutionSubmissionRequestBuilder> {
+  /// Untrusted locator for a user-paid transaction. The server must independently match its chain, sender, recipient, input, value, receipt status and logs to the frozen transaction. 
   @BuiltValueField(wireName: r'tx_hash')
   String get txHash;
 
-  WalletActionTransactionEvidenceRequest._();
+  UserPaidWalletActionExecutionSubmissionRequest._();
 
-  factory WalletActionTransactionEvidenceRequest([void updates(WalletActionTransactionEvidenceRequestBuilder b)]) = _$WalletActionTransactionEvidenceRequest;
+  factory UserPaidWalletActionExecutionSubmissionRequest([void updates(UserPaidWalletActionExecutionSubmissionRequestBuilder b)]) = _$UserPaidWalletActionExecutionSubmissionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(WalletActionTransactionEvidenceRequestBuilder b) => b;
+  static void _defaults(UserPaidWalletActionExecutionSubmissionRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionTransactionEvidenceRequest> get serializer => _$WalletActionTransactionEvidenceRequestSerializer();
+  static Serializer<UserPaidWalletActionExecutionSubmissionRequest> get serializer => _$UserPaidWalletActionExecutionSubmissionRequestSerializer();
 }
 
-class _$WalletActionTransactionEvidenceRequestSerializer implements PrimitiveSerializer<WalletActionTransactionEvidenceRequest> {
+class _$UserPaidWalletActionExecutionSubmissionRequestSerializer implements PrimitiveSerializer<UserPaidWalletActionExecutionSubmissionRequest> {
   @override
-  final Iterable<Type> types = const [WalletActionTransactionEvidenceRequest, _$WalletActionTransactionEvidenceRequest];
+  final Iterable<Type> types = const [UserPaidWalletActionExecutionSubmissionRequest, _$UserPaidWalletActionExecutionSubmissionRequest];
 
   @override
-  final String wireName = r'WalletActionTransactionEvidenceRequest';
+  final String wireName = r'UserPaidWalletActionExecutionSubmissionRequest';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    WalletActionTransactionEvidenceRequest object, {
+    UserPaidWalletActionExecutionSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'tx_hash';
@@ -51,7 +51,7 @@ class _$WalletActionTransactionEvidenceRequestSerializer implements PrimitiveSer
   @override
   Object serialize(
     Serializers serializers,
-    WalletActionTransactionEvidenceRequest object, {
+    UserPaidWalletActionExecutionSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
@@ -62,7 +62,7 @@ class _$WalletActionTransactionEvidenceRequestSerializer implements PrimitiveSer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required WalletActionTransactionEvidenceRequestBuilder result,
+    required UserPaidWalletActionExecutionSubmissionRequestBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -85,12 +85,12 @@ class _$WalletActionTransactionEvidenceRequestSerializer implements PrimitiveSer
   }
 
   @override
-  WalletActionTransactionEvidenceRequest deserialize(
+  UserPaidWalletActionExecutionSubmissionRequest deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = WalletActionTransactionEvidenceRequestBuilder();
+    final result = UserPaidWalletActionExecutionSubmissionRequestBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

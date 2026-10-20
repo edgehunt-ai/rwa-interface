@@ -1,39 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'wallet_action_authorization_submission_request.dart';
+part of 'sponsored_wallet_action_execution_submission_request.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$WalletActionAuthorizationSubmissionRequest
-    extends WalletActionAuthorizationSubmissionRequest {
+class _$SponsoredWalletActionExecutionSubmissionRequest
+    extends SponsoredWalletActionExecutionSubmissionRequest {
   @override
   final String privyAuthorizationSignature;
 
-  factory _$WalletActionAuthorizationSubmissionRequest(
-          [void Function(WalletActionAuthorizationSubmissionRequestBuilder)?
+  factory _$SponsoredWalletActionExecutionSubmissionRequest(
+          [void Function(
+                  SponsoredWalletActionExecutionSubmissionRequestBuilder)?
               updates]) =>
-      (WalletActionAuthorizationSubmissionRequestBuilder()..update(updates))
+      (SponsoredWalletActionExecutionSubmissionRequestBuilder()
+            ..update(updates))
           ._build();
 
-  _$WalletActionAuthorizationSubmissionRequest._(
+  _$SponsoredWalletActionExecutionSubmissionRequest._(
       {required this.privyAuthorizationSignature})
       : super._();
   @override
-  WalletActionAuthorizationSubmissionRequest rebuild(
-          void Function(WalletActionAuthorizationSubmissionRequestBuilder)
+  SponsoredWalletActionExecutionSubmissionRequest rebuild(
+          void Function(SponsoredWalletActionExecutionSubmissionRequestBuilder)
               updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  WalletActionAuthorizationSubmissionRequestBuilder toBuilder() =>
-      WalletActionAuthorizationSubmissionRequestBuilder()..replace(this);
+  SponsoredWalletActionExecutionSubmissionRequestBuilder toBuilder() =>
+      SponsoredWalletActionExecutionSubmissionRequestBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is WalletActionAuthorizationSubmissionRequest &&
+    return other is SponsoredWalletActionExecutionSubmissionRequest &&
         privyAuthorizationSignature == other.privyAuthorizationSignature;
   }
 
@@ -48,17 +50,17 @@ class _$WalletActionAuthorizationSubmissionRequest
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'WalletActionAuthorizationSubmissionRequest')
+            r'SponsoredWalletActionExecutionSubmissionRequest')
           ..add('privyAuthorizationSignature', privyAuthorizationSignature))
         .toString();
   }
 }
 
-class WalletActionAuthorizationSubmissionRequestBuilder
+class SponsoredWalletActionExecutionSubmissionRequestBuilder
     implements
-        Builder<WalletActionAuthorizationSubmissionRequest,
-            WalletActionAuthorizationSubmissionRequestBuilder> {
-  _$WalletActionAuthorizationSubmissionRequest? _$v;
+        Builder<SponsoredWalletActionExecutionSubmissionRequest,
+            SponsoredWalletActionExecutionSubmissionRequestBuilder> {
+  _$SponsoredWalletActionExecutionSubmissionRequest? _$v;
 
   String? _privyAuthorizationSignature;
   String? get privyAuthorizationSignature =>
@@ -66,11 +68,11 @@ class WalletActionAuthorizationSubmissionRequestBuilder
   set privyAuthorizationSignature(String? privyAuthorizationSignature) =>
       _$this._privyAuthorizationSignature = privyAuthorizationSignature;
 
-  WalletActionAuthorizationSubmissionRequestBuilder() {
-    WalletActionAuthorizationSubmissionRequest._defaults(this);
+  SponsoredWalletActionExecutionSubmissionRequestBuilder() {
+    SponsoredWalletActionExecutionSubmissionRequest._defaults(this);
   }
 
-  WalletActionAuthorizationSubmissionRequestBuilder get _$this {
+  SponsoredWalletActionExecutionSubmissionRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _privyAuthorizationSignature = $v.privyAuthorizationSignature;
@@ -80,26 +82,26 @@ class WalletActionAuthorizationSubmissionRequestBuilder
   }
 
   @override
-  void replace(WalletActionAuthorizationSubmissionRequest other) {
-    _$v = other as _$WalletActionAuthorizationSubmissionRequest;
+  void replace(SponsoredWalletActionExecutionSubmissionRequest other) {
+    _$v = other as _$SponsoredWalletActionExecutionSubmissionRequest;
   }
 
   @override
   void update(
-      void Function(WalletActionAuthorizationSubmissionRequestBuilder)?
+      void Function(SponsoredWalletActionExecutionSubmissionRequestBuilder)?
           updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  WalletActionAuthorizationSubmissionRequest build() => _build();
+  SponsoredWalletActionExecutionSubmissionRequest build() => _build();
 
-  _$WalletActionAuthorizationSubmissionRequest _build() {
+  _$SponsoredWalletActionExecutionSubmissionRequest _build() {
     final _$result = _$v ??
-        _$WalletActionAuthorizationSubmissionRequest._(
+        _$SponsoredWalletActionExecutionSubmissionRequest._(
           privyAuthorizationSignature: BuiltValueNullFieldError.checkNotNull(
               privyAuthorizationSignature,
-              r'WalletActionAuthorizationSubmissionRequest',
+              r'SponsoredWalletActionExecutionSubmissionRequest',
               'privyAuthorizationSignature'),
         );
     replace(_$result);
