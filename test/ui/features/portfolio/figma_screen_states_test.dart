@@ -130,6 +130,27 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(TradeScreen), findsOneWidget);
+        if (kind == MarketProductKind.perp) {
+          expect(
+            tester.widget<TradeScreen>(find.byType(TradeScreen)).showPositions,
+            isTrue,
+          );
+          final positionTab = find.byKey(
+            const Key('trade-details-tab-position'),
+          );
+          expect(positionTab.hitTestable(), findsOneWidget);
+          expect(
+            find.descendant(
+              of: positionTab,
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is AnimatedDefaultTextStyle &&
+                    widget.style.fontWeight == FontWeight.w600,
+              ),
+            ),
+            findsOneWidget,
+          );
+        }
         expect(
           tester.widget<TradeScreen>(find.byType(TradeScreen)).initialKind,
           kind,
@@ -894,6 +915,11 @@ void main() {
     await tester.pumpAndSettle();
     final crossDetails = find.byKey(
       const Key('perps-margin-details-Cross Margin'),
+    );
+    // The second page repeats LOW; it must remain a single visible position.
+    expect(
+      find.descendant(of: crossDetails, matching: find.text('LOW')),
+      findsOneWidget,
     );
     expect(
       tester
@@ -1765,6 +1791,8 @@ Position _perpsPosition({
 );
 
 final _perpsOpenOrders = [
+  // Different order IDs for the same product must share a position shortcut.
+  _perpsOrder(id: 'another-open-aapl', symbol: 'AAPL', valueUsd: '50'),
   TradingOrder(
     orderId: 'open-aapl',
     productId: 'xyz:AAPL',
@@ -1823,6 +1851,15 @@ final class _PagedPerpsPortfolio extends _PerpsPortfolio {
             unit: 'fiat',
           ),
           positions: [
+            if (!isFirstPage)
+              _perpsPosition(
+                id: 'cross-low',
+                symbol: 'LOW',
+                productId: 'xyz:LOW',
+                marginMode: PositionMarginMode.cross,
+                leverage: '2',
+                valueUsd: '100',
+              ),
             _perpsPosition(
               id: 'cross-${symbol.toLowerCase()}',
               symbol: symbol,
