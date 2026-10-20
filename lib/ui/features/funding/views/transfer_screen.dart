@@ -70,7 +70,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   int _planGeneration = 0;
   int _quoteSequence = 0;
   String? _error;
-  String? _statusMessage;
   bool _transferPending = false;
   bool _resumeRequired = false;
   bool _planActionRequired = false;
@@ -168,7 +167,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = false;
       _error = null;
-      _statusMessage = null;
       _transferPending = false;
       _resumeRequired = false;
       _planActionRequired = false;
@@ -191,7 +189,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _activePlan = null;
         _activePlanSessionId = null;
         _quoting = false;
-        _statusMessage = null;
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
@@ -205,7 +202,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = true;
       _error = null;
-      _statusMessage = null;
       _transferPending = false;
       _resumeRequired = false;
       _planActionRequired = false;
@@ -230,7 +226,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = false;
       _error = null;
-      _statusMessage = null;
       _withdrawal = null;
       _withdrawalPreview = null;
       _withdrawalPreviewing = false;
@@ -415,22 +410,23 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           .read(fundingTransferCommandsProvider)
           .refreshTransferQuote(sessionId);
       if (!mounted || sequence != _quoteSequence) return;
-      setState(() => _applyQuote(quote));
+      setState(() {
+        _error = null;
+        _applyQuote(quote);
+      });
       if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
     } catch (error) {
       if (!mounted || sequence != _quoteSequence) return;
       final current = _quote;
-      if (_transferPending && current != null) {
-        _scheduleQuoteRefresh(current, sequence);
-      } else {
+      if (!_transferPending) {
         setState(() {
-          _quote = null;
           _error = errorMessage(
             error,
             fallback: AppLocalizations.of(context).transferQuoteChanged,
           );
         });
       }
+      if (current != null) _scheduleQuoteRefresh(current, sequence);
     }
   }
 
@@ -469,7 +465,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     setState(() {
       _submitting = true;
       _error = null;
-      _statusMessage = null;
     });
     _quoteRefresh?.cancel();
     final submitSequence = ++_quoteSequence;
@@ -495,7 +490,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        if (!_transferPending) _quote = null;
         _error = switch (error) {
           ApiFailure failure => apiFailureMessage(
             failure,
@@ -504,7 +498,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           StateError stateError => stateError.message.toString(),
           _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
-        _statusMessage = null;
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
@@ -515,8 +508,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         final latestQuote = _quote;
         if (latestQuote != null &&
             submitSequence == _quoteSequence &&
-            _activePlan == null &&
-            _error == null) {
+            _activePlan == null) {
           _scheduleQuoteRefresh(latestQuote, submitSequence);
         }
       }
@@ -664,9 +656,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     setState(() {
       _withdrawal = withdrawal;
       _transferPending = withdrawal.isPending;
-      _statusMessage = withdrawal.isPending && !withdrawal.requiresManualReview
-          ? AppLocalizations.of(context).transferWaitingArrival
-          : null;
       _error = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
@@ -728,9 +717,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _transferPending = pending;
       _resumeRequired = false;
       _planActionRequired = false;
-      _statusMessage = pending
-          ? AppLocalizations.of(context).transferWaitingArrival
-          : null;
       if (!pending) _error = _planFailureMessage(current);
     });
     if (pending) {
@@ -817,13 +803,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _activePlan = pending ? refreshed : null;
         _transferPending = pending;
         _planActionRequired = pending && progress.requiresUserAction;
-        if (pending) {
-          _statusMessage = progress.requiresUserAction
-              ? AppLocalizations.of(context).authorizationRequired
-              : AppLocalizations.of(context).transferWaitingArrival;
-        } else {
+        if (!pending) {
           _resumeRequired = false;
-          _statusMessage = null;
           _error = _planFailureMessage(refreshed);
         }
       });
@@ -883,11 +864,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     Navigator.of(context).maybePop();
   }
 
-  void _viewActivityLater() {
-    ref.invalidate(activityProvider);
-    context.goNamed(AppRoutes.activityName);
-  }
-
   void _applySessionStatus(FundingSessionSummary session) {
     switch (session.status) {
       case 'transferring':
@@ -897,14 +873,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _resumeRequired = !planKnown;
         if (!planKnown) {
           _planActionRequired = false;
-          _statusMessage = AppLocalizations.of(context).transferInProgress;
           _error = null;
         }
       case 'funded':
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = null;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _completeTransfer(),
@@ -913,7 +887,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferRequiresManualReview;
         ref
             .read(fundingTransferCommandsProvider)
@@ -922,20 +895,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferQuoteExpired;
       case 'cancelled':
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferCancelled;
       default:
         if (!_submitting) {
           _transferPending = false;
           _resumeRequired = false;
           _planActionRequired = false;
-          _statusMessage = null;
         }
     }
   }
@@ -1139,7 +1109,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           quote: _quote,
                           loading: _quoting || options.isLoading,
                         ),
-                        if (_quote?.crossLiquidationImpacts.isNotEmpty ==
+                        if (_quoting || options.isLoading) ...[
+                          const SizedBox(height: 12),
+                          const Hip3CrossLiquidationImpactsSkeleton(
+                            key: Key('transfer-position-impact-skeleton'),
+                          ),
+                        ] else if (_quote?.crossLiquidationImpacts.isNotEmpty ==
                             true) ...[
                           const SizedBox(height: 12),
                           Hip3CrossLiquidationImpactsCard(
@@ -1178,7 +1153,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           withdrawal: _withdrawal,
                           loading: _withdrawalPreviewing,
                         ),
-                        if (_withdrawalPreview
+                        if (_withdrawalPreviewing) ...[
+                          const SizedBox(height: 12),
+                          const Hip3CrossLiquidationImpactsSkeleton(
+                            key: Key('transfer-position-impact-skeleton'),
+                          ),
+                        ] else if (_withdrawalPreview
                                 ?.crossLiquidationImpacts
                                 .isNotEmpty ==
                             true) ...[
@@ -1189,23 +1169,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ],
                       ],
-                      if (_statusMessage case final message?) ...[
+                      if (_planActionRequired) ...[
                         const SizedBox(height: 8),
                         Text(
-                          message,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .extension<AppSemanticColors>()!
-                                .success,
-                          ),
-                        ),
-                      ],
-                      if (_transferPending) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton(
-                          key: const Key('transfer-close-view-later'),
-                          onPressed: _viewActivityLater,
-                          child: Text(l10n.closeViewLater),
+                          AppLocalizations.of(context).authorizationRequired,
                         ),
                       ],
                       const Spacer(),
@@ -1222,18 +1189,16 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         height: 48,
                         child: FilledButton(
                           onPressed: canSubmit ? _submit : null,
-                          child: _submitting
+                          child:
+                              _submitting ||
+                                  (_transferPending && !_planActionRequired)
                               ? const SizedBox.square(
                                   dimension: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : Text(
-                                  _transferPending && !_planActionRequired
-                                      ? l10n.transferInProgress
-                                      : l10n.signAndTransfer,
-                                ),
+                              : Text(l10n.signAndTransfer),
                         ),
                       ),
                     ],

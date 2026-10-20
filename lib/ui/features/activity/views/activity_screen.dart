@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/auth/authentication.dart';
@@ -742,156 +743,160 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
             SizedBox(
               height: 72,
               child: LayoutBuilder(
-                builder: (context, constraints) => Row(
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                builder: (context, constraints) {
+                  final summary = Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      for (
-                                        var i = 0;
-                                        i < title.split('→').length;
-                                        i++
-                                      ) ...[
-                                        if (i > 0)
-                                          const WidgetSpan(
-                                            alignment:
-                                                PlaceholderAlignment.middle,
-                                            child: Icon(
-                                              Icons.arrow_forward,
-                                              size: 14,
-                                            ),
-                                          ),
-                                        TextSpan(
-                                          text: title.split('→')[i].trim(),
+                          Flexible(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  for (
+                                    var i = 0;
+                                    i < title.split('→').length;
+                                    i++
+                                  ) ...[
+                                    if (i > 0)
+                                      const WidgetSpan(
+                                        alignment: PlaceholderAlignment.middle,
+                                        child: Icon(
+                                          Icons.arrow_forward,
+                                          size: 14,
                                         ),
-                                      ],
-                                    ],
-                                  ),
-                                  key: ValueKey('activity-title-${record.id}'),
-                                  semanticsLabel: title,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    height: 22 / 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                      ),
+                                    TextSpan(text: title.split('→')[i].trim()),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(width: 4),
-                              if (isFunding) ...[
-                                Flexible(
-                                  child: _TypeBadge(
-                                    label: _fundingSide(
-                                      record,
-                                      AppLocalizations.of(context),
-                                    ),
-                                    order: true,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: _TypeBadge(
-                                    label: _fundingDirection(
-                                      record,
-                                      AppLocalizations.of(context),
-                                    ),
-                                    order: true,
-                                    positive: true,
-                                  ),
-                                ),
-                              ] else if (isCash)
-                                _TypeBadge(label: type, order: false)
-                              else
-                                Flexible(
-                                  child: _TypeBadge(
-                                    label: type,
-                                    order: isOrder,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              if (!isFunding) ...[
-                                Flexible(
-                                  flex: isCash ? 0 : 1,
-                                  child: Text(
-                                    _statusLabel(context, record.status),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      height: 16 / 12,
-                                      color: widget.statusColor,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 1,
-                                  height: 8,
-                                  color: colors.subtleSurface,
-                                ),
-                                const SizedBox(width: 4),
-                              ],
-                              isOrder || isFunding
-                                  ? _VenueLabel(kind: record.kind)
-                                  : Flexible(
-                                      child: _NetworkPath(networks: networks),
-                                    ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      flex: isCash ? 0 : 4,
-                      fit: isCash ? FlexFit.loose : FlexFit.tight,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth * 0.4,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              widget.amount,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
+                              key: ValueKey('activity-title-${record.id}'),
+                              semanticsLabel: title,
                               style: const TextStyle(
                                 fontSize: 15,
                                 height: 22 / 15,
                                 fontWeight: FontWeight.w600,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            Text(
-                              DateFormat('HH:mm')
-                                  .format(record.createdAt.toLocal()),
-                              style: TextStyle(
-                                fontSize: 12,
-                                height: 16 / 12,
-                                color: colors.secondaryText,
+                          ),
+                          const SizedBox(width: 4),
+                          if (isFunding) ...[
+                            Flexible(
+                              child: _TypeBadge(
+                                label: _fundingSide(
+                                  record,
+                                  AppLocalizations.of(context),
+                                ),
+                                order: true,
                               ),
                             ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: _TypeBadge(
+                                label: _fundingDirection(
+                                  record,
+                                  AppLocalizations.of(context),
+                                ),
+                                order: true,
+                                positive: true,
+                              ),
+                            ),
+                          ] else if (isCash)
+                            _TypeBadge(label: type, order: false)
+                          else
+                            Flexible(
+                              child: _TypeBadge(label: type, order: isOrder),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          if (!isFunding) ...[
+                            Flexible(
+                              flex: isCash ? 0 : 1,
+                              child: Text(
+                                _statusLabel(context, record.status),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 16 / 12,
+                                  color: widget.statusColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 1,
+                              height: 8,
+                              color: colors.subtleSurface,
+                            ),
+                            const SizedBox(width: 4),
                           ],
+                          isOrder || isFunding
+                              ? _VenueLabel(kind: record.kind)
+                              : Flexible(
+                                  child: _NetworkPath(networks: networks),
+                                ),
+                        ],
+                      ),
+                    ],
+                  );
+                  return Row(
+                    children: [
+                      if (isCash)
+                        Expanded(child: summary)
+                      else
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth * 0.6,
+                          ),
+                          child: IntrinsicWidth(child: summary),
+                        ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        flex: isCash ? 0 : 1,
+                        fit: isCash ? FlexFit.loose : FlexFit.tight,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: isCash
+                                ? constraints.maxWidth * 0.4
+                                : constraints.maxWidth,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                widget.amount,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  height: 22 / 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                DateFormat('HH:mm')
+                                    .format(record.createdAt.toLocal()),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 16 / 12,
+                                  color: colors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
               ),
             ),
             if (expanded) _ActivityDetails(record: record),
@@ -1064,7 +1069,8 @@ class _ActivityDetails extends StatelessWidget {
         _orderTypeConveysDirection(record, AppLocalizations.of(context))) {
       fields.removeWhere((field) => field.label.trim().toLowerCase() == 'side');
     }
-    if (record.txHash != null && !_hasField(fields, 'tx hash')) {
+    if (record.txHash != null &&
+        !fields.any((field) => _isTransactionHash(field.label))) {
       fields.insert(0, ActivityField(label: 'Tx Hash', value: record.txHash!));
     }
     if (record.amount != null && !_hasField(fields, 'amount')) {
@@ -1125,6 +1131,7 @@ class _ActivityDetails extends StatelessWidget {
               child: _DetailRow(
                 field: field,
                 colors: colors,
+                explorer: record.explorer,
                 network: flow == null
                     ? (field.label.trim().toLowerCase() == 'network'
                           ? record.chain
@@ -1151,16 +1158,31 @@ String _formatActivityAmount(DecimalValue amount, String? asset) {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.field, required this.colors, this.network});
+  const _DetailRow({
+    required this.field,
+    required this.colors,
+    this.network,
+    this.explorer,
+  });
+  final ActivityExplorer? explorer;
   final String? network;
   final ActivityField field;
   final AppRwaColors colors;
   @override
   Widget build(BuildContext context) {
-    final isAddress = field.value.startsWith('0x') || field.value.length > 24;
+    final isAddress =
+        !_isNumericActivityField(field.label) &&
+        (field.value.startsWith('0x') || field.value.length > 24);
     final l10n = AppLocalizations.of(context);
     final displayValue = _detailValue(field, l10n);
     final label = _detailLabel(field.label, l10n);
+    final isTransaction = _isTransactionHash(field.label);
+    final explorerUri = Uri.tryParse(explorer?.url.trim() ?? '');
+    final canOpenExplorer =
+        isTransaction &&
+        explorerUri != null &&
+        explorerUri.host.isNotEmpty &&
+        (explorerUri.scheme == 'https' || explorerUri.scheme == 'http');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1176,9 +1198,15 @@ class _DetailRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Flexible(
-          child: network != null
+          child: canOpenExplorer
+              ? _TransactionExplorerLink(
+                  uri: explorerUri,
+                  hash: field.value,
+                  label: label,
+                )
+              : network != null
               ? _NetworkLabel(network: network!, label: displayValue)
-              : isAddress
+              : isTransaction || isAddress
               ? _CompactCopyValue(value: field.value, label: label)
               : Text(
                   displayValue,
@@ -1221,7 +1249,7 @@ String _detailLabel(String label, AppLocalizations l10n) =>
     };
 
 String _detailValue(ActivityField field, AppLocalizations l10n) {
-  final label = field.label.trim().toLowerCase();
+  final label = _activityFieldKey(field.label);
   if (label == 'side') {
     return switch (field.value.trim().toLowerCase()) {
       'long' => l10n.long,
@@ -1231,14 +1259,94 @@ String _detailValue(ActivityField field, AppLocalizations l10n) {
       _ => field.value,
     };
   }
-  final isAmount =
-      label == 'amount' || label == 'send amount' || label == 'receive amount';
-  if (!isAmount) return field.value;
-  try {
-    return TokenAmountFormatter.formatValue(DecimalValue(field.value));
-  } on FormatException {
-    return field.value;
+  if (!_isNumericActivityField(label)) return field.value;
+  final match = RegExp(
+    r'^([+-]?\d+(?:\.\d+)?)(?:\s*/\s*([+-]?\d+(?:\.\d+)?))?(?:\s+([A-Za-z][A-Za-z0-9._-]*))?$',
+  ).firstMatch(field.value.trim());
+  if (match == null) return field.value;
+  final value = TokenAmountFormatter.formatText(match.group(1)!);
+  final total = match.group(2);
+  final asset = match.group(3);
+  return '$value${total == null ? '' : ' / ${TokenAmountFormatter.formatText(total)}'}${asset == null ? '' : ' $asset'}';
+}
+
+String _activityFieldKey(String label) =>
+    label.trim().toLowerCase().replaceAll(RegExp(r'[_\s]+'), ' ');
+
+bool _isNumericActivityField(String label) => const {
+  'amount',
+  'send amount',
+  'receive amount',
+  'quantity',
+  'filled quantity',
+  'limit price',
+  'average price',
+  'close price',
+  'trigger price',
+  'order amount',
+  'filled',
+  'fee',
+  'total fee',
+}.contains(_activityFieldKey(label));
+
+bool _isTransactionHash(String label) => const {
+  'txhash',
+  'transactionhash',
+}.contains(label.trim().toLowerCase().replaceAll(RegExp(r'[_\s]+'), ''));
+
+class _TransactionExplorerLink extends StatelessWidget {
+  const _TransactionExplorerLink({
+    required this.uri,
+    required this.hash,
+    required this.label,
+  });
+  final Uri uri;
+  final String hash;
+  final String label;
+
+  Future<void> _open(BuildContext context) async {
+    final fallback = AppLocalizations.of(context).activityExplorerOpenFailed;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) AppToast.showFailure(context, fallback);
+    } on PlatformException catch (error) {
+      if (context.mounted) {
+        AppToast.showFailure(
+          context,
+          error.message?.trim().isNotEmpty == true
+              ? error.message!
+              : '$fallback (${error.code})',
+        );
+      }
+    } on Object {
+      if (context.mounted) AppToast.showFailure(context, fallback);
+    }
   }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    link: true,
+    label: label,
+    value: hash,
+    child: Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: () => _open(context),
+        child: SvgPicture.asset(
+          'assets/figma/common/activity_open_transaction.svg',
+          width: 14,
+          height: 14,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).extension<AppRwaColors>()!.primaryText,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _CompactCopyValue extends StatelessWidget {

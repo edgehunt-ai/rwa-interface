@@ -2154,6 +2154,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3TransferDestination => '转至您的 Arbitrum USDC 地址：';
 
   @override
+  String get activityExplorerOpenFailed => '无法打开交易浏览器。';
+
+  @override
   String get activityFrom => '从';
 
   @override

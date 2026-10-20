@@ -4116,6 +4116,12 @@ abstract class AppLocalizations {
   /// **'To your Arbitrum USDC address:'**
   String get hip3TransferDestination;
 
+  /// No description provided for @activityExplorerOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open the transaction explorer.'**
+  String get activityExplorerOpenFailed;
+
   /// No description provided for @activityFrom.
   ///
   /// In en, this message translates to:

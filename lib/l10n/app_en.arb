@@ -765,6 +765,7 @@
   "receiveAccount": "Receive account",
   "swapAccounts": "Swap accounts",
   "hip3TransferDestination": "To your Arbitrum USDC address:",
+  "activityExplorerOpenFailed": "Unable to open the transaction explorer.",
   "activityFrom": "From",
   "sendAmount": "Send amount",
   "receiveAmount": "Receive amount",

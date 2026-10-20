@@ -345,8 +345,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(withdrawals.submissions, 1);
-    expect(find.text('转账处理中…'), findsOneWidget);
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.text('转账处理中…'), findsNothing);
+    _expectPendingTransfer(tester);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     withdrawals.failureReason =
         'relay_intent_failed_or_refunded_requires_manual_review';
     await tester.pump(const Duration(seconds: 3));
@@ -587,6 +588,7 @@ void main() {
           findsOneWidget,
         );
         for (final key in const [
+          Key('transfer-position-impact-skeleton'),
           Key('transfer-quote-eta-skeleton'),
           Key('transfer-quote-bridge-fee-skeleton'),
           Key('transfer-quote-network-fee-skeleton'),
@@ -613,6 +615,14 @@ void main() {
         );
         expect(
           find.byKey(const Key('transfer-quote-eta-skeleton')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('transfer-position-impact-skeleton')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('hip3-cross-liquidation-impacts')),
           findsNothing,
         );
         expect(find.text('~2min'), findsOneWidget);
@@ -688,6 +698,7 @@ void main() {
     expect(find.text('Network fee'), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
     for (final key in const [
+      Key('transfer-position-impact-skeleton'),
       Key('transfer-receive-amount-skeleton'),
       Key('transfer-quote-eta-skeleton'),
       Key('transfer-quote-minimum-received-skeleton'),
@@ -741,6 +752,30 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('1 Cross position will be affected'), findsOneWidget);
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsNothing,
+    );
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('hip3-cross-liquidation-impacts')),
+      findsNothing,
+    );
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('hip3-cross-liquidation-impacts')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('minimum received stays visible without an estimated amount', (
@@ -1156,7 +1191,7 @@ void main() {
     });
   }
 
-  for (final change in ['reduced', 'ineligible', 'missing', 'failed']) {
+  for (final change in ['reduced', 'ineligible', 'missing']) {
     testWidgets('quote refresh clears stale capacity when $change', (
       tester,
     ) async {
@@ -1189,6 +1224,101 @@ void main() {
       if (change == 'reduced') {
         expect(find.text('Available: 5'), findsOneWidget);
       }
+    });
+  }
+
+  testWidgets(
+    'failed automatic refresh keeps quote and retries until recovered',
+    (tester) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      funding.failRefresh = true;
+      for (var attempt = 1; attempt <= 2; attempt++) {
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pump();
+        expect(funding.refreshCalls, attempt);
+        expect(find.byKey(const Key('transfer-error')), findsOneWidget);
+        expect(
+          tester
+              .widget<AnimatedNumberText>(
+                find.byKey(const Key('transfer-receive-amount-value')),
+              )
+              .value,
+          '19.5',
+        );
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+          isNotNull,
+        );
+      }
+      funding.failRefresh = false;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+      expect(funding.refreshCalls, 3);
+      expect(find.byKey(const Key('transfer-error')), findsNothing);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '20',
+      );
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      _expectPendingTransfer(tester);
+    },
+  );
+
+  for (final stage in ['refresh', 'plan']) {
+    testWidgets('submit $stage failure preserves quote and resumes refresh', (
+      tester,
+    ) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      funding.failRefresh = stage == 'refresh';
+      funding.failPlan = stage == 'plan';
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byKey(const Key('transfer-error')), findsOneWidget);
+      if (stage == 'plan') {
+        expect(
+          find.text(
+            'The refreshed quote no longer covers the required top-up.',
+          ),
+          findsOneWidget,
+        );
+      }
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '20',
+      );
+      expect(
+        tester
+            .widget<AnimatedNumberText>(
+              find.byKey(const Key('transfer-receive-amount-value')),
+            )
+            .value,
+        '19.5',
+      );
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNotNull,
+      );
+      funding.failRefresh = false;
+      funding.failPlan = false;
+      final refreshes = funding.refreshCalls;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+      expect(funding.refreshCalls, refreshes + 1);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      _expectPendingTransfer(tester);
     });
   }
 
@@ -1235,7 +1365,7 @@ void main() {
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
 
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(funding.refreshCalls, 2);
     expect(funding.planCalls, 1);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
@@ -1243,6 +1373,32 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     expect(funding.refreshCalls, sessionRefreshes);
     expect(funding.planReads, greaterThan(1));
+  });
+
+  testWidgets('polling shows terminal failure despite a missing old transfer', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..planTransferId = 'old-transfer';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    funding.planStatus = FundingPlanState.failed;
+    funding.missingTransfer = true;
+    final transferReads = funding.transferReads;
+
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump();
+
+    expect(find.text('Transfer failed.'), findsOneWidget);
+    expect(funding.transferReads, transferReads);
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    final planReads = funding.planReads;
+    await tester.pump(const Duration(seconds: 6));
+    expect(funding.planReads, planReads);
   });
 
   testWidgets('failed plan with a transfer id is terminal', (tester) async {
@@ -1305,7 +1461,7 @@ void main() {
     expect(funding.planCalls, 1);
     expect(funding.transferReads, 1);
     expect(find.text('Authorization required'), findsOneWidget);
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,
@@ -1357,7 +1513,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 2100));
     await tester.pump();
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(funding.planReads, greaterThan(0));
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     expect(
@@ -1437,6 +1593,7 @@ final class _CapacityTransferRepository implements FundingRepository {
   bool eligible = true;
   bool missing = false;
   bool failRefresh = false;
+  bool failPlan = false;
   String status = 'ready_to_confirm';
   FundingPlanState planStatus = FundingPlanState.executing;
   String? planTransferId;
@@ -1446,6 +1603,7 @@ final class _CapacityTransferRepository implements FundingRepository {
   int planCalls = 0;
   int planReads = 0;
   int transferReads = 0;
+  bool missingTransfer = false;
 
   FundingSessionSummary get _session => FundingSessionSummary(
     sessionId: 'capacity-session',
@@ -1506,6 +1664,11 @@ final class _CapacityTransferRepository implements FundingRepository {
     required String idempotencyKey,
   }) async {
     planCalls++;
+    if (failPlan) {
+      throw const UnknownFailure(
+        userAction: 'The refreshed quote no longer covers the required top-up.',
+      );
+    }
     return _plan;
   }
 
@@ -1518,6 +1681,13 @@ final class _CapacityTransferRepository implements FundingRepository {
   @override
   Future<FundingTransfer> getFundingTransfer(String id) async {
     transferReads++;
+    if (missingTransfer) {
+      throw const ServerFailure(
+        statusCode: 404,
+        code: 'not_found',
+        message: 'Transfer not found',
+      );
+    }
     return FundingTransfer(
       transferId: id,
       planId: 'capacity-plan',
@@ -1887,3 +2057,17 @@ Future<DeploymentEnvironment> _mainnetEnvironment(Ref ref) async =>
       hip3Environment: 'mainnet',
       bstocksConfigured: false,
     );
+
+void _expectPendingTransfer(WidgetTester tester) {
+  final button = find.byType(FilledButton);
+  expect(tester.widget<FilledButton>(button).onPressed, isNull);
+  expect(
+    find.descendant(
+      of: button,
+      matching: find.byType(CircularProgressIndicator),
+    ),
+    findsOneWidget,
+  );
+  expect(find.text('Transfer in progress...'), findsNothing);
+  expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
+}

@@ -2269,6 +2269,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3TransferDestination => 'To your Arbitrum USDC address:';
 
   @override
+  String get activityExplorerOpenFailed =>
+      'Unable to open the transaction explorer.';
+
+  @override
   String get activityFrom => 'From';
 
   @override

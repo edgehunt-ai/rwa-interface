@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -261,6 +262,183 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final category in [ActivityCategory.cash, ActivityCategory.orders]) {
+    for (final url in <String?>[
+      'https://arbiscan.io/tx/0x1234567890abcdef',
+      'https://arbiscan.io/tx/failed',
+      'https://arbiscan.io/tx/sdk-error',
+      null,
+      '',
+      'javascript:alert(1)',
+      'https:invalid',
+    ]) {
+      testWidgets(
+        '$category transaction hash opens valid explorer or copies ($url)',
+        (tester) async {
+          await configureDisplay(tester, size: const Size(393, 852));
+          final launches = <MethodCall>[];
+          final clipboard = <MethodCall>[];
+          const launcher = MethodChannel('plugins.flutter.io/url_launcher');
+          tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            launcher,
+            (call) async {
+              launches.add(call);
+              if (url?.endsWith('sdk-error') == true) {
+                throw PlatformException(
+                  code: 'open_failed',
+                  message: 'No browser is available',
+                );
+              }
+              return url?.endsWith('failed') != true;
+            },
+          );
+          tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            (call) async {
+              if (call.method == 'Clipboard.setData') clipboard.add(call);
+              return null;
+            },
+          );
+          addTearDown(() {
+            tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+              launcher,
+              null,
+            );
+            tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+              SystemChannels.platform,
+              null,
+            );
+          });
+          const hash = '0x1234567890abcdef';
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                authenticatedStateOverride,
+                activityRepositoryProvider.overrideWithValue(
+                  _OrderActivityRepository([
+                    ActivityRecord(
+                      id: 'explorer',
+                      category: category,
+                      type: 'transfer',
+                      status: ActivityState.success,
+                      title: 'USDC',
+                      fields: const [
+                        ActivityField(label: 'Transaction Hash', value: hash),
+                      ],
+                      txHash: hash,
+                      explorer: url == null
+                          ? null
+                          : ActivityExplorer(name: 'Arbiscan', url: url),
+                      createdAt: DateTime.utc(2026),
+                    ),
+                  ]),
+                ),
+              ],
+              child: buildTestApp(ActivityScreen(initialCategory: category)),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.byKey(const ValueKey('activity-title-explorer')),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Tx Hash'), findsOneWidget);
+          if (url?.startsWith('https://') == true) {
+            final link = find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics &&
+                  widget.properties.link == true &&
+                  widget.properties.value == hash,
+            );
+            expect(link, findsOneWidget);
+            expect(find.byIcon(Icons.copy_outlined), findsNothing);
+            final icon = find.descendant(
+              of: link,
+              matching: find.byType(SvgPicture),
+            );
+            expect(tester.getSize(icon), const Size(14, 14));
+            await tester.tap(link);
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 100));
+            expect(launches.single.arguments['url'], url);
+            expect(clipboard, isEmpty);
+            if (url!.endsWith('failed')) {
+              expect(
+                find.text('Unable to open the transaction explorer.'),
+                findsOneWidget,
+              );
+            }
+            if (url.endsWith('sdk-error')) {
+              expect(find.text('No browser is available'), findsOneWidget);
+            }
+          } else {
+            expect(find.byIcon(Icons.copy_outlined), findsOneWidget);
+            await tester.tap(find.byIcon(Icons.copy_outlined));
+            await tester.pumpAndSettle();
+            expect(clipboard.single.arguments['text'], hash);
+            expect(launches, isEmpty);
+          }
+          expect(find.text('Tx Hash'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
+  testWidgets('activity numeric details follow shared decimal display rules', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    const cases = [
+      ('Quantity', '0.002658915204319923', '0.00265892'),
+      ('Filled quantity', '0.002658915204319923', '0.00265892'),
+      ('Average price', '357.07554062055937712335', '357.075541'),
+      ('Limit price', '1234567.123456789123456789', '1,234,567.123457'),
+      ('Trigger price', '0.00000012345678912345', '0.000000123457'),
+      ('Close price', '357.07554062055937712335', '357.075541'),
+      ('Order amount', '0.002658915204319923 TSLAB', '0.00265892 TSLAB'),
+      (
+        'Filled',
+        '0.002658915204319923 / 1.123456789 TSLAB',
+        '0.00265892 / 1.123457 TSLAB',
+      ),
+      ('Fee', '0.00000012345678912345 USDC', '0.000000123457 USDC'),
+    ];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          activityRepositoryProvider.overrideWithValue(
+            _OrderActivityRepository([
+              ActivityRecord(
+                id: 'decimals',
+                category: ActivityCategory.orders,
+                type: 'market',
+                status: ActivityState.success,
+                title: 'TSLAB',
+                fields: [
+                  for (final entry in cases)
+                    ActivityField(label: entry.$1, value: entry.$2),
+                ],
+                createdAt: DateTime.utc(2026),
+              ),
+            ]),
+          ),
+        ],
+        child: buildTestApp(const ActivityScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('activity-title-decimals')));
+    await tester.pumpAndSettle();
+    for (final entry in cases) {
+      expect(find.text(entry.$3), findsWidgets);
+      expect(find.text(entry.$2), findsNothing);
+    }
+    expect(find.byIcon(Icons.copy_outlined), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final language in ['zh', 'en']) {
     for (final (side, chinese) in [
       ('Long', '做多'),
@@ -428,7 +606,7 @@ void main() {
     await tester.tap(find.text('SNDK'));
     await tester.pumpAndSettle();
     expect(find.text('Close Price'), findsOneWidget);
-    expect(find.text('1706.67'), findsOneWidget);
+    expect(find.text('1,706.67'), findsOneWidget);
     expect(find.text('Fee'), findsOneWidget);
     expect(find.text('0.011862 USDC'), findsOneWidget);
     expect(find.text('Filled'), findsOneWidget);
@@ -556,62 +734,77 @@ void main() {
     expect(find.text('Long'), findsOneWidget);
   });
 
-  testWidgets('long order amounts do not collapse the order summary', (
-    tester,
-  ) async {
-    await configureDisplay(tester, size: const Size(393, 852));
-    const exactAmount = '0.001599537496322869';
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authenticatedStateOverride,
-          activityRepositoryProvider.overrideWithValue(
-            _OrderActivityRepository([
-              ActivityRecord(
-                id: 'long-amount-1',
-                category: ActivityCategory.orders,
-                type: 'market',
-                status: ActivityState.success,
-                title: 'Buy NVDAB',
-                kind: 'bstock',
-                symbol: 'NVDAB',
-                asset: 'NVDAB',
-                amount: DecimalValue(
-                  exactAmount,
+  for (final width in [393.0, 700.0]) {
+    testWidgets('long order amounts use remaining summary width ($width)', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: Size(width, 852));
+      const exactAmount = '0.001599537496322869';
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            activityRepositoryProvider.overrideWithValue(
+              _OrderActivityRepository([
+                ActivityRecord(
+                  id: 'long-amount-1',
+                  category: ActivityCategory.orders,
+                  type: 'market',
+                  status: ActivityState.success,
+                  title: 'Buy NVDAB',
+                  kind: 'bstock',
+                  symbol: 'NVDAB',
                   asset: 'NVDAB',
-                  unit: 'token',
+                  amount: DecimalValue(
+                    exactAmount,
+                    asset: 'NVDAB',
+                    unit: 'token',
+                  ),
+                  fields: const [ActivityField(label: 'Side', value: 'Buy')],
+                  reference: const ActivityReference(
+                    type: 'order',
+                    id: 'o-long',
+                  ),
+                  createdAt: DateTime.utc(2026),
                 ),
-                fields: const [ActivityField(label: 'Side', value: 'Buy')],
-                reference: const ActivityReference(type: 'order', id: 'o-long'),
-                createdAt: DateTime.utc(2026),
-              ),
-            ]),
-          ),
-        ],
-        child: buildTestApp(const ActivityScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+              ]),
+            ),
+          ],
+          child: buildTestApp(const ActivityScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(find.text('NVDAB'), findsOneWidget);
-    expect(find.text('NVDAB/NVDAB'), findsNothing);
-    expect(find.text('Buy / Market'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
-    expect(find.text('0.00159954 NVDAB'), findsOneWidget);
-    expect(
-      tester.getRect(find.text('Buy / Market')).right,
-      lessThanOrEqualTo(tester.getRect(find.text('0.00159954 NVDAB')).left),
-    );
-    final activityCard = find.ancestor(
-      of: find.text('0.00159954 NVDAB'),
-      matching: find.byType(Card),
-    );
-    expect(
-      tester.getRect(find.text('0.00159954 NVDAB')).right,
-      closeTo(tester.getRect(activityCard).right - 16, 0.01),
-    );
-  });
+      expect(tester.takeException(), isNull);
+      expect(find.text('NVDAB'), findsOneWidget);
+      expect(find.text('NVDAB/NVDAB'), findsNothing);
+      expect(find.text('Buy / Market'), findsOneWidget);
+      expect(find.text('Completed'), findsOneWidget);
+      expect(find.text('0.00159954 NVDAB'), findsOneWidget);
+      expect(
+        tester.getRect(find.text('Buy / Market')).right,
+        lessThanOrEqualTo(tester.getRect(find.text('0.00159954 NVDAB')).left),
+      );
+      if (width == 700) {
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.descendant(
+            of: find.text('0.00159954 NVDAB'),
+            matching: find.byType(RichText),
+          ),
+        );
+        expect(paragraph.didExceedMaxLines, isFalse);
+        expect(paragraph.constraints.maxWidth, greaterThan((width - 32) * 0.4));
+      }
+      final activityCard = find.ancestor(
+        of: find.text('0.00159954 NVDAB'),
+        matching: find.byType(Card),
+      );
+      expect(
+        tester.getRect(find.text('0.00159954 NVDAB')).right,
+        closeTo(tester.getRect(activityCard).right - 16, 0.01),
+      );
+    });
+  }
 }
 
 void _expectBadgeColor(WidgetTester tester, String label, Color color) {
