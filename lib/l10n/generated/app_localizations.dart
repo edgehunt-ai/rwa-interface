@@ -2053,7 +2053,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTermsConditions.
   ///
   /// In en, this message translates to:
-  /// **'Terms & Conditions'**
+  /// **'Terms Of Use'**
   String get settingsTermsConditions;
 
   /// No description provided for @settingsLogOut.
@@ -3271,7 +3271,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsAgreement.
   ///
   /// In en, this message translates to:
-  /// **'By using this app, you agree to the Terms & Conditions.'**
+  /// **'By using this app, you agree to the Terms & Privacy.'**
   String get termsAgreement;
 
   /// No description provided for @termsAgreementPrefix.
@@ -3283,8 +3283,20 @@ abstract class AppLocalizations {
   /// No description provided for @termsAgreementLink.
   ///
   /// In en, this message translates to:
-  /// **'Terms & Conditions'**
+  /// **'Terms'**
   String get termsAgreementLink;
+
+  /// No description provided for @privacyAgreementLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacyAgreementLink;
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsPrivacyPolicy;
 
   /// No description provided for @termsAgreementSuffix.
   ///

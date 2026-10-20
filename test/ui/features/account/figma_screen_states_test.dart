@@ -33,7 +33,8 @@ void main() {
     expect(find.text('RWA user'), findsOneWidget);
     expect(find.text('Passkey'), findsOneWidget);
     expect(find.text('Export Private Key'), findsOneWidget);
-    expect(find.text('Terms & Conditions'), findsOneWidget);
+    expect(find.text('Terms Of Use'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
     final avatar = tester.widget<Image>(
       find.byKey(const Key('settings-account-avatar')),
     );
@@ -168,7 +169,9 @@ void main() {
     expect(find.text('0 B'), findsOneWidget);
   });
 
-  testWidgets('logout routes from settings to home', (tester) async {
+  testWidgets('settings opens both legal pages, returns, and logs out', (
+    tester,
+  ) async {
     final identity = FakeIdentityAuthGateway();
     final session = _SessionRepository();
     final router = AppRouter.create(initialLocation: '/settings');
@@ -200,6 +203,19 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -400));
     await tester.pumpAndSettle();
+    for (final entry in [
+      ('Terms Of Use', 'Term of Use'),
+      ('Privacy Policy', 'Privacy Policy'),
+    ]) {
+      await tester.ensureVisible(find.text(entry.$1));
+      await tester.tap(find.text(entry.$1));
+      await tester.pumpAndSettle();
+      expect(find.text(entry.$2), findsOneWidget);
+      await tester.tap(find.byKey(const Key('legal-back')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    }
+    await tester.ensureVisible(find.text('Log Out'));
     await tester.tap(find.text('Log Out'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Log Out'));

@@ -1059,7 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsClearCache => 'Clear';
 
   @override
-  String get settingsTermsConditions => 'Terms & Conditions';
+  String get settingsTermsConditions => 'Terms Of Use';
 
   @override
   String get settingsLogOut => 'Log Out';
@@ -1737,13 +1737,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termsAgreement =>
-      'By using this app, you agree to the Terms & Conditions.';
+      'By using this app, you agree to the Terms & Privacy.';
 
   @override
   String get termsAgreementPrefix => 'By using this app, you agree to the ';
 
   @override
-  String get termsAgreementLink => 'Terms & Conditions';
+  String get termsAgreementLink => 'Terms';
+
+  @override
+  String get privacyAgreementLink => 'Privacy';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy Policy';
 
   @override
   String get termsAgreementSuffix => '.';
