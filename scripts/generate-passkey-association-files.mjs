@@ -68,8 +68,13 @@ export async function generatePasskeyAssociationFiles({
     };
   }
   if (fingerprints.length) {
+    // Keep both Android App Links and credential sharing associations as
+    // required by the Android Credential Manager and Privy setup guides.
     files['assetlinks.json'] = [{
-      relation: ['delegate_permission/common.get_login_creds'],
+      relation: [
+        'delegate_permission/common.handle_all_urls',
+        'delegate_permission/common.get_login_creds',
+      ],
       target: {
         namespace: 'android_app',
         package_name: androidPackageName,
