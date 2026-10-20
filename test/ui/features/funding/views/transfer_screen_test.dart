@@ -297,6 +297,7 @@ void main() {
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,
     );
+    withdrawals.submitFailure = StateError('Signature rejected by wallet');
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
@@ -313,13 +314,34 @@ void main() {
     );
     expect(find.text('1.18 USDC'), findsNWidgets(2));
     expect(find.text('0 USDC'), findsOneWidget);
-    expect(find.text('总费用: 1.18 USDC'), findsOneWidget);
-    expect(find.text('接收数量: 50.22 USDC'), findsOneWidget);
-    expect(find.text(withdrawals.destination), findsOneWidget);
-    await tester.tap(find.text('取消'));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    expect(withdrawals.submissions, 1);
+    withdrawals.submitFailure = null;
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-transfer-amount')))
+          .enabled,
+      isTrue,
+    );
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    expect(withdrawals.submissions, 0);
+    expect(withdrawals.previewAmounts.length, greaterThan(1));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    withdrawals.previewFailure = StateError('Quote temporarily unavailable');
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    expect(find.text('Quote temporarily unavailable'), findsNothing);
+    withdrawals.previewFailure = null;
+    await tester.enterText(
+      find.byKey(const Key('hip3-transfer-amount')),
+      '51.40',
+    );
+    await tester.pump();
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
@@ -337,26 +359,37 @@ void main() {
     await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(withdrawals.createdAmounts, ['51.4']);
-    await tester.tap(find.widgetWithText(FilledButton, '签名并转账').last);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    expect(withdrawals.submissions, 1);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(withdrawals.submissions, 2);
+    expect(find.text('Signature rejected by wallet'), findsNothing);
     expect(find.text('转账处理中…'), findsNothing);
     _expectPendingTransfer(tester);
+    final previewsAfterSubmission = withdrawals.previewAmounts.length;
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('hip3-transfer-amount')),
+    );
+    expect(amountField.enabled, isFalse);
+    // Even a queued input callback must not clear the submitted withdrawal.
+    amountField.onChanged!('51.4');
     expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     withdrawals.failureReason =
         'relay_intent_failed_or_refunded_requires_manual_review';
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
+    _expectPendingTransfer(tester);
+    expect(withdrawals.previewAmounts.length, previewsAfterSubmission);
     expect(find.textContaining('人工'), findsOneWidget);
     final checks = withdrawals.getCalls;
     await tester.pump(const Duration(seconds: 10));
     expect(withdrawals.getCalls, greaterThan(checks));
-    expect(withdrawals.submissions, 1);
+    expect(withdrawals.submissions, 2);
+    expect(withdrawals.previewAmounts.length, previewsAfterSubmission);
+    _expectPendingTransfer(tester);
     expect(find.byKey(const Key('transfer-withdrawal-refresh')), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -364,6 +397,92 @@ void main() {
     );
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final scenario in ['unchanged', 'changed float', 'changed relay']) {
+    final changedQuote = scenario == 'changed float';
+    testWidgets(
+      'withdrawal keeps loading through prepare and signing ($scenario)',
+      (tester) async {
+        final withdrawals = _FakeHip3Withdrawals()
+          ..prepareGate = Completer<void>()
+          ..submitGate = Completer<void>();
+        if (scenario == 'changed relay') withdrawals.rail = 'relay';
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+              hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+              hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
+              transferOptionsProvider.overrideWith(
+                (ref) async => _capacityOptions(),
+              ),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const TransferScreen(),
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const Key('hip3-transfer-amount')),
+          '51.4',
+        );
+        await tester.pump(const Duration(milliseconds: 600));
+        if (scenario != 'unchanged') withdrawals.createdFee = '1.19';
+        await tester.tap(find.byType(FilledButton));
+        await tester.pump();
+        _expectPendingTransfer(tester);
+        final previews = withdrawals.previewAmounts.length;
+        await tester.pump(const Duration(seconds: 5));
+        expect(withdrawals.previewAmounts.length, previews);
+        _expectPendingTransfer(tester);
+        if (changedQuote) withdrawals.previewGate = Completer<void>();
+        withdrawals.prepareGate!.complete();
+        await tester.pump();
+        _expectPendingTransfer(tester);
+        await tester.pump(const Duration(seconds: 5));
+        _expectPendingTransfer(tester);
+        if (changedQuote) {
+          expect(withdrawals.submissions, 0);
+          withdrawals.previewGate!.complete();
+          await tester.pump();
+          final context = tester.element(find.byType(TransferScreen));
+          expect(
+            find.text(AppLocalizations.of(context).transferQuoteChanged),
+            findsOneWidget,
+          );
+          expect(find.byType(CircularProgressIndicator), findsNothing);
+        } else {
+          expect(withdrawals.previewAmounts.length, previews);
+          expect(withdrawals.submissions, 1);
+          if (scenario == 'changed relay') {
+            expect(find.text('1.19 USDC'), findsOneWidget);
+            expect(
+              tester
+                  .widget<AnimatedNumberText>(
+                    find.byKey(const Key('transfer-receive-amount-value')),
+                  )
+                  .value,
+              '50.21',
+            );
+          }
+          withdrawals.submitGate!.complete();
+          await tester.pump();
+          _expectPendingTransfer(tester);
+          await tester.pump(const Duration(seconds: 6));
+          _expectPendingTransfer(tester);
+          expect(withdrawals.previewAmounts.length, previews);
+          expect(withdrawals.getCalls, greaterThan(1));
+        }
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
 
   testWidgets('quotes only the token selected from the picker', (tester) async {
     final funding = _RefreshingTransferQuoteRepository();
@@ -1460,7 +1579,7 @@ void main() {
 
     expect(funding.planCalls, 1);
     expect(funding.transferReads, 1);
-    expect(find.text('Authorization required'), findsOneWidget);
+    expect(find.text('Authorization required'), findsNothing);
     expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -1922,6 +2041,14 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   final createdAmounts = <String>[];
   final createdRails = <String>[];
   int submissions = 0;
+  Object? submitFailure;
+  Object? previewFailure;
+  Completer<void>? prepareGate;
+  Completer<void>? submitGate;
+  Completer<void>? previewGate;
+  String createdFee = '1.18';
+  String rail = 'float';
+  bool accepted = false;
   int getCalls = 0;
   String? failureReason;
 
@@ -1931,11 +2058,13 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     required int payoutChainId,
   }) async {
     previewAmounts.add(amount);
+    if (previewFailure case final failure?) throw failure;
+    await previewGate?.future;
     return Hip3WithdrawalPreview(
       amount: amount,
       fee: '1.18',
       minimumReceived: '50.22',
-      rail: 'float',
+      rail: rail,
       destinationAddress: destination,
       chainId: '42161',
       maximumTransferable: '100',
@@ -1951,6 +2080,7 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
       ],
       crossLiquidationImpacts: const [],
       riskStatus: 'available',
+      riskValidUntil: DateTime.now().toUtc().add(const Duration(seconds: 2)),
     );
   }
 
@@ -1959,10 +2089,10 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     ownerAddress: destination,
     destinationAddress: destination,
     amount: '51.4',
-    fee: '1.18',
-    minimumReceived: '50.22',
+    fee: createdFee,
+    minimumReceived: createdFee == '1.19' ? '50.21' : '50.22',
     status: 'awaiting_signature',
-    rail: 'float',
+    rail: rail,
     payoutChainId: 42161,
     payoutAsset: 'USDC',
     expiresAt: DateTime.now().add(const Duration(minutes: 5)),
@@ -1979,13 +2109,14 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   }) async {
     createdAmounts.add(amount);
     createdRails.add(rail);
+    await prepareGate?.future;
     return prepared;
   }
 
   @override
   Future<Hip3Withdrawal> get(String id) async {
     getCalls++;
-    return submissions == 0 ? prepared : _submitted(prepared);
+    return accepted ? _submitted(prepared) : prepared;
   }
 
   @override
@@ -1994,6 +2125,9 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     required String idempotencyKey,
   }) async {
     submissions++;
+    await submitGate?.future;
+    if (submitFailure case final failure?) throw failure;
+    accepted = true;
     return _submitted(prepared);
   }
 

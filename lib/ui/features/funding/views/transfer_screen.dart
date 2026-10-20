@@ -70,6 +70,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   int _planGeneration = 0;
   int _quoteSequence = 0;
   String? _error;
+  String? _withdrawalSubmissionError;
   bool _transferPending = false;
   bool _resumeRequired = false;
   bool _planActionRequired = false;
@@ -247,6 +248,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _scheduleHip3Preview() {
+    if (_sendFromSpot || _submitting || _transferPending) return;
     _withdrawalPreviewDebounce?.cancel();
     _withdrawalPreviewRefresh?.cancel();
     final sequence = ++_withdrawalPreviewSequence;
@@ -278,6 +280,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     String amount, {
     bool forceRefresh = false,
   }) async {
+    if (_submitting || _transferPending) return;
     try {
       final preview = await ref
           .read(hip3WithdrawalCommandsProvider)
@@ -325,6 +328,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           sequence != _withdrawalPreviewSequence ||
           _sendFromSpot ||
           _submitting ||
+          _transferPending ||
           _withdrawalAmount.text.trim() != amount) {
         return;
       }
@@ -516,6 +520,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _submitHip3Withdrawal() async {
+    if (_submitting || _transferPending) return;
+    setState(() => _withdrawalSubmissionError = null);
     final l10n = AppLocalizations.of(context);
     final amount = _withdrawalAmount.text.trim();
     try {
@@ -527,13 +533,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       setState(() => _error = l10n.transferEnterPositiveAmount);
       return;
     }
+    _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewRefresh?.cancel();
+    ++_withdrawalPreviewSequence;
     setState(() {
       _submitting = true;
+      _withdrawalPreviewing = false;
       _error = null;
     });
     try {
       final commands = ref.read(hip3WithdrawalCommandsProvider);
-      final preview = _withdrawalPreview;
+      var preview = _withdrawalPreview;
       if (preview == null ||
           !_sameWithdrawalAmount(preview.amount, amount) ||
           !preview.canProceed) {
@@ -547,8 +557,22 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           _withdrawalPreview = refreshed;
           _error = hip3WithdrawalBlockerMessage(refreshed, l10n);
         });
-        _scheduleHip3PreviewRefresh(refreshed, sequence, amount);
-        return;
+        if (!refreshed.canProceed || refreshed.isRiskExpired) {
+          throw StateError(_error ?? l10n.transferWaitForQuote);
+        }
+        if (preview.rail != refreshed.rail ||
+            preview.chainId != refreshed.chainId ||
+            preview.destinationAddress.toLowerCase() !=
+                refreshed.destinationAddress.toLowerCase() ||
+            (preview.rail != 'relay' &&
+                (!_sameWithdrawalAmount(preview.fee, refreshed.fee) ||
+                    !_sameWithdrawalAmount(
+                      preview.minimumReceived,
+                      refreshed.minimumReceived,
+                    )))) {
+          throw StateError(l10n.transferQuoteChanged);
+        }
+        preview = refreshed;
       }
       final prepared = await commands.prepare(
         amount,
@@ -561,40 +585,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         return;
       }
       setState(() => _withdrawal = prepared);
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.signAndTransfer),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${l10n.sendAmount}: ${TokenAmountFormatter.formatText(prepared.amount)} USDC',
-              ),
-              Text(
-                '${prepared.rail == 'relay' ? l10n.estimatedFee : l10n.totalFee}: ${TokenAmountFormatter.formatText(prepared.fee)} USDC',
-              ),
-              Text(
-                '${l10n.receiveAmount}: ${TokenAmountFormatter.formatText(prepared.minimumReceived)} USDC',
-              ),
-              Text(l10n.hip3TransferDestination),
-              SelectableText(prepared.destinationAddress),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.signAndTransfer),
-            ),
-          ],
-        ),
-      );
-      if (!mounted || confirmed != true) return;
       try {
         final submitted = await commands.submit(prepared);
         if (!mounted) return;
@@ -614,11 +604,32 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         rethrow;
       }
     } on Hip3WithdrawalQuoteChanged {
-      if (mounted) _scheduleHip3Preview();
+      // Refresh while this attempt still owns the loading state. Never sign
+      // different transfer terms without another explicit user submission.
+      try {
+        final refreshed = await ref
+            .read(hip3WithdrawalCommandsProvider)
+            .preview(amount, forceRefresh: true);
+        if (!mounted) return;
+        setState(() {
+          _withdrawalPreview = refreshed;
+          _withdrawalSubmissionError =
+              hip3WithdrawalBlockerMessage(refreshed, l10n) ??
+              l10n.transferQuoteChanged;
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _withdrawalSubmissionError = errorMessage(
+            error,
+            fallback: l10n.transferQuoteChanged,
+          );
+        });
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = switch (error) {
+        _withdrawalSubmissionError = switch (error) {
           ApiFailure failure => apiFailureMessage(
             failure,
             fallback: l10n.transferStartFailed,
@@ -643,7 +654,18 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         };
       });
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) {
+        setState(() => _submitting = false);
+        if (!_transferPending && !_completionToastShown) {
+          if (_withdrawalPreview case final preview?) {
+            _scheduleHip3PreviewRefresh(
+              preview,
+              _withdrawalPreviewSequence,
+              amount,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -656,7 +678,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     setState(() {
       _withdrawal = withdrawal;
       _transferPending = withdrawal.isPending;
-      _error = withdrawal.requiresManualReview
+      _withdrawalSubmissionError = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
           ? errorMessage(
@@ -954,6 +976,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         : ref.watch(hip3TransferBalanceProvider);
     final l10n = AppLocalizations.of(context);
     final send = _sendFromSpot ? l10n.spot : l10n.perps;
+    final visibleError = _sendFromSpot
+        ? _error
+        : _withdrawalSubmissionError ?? _error;
     final receive = _sendFromSpot ? l10n.perps : l10n.spot;
     final quote = _quote;
     final canSubmit =
@@ -1126,6 +1151,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _SectionLabel(l10n.sendAmount),
                         _Hip3SendAmountCard(
                           controller: _withdrawalAmount,
+                          enabled: !_submitting && !_transferPending,
                           balance: hip3Balance?.value,
                           balanceLoading: hip3Balance?.isLoading ?? true,
                           onChanged: _scheduleHip3Preview,
@@ -1142,8 +1168,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           asset: 'USDC',
                           network: 'Arbitrum',
                           value:
-                              _withdrawalPreview?.minimumReceived ??
                               _withdrawal?.minimumReceived ??
+                              _withdrawalPreview?.minimumReceived ??
                               '',
                           loading: _withdrawalPreviewing,
                         ),
@@ -1169,14 +1195,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ],
                       ],
-                      if (_planActionRequired) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          AppLocalizations.of(context).authorizationRequired,
-                        ),
-                      ],
                       const Spacer(),
-                      if (_error case final error?) ...[
+                      if (visibleError case final error?) ...[
                         const SizedBox(height: 28),
                         InlineErrorNotice(
                           key: const Key('transfer-error'),
@@ -1802,12 +1822,14 @@ class _PositionIcon extends StatelessWidget {
 class _Hip3SendAmountCard extends StatelessWidget {
   const _Hip3SendAmountCard({
     required this.controller,
+    required this.enabled,
     required this.balance,
     required this.balanceLoading,
     required this.onChanged,
   });
 
   final TextEditingController controller;
+  final bool enabled;
   final String? balance;
   final bool balanceLoading;
   final VoidCallback onChanged;
@@ -1867,6 +1889,7 @@ class _Hip3SendAmountCard extends StatelessWidget {
             height: 32,
             child: TextField(
               key: const Key('hip3-transfer-amount'),
+              enabled: enabled,
               controller: controller,
               onChanged: (_) => onChanged(),
               textAlign: TextAlign.right,
@@ -1903,7 +1926,7 @@ class _Hip3FeeSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final feeValue = preview?.fee ?? withdrawal?.fee;
+    final feeValue = withdrawal?.fee ?? preview?.fee;
     final fee = feeValue == null
         ? '-'
         : '${TokenAmountFormatter.formatText(feeValue)} USDC';
