@@ -456,6 +456,7 @@ class MarketAssetMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final remoteUrl = logoUrl?.trim();
+    final hasLogo = remoteUrl != null && remoteUrl.isNotEmpty;
     final placeholder = logoText?.trim();
     final fallback = Text(
       placeholder != null && placeholder.isNotEmpty
@@ -467,20 +468,29 @@ class MarketAssetMark extends StatelessWidget {
       width: size,
       height: size,
       alignment: Alignment.center,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: colors.surface,
         shape: borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: borderRadius == null
             ? null
             : BorderRadius.circular(borderRadius!),
+      ),
+      // Paint the outline over the logo: a decoration border adds implicit
+      // padding, leaving a smaller square image inside the circular clip.
+      foregroundDecoration: BoxDecoration(
+        shape: borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: borderRadius == null
+            ? null
+            : BorderRadius.circular(borderRadius!),
         border: Border.all(color: colors.border),
       ),
-      child: remoteUrl == null || remoteUrl.isEmpty
+      child: !hasLogo
           ? fallback
           : _MarketNetworkLogo(
               url: remoteUrl,
-              size: size * 0.6,
-              fallback: fallback,
+              size: size,
+              fallback: Center(child: fallback),
             ),
     );
   }
@@ -504,6 +514,7 @@ class _MarketNetworkLogo extends StatelessWidget {
         url,
         width: size,
         height: size,
+        fit: BoxFit.contain,
         placeholderBuilder: (_) => fallback,
         errorBuilder: (_, _, _) => fallback,
       );

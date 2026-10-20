@@ -36,6 +36,13 @@ void main() {
     );
     expect(image.image, isA<NetworkImage>());
     expect((image.image as NetworkImage).url, logoUrl);
+    // The outline must not inset the square image inside the circular clip;
+    // that intersection would leave flat edges on solid-background logos.
+    final logoBounds = tester.getRect(
+      find.byKey(const ValueKey('market-network-logo-$logoUrl')),
+    );
+    expect(logoBounds.size, const Size(40, 40));
+    expect(logoBounds, tester.getRect(find.byType(MarketAssetMark)));
   });
 
   testWidgets('market ranking tabs remain usable at 200% text scale', (
