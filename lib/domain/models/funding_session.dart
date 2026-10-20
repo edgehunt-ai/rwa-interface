@@ -23,6 +23,9 @@ final class FundingSessionSummary {
     this.allocations = const {},
     this.positions = const [],
     this.crossLiquidationImpacts = const [],
+    this.createdAt,
+    this.updatedAt,
+    this.estimateObservedAt,
   });
   final String sessionId;
   final String status;
@@ -43,6 +46,15 @@ final class FundingSessionSummary {
   final Map<String, String> allocations;
   final List<FundingSourcePosition> positions;
   final List<Hip3CrossLiquidationImpact> crossLiquidationImpacts;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? estimateObservedAt;
+
+  bool get canSubmit =>
+      canConfirmTransfer &&
+      (status == 'readyToConfirm' || status == 'ready_to_confirm');
+
+  bool get requiresReview => status == 'manualReview' || status == 'manual_review';
 }
 
 final class FundingSessionFees {

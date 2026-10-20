@@ -8,6 +8,7 @@ import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/perps_withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
+import 'package:nobell/ui/features/funding/views/funds_obligations_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
 import 'package:nobell/ui/features/not_found/views/not_found_screen.dart';
@@ -40,6 +41,11 @@ abstract final class AppRouter {
             initialToken: state.uri.queryParameters['token'],
             initialNetwork: state.uri.queryParameters['network'],
           ),
+        ),
+        GoRoute(
+          name: AppRoutes.fundsObligationsName,
+          path: AppRoutes.fundsObligationsPath,
+          builder: (context, state) => const FundsObligationsScreen(),
         ),
         GoRoute(
           name: AppRoutes.loginName,

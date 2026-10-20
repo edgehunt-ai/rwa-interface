@@ -11,6 +11,51 @@ import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/hip3_opening_protection.dart';
 
 void main() {
+  for (final (wire, expected) in [
+    (api.BstockOrderStatus.pending, TradingOrderStatus.pending),
+    (api.BstockOrderStatus.awaitingConfirmation,
+      TradingOrderStatus.awaitingConfirmation),
+    (api.BstockOrderStatus.submitted, TradingOrderStatus.submitted),
+    (api.BstockOrderStatus.ambiguous, TradingOrderStatus.ambiguous),
+    (api.BstockOrderStatus.manualReview, TradingOrderStatus.manualReview),
+  ]) {
+    test('bStocks list retains unresolved $wire and immutable evidence', () async {
+      final source = api.BstockOrder(
+        (b) => b
+          ..orderId = 'original-order'
+          ..symbol = 'NVDAB'
+          ..kind = api.BstockOrderWalletActionStateKindEnum.bstock
+          ..side = api.OrderSide.buy
+          ..type = api.OrderType.limit
+          ..status = wire
+          ..requestedAmount = '1000000000000000000.000000000000000001'
+          ..fee = '0.000000000000000001'
+          ..settlementAsset = 'USDT'
+          ..failureReason = 'Awaiting reconciliation evidence'
+          ..txHash = '0xoriginal'
+          ..createdAt = DateTime.utc(2026)
+          ..updatedAt = DateTime.utc(2026, 1, 2),
+      );
+      final service = _OrderList(_order(source, typeIndex: 0));
+      final page = await OrdersRepositoryImpl(service).list(
+        kind: MarketProductKind.bstock,
+        symbol: 'NVDAB',
+      );
+      expect(service.statusGroup, isNull);
+      final order = page.items.single.resource;
+      expect(order.status, expected);
+      expect(order.isTerminal, isFalse);
+      expect(order.isBstocksCancellable, isFalse);
+      expect(order.orderId, 'original-order');
+      expect(order.requestedAmount!.value,
+          '1000000000000000000.000000000000000001');
+      expect(order.fee!.value, '0.000000000000000001');
+      expect(order.failureReason, 'Awaiting reconciliation evidence');
+      expect(order.txHash, '0xoriginal');
+      expect(order.updatedAt, DateTime.utc(2026, 1, 2));
+    });
+  }
+
   for (final asset in ['USDT', 'TUSDT', 'LUSDT', null]) {
     test(
       'bStocks order preserves settlement asset $asset and base quantities',
@@ -523,6 +568,31 @@ final class _PreviewOrders implements OrdersService {
           ..createdAt = DateTime.utc(2026),
       ),
       typeIndex: 1,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _OrderList implements OrdersService {
+  _OrderList(this.order);
+  final api.Order order;
+  String? statusGroup = 'not-called';
+
+  @override
+  Future<api.OrderPage> listOrders({
+    String? cursor,
+    api.ProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) async {
+    this.statusGroup = statusGroup;
+    return api.OrderPage(
+      (b) => b
+        ..hasMore = false
+        ..items.add(order),
     );
   }
 

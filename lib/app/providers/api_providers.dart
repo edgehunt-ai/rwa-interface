@@ -66,9 +66,8 @@ import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
 import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
-import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../domain/services/wallet_authorization_signer.dart';
-import '../../data/services/bstocks_sponsored_execution_journal.dart';
+import '../../data/services/bstocks_execution_journal.dart';
 import '../../domain/repositories/wallet_action_execution_repository.dart';
 import '../../data/repositories/wallet_action_execution_repository_impl.dart';
 import '../../data/services/generated_wallet_action_execution_service.dart';
@@ -225,14 +224,12 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
 final _bstocksBroadcastJournalProvider = Provider<BstocksBroadcastJournal>(
   (ref) => BstocksBroadcastJournal.persistent(),
 );
-final _bstocksSponsoredExecutionJournalProvider =
-    Provider<BstocksSponsoredExecutionJournal>(
-      (ref) => BstocksSponsoredExecutionJournal.persistent(),
-    );
+final _bstocksExecutionJournalProvider = Provider<BstocksExecutionJournal>(
+  (ref) => BstocksExecutionJournal.persistent(),
+);
 
 final bstocksOrderExecutionRepositoryProvider =
     Provider<BstocksOrderExecutionRepository>((ref) {
-      final gateway = ref.watch(identityAuthGatewayProvider);
       return BstocksOrderExecutionRepositoryImpl(
         ref.watch(ordersRepositoryProvider),
         BstocksOrderActionRepositoryImpl(
@@ -241,13 +238,10 @@ final bstocksOrderExecutionRepositoryProvider =
             onDecodeFailure: _decodeFallbackReporter(ref),
           ),
         ),
-        gateway is EmbeddedWalletTransactionSender
-            ? gateway as EmbeddedWalletTransactionSender
-            : null,
-        sponsoredExecutions: ref.watch(walletActionExecutionRepositoryProvider),
+        executions: ref.watch(walletActionExecutionRepositoryProvider),
         authorizationSigner: ref.watch(walletAuthorizationSignerProvider),
         broadcastJournal: ref.watch(_bstocksBroadcastJournalProvider),
-        sponsoredJournal: ref.watch(_bstocksSponsoredExecutionJournalProvider),
+        executionJournal: ref.watch(_bstocksExecutionJournalProvider),
       );
     });
 final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {

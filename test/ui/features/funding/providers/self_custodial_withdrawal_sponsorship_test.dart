@@ -1,370 +1,171 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/api_providers.dart';
-import 'package:nobell/app/providers/auth_providers.dart';
-import 'package:nobell/app/providers/observability_providers.dart';
-import 'package:nobell/domain/auth/identity_auth_gateway.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/self_custodial_withdrawal.dart';
 import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
-import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
-import 'package:nobell/domain/services/embedded_wallet_transaction_sender.dart';
-import 'package:nobell/domain/services/wallet_authorization_signer.dart';
 import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 
+import '../../../../helpers/funding_execution_fixture.dart';
+
 void main() {
-  ProviderContainer container({
-    required _Executions executions,
-    required _Sender sender,
-    _Signer? signer,
-    _RecordingObservabilityReporter? observability,
-  }) {
-    final result = ProviderContainer(
-      overrides: [
-        identityAuthGatewayProvider.overrideWithValue(sender),
-        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
-        walletAuthorizationSignerProvider.overrideWithValue(
-          signer ?? _Signer(),
-        ),
-        fundingRepositoryProvider.overrideWithValue(_Funding()),
-        if (observability != null)
-          observabilityReporterProvider.overrideWithValue(observability),
-      ],
-    );
-    addTearDown(result.dispose);
-    return result;
+  SelfCustodialWithdrawalCommands commands(
+    RecordingFundingExecutions executions,
+    RecordingFundingSigner signer,
+  ) {
+    final container = ProviderContainer(overrides: [
+      walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+      walletAuthorizationSignerProvider.overrideWithValue(signer),
+      fundingRepositoryProvider.overrideWithValue(_Funding()),
+    ]);
+    addTearDown(container.dispose);
+    return container.read(selfCustodialWithdrawalCommandsProvider);
   }
 
-  test('platform-sponsored withdrawal signs without an upgrade prompt', () async {
-    final signer = _Signer();
-    final executions = _Executions(create: _sponsored());
-    final sender = _Sender();
-    final commands = container(
-      executions: executions,
-      sender: sender,
-      signer: signer,
-    ).read(selfCustodialWithdrawalCommandsProvider);
+  for (final mode in GasPaymentMode.values) {
+    test('$mode uses fresh authority and backend signature submission only', () async {
+      final executions = RecordingFundingExecutions(created: fundingExecution(mode: mode));
+      final signer = RecordingFundingSigner(executions.events);
+      final command = commands(executions, signer);
+      final summary = mode == GasPaymentMode.appSponsored
+          ? await command.execute(quote: _quote, prepared: _prepared(canPayGas: false))
+          : await command.executeUserPaid(quote: _quote, prepared: _prepared());
 
-    final summary = await commands.execute(
-      quote: _quote,
-      prepared: _prepared(canPayGas: false),
-    );
+      expect(summary.withdrawalId, 'withdrawal-1');
+      expect(executions.modes, [mode]);
+      expect(executions.events, ['create', 'get', 'sign', 'submit']);
+      expect(signer.requests.single.sponsor, mode == GasPaymentMode.appSponsored);
+      expect(signer.signers, [fundingSigner]);
+      expect(executions.signatures, ['0xauthorization']);
+      expect(executions.hashes, isEmpty);
+    });
+  }
 
-    expect(summary.withdrawalId, 'withdrawal-1');
-    expect(executions.createdModes, [GasPaymentMode.appSponsored]);
-    expect(executions.submittedSignatures, ['0xauthorization']);
-    expect(signer.requests.single.referenceId, 'execution-1');
-    expect(signer.signers.single, _from);
-    // The platform pays and broadcasts: an empty native balance is no longer a
-    // reason to refuse, and the wallet never signs a transaction.
-    expect(sender.calls, 0);
-    expect(executions.submittedHashes, isEmpty);
-  });
-
-  test(
-    'an authorization that drifts from the frozen call is refused',
-    () async {
-      final observability = _RecordingObservabilityReporter();
-      final signer = _Signer();
-      final executions = _Executions(
-        create: _sponsored(
-          authorizedTo: '0x9999999999999999999999999999999999999999',
-        ),
+  for (final code in [404, 422, 409]) {
+    test('$code cannot invoke a legacy publisher or switch gas mode', () async {
+      final executions = RecordingFundingExecutions(
+        created: fundingExecution(mode: GasPaymentMode.appSponsored),
+        createFailure: ServerFailure(statusCode: code, code: 'execution_unavailable'),
       );
-      final sender = _Sender();
-      final commands = container(
-        executions: executions,
-        sender: sender,
-        signer: signer,
-        observability: observability,
-      ).read(selfCustodialWithdrawalCommandsProvider);
-
-      await expectLater(
-        commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
-        throwsA(isA<StateError>()),
-      );
+      final signer = RecordingFundingSigner(executions.events);
+      final command = commands(executions, signer);
+      await expectLater(command.execute(quote: _quote, prepared: _prepared()),
+          throwsA(isA<ServerFailure>()));
+      await expectLater(command.executeUserPaid(quote: _quote, prepared: _prepared()),
+          throwsStateError);
+      expect(executions.modes, [GasPaymentMode.appSponsored]);
       expect(signer.requests, isEmpty);
-      expect(executions.submittedSignatures, isEmpty);
-      expect(observability.errors, [isA<StateError>()]);
-      expect(observability.operations, [
-        'execute_self_custodial_withdrawal:started',
-        'execute_self_custodial_withdrawal:failed',
-      ]);
-    },
-  );
+      expect(executions.hashes, isEmpty);
+    });
+  }
 
-  test('a wallet broadcast failure is reported', () async {
-    final observability = _RecordingObservabilityReporter();
-    final commands = container(
-      executions: _Executions(create: _userPaid()),
-      sender: _Sender(failure: StateError('wallet broadcast failed')),
-      observability: observability,
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    await expectLater(
-      commands.executeUserPaid(
-        quote: _quote,
-        prepared: _prepared(canPayGas: true),
-      ),
-      throwsA(isA<StateError>()),
-    );
-
-    expect(observability.errors, [isA<StateError>()]);
-    expect(observability.operations, [
-      'execute_user_paid_self_custodial_withdrawal:started',
-      'execute_user_paid_self_custodial_withdrawal:failed',
-    ]);
+  test('only authoritative pre-delivery refusal permits explicit user-paid relay', () async {
+    final executions = RecordingFundingExecutions(created: fundingExecution(
+      mode: GasPaymentMode.appSponsored,
+      status: WalletActionExecutionState.userGasConfirmationRequired,
+      includeAuthorization: false,
+    ));
+    final signer = RecordingFundingSigner(executions.events);
+    final command = commands(executions, signer);
+    await expectLater(command.execute(quote: _quote, prepared: _prepared()),
+        throwsA(isA<SponsoredGasUnavailable>()));
+    executions.created = fundingExecution(executionId: 'native-execution');
+    await command.executeUserPaid(quote: _quote, prepared: _prepared());
+    expect(executions.modes, [GasPaymentMode.appSponsored, GasPaymentMode.userPaidNative]);
+    expect(signer.requests.single.sponsor, isFalse);
   });
 
-  test('an expired authorization window is refused', () async {
-    final signer = _Signer();
-    final executions = _Executions(
-      create: _sponsored(expiresAt: DateTime.utc(2020)),
-    );
-    final commands = container(
-      executions: executions,
-      sender: _Sender(),
-      signer: signer,
-    ).read(selfCustodialWithdrawalCommandsProvider);
+  final invalid = <String, WalletActionExecution Function()>{
+    'authorization target drift': () => fundingExecution(authorizedTo: '0x9999999999999999999999999999999999999999'),
+    'raw request target drift': () => fundingExecution(rawTo: '0x9999999999999999999999999999999999999999'),
+    'legacy publisher': () => fundingExecution(provider: 'user_wallet'),
+    'native sponsorship': () => fundingExecution(sponsor: true),
+    'wrong authorized nonce': () => fundingExecution(authorizedNonce: '0xb'),
+    'noncanonical authorized nonce': () => fundingExecution(authorizedNonce: '0x0a'),
+    'noncanonical frozen nonce': () => fundingExecution(nonce: '010'),
+    'expired authorization': () => fundingExecution(expiresAt: DateTime.utc(2020)),
+    'possible provider delivery': () => fundingExecution(deliveryState: 'dispatching'),
+  };
+  for (final entry in invalid.entries) {
+    test('${entry.key} fails closed before signing', () async {
+      final executions = RecordingFundingExecutions(created: entry.value());
+      final signer = RecordingFundingSigner(executions.events);
+      await expectLater(commands(executions, signer).executeUserPaid(
+        quote: _quote, prepared: _prepared(),
+      ), throwsStateError);
+      expect(signer.requests, isEmpty);
+      expect(executions.signatures, isEmpty);
+    });
+  }
 
-    await expectLater(
-      commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
-      throwsA(isA<StateError>()),
+  for (final status in [
+    WalletActionExecutionState.submitting,
+    WalletActionExecutionState.providerSubmitted,
+    WalletActionExecutionState.ambiguous,
+    WalletActionExecutionState.manualReview,
+  ]) {
+    test('fresh $status overrides an awaiting create replay', () async {
+      final executions = RecordingFundingExecutions(
+        created: fundingExecution(),
+        current: fundingExecution(status: status, includeAuthorization: false),
+      );
+      final signer = RecordingFundingSigner(executions.events);
+      await commands(executions, signer).executeUserPaid(quote: _quote, prepared: _prepared());
+      expect(executions.events, ['create', 'get']);
+      expect(signer.requests, isEmpty);
+    });
+  }
+
+  test('fresh nonce drift is rejected before signing', () async {
+    final executions = RecordingFundingExecutions(
+      created: fundingExecution(),
+      current: fundingExecution(nonce: '11', authorizedNonce: '0xb'),
     );
+    final signer = RecordingFundingSigner(executions.events);
+    await expectLater(commands(executions, signer).executeUserPaid(
+      quote: _quote, prepared: _prepared(),
+    ), throwsStateError);
     expect(signer.requests, isEmpty);
   });
 
-  test('a refused sponsorship surfaces instead of paying silently', () async {
-    final executions = _Executions(create: _refused());
-    final sender = _Sender();
-    final commands = container(
-      executions: executions,
-      sender: sender,
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    await expectLater(
-      commands.execute(quote: _quote, prepared: _prepared(canPayGas: true)),
-      throwsA(
-        isA<SponsoredGasUnavailable>()
-            .having((f) => f.executionId, 'executionId', 'execution-1')
-            .having((f) => f.fallbackAllowed, 'fallbackAllowed', isTrue),
-      ),
+  test('a failed authority GET never signs the create snapshot', () async {
+    final executions = RecordingFundingExecutions(
+      created: fundingExecution(), getFailure: const NetworkFailure(),
     );
-    expect(sender.calls, 0);
-    expect(executions.submittedHashes, isEmpty);
+    final signer = RecordingFundingSigner(executions.events);
+    await expectLater(commands(executions, signer).executeUserPaid(
+      quote: _quote, prepared: _prepared(),
+    ), throwsA(isA<NetworkFailure>()));
+    expect(signer.requests, isEmpty);
   });
 
-  test('the user-paid fallback still gates on the observed gas', () async {
-    final executions = _Executions(create: _userPaid());
-    final sender = _Sender();
-    final commands = container(
-      executions: executions,
-      sender: sender,
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    await expectLater(
-      commands.executeUserPaid(
-        quote: _quote,
-        prepared: _prepared(canPayGas: false),
-      ),
-      throwsA(isA<InsufficientWithdrawalGas>()),
+  test('lost authorization response only observes on retry', () async {
+    final executions = RecordingFundingExecutions(
+      created: fundingExecution(), submitFailure: const NetworkFailure(),
     );
-    expect(sender.calls, 0);
-    expect(executions.createdModes, isEmpty);
+    final signer = RecordingFundingSigner(executions.events);
+    final command = commands(executions, signer);
+    await expectLater(command.executeUserPaid(quote: _quote, prepared: _prepared()),
+        throwsA(isA<NetworkFailure>()));
+    await command.executeUserPaid(quote: _quote, prepared: _prepared());
+    expect(executions.events, ['create', 'get', 'sign', 'submit', 'get']);
+    expect(signer.requests, hasLength(1));
+    expect(executions.signatures, hasLength(1));
+    expect(executions.hashes, isEmpty);
   });
 
-  test('the user-paid fallback reports its hash to the execution', () async {
-    final executions = _Executions(create: _userPaid());
-    final sender = _Sender();
-    final commands = container(
-      executions: executions,
-      sender: sender,
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    final summary = await commands.executeUserPaid(
-      quote: _quote,
-      prepared: _prepared(canPayGas: true),
-    );
-
-    expect(summary.withdrawalId, 'withdrawal-1');
-    expect(executions.createdModes, [GasPaymentMode.userPaidNative]);
-    expect(sender.calls, 1);
-    expect(executions.submittedHashes, ['0xtx']);
-    expect(executions.submittedSignatures, isEmpty);
-  });
-
-  test(
-    'an intent the server binds no execution to keeps the direct path',
-    () async {
-      final executions = _Executions(
-        createFailure: const ServerFailure(
-          statusCode: 422,
-          code: 'sponsorship_unavailable',
-        ),
-      );
-      final sender = _Sender();
-      final funding = _Funding();
-      final result = ProviderContainer(
-        overrides: [
-          identityAuthGatewayProvider.overrideWithValue(sender),
-          walletActionExecutionRepositoryProvider.overrideWithValue(executions),
-          walletAuthorizationSignerProvider.overrideWithValue(_Signer()),
-          fundingRepositoryProvider.overrideWithValue(funding),
-        ],
-      );
-      addTearDown(result.dispose);
-
-      final summary = await result
-          .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared(canPayGas: true));
-
-      expect(summary.withdrawalId, 'withdrawal-1');
-      expect(sender.calls, 1);
-      expect(funding.submittedHashes, ['0xtx']);
-      expect(executions.submittedHashes, isEmpty);
-    },
-  );
-
-  test('re-preparing an intent never reuses the previous key', () async {
-    final executions = _Executions(
-      buildCreate: (withdrawalId) => _sponsored(withdrawalId: withdrawalId),
-    );
-    final commands = container(
-      executions: executions,
-      sender: _Sender(),
-    ).read(selfCustodialWithdrawalCommandsProvider);
-
-    await commands.execute(quote: _quote, prepared: _prepared(canPayGas: true));
-    await commands.execute(
-      quote: _quote,
-      prepared: _prepared(canPayGas: true, withdrawalId: 'withdrawal-2'),
-    );
-
-    // The server rejects a key reused against a different withdrawal.
-    expect(executions.createKeys, hasLength(2));
-    expect(executions.createKeys.first, isNot(executions.createKeys.last));
-  });
-
-  test('a conflicting execution never broadcasts behind the server', () async {
-    final executions = _Executions(
-      createFailure: const ServerFailure(
-        statusCode: 409,
-        code: 'execution_already_bound',
-      ),
-    );
-    final sender = _Sender();
-    final funding = _Funding();
-    final result = ProviderContainer(
-      overrides: [
-        identityAuthGatewayProvider.overrideWithValue(sender),
-        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
-        walletAuthorizationSignerProvider.overrideWithValue(_Signer()),
-        fundingRepositoryProvider.overrideWithValue(funding),
-      ],
-    );
-    addTearDown(result.dispose);
-
-    await expectLater(
-      result
-          .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared(canPayGas: true)),
-      throwsA(isA<ServerFailure>()),
-    );
-    // The intent already has an execution bound, so the direct path would be
-    // rejected after the transaction had already reached the chain.
-    expect(sender.calls, 0);
-    expect(funding.submittedHashes, isEmpty);
+  test('missing native gas balance blocks before execution creation', () async {
+    final executions = RecordingFundingExecutions(created: fundingExecution());
+    final signer = RecordingFundingSigner(executions.events);
+    await expectLater(commands(executions, signer).executeUserPaid(
+      quote: _quote, prepared: _prepared(canPayGas: false),
+    ), throwsA(isA<InsufficientWithdrawalGas>()));
+    expect(executions.events, isEmpty);
   });
 }
-
-const _from = '0x2222222222222222222222222222222222222222';
-const _to = '0x3333333333333333333333333333333333333333';
-const _data = '0xa9059cbb';
-
-WalletActionExecution _sponsored({
-  String? authorizedTo,
-  DateTime? expiresAt,
-  String withdrawalId = 'withdrawal-1',
-}) {
-  final to = authorizedTo ?? _to;
-  return WalletActionExecution(
-    executionId: 'execution-1',
-    resourceId: withdrawalId,
-    chainId: 56,
-    walletAddress: _from,
-    mode: GasPaymentMode.appSponsored,
-    status: WalletActionExecutionState.awaitingUserAuthorization,
-    gasPayment: _gasQuote(GasSponsorshipDecision.eligible, platformPays: true),
-    transaction: const FrozenTransaction(to: _to, data: _data, value: '0x0'),
-    authorization: WalletAuthorizationRequest(
-      version: 1,
-      method: 'POST',
-      url: 'https://api.privy.io/v1/wallets/wallet-1/rpc',
-      headers: const {'privy-app-id': 'app'},
-      body: const {'method': 'eth_sendTransaction'},
-      referenceId: 'execution-1',
-      sponsor: true,
-      caip2: 'eip155:56',
-      transaction: AuthorizedTransaction(
-        from: _from,
-        to: to,
-        data: _data,
-        value: '0x0',
-      ),
-    ),
-    authorizationExpiresAt:
-        expiresAt ?? DateTime.now().toUtc().add(const Duration(seconds: 45)),
-  );
-}
-
-WalletActionExecution _refused() => WalletActionExecution(
-  executionId: 'execution-1',
-  resourceId: 'withdrawal-1',
-  chainId: 56,
-  walletAddress: _from,
-  mode: GasPaymentMode.appSponsored,
-  status: WalletActionExecutionState.userGasConfirmationRequired,
-  gasPayment: _gasQuote(
-    GasSponsorshipDecision.userGasConfirmationRequired,
-    platformPays: false,
-  ),
-  transaction: const FrozenTransaction(to: _to, data: _data, value: '0x0'),
-);
-
-WalletActionExecution _userPaid() => WalletActionExecution(
-  executionId: 'execution-2',
-  resourceId: 'withdrawal-1',
-  chainId: 56,
-  walletAddress: _from,
-  mode: GasPaymentMode.userPaidNative,
-  status: WalletActionExecutionState.awaitingUserAuthorization,
-  gasPayment: _gasQuote(
-    GasSponsorshipDecision.userGasConfirmationRequired,
-    platformPays: false,
-  ),
-  transaction: const FrozenTransaction(to: _to, data: _data, value: '0x0'),
-);
-
-GasPaymentQuote _gasQuote(
-  GasSponsorshipDecision decision, {
-  required bool platformPays,
-}) => GasPaymentQuote(
-  mode: platformPays
-      ? GasPaymentMode.appSponsored
-      : GasPaymentMode.userPaidNative,
-  decision: decision,
-  platformPays: platformPays,
-  nativeAsset: 'BNB',
-  estimatedNativeFee: DecimalValue('0.000065', asset: 'BNB', unit: 'token'),
-  estimatedFeeUsd: DecimalValue('0.05', asset: 'USD', unit: 'usd'),
-  fallbackAllowed: true,
-  eip7702Required: true,
-  eip7702Notice: 'Your wallet will be upgraded.',
-);
 
 final _quote = WithdrawalQuote(
   quoteId: 'self-custodial-local',
@@ -378,219 +179,39 @@ final _quote = WithdrawalQuote(
   sufficient: true,
 );
 
-PreparedSelfCustodialWithdrawal _prepared({
-  bool? canPayGas,
-  String withdrawalId = 'withdrawal-1',
-}) => PreparedSelfCustodialWithdrawal(
-  withdrawalId: withdrawalId,
-  sourceWalletId: 'wallet-1',
-  assetId: 'eip155:56/erc20:0xusdc',
-  assetSymbol: 'USDC',
-  chain: 'BSC',
-  amount: DecimalValue('25.000001', asset: 'USDC', unit: 'token'),
-  destinationAddress: '0x1111111111111111111111111111111111111111',
-  transaction: SelfCustodialWithdrawalTransaction(
-    chainId: 56,
-    from: _from,
-    to: _to,
-    data: _data,
-    value: '0x0',
-    payloadHash: '0xpayload',
-    validUntil: DateTime.utc(2030),
-  ),
-  status: SelfCustodialWithdrawalState.awaitingSubmission,
-  gas: canPayGas == null
-      ? null
-      : SelfCustodialWithdrawalGasEstimate(
-          nativeAsset: 'BNB',
-          gasUnits: '65000',
-          gasPriceWei: DecimalValue('1000000000', asset: 'BNB', unit: 'wei'),
-          estimatedNativeFee: DecimalValue(
-            '0.000065',
-            asset: 'BNB',
-            unit: 'token',
-          ),
-          walletNativeBalance: DecimalValue(
-            '0.00001',
-            asset: 'BNB',
-            unit: 'token',
-          ),
-          canPayGas: canPayGas,
-          observedAt: DateTime.utc(2026),
-        ),
-);
-
-final class _Executions implements WalletActionExecutionRepository {
-  _Executions({this.create, this.buildCreate, this.createFailure});
-
-  final WalletActionExecution? create;
-  final WalletActionExecution Function(String withdrawalId)? buildCreate;
-  final ApiFailure? createFailure;
-  final List<GasPaymentMode> createdModes = [];
-  final List<String> createKeys = [];
-  final List<String> submittedSignatures = [];
-  final List<String> submittedHashes = [];
-
-  @override
-  Future<WalletActionExecution> createOrderWalletActionExecution({
-    required String orderId,
-    required String actionId,
-    required GasPaymentMode mode,
-    required String idempotencyKey,
-  }) async => _result();
-
-  @override
-  Future<WalletActionExecution> createTransferWalletActionExecution({
-    required String transferId,
-    required String actionId,
-    required GasPaymentMode mode,
-    required String idempotencyKey,
-  }) async => _result();
-
-  @override
-  Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
-    required String withdrawalId,
-    required GasPaymentMode mode,
-    required String idempotencyKey,
-  }) async {
-    final failure = createFailure;
-    if (failure != null) throw failure;
-    createdModes.add(mode);
-    createKeys.add(idempotencyKey);
-    return buildCreate?.call(withdrawalId) ?? create!;
-  }
-
-  WalletActionExecution _result() => create ?? buildCreate!('withdrawal-1');
-
-  @override
-  Future<WalletActionExecution> get(String executionId) async => _result();
-
-  @override
-  Future<WalletActionExecution> submitAuthorization({
-    required String executionId,
-    required String signature,
-    required String idempotencyKey,
-  }) async {
-    submittedSignatures.add(signature);
-    return _result();
-  }
-
-  @override
-  Future<WalletActionExecution> submitTransactionHash({
-    required String executionId,
-    required String txHash,
-    required String idempotencyKey,
-  }) async {
-    submittedHashes.add(txHash);
-    return _result();
-  }
-}
-
-final class _Signer implements WalletAuthorizationSigner {
-  final List<WalletAuthorizationRequest> requests = [];
-  final List<String> signers = [];
-
-  @override
-  Future<String> signWalletAuthorization({
-    required String expectedSigner,
-    required WalletAuthorizationRequest request,
-  }) async {
-    signers.add(expectedSigner);
-    requests.add(request);
-    return '0xauthorization';
-  }
-}
-
-final class _Sender
-    implements IdentityAuthGateway, EmbeddedWalletTransactionSender {
-  _Sender({this.failure});
-
-  final Object? failure;
-  int calls = 0;
-
-  @override
-  Future<String> sendTransaction({
-    required String expectedSigner,
-    required int chainId,
-    required String to,
-    required String data,
-    required String value,
-  }) async {
-    calls++;
-    if (failure case final error?) throw error;
-    return '0xtx';
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _RecordingObservabilityReporter implements ObservabilityReporter {
-  final operations = <String>[];
-  final failures = <ApiFailure>[];
-  final errors = <Object>[];
-
-  @override
-  Future<void> clearUser() async {}
-
-  @override
-  void recordApiFailure({
-    required String operation,
-    required ApiFailure failure,
-    StackTrace? stackTrace,
-    Map<String, String> context = const {},
-    Duration? duration,
-  }) {
-    failures.add(failure);
-    recordOperation(operation, outcome: 'failed');
-  }
-
-  @override
-  void recordError({
-    required String operation,
-    required Object error,
-    StackTrace? stackTrace,
-    Map<String, String> context = const {},
-    Duration? duration,
-    String failureKind = 'unexpected',
-  }) {
-    errors.add(error);
-    recordOperation(operation, outcome: 'failed');
-  }
-
-  @override
-  void recordOperation(
-    String operation, {
-    required String outcome,
-    Map<String, String> context = const {},
-    Duration? duration,
-  }) {
-    operations.add('$operation:$outcome');
-  }
-
-  @override
-  Future<void> setUserId(String userId) async {}
-}
+PreparedSelfCustodialWithdrawal _prepared({bool canPayGas = true}) =>
+    PreparedSelfCustodialWithdrawal(
+      withdrawalId: 'withdrawal-1',
+      sourceWalletId: 'wallet-1',
+      assetId: 'eip155:56/erc20:0xusdc',
+      assetSymbol: 'USDC',
+      chain: 'BSC',
+      amount: DecimalValue('25.000001', asset: 'USDC', unit: 'token'),
+      destinationAddress: '0x1111111111111111111111111111111111111111',
+      transaction: SelfCustodialWithdrawalTransaction(
+        chainId: 56,
+        from: fundingSigner,
+        to: fundingTarget,
+        data: fundingData,
+        value: '0x0',
+        payloadHash: '0xpayload',
+        validUntil: DateTime.utc(2030),
+      ),
+      status: SelfCustodialWithdrawalState.awaitingSubmission,
+      gas: SelfCustodialWithdrawalGasEstimate(
+        nativeAsset: 'BNB',
+        gasUnits: '65000',
+        gasPriceWei: DecimalValue('1000000000', asset: 'BNB', unit: 'wei'),
+        estimatedNativeFee: DecimalValue('0.000065', asset: 'BNB', unit: 'token'),
+        walletNativeBalance: DecimalValue('0.00001', asset: 'BNB', unit: 'token'),
+        canPayGas: canPayGas,
+        observedAt: DateTime.utc(2026),
+      ),
+    );
 
 final class _Funding implements FundingRepository {
-  final List<String> submittedHashes = [];
-
   @override
-  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
-    String id,
-  ) async => _summary(id);
-
-  @override
-  Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
-    required String id,
-    required String txHash,
-    required String idempotencyKey,
-  }) async {
-    submittedHashes.add(txHash);
-    return _summary(id);
-  }
-
-  SelfCustodialWithdrawalSummary _summary(String id) =>
+  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(String id) async =>
       SelfCustodialWithdrawalSummary(
         withdrawalId: id,
         assetSymbol: 'USDC',

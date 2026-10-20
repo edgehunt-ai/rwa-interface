@@ -191,6 +191,15 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                     ),
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextButton.icon(
+                    onPressed: () =>
+                        context.pushNamed(AppRoutes.fundsObligationsName),
+                    icon: const Icon(Icons.account_balance_wallet_outlined),
+                    label: Text(l10n.fundsObligationsTitle),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Expanded(
                   child: portfolio.when(

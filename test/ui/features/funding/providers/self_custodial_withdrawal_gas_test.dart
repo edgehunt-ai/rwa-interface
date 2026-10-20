@@ -1,87 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
-import 'package:nobell/app/providers/auth_providers.dart';
-import 'package:nobell/domain/auth/identity_auth_gateway.dart';
-import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/self_custodial_withdrawal.dart';
-import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
-import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
-import 'package:nobell/domain/services/embedded_wallet_transaction_sender.dart';
 import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 
+import '../../../../helpers/funding_execution_fixture.dart';
+
 void main() {
-  // The server binds no execution here, so these cases exercise the direct
-  // path where the user both pays gas and broadcasts.
-  test(
-    'a wallet that cannot pay the observed gas never reaches the signer',
-    () async {
-      final sender = _RecordingSender();
-      final container = ProviderContainer(
-        overrides: [
-          identityAuthGatewayProvider.overrideWithValue(sender),
-          walletActionExecutionRepositoryProvider.overrideWithValue(
-            _UnboundExecutions(),
-          ),
-        ],
+  for (final canPayGas in [false, true, null]) {
+    test('native gas gate $canPayGas never restores a client publisher', () async {
+      final executions = RecordingFundingExecutions(
+        created: fundingExecution(),
+        createFailure: StateError('backend execution unavailable'),
       );
+      final signer = RecordingFundingSigner(executions.events);
+      final container = ProviderContainer(overrides: [
+        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+        walletAuthorizationSignerProvider.overrideWithValue(signer),
+      ]);
       addTearDown(container.dispose);
-
       await expectLater(
-        container
-            .read(selfCustodialWithdrawalCommandsProvider)
-            .execute(quote: _quote, prepared: _prepared(canPayGas: false)),
-        throwsA(isA<InsufficientWithdrawalGas>()),
+        container.read(selfCustodialWithdrawalCommandsProvider).executeUserPaid(
+          quote: _quote,
+          prepared: _prepared(canPayGas: canPayGas),
+        ),
+        canPayGas == false ? throwsA(isA<InsufficientWithdrawalGas>()) : throwsStateError,
       );
-      expect(sender.calls, 0);
-    },
-  );
-
-  test('an affordable estimate is allowed through to the signer', () async {
-    final sender = _RecordingSender();
-    final container = ProviderContainer(
-      overrides: [
-        identityAuthGatewayProvider.overrideWithValue(sender),
-        walletActionExecutionRepositoryProvider.overrideWithValue(
-          _UnboundExecutions(),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    // Submission is unwired, so the call still fails — but only after the gate
-    // released it and the wallet was asked to sign exactly once.
-    await expectLater(
-      container
-          .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared(canPayGas: true)),
-      throwsA(anything),
-    );
-    expect(sender.calls, 1);
-  });
-
-  test('an absent estimate does not block the signer', () async {
-    final sender = _RecordingSender();
-    final container = ProviderContainer(
-      overrides: [
-        identityAuthGatewayProvider.overrideWithValue(sender),
-        walletActionExecutionRepositoryProvider.overrideWithValue(
-          _UnboundExecutions(),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await expectLater(
-      container
-          .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared()),
-      throwsA(anything),
-    );
-    expect(sender.calls, 1);
-  });
+      expect(executions.events, canPayGas == false ? isEmpty : ['create']);
+      expect(signer.requests, isEmpty);
+      expect(executions.hashes, isEmpty);
+    });
+  }
 }
 
 final _quote = WithdrawalQuote(
@@ -112,7 +63,7 @@ PreparedSelfCustodialWithdrawal _prepared({bool? canPayGas}) =>
         data: '0xa9059cbb',
         value: '0x0',
         payloadHash: '0xpayload',
-        validUntil: DateTime.utc(2026),
+        validUntil: DateTime.utc(2030),
       ),
       status: SelfCustodialWithdrawalState.awaitingSubmission,
       gas: canPayGas == null
@@ -139,39 +90,3 @@ PreparedSelfCustodialWithdrawal _prepared({bool? canPayGas}) =>
               observedAt: DateTime.utc(2026),
             ),
     );
-
-final class _RecordingSender
-    implements IdentityAuthGateway, EmbeddedWalletTransactionSender {
-  int calls = 0;
-
-  @override
-  Future<String> sendTransaction({
-    required String expectedSigner,
-    required int chainId,
-    required String to,
-    required String data,
-    required String value,
-  }) async {
-    calls++;
-    return '0xtx';
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-/// Sponsorship is not available for this intent, leaving the direct path.
-final class _UnboundExecutions implements WalletActionExecutionRepository {
-  @override
-  Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
-    required String withdrawalId,
-    required GasPaymentMode mode,
-    required String idempotencyKey,
-  }) async => throw const ServerFailure(
-    statusCode: 422,
-    code: 'sponsorship_unavailable',
-  );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}

@@ -28,6 +28,74 @@ import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
 import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 
 void main() {
+  for (final status in [FundingPlanState.failed, FundingPlanState.manualReview]) {
+    testWidgets('$status with a transfer ID stops arrival polling', (tester) async {
+      final funding = _CapacityTransferRepository()
+        ..planStatus = status
+        ..planTransferId = 'transfer-recovery-1';
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      final l10n = AppLocalizations.of(tester.element(find.byType(TransferScreen)));
+      expect(find.text(l10n.transferWaitingArrival), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('transfer-recovery-1'), findsOneWidget);
+      expect(find.byKey(const Key('transfer-plan-refresh')), findsOneWidget);
+      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
+      final reads = funding.planReads;
+      await tester.pump(const Duration(seconds: 12));
+      expect(funding.planReads, reads);
+      await tester.ensureVisible(find.byKey(const Key('transfer-plan-refresh')));
+      await tester.tap(find.byKey(const Key('transfer-plan-refresh')));
+      await tester.pump();
+      expect(funding.planReads, reads + 1);
+    });
+  }
+
+  for (final status in [FundingTransferState.refundPending, FundingTransferState.refunded]) {
+    testWidgets('$status keeps exact refund evidence without success', (tester) async {
+      final funding = _RecoveryTransferRepository()
+        ..planStatus = FundingPlanState.failed
+        ..planTransferId = 'transfer-recovery-1'
+        ..transferStatus = status;
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      expect(funding.transferReads, 0);
+      await tester.ensureVisible(find.byKey(const Key('transfer-plan-refresh')));
+      await tester.tap(find.byKey(const Key('transfer-plan-refresh')));
+      await tester.pump();
+      await tester.pump();
+      final l10n = AppLocalizations.of(tester.element(find.byType(TransferScreen)));
+      expect(find.text(status == FundingTransferState.refunded
+          ? l10n.transferRefunded : l10n.transferRefundPending), findsOneWidget);
+      expect(find.textContaining('19.000000000000000001'), findsOneWidget);
+      expect(find.text('tx_hash: 0xrefund-proof'), findsOneWidget);
+      expect(find.text(l10n.transferCompleted), findsNothing);
+      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
+    });
+  }
+
+  testWidgets('manual review session preserves recovery without a new plan', (tester) async {
+    final funding = _CapacityTransferRepository()..status = 'manualReview';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(find.byKey(const Key('transfer-session-refresh')), findsOneWidget);
+    expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
+    await tester.pump(const Duration(seconds: 12));
+    expect(funding.refreshCalls, 0);
+    expect(funding.planCalls, 0);
+  });
   testWidgets('matches the transfer design structure and interactions', (
     tester,
   ) async {
@@ -1529,6 +1597,24 @@ final class _CapacityTransferRepository implements FundingRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _RecoveryTransferRepository extends _CapacityTransferRepository {
+  FundingTransferState transferStatus = FundingTransferState.failed;
+
+  @override
+  Future<FundingTransfer> getFundingTransfer(String id) async {
+    transferReads++;
+    return FundingTransfer(
+      transferId: id,
+      planId: 'capacity-plan',
+      amount: DecimalValue('19.5', asset: 'USDC'),
+      status: transferStatus,
+      refundStatus: transferStatus == FundingTransferState.refunded
+          ? 'confirmed' : 'pending',
+      refund: const {'amount': '19.000000000000000001', 'tx_hash': '0xrefund-proof'},
+    );
+  }
 }
 
 final class _RejectedTransferRepository implements FundingRepository {

@@ -19,20 +19,109 @@ import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/domain/models/resource_result.dart';
 import 'package:nobell/domain/repositories/bstocks_order_action_repository.dart';
 import 'package:nobell/domain/repositories/orders_repository.dart';
-import 'package:nobell/domain/services/embedded_wallet_transaction_sender.dart';
 import 'package:nobell/domain/services/wallet_authorization_signer.dart';
 import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
-import 'package:nobell/data/services/bstocks_sponsored_execution_journal.dart';
+import 'package:nobell/data/services/bstocks_execution_journal.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  for (final sponsored in [false, true]) {
+  test('new native execution signs current GET and submits only authorization', () async {
+    final action = _action(
+      orderId: 'order-1', stepId: 'swap-1',
+      kind: BstocksOrderActionKind.executeIocOrder,
+    );
+    final current = _order('order-1', action: action);
+    final executions = _Executions(action, [
+      _execution(action, WalletActionExecutionState.awaitingUserAuthorization),
+    ]);
+    final signer = _Signer();
+    final actions = _Actions();
+    final result = await BstocksOrderExecutionRepositoryImpl(
+      _ScriptedOrders(initial: current, refreshes: [
+        current, _order('order-1', status: TradingOrderStatus.filled),
+      ]),
+      actions, executions: executions, authorizationSigner: signer,
+    ).executeExisting(order: ResourceResult(resource: current));
+    expect(result.resource.status, TradingOrderStatus.filled);
+    expect(executions.createModes, [GasPaymentMode.userPaidNative]);
+    expect(executions.getIds, ['execution-1']);
+    expect(signer.requests.single.headers['payload'], 'current');
+    expect(signer.requests.single.sponsor, isFalse);
+    expect(signer.requests.single.transaction.nonce, '0xa');
+    expect(executions.submitSignatures, ['signature']);
+    expect(actions.transactionHashes, isEmpty);
+  });
+
+  for (final invalid in [
+    'legacy provider', 'missing nonce', 'noncanonical nonce',
+    'frozen nonce', 'authorized nonce', 'noncanonical hex',
+    'sponsor', 'authorized call', 'signed body',
+    'dispatching', 'rejected', 'voided', 'cancelled',
+  ]) {
+    test('native $invalid cannot grant signing authority', () async {
+      final action = _action(
+        orderId: 'order-1', stepId: 'swap-1',
+        kind: BstocksOrderActionKind.executeIocOrder,
+      );
+      final current = _order('order-1', action: action);
+      final execution = _execution(
+        action, WalletActionExecutionState.awaitingUserAuthorization,
+        provider: invalid == 'legacy provider' ? 'user_wallet' : 'privy_native',
+        nativeNonce: invalid == 'missing nonce' ? null
+            : invalid == 'noncanonical nonce' ? '010' : '10',
+        frozenNonce: invalid == 'frozen nonce' ? '11' : '10',
+        authorizedNonce: invalid == 'authorized nonce' ? '0xb'
+            : invalid == 'noncanonical hex' ? '0x0a' : '0xa',
+        sponsor: invalid == 'sponsor',
+        authorizedTo: invalid == 'authorized call' ? action.from : null,
+        bodyTo: invalid == 'signed body' ? action.from : null,
+        deliveryState: const {'dispatching', 'rejected', 'voided', 'cancelled'}
+            .contains(invalid) ? invalid : 'prepared',
+      );
+      final executions = _Executions(action, [execution]);
+      final signer = _Signer();
+      await expectLater(
+        BstocksOrderExecutionRepositoryImpl(
+          _ScriptedOrders(initial: current, refreshes: [current]),
+          _Actions(), executions: executions, authorizationSigner: signer,
+        ).executeExisting(order: ResourceResult(resource: current)),
+        throwsA(isA<CompatibilityFailure>()),
+      );
+      expect(signer.requests, isEmpty);
+      expect(executions.submitCalls, 0);
+      expect(executions.createModes, [GasPaymentMode.userPaidNative]);
+    });
+  }
+
+  test('native gas refusal does not create a fallback execution', () async {
+    final action = _action(
+      orderId: 'order-1', stepId: 'swap-1',
+      kind: BstocksOrderActionKind.executeIocOrder,
+    );
+    final current = _order('order-1', action: action);
+    final executions = _Executions(action, [
+      _execution(action, WalletActionExecutionState.userGasConfirmationRequired),
+    ]);
+    final signer = _Signer();
+    await expectLater(
+      BstocksOrderExecutionRepositoryImpl(
+        _ScriptedOrders(initial: current, refreshes: [current]),
+        _Actions(), executions: executions, authorizationSigner: signer,
+      ).executeExisting(order: ResourceResult(resource: current)),
+      throwsA(isA<UnknownFailure>()),
+    );
+    expect(executions.createModes, [GasPaymentMode.userPaidNative]);
+    expect(signer.requests, isEmpty);
+    expect(executions.submitCalls, 0);
+  });
+
+  for (final mode in GasPaymentMode.values) {
     test(
-      'cancellation during ${sponsored ? 'authorization' : 'broadcast'} persistence sends nothing and permits retry',
+      'cancellation during $mode authorization persistence sends nothing and permits retry',
       () async {
         var cancelled = false;
         final originalStore = SharedPreferencesStorePlatform.instance;
@@ -56,27 +145,32 @@ void main() {
           ],
         );
         final actions = _Actions();
-        final sender = _Sender();
         final signer = _Signer();
         final executions = _Executions(action, [
           _execution(
             action,
             WalletActionExecutionState.awaitingUserAuthorization,
+            mode: mode,
           ),
           _execution(
             action,
             WalletActionExecutionState.awaitingUserAuthorization,
+            mode: mode,
           ),
         ]);
+        if (mode == GasPaymentMode.appSponsored) {
+          await BstocksExecutionJournal.persistent().saveExecutionId(
+            action, 'execution-1',
+          );
+        }
         BstocksOrderExecutionRepositoryImpl repository() =>
             BstocksOrderExecutionRepositoryImpl(
               orders,
               actions,
-              sponsored ? null : sender,
-              sponsoredExecutions: sponsored ? executions : null,
-              authorizationSigner: sponsored ? signer : null,
+              executions: executions,
+              authorizationSigner: signer,
               broadcastJournal: BstocksBroadcastJournal.persistent(),
-              sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+              executionJournal: BstocksExecutionJournal.persistent(),
             );
         await expectLater(
           repository().executeExisting(
@@ -86,7 +180,6 @@ void main() {
           throwsA(isA<CancelledFailure>()),
         );
         expect(store.markerWrites, 1);
-        expect(sender.steps, isEmpty);
         expect(executions.submitCalls, 0);
         expect(actions.steps, isEmpty);
         expect(
@@ -94,7 +187,7 @@ void main() {
           isNull,
         );
         expect(
-          await BstocksSponsoredExecutionJournal.persistent().submissionStarted(
+          await BstocksExecutionJournal.persistent().submissionStarted(
             'execution-1',
           ),
           isFalse,
@@ -107,62 +200,33 @@ void main() {
           order: ResourceResult(resource: current),
         );
         expect(result.resource.status, TradingOrderStatus.filled);
-        expect(sender.steps, hasLength(sponsored ? 0 : 1));
-        expect(executions.submitCalls, sponsored ? 1 : 0);
-        if (sponsored) expect(executions.createKeys, hasLength(1));
+        expect(executions.submitCalls, 1);
+        expect(executions.createModes,
+            mode == GasPaymentMode.userPaidNative ? [mode] : isEmpty);
       },
     );
   }
 
-  test(
-    'cancellation while broadcast is in flight preserves its hash for recovery',
-    () async {
-      var cancelled = false;
-      final action = _action(
-        orderId: 'order-1',
-        stepId: 'swap-1',
-        kind: BstocksOrderActionKind.executeIocOrder,
-      );
-      final current = _order('order-1', action: action);
-      final orders = _ScriptedOrders(
-        initial: current,
-        refreshes: [
-          current,
-          current,
-          _order('order-1', status: TradingOrderStatus.filled),
-        ],
-      );
-      final actions = _Actions();
-      final sender = _PendingSender();
-      BstocksOrderExecutionRepositoryImpl repository() =>
-          BstocksOrderExecutionRepositoryImpl(
-            orders,
-            actions,
-            sender,
-            broadcastJournal: BstocksBroadcastJournal.persistent(),
-          );
-      final request = repository().executeExisting(
-        order: ResourceResult(resource: current),
-        isCancelled: () => cancelled,
-      );
-      final assertion = expectLater(request, throwsA(isA<CancelledFailure>()));
-      await sender.started.future;
-      cancelled = true;
-      sender.result.complete('0x${'ab' * 32}');
-      await assertion;
-      expect(actions.steps, isEmpty);
-      await (await SharedPreferences.getInstance()).reload();
-      expect(
-        await BstocksBroadcastJournal.persistent().transactionHash(action),
-        '0x${'ab' * 32}',
-      );
-      await repository().executeExisting(
-        order: ResourceResult(resource: current),
-      );
-      expect(sender.calls, 1);
-      expect(actions.transactionHashes, ['0x${'ab' * 32}']);
-    },
-  );
+  test('historical pending broadcast blocks new native authorization', () async {
+    final action = _action(
+      orderId: 'order-1', stepId: 'swap-1',
+      kind: BstocksOrderActionKind.executeIocOrder,
+    );
+    await _saveHistoricalHash(action, '');
+    final current = _order('order-1', action: action);
+    final executions = _Executions();
+    final signer = _Signer();
+    await expectLater(
+      BstocksOrderExecutionRepositoryImpl(
+        _ScriptedOrders(initial: current, refreshes: [current]),
+        _Actions(), executions: executions, authorizationSigner: signer,
+        broadcastJournal: BstocksBroadcastJournal.persistent(),
+      ).executeExisting(order: ResourceResult(resource: current)),
+      throwsA(isA<UnknownFailure>()),
+    );
+    expect(executions.createKeys, isEmpty);
+    expect(signer.requests, isEmpty);
+  });
 
   test('cancellation after authorization POST begins keeps unknown submission locked', () async {
     var cancelled = false;
@@ -194,12 +258,11 @@ void main() {
         BstocksOrderExecutionRepositoryImpl(
           orders,
           _Actions(),
-          null,
-          sponsoredExecutions: executions,
+          executions: executions,
           authorizationSigner: signer,
-          sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
-          sponsoredReconciliationAttempts: 2,
-          sponsoredReconciliationDelay: Duration.zero,
+          executionJournal: BstocksExecutionJournal.persistent(),
+          reconciliationAttempts: 2,
+          reconciliationDelay: Duration.zero,
         );
     final assertion = expectLater(
       repository().executeExisting(
@@ -214,7 +277,7 @@ void main() {
     await assertion;
     await (await SharedPreferences.getInstance()).reload();
     expect(
-      await BstocksSponsoredExecutionJournal.persistent().submissionStarted(
+      await BstocksExecutionJournal.persistent().submissionStarted(
         'execution-1',
       ),
       isTrue,
@@ -256,10 +319,9 @@ void main() {
           BstocksOrderExecutionRepositoryImpl(
             orders,
             _Actions(),
-            null,
-            sponsoredExecutions: executions,
+            executions: executions,
             authorizationSigner: signer,
-            sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+            executionJournal: BstocksExecutionJournal.persistent(),
           );
       await expectLater(
         repository().executeExisting(
@@ -273,7 +335,7 @@ void main() {
       expect(executions.submitCalls, 0);
       await (await SharedPreferences.getInstance()).reload();
       expect(
-        await BstocksSponsoredExecutionJournal.persistent().executionId(action),
+        await BstocksExecutionJournal.persistent().executionId(action),
         'execution-1',
       );
       await repository().executeExisting(
@@ -314,8 +376,7 @@ void main() {
         final repository = BstocksOrderExecutionRepositoryImpl(
           orders,
           _Actions()..currentAction = action,
-          null,
-          sponsoredExecutions: executions,
+          executions: executions,
           authorizationSigner: signer,
         );
         final container = ProviderContainer(
@@ -352,7 +413,8 @@ void main() {
       BstocksOrderExecutionRepositoryImpl(
         orders,
         _Actions(),
-        _Sender(),
+        executions: _Executions(),
+        authorizationSigner: _RecordingSigner(),
       ).cancelOrder('order-1', isCancelled: () => cancelled),
       throwsA(isA<CancelledFailure>()),
     );
@@ -392,10 +454,9 @@ void main() {
             BstocksOrderExecutionRepositoryImpl(
               orders,
               _Actions(),
-              null,
-              sponsoredExecutions: executions,
+              executions: executions,
               authorizationSigner: signer,
-              sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+              executionJournal: BstocksExecutionJournal.persistent(),
             );
         await expectLater(
           repository().executeExisting(
@@ -404,7 +465,7 @@ void main() {
           throwsA(same(failure)),
         );
         expect(
-          await BstocksSponsoredExecutionJournal.persistent().submissionStarted(
+          await BstocksExecutionJournal.persistent().submissionStarted(
             'execution-1',
           ),
           isFalse,
@@ -456,12 +517,11 @@ void main() {
             BstocksOrderExecutionRepositoryImpl(
               orders,
               _Actions(),
-              null,
-              sponsoredExecutions: executions,
+              executions: executions,
               authorizationSigner: signer,
-              sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
-              sponsoredReconciliationAttempts: 1,
-              sponsoredReconciliationDelay: Duration.zero,
+              executionJournal: BstocksExecutionJournal.persistent(),
+              reconciliationAttempts: 1,
+              reconciliationDelay: Duration.zero,
             );
         await expectLater(
           repository().executeExisting(
@@ -470,7 +530,7 @@ void main() {
           throwsA(isA<UnknownFailure>()),
         );
         expect(
-          await BstocksSponsoredExecutionJournal.persistent().submissionStarted(
+          await BstocksExecutionJournal.persistent().submissionStarted(
             'execution-1',
           ),
           isTrue,
@@ -507,13 +567,14 @@ void main() {
           initial: stale,
           refreshes: [_order('order-1', status: status)],
         );
-        final sender = _Sender();
+        final sender = _RecordingSigner();
         final actions = _Actions();
         final request =
             BstocksOrderExecutionRepositoryImpl(
               orders,
               actions,
-              sender,
+              executions: _Executions(),
+              authorizationSigner: sender,
             ).execute(
               intent: _intent(),
               created: ResourceResult(resource: stale),
@@ -546,12 +607,13 @@ void main() {
           kind: stale.kind,
           status: BstocksOrderActionStatus.manualReview,
         );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       await expectLater(
         BstocksOrderExecutionRepositoryImpl(
           _ScriptedOrders(initial: current, refreshes: [current]),
           actions,
-          sender,
+          executions: _Executions(),
+          authorizationSigner: sender,
         ).executeExisting(order: ResourceResult(resource: current)),
         throwsA(isA<UnknownFailure>()),
       );
@@ -579,11 +641,12 @@ void main() {
                 kind: BstocksOrderActionKind.cancelOrder,
               ),
             );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final result = await BstocksOrderExecutionRepositoryImpl(
         orders,
         _Actions(),
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).cancelOrder('order-1');
       expect(result.resource.status, TradingOrderStatus.cancelled);
       expect(sender.steps, isEmpty);
@@ -600,7 +663,7 @@ void main() {
     WalletActionExecutionState.failed,
   ]) {
     test(
-      'sponsored replay reads current $status without signing again',
+      'execution replay reads current $status without signing again',
       () async {
         final action = _action(
           orderId: 'order-1',
@@ -619,8 +682,7 @@ void main() {
             ],
           ),
           _Actions(),
-          null,
-          sponsoredExecutions: executions,
+          executions: executions,
           authorizationSigner: signer,
         ).executeExisting(order: ResourceResult(resource: current));
         if ([
@@ -640,7 +702,7 @@ void main() {
   }
 
   test(
-    'lost sponsored submission is reconciled without reconstruction',
+    'lost relay submission is reconciled without reconstruction',
     () async {
       final action = _action(
         orderId: 'order-1',
@@ -669,12 +731,11 @@ void main() {
           BstocksOrderExecutionRepositoryImpl(
             orders,
             _Actions(),
-            null,
-            sponsoredExecutions: executions,
+            executions: executions,
             authorizationSigner: signer,
-            sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
-            sponsoredReconciliationAttempts: 2,
-            sponsoredReconciliationDelay: Duration.zero,
+            executionJournal: BstocksExecutionJournal.persistent(),
+            reconciliationAttempts: 2,
+            reconciliationDelay: Duration.zero,
           );
       final result = await repository().executeExisting(
         order: ResourceResult(resource: current),
@@ -688,7 +749,7 @@ void main() {
   );
 
   test(
-    'uncertain sponsored submission cannot re-sign an awaiting snapshot',
+    'uncertain relay submission cannot re-sign an awaiting snapshot',
     () async {
       final action = _action(
         orderId: 'order-1',
@@ -696,7 +757,7 @@ void main() {
         kind: BstocksOrderActionKind.executeIocOrder,
       );
       final current = _order('order-1', action: action);
-      final journal = BstocksSponsoredExecutionJournal.persistent();
+      final journal = BstocksExecutionJournal.persistent();
       await journal.saveExecutionId(action, 'execution-1');
       await journal.markSubmissionStarted('execution-1');
       final executions = _Executions(action, [
@@ -710,12 +771,11 @@ void main() {
         BstocksOrderExecutionRepositoryImpl(
           _ScriptedOrders(initial: current, refreshes: [current]),
           _Actions(),
-          null,
-          sponsoredExecutions: executions,
+          executions: executions,
           authorizationSigner: signer,
-          sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
-          sponsoredReconciliationAttempts: 1,
-          sponsoredReconciliationDelay: Duration.zero,
+          executionJournal: BstocksExecutionJournal.persistent(),
+          reconciliationAttempts: 1,
+          reconciliationDelay: Duration.zero,
         ).executeExisting(order: ResourceResult(resource: current)),
         throwsA(isA<UnknownFailure>()),
       );
@@ -725,7 +785,7 @@ void main() {
   );
 
   test(
-    'lost sponsored response is reconciled immediately when GET succeeds',
+    'lost relay response is reconciled immediately when GET succeeds',
     () async {
       final action = _action(
         orderId: 'order-1',
@@ -750,8 +810,7 @@ void main() {
           ],
         ),
         _Actions(),
-        null,
-        sponsoredExecutions: executions,
+        executions: executions,
         authorizationSigner: signer,
       ).executeExisting(order: ResourceResult(resource: current));
       expect(result.resource.status, TradingOrderStatus.filled);
@@ -762,7 +821,7 @@ void main() {
 
   for (final hidden in [false, true]) {
     test(
-      'saved sponsored execution is observed with a blocker (hidden=$hidden)',
+      'saved execution is observed with a blocker (hidden=$hidden)',
       () async {
         final action = _action(
           orderId: 'order-1',
@@ -775,7 +834,7 @@ void main() {
           currentActionId: action.actionId,
           walletActionBlocker: 'orderInFlight',
         );
-        final journal = BstocksSponsoredExecutionJournal.persistent();
+        final journal = BstocksExecutionJournal.persistent();
         await journal.saveExecutionId(action, 'execution-1');
         await journal.markSubmissionStarted('execution-1');
         final executions = _Executions(action, [
@@ -791,10 +850,9 @@ void main() {
             ],
           ),
           _Actions()..currentAction = action,
-          null,
-          sponsoredExecutions: executions,
+          executions: executions,
           authorizationSigner: signer,
-          sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+          executionJournal: BstocksExecutionJournal.persistent(),
         ).executeExisting(order: ResourceResult(resource: current));
         expect(result.resource.status, TradingOrderStatus.filled);
         expect(executions.getIds, ['execution-1']);
@@ -836,11 +894,10 @@ void main() {
           await BstocksOrderExecutionRepositoryImpl(
             _ScriptedOrders(initial: current, refreshes: [current, approved]),
             _Actions()..currentAction = approval,
-            null,
-            sponsoredExecutions: executions,
+            executions: executions,
             authorizationSigner: signer,
-            sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
-            sponsoredReconciliationDelay: Duration.zero,
+            executionJournal: BstocksExecutionJournal.persistent(),
+            reconciliationDelay: Duration.zero,
           ).execute(
             intent: _intent(),
             created: ResourceResult(resource: current),
@@ -866,12 +923,11 @@ void main() {
       action: action,
       walletActionBlocker: 'orderInFlight',
     );
-    final journal = BstocksSponsoredExecutionJournal.persistent();
+    final journal = BstocksExecutionJournal.persistent();
     await journal.saveExecutionId(action, 'execution-1');
     final executions = _Executions(action, [
       _execution(action, WalletActionExecutionState.providerSubmitted),
     ]);
-    final sender = _Sender();
     final result = await BstocksOrderExecutionRepositoryImpl(
       _ScriptedOrders(
         initial: current,
@@ -881,13 +937,11 @@ void main() {
         ],
       ),
       _Actions()..currentAction = action,
-      sender,
-      sponsoredExecutions: executions,
-      sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+      executions: executions,
+      executionJournal: BstocksExecutionJournal.persistent(),
     ).executeExisting(order: ResourceResult(resource: current));
     expect(result.resource.status, TradingOrderStatus.filled);
     expect(executions.getIds, ['execution-1']);
-    expect(sender.steps, isEmpty);
   });
   test(
     'a stale continuation response cannot restore signing permission',
@@ -912,12 +966,13 @@ void main() {
           kind: BstocksOrderActionKind.executeIocOrder,
           status: BstocksOrderActionStatus.submitted,
         );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final result =
           await BstocksOrderExecutionRepositoryImpl(
             orders,
             actions,
-            sender,
+            executions: _Executions(),
+            authorizationSigner: sender,
           ).continueOrder(
             intent: _intent(),
             orderId: 'order-1',
@@ -936,7 +991,7 @@ void main() {
     TradingOrderStatus.ambiguous,
   ]) {
     test('order $status cannot bypass action failure checks', () async {
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       await expectLater(
         BstocksOrderExecutionRepositoryImpl(
           _ScriptedOrders(
@@ -944,7 +999,8 @@ void main() {
             refreshes: [_order('order-1', status: status)],
           ),
           _Actions(),
-          sender,
+          executions: _Executions(),
+          authorizationSigner: sender,
         ).executeExisting(
           order: ResourceResult(resource: _order('order-1', status: status)),
         ),
@@ -976,12 +1032,11 @@ void main() {
         ],
       );
       final actions = _Actions()..submitFailure = const NetworkFailure();
-      final sender = _Sender();
+      await _saveHistoricalHash(action, '0xoriginal');
       await expectLater(
         BstocksOrderExecutionRepositoryImpl(
           orders,
           actions,
-          sender,
           broadcastJournal: BstocksBroadcastJournal.persistent(),
         ).cancelOrder('order-1'),
         throwsA(isA<NetworkFailure>()),
@@ -989,10 +1044,8 @@ void main() {
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        null,
         broadcastJournal: BstocksBroadcastJournal.persistent(),
       ).cancelOrder('order-1');
-      expect(sender.steps, hasLength(1));
       expect(actions.transactionHashes, hasLength(2));
       expect(actions.transactionHashes.toSet(), hasLength(1));
     },
@@ -1006,10 +1059,7 @@ void main() {
         stepId: 'swap-1',
         kind: BstocksOrderActionKind.executeIocOrder,
       );
-      await BstocksBroadcastJournal.persistent().broadcast(
-        action,
-        () async => '0xoriginal',
-      );
+      await _saveHistoricalHash(action, '0xoriginal');
       final orders = _ScriptedOrders(
         initial: _order('order-1'),
         refreshes: [
@@ -1022,7 +1072,6 @@ void main() {
           await BstocksOrderExecutionRepositoryImpl(
             orders,
             actions,
-            null,
             broadcastJournal: BstocksBroadcastJournal.persistent(),
           ).executeExisting(
             order: ResourceResult(
@@ -1036,7 +1085,7 @@ void main() {
   );
 
   test('a blocker prevents a fresh wallet broadcast', () async {
-    final sender = _Sender();
+    final sender = _RecordingSigner();
     final actions = _Actions();
     await expectLater(
       BstocksOrderExecutionRepositoryImpl(
@@ -1055,7 +1104,8 @@ void main() {
           ],
         ),
         actions,
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).executeExisting(
         order: ResourceResult(
           resource: _order(
@@ -1084,10 +1134,7 @@ void main() {
         kind: BstocksOrderActionKind.executeIocOrder,
         validUntil: DateTime.utc(2020),
       );
-      await BstocksBroadcastJournal.persistent().broadcast(
-        action,
-        () async => '0xoriginal',
-      );
+      await _saveHistoricalHash(action, '0xoriginal');
       final actions = _Actions()..currentAction = action;
       final result =
           await BstocksOrderExecutionRepositoryImpl(
@@ -1103,7 +1150,6 @@ void main() {
               ],
             ),
             actions,
-            null,
             broadcastJournal: BstocksBroadcastJournal.persistent(),
           ).executeExisting(
             order: ResourceResult(
@@ -1125,7 +1171,7 @@ void main() {
       stepId: 'swap-1',
       kind: BstocksOrderActionKind.executeIocOrder,
     );
-    final sender = _Sender();
+    final sender = _RecordingSigner();
     await expectLater(
       BstocksOrderExecutionRepositoryImpl(
         _ScriptedOrders(
@@ -1136,7 +1182,8 @@ void main() {
           ],
         ),
         _Actions(),
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).executeExisting(
         order: ResourceResult(resource: _order('order-1', action: action)),
       ),
@@ -1160,12 +1207,13 @@ void main() {
         final current = _order('order-1', action: action);
         final orders = _ScriptedOrders(initial: current, refreshes: [current]);
         final actions = _Actions()..createdAction = action;
-        final sender = _Sender();
+        final sender = _RecordingSigner();
         await expectLater(
           BstocksOrderExecutionRepositoryImpl(
             orders,
             actions,
-            sender,
+            executions: _Executions(),
+            authorizationSigner: sender,
           ).continueOrder(
             intent: _intent(),
             orderId: 'order-1',
@@ -1198,12 +1246,13 @@ void main() {
       ],
     );
     final actions = _Actions()..createdAction = approval;
-    final sender = _Sender();
+    final sender = _RecordingSigner();
     final result =
         await BstocksOrderExecutionRepositoryImpl(
           orders,
           actions,
-          sender,
+          executions: _Executions(),
+          authorizationSigner: sender,
         ).continueOrder(
           intent: _intent(),
           orderId: 'order-1',
@@ -1214,7 +1263,7 @@ void main() {
     expect(result.resource.status, TradingOrderStatus.awaitingConfirmation);
     expect(actions.createdPreviewIds, ['preview-2']);
     expect(sender.steps, hasLength(1));
-    expect(actions.steps, ['approval-2']);
+    expect(actions.steps, isEmpty);
     expect(orders.createCalls, 0);
   });
 
@@ -1251,14 +1300,16 @@ void main() {
         BstocksOrderExecutionRepositoryImpl(
           orders,
           actions,
-          _Sender(),
+          executions: _Executions(),
+          authorizationSigner: _RecordingSigner(),
         ).cancelOrder('order-1'),
         throwsA(isA<NetworkFailure>()),
       );
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        _Sender(),
+        executions: _Executions(),
+        authorizationSigner: _RecordingSigner(),
       ).cancelOrder('order-1');
       expect(orders.cancelKeys, [
         scopedIdempotencyKey('bstocks-cancel-order-1'),
@@ -1292,20 +1343,22 @@ void main() {
         BstocksOrderExecutionRepositoryImpl(
           orders,
           _Actions(),
-          _RejectingSender(),
+          executions: _Executions(),
+          authorizationSigner: _RejectingSigner(),
         ).cancelOrder('order-1'),
         throwsA(isA<CancelledFailure>()),
       );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final actions = _Actions();
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).cancelOrder('order-1');
       expect(orders.cancelKeys, isEmpty);
       expect(sender.steps, hasLength(1));
-      expect(actions.steps, ['cancel-1']);
+      expect(actions.steps, isEmpty);
     },
   );
 
@@ -1339,16 +1392,17 @@ void main() {
               statusCode: 409,
               code: 'cancellation_in_progress',
             );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final actions = _Actions()..currentAction = cancel;
       final result = await BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).cancelOrder('order-1');
       expect(result.resource.status, TradingOrderStatus.cancelled);
       expect(sender.steps, hasLength(1));
-      expect(actions.steps, ['legacy-cancel']);
+      expect(actions.steps, isEmpty);
       expect(orders.cancelKeys, hasLength(1));
     },
   );
@@ -1382,7 +1436,7 @@ void main() {
             action: next,
             status: TradingOrderStatus.open,
           );
-    final sender = _Sender();
+    final sender = _RecordingSigner();
     final actions = _Actions()
       ..currentAction = _action(
         orderId: old.orderId,
@@ -1393,14 +1447,15 @@ void main() {
     await BstocksOrderExecutionRepositoryImpl(
       orders,
       actions,
-      sender,
+      executions: _Executions(),
+      authorizationSigner: sender,
     ).cancelOrder('order-1');
     expect(
       orders.cancelKeys.single,
       scopedIdempotencyKey('bstocks-cancel-order-1-after-cancel-old'),
     );
     expect(sender.steps, hasLength(1));
-    expect(actions.steps, ['cancel-new']);
+    expect(actions.steps, isEmpty);
   });
 
   for (final status in [
@@ -1430,12 +1485,13 @@ void main() {
           ],
         );
         final actions = _Actions()..currentAction = cancel;
-        final sender = _Sender();
+        final sender = _RecordingSigner();
         final request =
             BstocksOrderExecutionRepositoryImpl(
               orders,
               actions,
-              sender,
+              executions: _Executions(),
+              authorizationSigner: sender,
             ).executeExisting(
               order: ResourceResult(
                 resource: _order(
@@ -1486,11 +1542,12 @@ void main() {
           kind: BstocksOrderActionKind.cancelOrder,
           status: status,
         );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final request = BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).cancelOrder('order-1');
       if (status == BstocksOrderActionStatus.submitted) {
         expect((await request).resource.status, TradingOrderStatus.cancelled);
@@ -1525,12 +1582,13 @@ void main() {
           _order('order-1', status: TradingOrderStatus.cancelled),
         ],
       );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
       final actions = _Actions()..currentAction = action;
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         actions,
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).cancelOrder('order-1');
       expect(sender.steps, isEmpty);
       expect(actions.steps, ['cancel-1']);
@@ -1564,13 +1622,14 @@ void main() {
         ],
       );
       final actions = _Actions();
-      final sender = _Sender();
+      final sender = _RecordingSigner();
 
       final result =
           await BstocksOrderExecutionRepositoryImpl(
             orders,
             actions,
-            sender,
+            executions: _Executions(),
+            authorizationSigner: sender,
           ).execute(
             intent: _intent(),
             created: ResourceResult(resource: orders.initial),
@@ -1581,7 +1640,7 @@ void main() {
       expect(result.resource.orderId, 'order-1');
       expect(result.resource.status, TradingOrderStatus.awaitingConfirmation);
       expect(sender.steps, ['approval-1']);
-      expect(actions.steps, ['approval-1']);
+      expect(actions.steps, isEmpty);
       expect(orders.createCalls, 0);
     },
   );
@@ -1606,12 +1665,13 @@ void main() {
           _order('order-1', status: TradingOrderStatus.filled),
         ],
       );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
 
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         _Actions(),
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).execute(
         intent: _intent(),
         created: ResourceResult(resource: orders.initial),
@@ -1635,13 +1695,14 @@ void main() {
         _order('order-1', status: TradingOrderStatus.open),
       ],
     );
-    final sender = _Sender();
+    final sender = _RecordingSigner();
 
     final result =
         await BstocksOrderExecutionRepositoryImpl(
           orders,
           _Actions(),
-          sender,
+          executions: _Executions(),
+          authorizationSigner: sender,
         ).execute(
           intent: _intent(),
           created: ResourceResult(resource: orders.initial),
@@ -1675,7 +1736,8 @@ void main() {
     final result = await BstocksOrderExecutionRepositoryImpl(
       orders,
       _Actions(),
-      _Sender(),
+      executions: _Executions(),
+      authorizationSigner: _RecordingSigner(),
     ).executeExisting(order: ResourceResult(resource: orders.initial));
 
     expect(result.resource.status, TradingOrderStatus.cancelled);
@@ -1705,13 +1767,14 @@ void main() {
       ],
     );
     final actions = _Actions();
-    final sender = _Sender();
+    final sender = _RecordingSigner();
 
     final result =
         await BstocksOrderExecutionRepositoryImpl(
           orders,
           actions,
-          sender,
+          executions: _Executions(),
+          authorizationSigner: sender,
         ).execute(
           intent: _intent(),
           created: ResourceResult(resource: orders.initial),
@@ -1721,7 +1784,7 @@ void main() {
 
     expect(result.resource.status, TradingOrderStatus.awaitingConfirmation);
     expect(sender.steps, ['approval-1']);
-    expect(actions.steps, ['approval-1']);
+    expect(actions.steps, isEmpty);
     expect(orders.createCalls, 0);
   });
 
@@ -1731,7 +1794,7 @@ void main() {
       stepId: 'swap-1',
       kind: BstocksOrderActionKind.executeIocOrder,
     );
-    final sender = _Sender();
+    final sender = _RecordingSigner();
 
     await expectLater(
       BstocksOrderExecutionRepositoryImpl(
@@ -1740,7 +1803,8 @@ void main() {
           refreshes: [_order('order-1', action: swap)],
         ),
         _Actions(),
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).execute(
         intent: _intent(),
         created: ResourceResult(resource: _order('order-1', action: swap)),
@@ -1768,12 +1832,13 @@ void main() {
           _order('order-1', status: TradingOrderStatus.filled),
         ],
       );
-      final sender = _Sender();
+      final sender = _RecordingSigner();
 
       await BstocksOrderExecutionRepositoryImpl(
         orders,
         _Actions(),
-        sender,
+        executions: _Executions(),
+        authorizationSigner: sender,
       ).execute(
         intent: _intent(),
         created: ResourceResult(resource: orders.initial),
@@ -1802,7 +1867,6 @@ void main() {
                 refreshes: [_order('order-1', action: action)],
               ),
               actions,
-              null,
             ).execute(
               intent: _intent(),
               created: ResourceResult(
@@ -2010,30 +2074,24 @@ final class _Actions implements BstocksOrderActionRepository {
   }
 }
 
-final class _RejectingSender implements EmbeddedWalletTransactionSender {
+final class _RejectingSigner implements WalletAuthorizationSigner {
   @override
-  Future<String> sendTransaction({
+  Future<String> signWalletAuthorization({
     required String expectedSigner,
-    required int chainId,
-    required String to,
-    required String data,
-    required String value,
+    required WalletAuthorizationRequest request,
   }) async => throw const CancelledFailure();
 }
 
-final class _Sender implements EmbeddedWalletTransactionSender {
+final class _RecordingSigner implements WalletAuthorizationSigner {
   final steps = <String>[];
 
   @override
-  Future<String> sendTransaction({
+  Future<String> signWalletAuthorization({
     required String expectedSigner,
-    required int chainId,
-    required String to,
-    required String data,
-    required String value,
+    required WalletAuthorizationRequest request,
   }) async {
-    steps.add(data == '0xaa' ? 'approval-1' : 'swap-1');
-    return '0x${'ab' * 32}';
+    steps.add(request.transaction.data == '0xaa' ? 'approval-1' : 'swap-1');
+    return 'signature';
   }
 }
 
@@ -2041,22 +2099,35 @@ WalletActionExecution _execution(
   BstocksOrderAction action,
   WalletActionExecutionState status, {
   String payload = 'current',
+  GasPaymentMode mode = GasPaymentMode.userPaidNative,
+  String provider = 'privy_native',
+  String? nativeNonce = '10',
+  String? frozenNonce = '10',
+  String? authorizedNonce = '0xa',
+  String deliveryState = 'prepared',
+  String? authorizedTo,
+  String? bodyTo,
+  bool? sponsor,
 }) => WalletActionExecution(
   executionId: 'execution-1',
   resourceId: action.orderId,
   chainId: action.chainId,
   walletAddress: action.from,
-  mode: GasPaymentMode.appSponsored,
+  mode: mode,
+  executionProvider: provider,
+  nativeNonce: mode == GasPaymentMode.userPaidNative ? nativeNonce : null,
+  nativeDeliveryState: mode == GasPaymentMode.userPaidNative ? deliveryState : null,
   status: status,
   transaction: FrozenTransaction(
     to: action.to,
     data: action.data,
     value: action.value,
+    nonce: mode == GasPaymentMode.userPaidNative ? frozenNonce : null,
   ),
   gasPayment: GasPaymentQuote(
-    mode: GasPaymentMode.appSponsored,
+    mode: mode,
     decision: GasSponsorshipDecision.eligible,
-    platformPays: true,
+    platformPays: mode == GasPaymentMode.appSponsored,
     nativeAsset: 'BNB',
     estimatedNativeFee: DecimalValue('0', asset: 'BNB', unit: 'token'),
     estimatedFeeUsd: DecimalValue('0', asset: 'USD', unit: 'usd'),
@@ -2069,15 +2140,30 @@ WalletActionExecution _execution(
           method: 'POST',
           url: 'https://api.privy.io/v1/wallets/wallet-1/rpc',
           headers: {'payload': payload},
-          body: const {},
+          body: {
+            'method': 'eth_sendTransaction',
+            'reference_id': 'execution-1',
+            'caip2': 'eip155:${action.chainId}',
+            'sponsor': sponsor ?? (mode == GasPaymentMode.appSponsored),
+            'params': {
+              'transaction': {
+                'from': action.from,
+                'to': bodyTo ?? authorizedTo ?? action.to,
+                'data': action.data,
+                'value': action.value,
+                if (mode == GasPaymentMode.userPaidNative) 'nonce': authorizedNonce,
+              },
+            },
+          },
           referenceId: 'execution-1',
-          sponsor: true,
+          sponsor: sponsor ?? (mode == GasPaymentMode.appSponsored),
           caip2: 'eip155:${action.chainId}',
           transaction: AuthorizedTransaction(
             from: action.from,
-            to: action.to,
+            to: authorizedTo ?? action.to,
             data: action.data,
             value: action.value,
+            nonce: mode == GasPaymentMode.userPaidNative ? authorizedNonce : null,
           ),
         )
       : null,
@@ -2085,9 +2171,10 @@ WalletActionExecution _execution(
 );
 
 final class _Executions implements WalletActionExecutionRepository {
-  _Executions(this.action, this.reads);
-  final BstocksOrderAction action;
+  _Executions([this.action, List<Object>? reads]) : reads = reads ?? [];
+  BstocksOrderAction? action;
   final List<Object> reads;
+  final createModes = <GasPaymentMode>[];
   final createKeys = <String>[];
   final getIds = <String>[];
   final submitKeys = <String>[];
@@ -2098,7 +2185,9 @@ final class _Executions implements WalletActionExecutionRepository {
   @override
   Future<WalletActionExecution> get(String executionId) async {
     getIds.add(executionId);
-    final next = reads.removeAt(0);
+    final next = reads.isEmpty
+        ? _execution(action!, WalletActionExecutionState.awaitingUserAuthorization)
+        : reads.removeAt(0);
     if (next is ApiFailure) throw next;
     return next as WalletActionExecution;
   }
@@ -2111,9 +2200,19 @@ final class _Executions implements WalletActionExecutionRepository {
     required String idempotencyKey,
   }) async {
     createKeys.add(idempotencyKey);
+    createModes.add(mode);
+    action ??= _action(
+      orderId: orderId,
+      stepId: actionId,
+      kind: actionId.startsWith('approval')
+          ? BstocksOrderActionKind.erc20Approval
+          : actionId.contains('cancel')
+              ? BstocksOrderActionKind.cancelOrder
+              : BstocksOrderActionKind.executeIocOrder,
+    );
     onCreate?.call();
     return _execution(
-      action,
+      action!,
       WalletActionExecutionState.awaitingUserAuthorization,
       payload: 'stale',
     );
@@ -2130,7 +2229,7 @@ final class _Executions implements WalletActionExecutionRepository {
     submitSignatures.add(signature);
     await beforeSubmit?.call();
     if (submitFailure case final failure?) throw failure;
-    return _execution(action, WalletActionExecutionState.providerSubmitted);
+    return _execution(action!, WalletActionExecutionState.providerSubmitted);
   }
 
   @override
@@ -2148,8 +2247,7 @@ final class _MarkerStore extends InMemorySharedPreferencesStore {
 
   @override
   Future<bool> setValue(String valueType, String key, Object value) async {
-    if (key.startsWith('flutter.bstocks.broadcast.') && value == '' ||
-        key.startsWith('flutter.bstocks.execution.submitted.')) {
+    if (key.startsWith('flutter.bstocks.execution.submitted.')) {
       markerWrites++;
       onMarker?.call();
     }
@@ -2157,23 +2255,13 @@ final class _MarkerStore extends InMemorySharedPreferencesStore {
   }
 }
 
-final class _PendingSender implements EmbeddedWalletTransactionSender {
-  final started = Completer<void>();
-  final result = Completer<String>();
-  int calls = 0;
-
-  @override
-  Future<String> sendTransaction({
-    required String expectedSigner,
-    required int chainId,
-    required String to,
-    required String data,
-    required String value,
-  }) {
-    calls++;
-    started.complete();
-    return result.future;
-  }
+Future<void> _saveHistoricalHash(BstocksOrderAction action, String hash) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(
+    'bstocks.broadcast.${action.chainId}.${action.from.toLowerCase()}.'
+    '${action.orderId}.${action.actionId}',
+    hash,
+  );
 }
 
 final class _PendingSigner implements WalletAuthorizationSigner {

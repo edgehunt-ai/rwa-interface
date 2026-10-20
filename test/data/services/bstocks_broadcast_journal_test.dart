@@ -8,95 +8,40 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('broadcast hash survives journal reconstruction', () async {
-    var sends = 0;
-    Future<String> send() async {
-      sends++;
-      return '0xhash';
-    }
-
-    await BstocksBroadcastJournal.persistent().broadcast(_action, send);
-    expect(
-      await BstocksBroadcastJournal.persistent().broadcast(_action, send),
-      '0xhash',
-    );
-    expect(sends, 1);
-  });
-
-  test(
-    'unknown wallet outcome blocks rebroadcast after reconstruction',
-    () async {
-      var sends = 0;
-      Future<String> send() async {
-        sends++;
-        throw const NetworkFailure();
-      }
-
-      await expectLater(
-        BstocksBroadcastJournal.persistent().broadcast(_action, send),
-        throwsA(isA<NetworkFailure>()),
-      );
-      await expectLater(
-        BstocksBroadcastJournal.persistent().broadcast(_action, send),
-        throwsA(isA<UnknownFailure>()),
-      );
-      expect(sends, 1);
-    },
-  );
-
-  test('explicit rejection permits a later wallet request', () async {
-    await expectLater(
-      BstocksBroadcastJournal.persistent().broadcast(
-        _action,
-        () async => throw const CancelledFailure(),
-      ),
-      throwsA(isA<CancelledFailure>()),
-    );
-    expect(
-      await BstocksBroadcastJournal.persistent().broadcast(
-        _action,
-        () async => '0xhash',
-      ),
-      '0xhash',
-    );
-  });
-
-  test(
-    'a proven pre-broadcast failure permits retry after reconstruction',
-    () async {
-      await expectLater(
-        BstocksBroadcastJournal.persistent().broadcast(
-          _action,
-          () async =>
-              throw const WalletTransactionNotBroadcastFailure(retryable: true),
-        ),
-        throwsA(isA<WalletTransactionNotBroadcastFailure>()),
-      );
+  test('historical hash remains read-only across reconstruction', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, '0xhash');
+    for (var attempt = 0; attempt < 2; attempt++) {
       expect(
-        await BstocksBroadcastJournal.persistent().broadcast(
-          _action,
-          () async => '0xhash',
-        ),
+        await BstocksBroadcastJournal.persistent().transactionHash(_action),
         '0xhash',
       );
-    },
-  );
-
-  test('concurrent recovery callers share one broadcast', () async {
-    final journal = BstocksBroadcastJournal.persistent();
-    var sends = 0;
-    Future<String> send() async {
-      sends++;
-      return '0xhash';
     }
+    expect(prefs.getString(_key), '0xhash');
+  });
 
-    final hashes = await Future.wait(
-      List.generate(5, (_) => journal.broadcast(_action, send)),
+  test('historical pending marker cannot authorize a new relay', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, '');
+    for (var attempt = 0; attempt < 2; attempt++) {
+      await expectLater(
+        BstocksBroadcastJournal.persistent().transactionHash(_action),
+        throwsA(isA<UnknownFailure>()),
+      );
+    }
+    expect(prefs.getString(_key), '');
+  });
+
+  test('missing history does not write a broadcast marker', () async {
+    expect(
+      await BstocksBroadcastJournal.persistent().transactionHash(_action),
+      isNull,
     );
-    expect(hashes, everyElement('0xhash'));
-    expect(sends, 1);
+    expect((await SharedPreferences.getInstance()).containsKey(_key), isFalse);
   });
 }
+
+const _key = 'bstocks.broadcast.56.0x1.order-1.action-1';
 
 final _action = BstocksOrderAction(
   orderId: 'order-1',
