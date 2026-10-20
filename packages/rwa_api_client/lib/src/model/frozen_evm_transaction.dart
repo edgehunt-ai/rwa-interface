@@ -15,7 +15,6 @@ part 'frozen_evm_transaction.g.dart';
 /// * [to] 
 /// * [data] 
 /// * [value] - Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
-/// * [nonce] - Server-reserved native nonce in decimal. Null or absent for historical or sponsored executions.
 @BuiltValue()
 abstract class FrozenEvmTransaction implements Built<FrozenEvmTransaction, FrozenEvmTransactionBuilder> {
   @BuiltValueField(wireName: r'to')
@@ -28,10 +27,6 @@ abstract class FrozenEvmTransaction implements Built<FrozenEvmTransaction, Froze
   @BuiltValueField(wireName: r'value')
   FrozenEvmTransactionValueEnum get value;
   // enum valueEnum {  0x0,  };
-
-  /// Server-reserved native nonce in decimal. Null or absent for historical or sponsored executions.
-  @BuiltValueField(wireName: r'nonce')
-  String? get nonce;
 
   FrozenEvmTransaction._();
 
@@ -71,13 +66,6 @@ class _$FrozenEvmTransactionSerializer implements PrimitiveSerializer<FrozenEvmT
       object.value,
       specifiedType: const FullType(FrozenEvmTransactionValueEnum),
     );
-    if (object.nonce != null) {
-      yield r'nonce';
-      yield serializers.serialize(
-        object.nonce,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
   }
 
   @override
@@ -121,14 +109,6 @@ class _$FrozenEvmTransactionSerializer implements PrimitiveSerializer<FrozenEvmT
             specifiedType: const FullType(FrozenEvmTransactionValueEnum),
           ) as FrozenEvmTransactionValueEnum;
           result.value = valueDes;
-          break;
-        case r'nonce':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.nonce = valueDes;
           break;
         default:
           unhandled.add(key);

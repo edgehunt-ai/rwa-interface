@@ -8,8 +8,6 @@ part of 'wallet_action_execution_provider.dart';
 
 const WalletActionExecutionProvider _$privy =
     const WalletActionExecutionProvider._('privy');
-const WalletActionExecutionProvider _$privyNative =
-    const WalletActionExecutionProvider._('privyNative');
 const WalletActionExecutionProvider _$userWallet =
     const WalletActionExecutionProvider._('userWallet');
 
@@ -17,8 +15,6 @@ WalletActionExecutionProvider _$valueOf(String name) {
   switch (name) {
     case 'privy':
       return _$privy;
-    case 'privyNative':
-      return _$privyNative;
     case 'userWallet':
       return _$userWallet;
     default:
@@ -29,14 +25,12 @@ WalletActionExecutionProvider _$valueOf(String name) {
 final BuiltSet<WalletActionExecutionProvider> _$values = BuiltSet<
     WalletActionExecutionProvider>(const <WalletActionExecutionProvider>[
   _$privy,
-  _$privyNative,
   _$userWallet,
 ]);
 
 class _$WalletActionExecutionProviderMeta {
   const _$WalletActionExecutionProviderMeta();
   WalletActionExecutionProvider get privy => _$privy;
-  WalletActionExecutionProvider get privyNative => _$privyNative;
   WalletActionExecutionProvider get userWallet => _$userWallet;
   WalletActionExecutionProvider valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionExecutionProvider> get values => _$values;
@@ -56,12 +50,10 @@ class _$WalletActionExecutionProviderSerializer
     implements PrimitiveSerializer<WalletActionExecutionProvider> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'privy': 'privy',
-    'privyNative': 'privy_native',
     'userWallet': 'user_wallet',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'privy': 'privy',
-    'privy_native': 'privyNative',
     'user_wallet': 'userWallet',
   };
 

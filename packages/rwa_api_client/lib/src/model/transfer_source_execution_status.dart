@@ -11,22 +11,16 @@ part 'transfer_source_execution_status.g.dart';
 
 class TransferSourceExecutionStatus extends EnumClass {
 
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
   static const TransferSourceExecutionStatus awaitingWallet = _$awaitingWallet;
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'submitted')
   static const TransferSourceExecutionStatus submitted = _$submitted;
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'confirmed')
   static const TransferSourceExecutionStatus confirmed = _$confirmed;
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'failed')
   static const TransferSourceExecutionStatus failed = _$failed;
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'ambiguous')
   static const TransferSourceExecutionStatus ambiguous = _$ambiguous;
-  /// Source execution state only, not destination settlement. A finalized origin revert retains the compatible failed value; source_transaction.debit_basis distinguishes proven no-spend from an unsupported failure label.
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferSourceExecutionStatus manualReview = _$manualReview;
 

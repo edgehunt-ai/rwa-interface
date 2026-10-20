@@ -19,40 +19,41 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_session.g.dart';
 
-/// A 24-hour recoverable, non-executable funding draft. `recommended_top_up` is advisory only: it may initialize a client form but must never be used as a minimum, maximum or rejection rule. Balances and route estimates are refreshed independently and never inherit the session lifetime. 
+/// A 24-hour recoverable, non-executable funding draft. `recommended_top_up` is advisory only: it may initialize a client form but must never be used as a minimum, maximum or rejection rule. Balances and route estimates are refreshed independently and never inherit the session lifetime.
 ///
 /// Properties:
 /// * [riskPreview] - 仅未执行且有来源选择的 HIP-3 补款/独立划转返回估算；按 minimum_received 模拟到账后抵押变化。非 HIP-3、无选择、执行中或已完成时为 null，避免重复计入资金。
-/// * [fundingSessionId] 
-/// * [status] 
-/// * [version] 
-/// * [trade] 
+/// * [fundingSessionId]
+/// * [status]
+/// * [version]
+/// * [trade]
 /// * [continuation] - Server-owned navigation hint for resuming the frozen trade after funding completes; `null` unless the funded session still owes a follow-up order action. It never carries an executable quote, calldata or auto-submission.
-/// * [rail] 
-/// * [targetSnapshot] 
-/// * [requiredTargetBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [minimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [rail]
+/// * [targetSnapshot]
+/// * [requiredTargetBalance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [minimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
 /// * [recommendedTopUp] - Advisory amount derived from the current requirement and safety buffer, rounded half-up to at most one decimal place; if that would fall below minimum_top_up it is raised to the next tenth. Users may choose any otherwise valid amount.
 /// * [safetyBufferBps] - Advisory recommendation input only; the server must not reject a selection merely because it differs from this buffer.
-/// * [selectedTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [estimatedReceived] - Estimated total target-asset amount for the current source selection before quote protection. For current exact-output Relay allocations this equals `minimum_received`. Current servers return `0` when the selection has no allocations. The field remains optional only so clients can deserialize older responses that predate it. 
-/// * [minimumReceived] - Provider-guaranteed minimum total target-asset amount for the current selection. This value already reflects quote protection and route costs; fee components must not be deducted again. It must not be derived from unlike source and target asset amounts. 
-/// * [slippageBps] - Provider-reported quote tolerance in basis points (`100` bps = `1%`). For multiple selected sources this is the maximum only when every source reports a tolerance; it is null if any source is unknown, and null when there are no allocations. This value must not be derived from the difference between source and target asset amounts. 
+/// * [selectedTargetAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [estimatedReceived] - Estimated total target-asset amount for the current source selection before quote protection. For current exact-output Relay allocations this equals `minimum_received`. Current servers return `0` when the selection has no allocations. The field remains optional only so clients can deserialize older responses that predate it.
+/// * [minimumReceived] - Provider-guaranteed minimum total target-asset amount for the current selection. This value already reflects quote protection and route costs; fee components must not be deducted again. It must not be derived from unlike source and target asset amounts.
+/// * [slippageBps] - Provider-reported quote tolerance in basis points (`100` bps = `1%`). For multiple selected sources this is the maximum only when every source reports a tolerance; it is null if any source is unknown, and null when there are no allocations. This value must not be derived from the difference between source and target asset amounts.
 /// * [maximumSelectableTargetAmount] - Current server-valued upper bound across eligible selected sources and Provider limits.
-/// * [totalSourceValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [estimatedFees] 
-/// * [etaSeconds] 
-/// * [positions] 
-/// * [unavailableSources] - Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable. 
-/// * [allocations] 
-/// * [canConfirmTransfer] 
-/// * [remainingMinimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [estimateObservedAt] 
-/// * [createdAt] 
-/// * [updatedAt] 
+/// * [totalSourceValueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [estimatedFees]
+/// * [etaSeconds]
+/// * [positions]
+/// * [unavailableSources] - Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable.
+/// * [allocations]
+/// * [canConfirmTransfer]
+/// * [remainingMinimumTopUp] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+/// * [estimateObservedAt]
+/// * [createdAt]
+/// * [updatedAt]
 /// * [expiresAt] - Exactly 24 hours after session creation; it does not extend balance or Provider quote validity.
 @BuiltValue()
-abstract class FundingSession implements Built<FundingSession, FundingSessionBuilder> {
+abstract class FundingSession
+    implements Built<FundingSession, FundingSessionBuilder> {
   /// 仅未执行且有来源选择的 HIP-3 补款/独立划转返回估算；按 minimum_received 模拟到账后抵押变化。非 HIP-3、无选择、执行中或已完成时为 null，避免重复计入资金。
   @BuiltValueField(wireName: r'risk_preview')
   Hip3CollateralRiskPreview? get riskPreview;
@@ -81,11 +82,11 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'target_snapshot')
   FundingTargetBalanceSnapshot get targetSnapshot;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'required_target_balance')
   String get requiredTargetBalance;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'minimum_top_up')
   String get minimumTopUp;
 
@@ -97,19 +98,19 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'safety_buffer_bps')
   int get safetyBufferBps;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'selected_target_amount')
   String get selectedTargetAmount;
 
-  /// Estimated total target-asset amount for the current source selection before quote protection. For current exact-output Relay allocations this equals `minimum_received`. Current servers return `0` when the selection has no allocations. The field remains optional only so clients can deserialize older responses that predate it. 
+  /// Estimated total target-asset amount for the current source selection before quote protection. For current exact-output Relay allocations this equals `minimum_received`. Current servers return `0` when the selection has no allocations. The field remains optional only so clients can deserialize older responses that predate it.
   @BuiltValueField(wireName: r'estimated_received')
   String? get estimatedReceived;
 
-  /// Provider-guaranteed minimum total target-asset amount for the current selection. This value already reflects quote protection and route costs; fee components must not be deducted again. It must not be derived from unlike source and target asset amounts. 
+  /// Provider-guaranteed minimum total target-asset amount for the current selection. This value already reflects quote protection and route costs; fee components must not be deducted again. It must not be derived from unlike source and target asset amounts.
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
-  /// Provider-reported quote tolerance in basis points (`100` bps = `1%`). For multiple selected sources this is the maximum only when every source reports a tolerance; it is null if any source is unknown, and null when there are no allocations. This value must not be derived from the difference between source and target asset amounts. 
+  /// Provider-reported quote tolerance in basis points (`100` bps = `1%`). For multiple selected sources this is the maximum only when every source reports a tolerance; it is null if any source is unknown, and null when there are no allocations. This value must not be derived from the difference between source and target asset amounts.
   @BuiltValueField(wireName: r'slippage_bps')
   int? get slippageBps;
 
@@ -117,7 +118,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'maximum_selectable_target_amount')
   String get maximumSelectableTargetAmount;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'total_source_value_usd')
   String get totalSourceValueUsd;
 
@@ -130,7 +131,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'positions')
   BuiltList<UnifiedFundingPosition> get positions;
 
-  /// Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable. 
+  /// Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable.
   @BuiltValueField(wireName: r'unavailable_sources')
   BuiltList<FundingSessionUnavailableSourcesInner> get unavailableSources;
 
@@ -140,7 +141,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'can_confirm_transfer')
   bool get canConfirmTransfer;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'remaining_minimum_top_up')
   String get remainingMinimumTopUp;
 
@@ -159,16 +160,19 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
 
   FundingSession._();
 
-  factory FundingSession([void updates(FundingSessionBuilder b)]) = _$FundingSession;
+  factory FundingSession([void updates(FundingSessionBuilder b)]) =
+      _$FundingSession;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingSessionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingSession> get serializer => _$FundingSessionSerializer();
+  static Serializer<FundingSession> get serializer =>
+      _$FundingSessionSerializer();
 }
 
-class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> {
+class _$FundingSessionSerializer
+    implements PrimitiveSerializer<FundingSession> {
   @override
   final Iterable<Type> types = const [FundingSession, _$FundingSession];
 
@@ -208,10 +212,12 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
       specifiedType: const FullType(FundingSessionTrade),
     );
     yield r'continuation';
-    yield object.continuation == null ? null : serializers.serialize(
-      object.continuation,
-      specifiedType: const FullType.nullable(FundingSessionContinuation),
-    );
+    yield object.continuation == null
+        ? null
+        : serializers.serialize(
+            object.continuation,
+            specifiedType: const FullType.nullable(FundingSessionContinuation),
+          );
     yield r'rail';
     yield serializers.serialize(
       object.rail,
@@ -289,17 +295,20 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     yield r'positions';
     yield serializers.serialize(
       object.positions,
-      specifiedType: const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
+      specifiedType:
+          const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
     );
     yield r'unavailable_sources';
     yield serializers.serialize(
       object.unavailableSources,
-      specifiedType: const FullType(BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
+      specifiedType: const FullType(
+          BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
     );
     yield r'allocations';
     yield serializers.serialize(
       object.allocations,
-      specifiedType: const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
+      specifiedType:
+          const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
     );
     yield r'can_confirm_transfer';
     yield serializers.serialize(
@@ -339,7 +348,9 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     FundingSession object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -501,21 +512,24 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
         case r'positions':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
           ) as BuiltList<UnifiedFundingPosition>;
           result.positions.replace(valueDes);
           break;
         case r'unavailable_sources':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
+            specifiedType: const FullType(
+                BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
           ) as BuiltList<FundingSessionUnavailableSourcesInner>;
           result.unavailableSources.replace(valueDes);
           break;
         case r'allocations':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
+            specifiedType: const FullType(
+                BuiltList, [FullType(FundingSessionSourceAllocation)]),
           ) as BuiltList<FundingSessionSourceAllocation>;
           result.allocations.replace(valueDes);
           break;
@@ -589,4 +603,3 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     return result.build();
   }
 }
-

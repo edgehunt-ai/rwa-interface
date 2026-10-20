@@ -16,13 +16,6 @@ final class Hip3Withdrawal {
     this.payloadHash,
     this.nonceMappingTypedDataJson,
     this.nonceMappingPayloadHash,
-    this.relayRequestId,
-    this.observedLedgerTime,
-    this.payoutTxHash,
-    this.createdAt,
-    this.updatedAt,
-    this.submittedAt,
-    this.confirmedAt,
   });
 
   final String id;
@@ -41,35 +34,10 @@ final class Hip3Withdrawal {
   final String? payloadHash;
   final String? nonceMappingTypedDataJson;
   final String? nonceMappingPayloadHash;
-  final String? relayRequestId;
-  final int? observedLedgerTime;
-  final String? payoutTxHash;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final DateTime? submittedAt;
-  final DateTime? confirmedAt;
-
-  bool get isCompleted => status == 'completed' && !requiresManualReview;
 
   bool get isPending =>
-      !isCompleted &&
-      status != 'awaiting_signature' &&
-      status != 'failed' &&
-      status != 'expired' &&
-      status != 'refunded' &&
-      status != 'credited';
-
-  bool get shouldPoll =>
-      !requiresManualReview &&
-      const {
-        'submitting',
-        'submitted',
-        'payout',
-        'refund_pending',
-        'recovering',
-      }.contains(status);
+      status == 'submitting' || status == 'submitted' || status == 'payout';
 
   bool get requiresManualReview =>
-      status == 'manual_review' ||
-      (failureReason?.contains('requires_manual_review') ?? false);
+      isPending && (failureReason?.contains('requires_manual_review') ?? false);
 }

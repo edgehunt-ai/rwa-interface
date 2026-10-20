@@ -670,18 +670,9 @@ class _ActivityRow extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final statusColor = switch (record.status) {
-      ActivityState.success ||
-      ActivityState.settled ||
-      ActivityState.credited => semantic.success,
+      ActivityState.success => semantic.success,
       ActivityState.failed => semantic.loss,
-      ActivityState.pending ||
-      ActivityState.refundPending ||
-      ActivityState.partiallySettled ||
-      ActivityState.partiallyRefunded ||
-      ActivityState.reserved ||
-      ActivityState.sourceDebited ||
-      ActivityState.inTransit ||
-      ActivityState.manualReview => semantic.warning,
+      ActivityState.pending => semantic.warning,
       _ => colors.secondaryText,
     };
     return _ExpandableActivityRow(
@@ -734,14 +725,6 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
     final isOrder = record.category == ActivityCategory.orders;
     final isFunding = record.category == ActivityCategory.funding;
     final isCash = record.category == ActivityCategory.cash;
-    final isEconomicStatus = switch (record.status) {
-      ActivityState.pending ||
-      ActivityState.success ||
-      ActivityState.failed ||
-      ActivityState.cancelled ||
-      ActivityState.unknown => false,
-      _ => true,
-    };
     final type = isOrder
         ? _orderTypeLabel(record, AppLocalizations.of(context))
         : _activityTypeLabel(record.type, AppLocalizations.of(context));
@@ -833,7 +816,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                         children: [
                           if (!isFunding) ...[
                             Flexible(
-                              flex: isCash && !isEconomicStatus ? 0 : 1,
+                              flex: isCash ? 0 : 1,
                               child: Text(
                                 _statusLabel(context, record.status),
                                 maxLines: 1,
@@ -1082,11 +1065,6 @@ class _ActivityDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final fields = [...record.fields];
-    if (record.economicStatus != null) {
-      fields.removeWhere(
-        (field) => field.label.trim().toLowerCase() == 'status',
-      );
-    }
     if (record.category == ActivityCategory.orders &&
         _orderTypeConveysDirection(record, AppLocalizations.of(context))) {
       fields.removeWhere((field) => field.label.trim().toLowerCase() == 'side');
@@ -1143,92 +1121,36 @@ class _ActivityDetails extends StatelessWidget {
         ),
       );
     }
-    for (final field in [
-      if (record.rawStatus case final status?)
-        ActivityField(
-          label: AppLocalizations.of(context).fundsTechnicalStatus,
-          value: status,
-        ),
-      if (record.economicStatus case final status?)
-        ActivityField(
-          label: AppLocalizations.of(context).fundsEconomicStatus,
-          value: status,
-        ),
-      if (!fields.any((field) {
-        final label = _activityFieldKey(field.label);
-        return (label == 'id' || label.endsWith(' id')) &&
-            field.value == record.id;
-      }))
-        ActivityField(label: 'Activity ID', value: record.id),
-      if (record.reference case final reference?)
-        ActivityField(label: '${reference.type} ID', value: reference.id),
-      if (record.relatedId case final id?)
-        ActivityField(label: 'Related ID', value: id),
-      if (record.failureReason case final reason?)
-        ActivityField(label: 'Reason', value: reason),
-      ActivityField(
-        label: 'Created at',
-        value: record.createdAt.toIso8601String(),
-      ),
-      if (record.updatedAt case final timestamp?)
-        ActivityField(label: 'Updated at', value: timestamp.toIso8601String()),
-    ]) {
-      if (!_hasField(fields, field.label)) fields.add(field);
-    }
-    final preserveNumericPrecision =
-        record.economicStatus != null ||
-        record.financialObligationIds.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: SelectionArea(
-        child: Column(
-          children: [
-            for (final field in fields)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: _DetailRow(
-                  field: field,
-                  colors: colors,
-                  explorer: record.explorer,
-                  preserveNumericPrecision: preserveNumericPrecision,
-                  network: flow == null
-                      ? (field.label.trim().toLowerCase() == 'network'
-                            ? record.chain
-                            : null)
-                      : switch (field.label.trim().toLowerCase()) {
-                          'from' => flow.source.chain,
-                          'to' => flow.destination.chain,
-                          _ => null,
-                        },
-                ),
+      child: Column(
+        children: [
+          for (final field in fields)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _DetailRow(
+                field: field,
+                colors: colors,
+                explorer: record.explorer,
+                network: flow == null
+                    ? (field.label.trim().toLowerCase() == 'network'
+                          ? record.chain
+                          : null)
+                    : switch (field.label.trim().toLowerCase()) {
+                        'from' => flow.source.chain,
+                        'to' => flow.destination.chain,
+                        _ => null,
+                      },
               ),
-            for (final id in record.financialObligationIds)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: _DetailRow(
-                  field: ActivityField(
-                    label: AppLocalizations.of(context).fundsObligationId,
-                    value: id,
-                  ),
-                  colors: colors,
-                ),
-              ),
-            if (record.financialObligationIds.isNotEmpty)
-              TextButton(
-                key: ValueKey('activity-obligations-${record.id}'),
-                onPressed: () =>
-                    context.pushNamed(AppRoutes.fundsObligationsName),
-                child: Text(AppLocalizations.of(context).fundsObligationsTitle),
-              ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 }
 
 String _formatActivityAmount(DecimalValue amount, String? asset) {
-  final numeric = amount.value;
+  final numeric = TokenAmountFormatter.formatValue(amount);
   final symbol = asset ?? amount.asset;
   return symbol == null || symbol.trim().isEmpty
       ? numeric
@@ -1241,26 +1163,18 @@ class _DetailRow extends StatelessWidget {
     required this.colors,
     this.network,
     this.explorer,
-    this.preserveNumericPrecision = false,
   });
   final ActivityExplorer? explorer;
   final String? network;
   final ActivityField field;
   final AppRwaColors colors;
-  final bool preserveNumericPrecision;
   @override
   Widget build(BuildContext context) {
-    final normalizedLabel = _activityFieldKey(field.label);
     final isAddress =
-        normalizedLabel != 'id' &&
-        !normalizedLabel.endsWith(' id') &&
         !_isNumericActivityField(field.label) &&
-        (field.value.startsWith('0x') || normalizedLabel.endsWith(' hash'));
+        (field.value.startsWith('0x') || field.value.length > 24);
     final l10n = AppLocalizations.of(context);
-    final displayValue =
-        preserveNumericPrecision && _isNumericActivityField(field.label)
-        ? field.value
-        : _detailValue(field, l10n);
+    final displayValue = _detailValue(field, l10n);
     final label = _detailLabel(field.label, l10n);
     final isTransaction = _isTransactionHash(field.label);
     final explorerUri = Uri.tryParse(explorer?.url.trim() ?? '');
@@ -1294,7 +1208,8 @@ class _DetailRow extends StatelessWidget {
               ? _NetworkLabel(network: network!, label: displayValue)
               : isTransaction || isAddress
               ? _CompactCopyValue(value: field.value, label: label)
-              : DefaultTextStyle(
+              : Text(
+                  displayValue,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontSize: 12,
@@ -1302,7 +1217,6 @@ class _DetailRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: colors.primaryText,
                   ),
-                  child: Text(displayValue),
                 ),
         ),
       ],
@@ -1331,11 +1245,6 @@ String _detailLabel(String label, AppLocalizations l10n) =>
       'order amount' => l10n.activityOrderAmount,
       'filled' => l10n.filled,
       'fee' => l10n.activityFee,
-      'activity id' => l10n.activityId,
-      'related id' => l10n.activityRelatedId,
-      'reason' => l10n.activityReason,
-      'created at' => l10n.activityCreatedAt,
-      'updated at' => l10n.activityUpdatedAt,
       _ => label,
     };
 
@@ -1688,18 +1597,6 @@ String _statusLabel(BuildContext context, ActivityState status) {
   return switch (status) {
     ActivityState.pending => l10n.activityInProgress,
     ActivityState.success => l10n.activityCompleted,
-    ActivityState.refundPending => l10n.activityRefundPending,
-    ActivityState.refunded => l10n.activityRefunded,
-    ActivityState.credited => l10n.activityCredited,
-    ActivityState.reserved => l10n.fundsReserved,
-    ActivityState.sourceDebited => l10n.activitySourceDebited,
-    ActivityState.inTransit => l10n.fundsInTransit,
-    ActivityState.partiallySettled => l10n.transferPartiallySettled,
-    ActivityState.partiallyRefunded => l10n.fundsPartiallyRefunded,
-    ActivityState.compensated => l10n.fundsCompensated,
-    ActivityState.released => l10n.fundsReleased,
-    ActivityState.settled => l10n.activitySettled,
-    ActivityState.manualReview => l10n.activityManualReview,
     ActivityState.failed => l10n.activityFailed,
     ActivityState.cancelled => l10n.activityCancelled,
     ActivityState.unknown => l10n.activityUnknown,

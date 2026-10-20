@@ -9,7 +9,6 @@ import '../domain/models/funding_catalog_summary.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
-import '../domain/models/financial_obligation.dart';
 import '../domain/models/hip3_action_summary.dart';
 import '../domain/models/hip3_protection.dart';
 import '../domain/models/position_leverage_context.dart';
@@ -1006,16 +1005,10 @@ final class AppReviewFundingRepository implements FundingRepository {
       );
 
   @override
-  Future<DomainPage<FinancialObligation>> listFinancialObligations({
-    String? cursor,
-    bool includeResolved = false,
-  }) async => const DomainPage(items: []);
-
-  @override
   Future<FundingSessionSummary> getFundingSession(String id) async =>
       FundingSessionSummary(
         sessionId: id,
-        status: 'readyToConfirm',
+        status: 'active',
         version: 1,
         canConfirmTransfer: true,
         expiresAt: _now.add(const Duration(hours: 24)),

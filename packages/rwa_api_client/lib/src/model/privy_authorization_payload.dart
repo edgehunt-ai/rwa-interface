@@ -11,7 +11,7 @@ import 'package:built_value/serializer.dart';
 
 part 'privy_authorization_payload.g.dart';
 
-/// Exact structured input for Flutter/React Privy `generateAuthorizationSignature`. The client passes this structure to the Privy SDK; RFC 8785 canonicalization is SDK-owned and this API never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.  `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`. For an original execution, `body.reference_id` equals execution_id and transaction.from/to/data/value match its frozen call. For native publication the hexadecimal transaction.nonce must equal the decimal native_nonce. Cancellation authorization instead binds cancellation_id, the same owner/chain/nonce and a server-admitted code-free target with zero value and empty data. Any mismatch must not be signed. 
+/// Exact structured input for Flutter/React Privy `generateAuthorizationSignature`. The client passes this structure to the Privy SDK; RFC 8785 canonicalization is SDK-owned and this API never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.  `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`; `body.reference_id` MUST equal the execution id; and `body.params.transaction.from/to/data/value` MUST byte-for-byte equal `WalletActionExecution.frozen_transaction`. Any mismatch is a server fault and the client must not sign it. 
 ///
 /// Properties:
 /// * [version] 

@@ -10,15 +10,13 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_refund_observation.g.dart';
 
-/// Actual uniquely attributed refund observation. amount is net received in asset units, never expected gross refund. A partial actual receipt remains pending until the owning transfer proves full refund settlement; pending is not refunded. Null/omitted fee evidence never means zero fee.
+/// FundingRefundObservation
 ///
 /// Properties:
 /// * [status] 
 /// * [asset] 
 /// * [address] 
 /// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [logIndex] - Exact immutable refund Transfer-log coordinate bound to tx_hash and asset.
-/// * [actualFeeAmount] - Actual independently evidenced fee in refund-asset units; null/omitted when unavailable, never inferred by subtracting the refund from the original quote.
 /// * [txHash] 
 /// * [observedAt] 
 @BuiltValue()
@@ -36,14 +34,6 @@ abstract class FundingRefundObservation implements Built<FundingRefundObservatio
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'amount')
   String? get amount;
-
-  /// Exact immutable refund Transfer-log coordinate bound to tx_hash and asset.
-  @BuiltValueField(wireName: r'log_index')
-  int? get logIndex;
-
-  /// Actual independently evidenced fee in refund-asset units; null/omitted when unavailable, never inferred by subtracting the refund from the original quote.
-  @BuiltValueField(wireName: r'actual_fee_amount')
-  String? get actualFeeAmount;
 
   @BuiltValueField(wireName: r'tx_hash')
   String? get txHash;
@@ -94,20 +84,6 @@ class _$FundingRefundObservationSerializer implements PrimitiveSerializer<Fundin
       object.amount,
       specifiedType: const FullType.nullable(String),
     );
-    if (object.logIndex != null) {
-      yield r'log_index';
-      yield serializers.serialize(
-        object.logIndex,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.actualFeeAmount != null) {
-      yield r'actual_fee_amount';
-      yield serializers.serialize(
-        object.actualFeeAmount,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
     yield r'tx_hash';
     yield object.txHash == null ? null : serializers.serialize(
       object.txHash,
@@ -171,22 +147,6 @@ class _$FundingRefundObservationSerializer implements PrimitiveSerializer<Fundin
           ) as String?;
           if (valueDes == null) continue;
           result.amount = valueDes;
-          break;
-        case r'log_index':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
-          if (valueDes == null) continue;
-          result.logIndex = valueDes;
-          break;
-        case r'actual_fee_amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.actualFeeAmount = valueDes;
           break;
         case r'tx_hash':
           final valueDes = serializers.deserialize(

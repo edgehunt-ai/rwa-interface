@@ -29,7 +29,7 @@ abstract interface class WalletActionExecutionRepository {
     required String idempotencyKey,
   });
 
-  /// Relays authorization to the sole backend publisher; native gas remains user-paid.
+  /// Relays the Privy authorization signature for an app-sponsored execution.
   /// The signature is single-use and must never be stored or logged.
   Future<WalletActionExecution> submitAuthorization({
     required String executionId,
@@ -37,21 +37,10 @@ abstract interface class WalletActionExecutionRepository {
     required String idempotencyKey,
   });
 
-  /// Reports historical user_wallet evidence only; never authorizes publication.
+  /// Submits the broadcast locator for a user-paid execution.
   Future<WalletActionExecution> submitTransactionHash({
     required String executionId,
     required String txHash,
-    required String idempotencyKey,
-  });
-
-  Future<WalletActionExecution> prepareCancellation({
-    required String executionId,
-    required String idempotencyKey,
-  });
-
-  Future<WalletActionExecution> submitCancellationAuthorization({
-    required String executionId,
-    required String signature,
     required String idempotencyKey,
   });
 }

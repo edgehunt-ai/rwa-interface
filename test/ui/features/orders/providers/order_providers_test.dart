@@ -27,7 +27,7 @@ void main() {
     const query = (symbol: 'NVDAB', productId: 'product-nvda');
 
     test(
-      'loads all product pages without excluding unresolved server states',
+      'filters on the server before pagination and loads all pages',
       () async {
         final repository = _PagedOpenOrders();
         final container = ProviderContainer(
@@ -44,30 +44,12 @@ void main() {
             kind: MarketProductKind.bstock,
             symbol: 'NVDAB',
             productId: 'product-nvda',
-            statusGroup: null,
+            statusGroup: 'open',
           )),
         );
         expect(page.items.map((e) => e.resource.orderId), [
           'open-new',
-          'pending',
-          'awaitingConfirmation',
-          'pendingSignature',
-          'submitted',
-          'ambiguous',
-          'manualReview',
-          'unknown',
           'open-old',
-        ]);
-        expect(page.items.map((e) => e.resource.status), [
-          TradingOrderStatus.open,
-          TradingOrderStatus.pending,
-          TradingOrderStatus.awaitingConfirmation,
-          TradingOrderStatus.pendingSignature,
-          TradingOrderStatus.submitted,
-          TradingOrderStatus.ambiguous,
-          TradingOrderStatus.manualReview,
-          TradingOrderStatus.unknown,
-          TradingOrderStatus.partiallyFilled,
         ]);
         expect(page.hasMore, isFalse);
       },
@@ -84,13 +66,6 @@ void main() {
       );
       expect(page.items.map((e) => e.resource.orderId), [
         'open-new',
-        'pending',
-        'awaitingConfirmation',
-        'pendingSignature',
-        'submitted',
-        'ambiguous',
-        'manualReview',
-        'unknown',
         'open-old',
       ]);
     });
@@ -939,14 +914,10 @@ final class _PagedOpenOrders extends _OrdersRepository {
         for (final status in [
           TradingOrderStatus.pending,
           TradingOrderStatus.awaitingConfirmation,
-          TradingOrderStatus.pendingSignature,
           TradingOrderStatus.submitted,
           TradingOrderStatus.ambiguous,
           TradingOrderStatus.manualReview,
-          TradingOrderStatus.unknown,
           TradingOrderStatus.filled,
-          TradingOrderStatus.failed,
-          TradingOrderStatus.cancelled,
         ])
           ResourceResult(resource: _openOrder(status.name, status)),
         ResourceResult(

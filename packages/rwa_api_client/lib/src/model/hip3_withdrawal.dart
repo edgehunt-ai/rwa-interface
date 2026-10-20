@@ -13,38 +13,39 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_withdrawal.g.dart';
 
-/// HIP-3 统一账户提现资源。`typed_data_json`/`payload_hash` 仅在创建响应中返回，供客户端 原样签名；`destination_address` 始终等于 `owner_address`。 
+/// HIP-3 统一账户提现资源。`typed_data_json`/`payload_hash` 仅在创建响应中返回，供客户端 原样签名；`destination_address` 始终等于 `owner_address`。
 ///
 /// Properties:
 /// * [riskPreview] - 仅创建响应中尚待签名的提现返回；按 HL 总扣减 amount 计算。已提交等状态重放时不再模拟扣减。
-/// * [withdrawalId] 
-/// * [ownerAddress] 
-/// * [destinationAddress] 
+/// * [withdrawalId]
+/// * [ownerAddress]
+/// * [destinationAddress]
 /// * [amount] - venue 实际扣款金额（USDC）。Arbitrum目标等于请求总扣减额；旧版BSC USDT relay为solver报价输入额，可能大于请求到账金额。
-/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [fee] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
 /// * [minimumReceived] - 目标链资产到账金额（amount - fee）。Arbitrum目标为报价净USDC；旧版BSC USDT relay为请求期望到账额。
-/// * [status] 
-/// * [rail] 
+/// * [status]
+/// * [rail]
 /// * [payoutChainId] - 冻结的到账 chain id：bridge2/float 为 Arbitrum（42161/421614），relay 为 Arbitrum（42161）或BSC（56）。
 /// * [payoutAsset] - 到账资产符号——Arbitrum 为USDC（bridge2测试网为USDC2），BSC relay为USDT。仅创建响应返回。
 /// * [relayRequestId] - relay rail 的 solver request id，用于 `/intents/status` 跟踪；其它 rail 为 null。
-/// * [nonceMapping] 
+/// * [nonceMapping]
 /// * [nonce] - HL action nonce（创建时间毫秒），同时是 typed-data `time`。
 /// * [hyperliquidChain] - 仅在创建响应中返回。
 /// * [chainId] - EIP-712 签名链（421614 testnet / 42161 mainnet），仅创建响应返回。
 /// * [amountText] - 冻结进 action 的规范化金额文本，仅创建响应返回。
 /// * [typedDataJson] - 精确 EIP-712 typed data JSON，仅创建响应返回；客户端必须原样签名。
 /// * [payloadHash] - 冻结 action 的 EIP-712 digest，仅创建响应返回。
-/// * [failureReason] 
-/// * [observedLedgerTime] 
+/// * [failureReason]
+/// * [observedLedgerTime]
 /// * [payoutTxHash] - 链上垫付交易哈希——float rail 为平台 Arbitrum 垫付，relay rail 为 solver 的 BSC fill（`payout`/`completed` 时返回）。
-/// * [expiresAt] 
-/// * [createdAt] 
-/// * [updatedAt] 
-/// * [submittedAt] 
-/// * [confirmedAt] 
+/// * [expiresAt]
+/// * [createdAt]
+/// * [updatedAt]
+/// * [submittedAt]
+/// * [confirmedAt]
 @BuiltValue()
-abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBuilder> {
+abstract class Hip3Withdrawal
+    implements Built<Hip3Withdrawal, Hip3WithdrawalBuilder> {
   /// 仅创建响应中尚待签名的提现返回；按 HL 总扣减 amount 计算。已提交等状态重放时不再模拟扣减。
   @BuiltValueField(wireName: r'risk_preview')
   Hip3CollateralRiskPreview? get riskPreview;
@@ -62,7 +63,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
@@ -145,16 +146,19 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
 
   Hip3Withdrawal._();
 
-  factory Hip3Withdrawal([void updates(Hip3WithdrawalBuilder b)]) = _$Hip3Withdrawal;
+  factory Hip3Withdrawal([void updates(Hip3WithdrawalBuilder b)]) =
+      _$Hip3Withdrawal;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3WithdrawalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3Withdrawal> get serializer => _$Hip3WithdrawalSerializer();
+  static Serializer<Hip3Withdrawal> get serializer =>
+      _$Hip3WithdrawalSerializer();
 }
 
-class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> {
+class _$Hip3WithdrawalSerializer
+    implements PrimitiveSerializer<Hip3Withdrawal> {
   @override
   final Iterable<Type> types = const [Hip3Withdrawal, _$Hip3Withdrawal];
 
@@ -282,20 +286,26 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
       );
     }
     yield r'failure_reason';
-    yield object.failureReason == null ? null : serializers.serialize(
-      object.failureReason,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.failureReason == null
+        ? null
+        : serializers.serialize(
+            object.failureReason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'observed_ledger_time';
-    yield object.observedLedgerTime == null ? null : serializers.serialize(
-      object.observedLedgerTime,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.observedLedgerTime == null
+        ? null
+        : serializers.serialize(
+            object.observedLedgerTime,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'payout_tx_hash';
-    yield object.payoutTxHash == null ? null : serializers.serialize(
-      object.payoutTxHash,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.payoutTxHash == null
+        ? null
+        : serializers.serialize(
+            object.payoutTxHash,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'expires_at';
     yield serializers.serialize(
       object.expiresAt,
@@ -312,15 +322,19 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
       specifiedType: const FullType(DateTime),
     );
     yield r'submitted_at';
-    yield object.submittedAt == null ? null : serializers.serialize(
-      object.submittedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.submittedAt == null
+        ? null
+        : serializers.serialize(
+            object.submittedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'confirmed_at';
-    yield object.confirmedAt == null ? null : serializers.serialize(
-      object.confirmedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.confirmedAt == null
+        ? null
+        : serializers.serialize(
+            object.confirmedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
@@ -329,7 +343,9 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
     Hip3Withdrawal object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -450,7 +466,8 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
         case r'hyperliquid_chain':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(Hip3WithdrawalHyperliquidChainEnum),
+            specifiedType:
+                const FullType.nullable(Hip3WithdrawalHyperliquidChainEnum),
           ) as Hip3WithdrawalHyperliquidChainEnum?;
           if (valueDes == null) continue;
           result.hyperliquidChain = valueDes;
@@ -578,19 +595,23 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
 }
 
 class Hip3WithdrawalHyperliquidChainEnum extends EnumClass {
-
   /// 仅在创建响应中返回。
   @BuiltValueEnumConst(wireName: r'Testnet')
-  static const Hip3WithdrawalHyperliquidChainEnum testnet = _$hip3WithdrawalHyperliquidChainEnum_testnet;
+  static const Hip3WithdrawalHyperliquidChainEnum testnet =
+      _$hip3WithdrawalHyperliquidChainEnum_testnet;
+
   /// 仅在创建响应中返回。
   @BuiltValueEnumConst(wireName: r'Mainnet')
-  static const Hip3WithdrawalHyperliquidChainEnum mainnet = _$hip3WithdrawalHyperliquidChainEnum_mainnet;
+  static const Hip3WithdrawalHyperliquidChainEnum mainnet =
+      _$hip3WithdrawalHyperliquidChainEnum_mainnet;
 
-  static Serializer<Hip3WithdrawalHyperliquidChainEnum> get serializer => _$hip3WithdrawalHyperliquidChainEnumSerializer;
+  static Serializer<Hip3WithdrawalHyperliquidChainEnum> get serializer =>
+      _$hip3WithdrawalHyperliquidChainEnumSerializer;
 
-  const Hip3WithdrawalHyperliquidChainEnum._(String name): super(name);
+  const Hip3WithdrawalHyperliquidChainEnum._(String name) : super(name);
 
-  static BuiltSet<Hip3WithdrawalHyperliquidChainEnum> get values => _$hip3WithdrawalHyperliquidChainEnumValues;
-  static Hip3WithdrawalHyperliquidChainEnum valueOf(String name) => _$hip3WithdrawalHyperliquidChainEnumValueOf(name);
+  static BuiltSet<Hip3WithdrawalHyperliquidChainEnum> get values =>
+      _$hip3WithdrawalHyperliquidChainEnumValues;
+  static Hip3WithdrawalHyperliquidChainEnum valueOf(String name) =>
+      _$hip3WithdrawalHyperliquidChainEnumValueOf(name);
 }
-

@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'self_custodial_withdrawal.g.dart';
 
-/// 自托管提现的审计与链上对账资源。`transaction` 是服务端冻结的精确、不可变执行请求， 在所有状态保持存在；客户端不得覆盖字段或自定义 calldata，且不得把它转换为原生币转账。  执行路径由 `gas_payment_mode` 与 `wallet_action_execution_id` 表达：`app_sponsored` 时服务端通过统一 wallet-action 管道 relay Privy sponsored UserOperation 代付 Gas， 链上同时核验 `UserOperationEvent` 与内层 ERC-20 `Transfer` 日志；`user_paid_native` 为用户自付 gas 的后端唯一投递路径（sponsor=false）。服务端不持久化用户签名，不自动重播未知交易。 
+/// 自托管提现的审计与链上对账资源。`transaction` 是服务端冻结的精确、不可变执行请求， 在所有状态保持存在；客户端不得覆盖字段或自定义 calldata，且不得把它转换为原生币转账。  执行路径由 `gas_payment_mode` 与 `wallet_action_execution_id` 表达：`app_sponsored` 时服务端通过统一 wallet-action 管道 relay Privy sponsored UserOperation 代付 Gas， 链上同时核验 `UserOperationEvent` 与内层 ERC-20 `Transfer` 日志；`user_paid_native` 为用户自付 gas 的广播路径。服务端不持有签名、不执行 approve，也不重播交易。 
 ///
 /// Properties:
 /// * [withdrawalId] 

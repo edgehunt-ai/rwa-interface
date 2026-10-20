@@ -62,8 +62,6 @@ class _$UnifiedFundingAccountValuationCurrencyEnumSerializer
 
 class _$UnifiedFundingAccount extends UnifiedFundingAccount {
   @override
-  final FinancialObligationPage? financialObligations;
-  @override
   final String accountId;
   @override
   final UnifiedFundingAccountValuationCurrencyEnum valuationCurrency;
@@ -95,8 +93,7 @@ class _$UnifiedFundingAccount extends UnifiedFundingAccount {
       (UnifiedFundingAccountBuilder()..update(updates))._build();
 
   _$UnifiedFundingAccount._(
-      {this.financialObligations,
-      required this.accountId,
+      {required this.accountId,
       required this.valuationCurrency,
       required this.valuedTotalUsd,
       required this.availableToFundValueUsd,
@@ -123,7 +120,6 @@ class _$UnifiedFundingAccount extends UnifiedFundingAccount {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is UnifiedFundingAccount &&
-        financialObligations == other.financialObligations &&
         accountId == other.accountId &&
         valuationCurrency == other.valuationCurrency &&
         valuedTotalUsd == other.valuedTotalUsd &&
@@ -142,7 +138,6 @@ class _$UnifiedFundingAccount extends UnifiedFundingAccount {
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, financialObligations.hashCode);
     _$hash = $jc(_$hash, accountId.hashCode);
     _$hash = $jc(_$hash, valuationCurrency.hashCode);
     _$hash = $jc(_$hash, valuedTotalUsd.hashCode);
@@ -163,7 +158,6 @@ class _$UnifiedFundingAccount extends UnifiedFundingAccount {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'UnifiedFundingAccount')
-          ..add('financialObligations', financialObligations)
           ..add('accountId', accountId)
           ..add('valuationCurrency', valuationCurrency)
           ..add('valuedTotalUsd', valuedTotalUsd)
@@ -184,13 +178,6 @@ class _$UnifiedFundingAccount extends UnifiedFundingAccount {
 class UnifiedFundingAccountBuilder
     implements Builder<UnifiedFundingAccount, UnifiedFundingAccountBuilder> {
   _$UnifiedFundingAccount? _$v;
-
-  FinancialObligationPageBuilder? _financialObligations;
-  FinancialObligationPageBuilder get financialObligations =>
-      _$this._financialObligations ??= FinancialObligationPageBuilder();
-  set financialObligations(
-          FinancialObligationPageBuilder? financialObligations) =>
-      _$this._financialObligations = financialObligations;
 
   String? _accountId;
   String? get accountId => _$this._accountId;
@@ -268,7 +255,6 @@ class UnifiedFundingAccountBuilder
   UnifiedFundingAccountBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _financialObligations = $v.financialObligations?.toBuilder();
       _accountId = $v.accountId;
       _valuationCurrency = $v.valuationCurrency;
       _valuedTotalUsd = $v.valuedTotalUsd;
@@ -305,7 +291,6 @@ class UnifiedFundingAccountBuilder
     try {
       _$result = _$v ??
           _$UnifiedFundingAccount._(
-            financialObligations: _financialObligations?.build(),
             accountId: BuiltValueNullFieldError.checkNotNull(
                 accountId, r'UnifiedFundingAccount', 'accountId'),
             valuationCurrency: BuiltValueNullFieldError.checkNotNull(
@@ -343,9 +328,6 @@ class UnifiedFundingAccountBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'financialObligations';
-        _financialObligations?.build();
-
         _$failedField = 'positions';
         positions.build();
         _$failedField = 'transfers';

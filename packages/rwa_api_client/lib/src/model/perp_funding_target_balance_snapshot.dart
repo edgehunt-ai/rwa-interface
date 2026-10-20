@@ -16,7 +16,6 @@ part 'perp_funding_target_balance_snapshot.g.dart';
 /// * [account] 
 /// * [accountRef] 
 /// * [asset] 
-/// * [targetEnvironment] - Frozen Hyperliquid environment. Historical null stays unknown despite the shared signing-domain chain_id 1337.
 /// * [availableAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [source_] 
 /// * [observedAt] 
@@ -32,11 +31,6 @@ abstract class PerpFundingTargetBalanceSnapshot implements Built<PerpFundingTarg
 
   @BuiltValueField(wireName: r'asset')
   PerpFundingTargetAsset get asset;
-
-  /// Frozen Hyperliquid environment. Historical null stays unknown despite the shared signing-domain chain_id 1337.
-  @BuiltValueField(wireName: r'target_environment')
-  PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum? get targetEnvironment;
-  // enum targetEnvironmentEnum {  mainnet,  testnet,  };
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'available_amount')
@@ -90,13 +84,6 @@ class _$PerpFundingTargetBalanceSnapshotSerializer implements PrimitiveSerialize
       object.asset,
       specifiedType: const FullType(PerpFundingTargetAsset),
     );
-    if (object.targetEnvironment != null) {
-      yield r'target_environment';
-      yield serializers.serialize(
-        object.targetEnvironment,
-        specifiedType: const FullType.nullable(PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum),
-      );
-    }
     yield r'available_amount';
     yield serializers.serialize(
       object.availableAmount,
@@ -160,14 +147,6 @@ class _$PerpFundingTargetBalanceSnapshotSerializer implements PrimitiveSerialize
             specifiedType: const FullType(PerpFundingTargetAsset),
           ) as PerpFundingTargetAsset;
           result.asset.replace(valueDes);
-          break;
-        case r'target_environment':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum),
-          ) as PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum?;
-          if (valueDes == null) continue;
-          result.targetEnvironment = valueDes;
           break;
         case r'available_amount':
           final valueDes = serializers.deserialize(
@@ -237,23 +216,6 @@ class PerpFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
 
   static BuiltSet<PerpFundingTargetBalanceSnapshotAccountEnum> get values => _$perpFundingTargetBalanceSnapshotAccountEnumValues;
   static PerpFundingTargetBalanceSnapshotAccountEnum valueOf(String name) => _$perpFundingTargetBalanceSnapshotAccountEnumValueOf(name);
-}
-
-class PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum extends EnumClass {
-
-  /// Frozen Hyperliquid environment. Historical null stays unknown despite the shared signing-domain chain_id 1337.
-  @BuiltValueEnumConst(wireName: r'mainnet')
-  static const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum mainnet = _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
-  /// Frozen Hyperliquid environment. Historical null stays unknown despite the shared signing-domain chain_id 1337.
-  @BuiltValueEnumConst(wireName: r'testnet')
-  static const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum testnet = _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
-
-  static Serializer<PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum> get serializer => _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer;
-
-  const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum._(String name): super(name);
-
-  static BuiltSet<PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum> get values => _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumValues;
-  static PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum valueOf(String name) => _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(name);
 }
 
 class PerpFundingTargetBalanceSnapshotSource_Enum extends EnumClass {

@@ -764,78 +764,37 @@ void main() {
     );
   });
 
-  testWidgets('Missing starting balance does not prove withdrawal success', (
+  testWidgets('Spot withdrawal succeeds in place and resets the form', (
     tester,
   ) async {
     await _pumpAndSubmitSpotWithdrawal(tester, accounts: const []);
-    expect(find.text('Withdrawal successful'), findsNothing);
-    expect(find.byKey(const Key('withdrawal-status')), findsOneWidget);
-    expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
-    expect(find.byKey(const Key('withdrawal-address-field')), findsNothing);
-  });
 
-  testWidgets('A balance decrease does not prove destination arrival', (
-    tester,
-  ) async {
-    var accounts = _accounts;
-    await _pumpAndSubmitSpotWithdrawal(
-      tester,
-      accounts: _accounts,
-      accountSnapshot: () => accounts,
-    );
-    accounts = [
-      TradingAccount(
-        kind: TradingAccountKind.app,
-        chain: 'Arbitrum',
-        balances: [
-          TokenBalance(
-            symbol: 'USDC',
-            chain: 'Arbitrum',
-            balance: DecimalValue('1', asset: 'USDC', unit: 'token'),
-          ),
-        ],
-      ),
-    ];
-    ProviderScope.containerOf(tester.element(find.byType(WithdrawalScreen)))
-        .invalidate(tradingAccountsProvider);
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump();
-    expect(find.text('Withdrawal successful'), findsNothing);
+    expect(find.text('Withdrawal successful'), findsOneWidget);
     expect(
-      find.text('Withdrawal submitted. Waiting for destination confirmation.'),
+      find.byKey(const ValueKey('withdrawal-address-field')),
       findsOneWidget,
     );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('withdrawal-address-field')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('withdrawal-amount-field')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(find.text('Review withdrawal'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
-
-  for (final status in [
-    SelfCustodialWithdrawalState.confirmed,
-    SelfCustodialWithdrawalState.manualReview,
-    SelfCustodialWithdrawalState.noncanonical,
-    SelfCustodialWithdrawalState.failed,
-  ]) {
-    testWidgets('Spot withdrawal renders $status and stops polling', (
-      tester,
-    ) async {
-      final funding = _CountingFunding()..withdrawalStatus = status;
-      await _pumpAndSubmitSpotWithdrawal(
-        tester,
-        accounts: const [],
-        funding: funding,
-      );
-      final calls = funding.selfCustodialReads;
-      await tester.pump(const Duration(seconds: 10));
-      await tester.pump();
-      expect(funding.selfCustodialReads, calls);
-      expect(
-        find.text('Withdrawal successful'),
-        status == SelfCustodialWithdrawalState.confirmed
-            ? findsWidgets
-            : findsNothing,
-      );
-      expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
-      expect(find.byKey(const Key('withdrawal-address-field')), findsNothing);
-    });
-  }
 
   testWidgets('Spot withdrawal shows progress inside the submit button', (
     tester,
@@ -872,7 +831,7 @@ void main() {
   });
 
   testWidgets(
-    'Spot withdrawal polling timeout retains pending status and identifier',
+    'Spot withdrawal timeout shows only the pending balance message',
     (tester) async {
       await _pumpAndSubmitSpotWithdrawal(tester, accounts: _accounts);
 
@@ -882,13 +841,14 @@ void main() {
       }
 
       expect(
-        find.text(
-          'Withdrawal submitted. Waiting for destination confirmation.',
-        ),
+        find.text('Withdrawal submitted. Balance is still updating.'),
         findsOneWidget,
       );
       expect(find.text('Withdrawal successful'), findsNothing);
-      expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('withdrawal-address-field')),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -952,22 +912,15 @@ Future<void> _pumpAndSubmitSpotWithdrawal(
   WidgetTester tester, {
   required List<TradingAccount> accounts,
   WalletAuthorizationSigner? signer,
-  _CountingFunding? funding,
-  List<TradingAccount> Function()? accountSnapshot,
 }) async {
-  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         withdrawalAssetsProvider.overrideWith(
           (ref) async => [_withdrawableAsset],
         ),
-        fundingRepositoryProvider.overrideWithValue(
-          funding ?? _CountingFunding(),
-        ),
-        tradingAccountsProvider.overrideWith(
-          (_) async => accountSnapshot?.call() ?? accounts,
-        ),
+        fundingRepositoryProvider.overrideWithValue(_CountingFunding()),
+        tradingAccountsProvider.overrideWith((_) async => accounts),
         portfolioRepositoryProvider.overrideWithValue(_WithdrawablePortfolio()),
         walletsProvider(null).overrideWith((_) async => _withdrawalWallets),
         walletActionExecutionRepositoryProvider.overrideWithValue(
@@ -1102,8 +1055,6 @@ class _Funding implements FundingRepository {
 final class _CountingFunding extends _Funding {
   var quoteRequests = 0;
   var selfCustodialCreateRequests = 0;
-  var selfCustodialReads = 0;
-  var withdrawalStatus = SelfCustodialWithdrawalState.submitted;
 
   @override
   Future<WithdrawalQuote> quoteWithdrawal(
@@ -1164,21 +1115,17 @@ final class _CountingFunding extends _Funding {
   @override
   Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
     String id,
-  ) async {
-    selfCustodialReads++;
-    return SelfCustodialWithdrawalSummary(
-      withdrawalId: id,
-      assetSymbol: 'USDC',
-      amount: DecimalValue('5', asset: 'USDC', unit: 'token'),
-      destinationAddress: '0x1111111111111111111111111111111111111111',
-      status: withdrawalStatus,
-    );
-  }
+  ) async => SelfCustodialWithdrawalSummary(
+    withdrawalId: id,
+    assetSymbol: 'USDC',
+    amount: DecimalValue('5', asset: 'USDC', unit: 'token'),
+    destinationAddress: '0x1111111111111111111111111111111111111111',
+    status: SelfCustodialWithdrawalState.submitted,
+  );
 }
 
 final class _SuccessfulWithdrawalExecutions
     implements WalletActionExecutionRepository {
-  final authorizationExpiry = DateTime.now().add(const Duration(minutes: 1));
   late final WalletActionExecution execution = WalletActionExecution(
     executionId: 'execution-1',
     resourceId: 'withdrawal-1',
@@ -1201,30 +1148,12 @@ final class _SuccessfulWithdrawalExecutions
       data: '0xa9059cbb',
       value: '0x0',
     ),
-    authorization: WalletAuthorizationRequest(
+    authorization: const WalletAuthorizationRequest(
       version: 1,
       method: 'POST',
-      url: 'https://api.privy.io/v1/wallets/wallet-1/rpc',
-      headers: {
-        'privy-app-id': 'app',
-        'privy-idempotency-key': 'execution-1',
-        'privy-request-expiry': '${authorizationExpiry.millisecondsSinceEpoch}',
-      },
-      body: const {
-        'method': 'eth_sendTransaction',
-        'chain_type': 'ethereum',
-        'sponsor': true,
-        'reference_id': 'execution-1',
-        'caip2': 'eip155:42161',
-        'params': {
-          'transaction': {
-            'from': _walletAddress,
-            'to': _usdcContract,
-            'data': '0xa9059cbb',
-            'value': '0x0',
-          },
-        },
-      },
+      url: 'https://example.test/wallet',
+      headers: {},
+      body: {},
       referenceId: 'execution-1',
       sponsor: true,
       caip2: 'eip155:42161',
@@ -1235,11 +1164,8 @@ final class _SuccessfulWithdrawalExecutions
         value: '0x0',
       ),
     ),
-    authorizationExpiresAt: authorizationExpiry,
+    authorizationExpiresAt: DateTime.now().add(const Duration(minutes: 1)),
   );
-
-  @override
-  Future<WalletActionExecution> get(String executionId) async => execution;
 
   @override
   Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({

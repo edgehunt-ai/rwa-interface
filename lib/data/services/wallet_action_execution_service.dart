@@ -28,15 +28,4 @@ abstract interface class WalletActionExecutionService {
     api.WalletActionExecutionSubmissionRequest request, {
     required String idempotencyKey,
   });
-
-  Future<api.WalletActionExecution> prepareCancellation(
-    String executionId, {
-    required String idempotencyKey,
-  });
-
-  Future<api.WalletActionExecution> submitCancellation(
-    String executionId,
-    api.WalletActionAuthorizationSubmissionRequest request, {
-    required String idempotencyKey,
-  });
 }

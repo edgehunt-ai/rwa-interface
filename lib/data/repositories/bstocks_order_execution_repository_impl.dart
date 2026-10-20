@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import '../../domain/auth/authentication.dart';
 import '../api/idempotency_key.dart';
 import '../services/bstocks_broadcast_journal.dart';
-import '../services/bstocks_execution_journal.dart';
+import '../services/bstocks_sponsored_execution_journal.dart';
 import '../../domain/models/api_failure.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
@@ -12,6 +13,7 @@ import '../../domain/models/wallet_action_execution.dart';
 import '../../domain/repositories/bstocks_order_execution_repository.dart';
 import '../../domain/repositories/bstocks_order_action_repository.dart';
 import '../../domain/repositories/orders_repository.dart';
+import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../domain/repositories/wallet_action_execution_repository.dart';
 import '../../domain/services/wallet_authorization_signer.dart';
 
@@ -19,24 +21,27 @@ final class BstocksOrderExecutionRepositoryImpl
     implements BstocksOrderExecutionRepository {
   BstocksOrderExecutionRepositoryImpl(
     this._orders,
-    this._actions, {
-    this._executions,
+    this._actions,
+    this._sender, {
+    this._sponsoredExecutions,
     this._authorizationSigner,
     BstocksBroadcastJournal? broadcastJournal,
-    BstocksExecutionJournal? executionJournal,
-    this._reconciliationAttempts = 30,
-    this._reconciliationDelay = const Duration(seconds: 1),
+    BstocksSponsoredExecutionJournal? sponsoredJournal,
+    this._sponsoredReconciliationAttempts = 30,
+    this._sponsoredReconciliationDelay = const Duration(seconds: 1),
   }) : _broadcastJournal = broadcastJournal ?? BstocksBroadcastJournal(),
-       _executionJournal = executionJournal ?? BstocksExecutionJournal();
+       _sponsoredJournal =
+           sponsoredJournal ?? BstocksSponsoredExecutionJournal();
 
   final OrdersRepository _orders;
   final BstocksOrderActionRepository _actions;
-  final WalletActionExecutionRepository? _executions;
+  final EmbeddedWalletTransactionSender? _sender;
+  final WalletActionExecutionRepository? _sponsoredExecutions;
   final WalletAuthorizationSigner? _authorizationSigner;
   final BstocksBroadcastJournal _broadcastJournal;
-  final BstocksExecutionJournal _executionJournal;
-  final int _reconciliationAttempts;
-  final Duration _reconciliationDelay;
+  final BstocksSponsoredExecutionJournal _sponsoredJournal;
+  final int _sponsoredReconciliationAttempts;
+  final Duration _sponsoredReconciliationDelay;
 
   @override
   Future<ResourceResult<TradingOrder>> continueOrder({
@@ -217,13 +222,13 @@ final class BstocksOrderExecutionRepositoryImpl
           }
           // Once O hides the action, only observe the original E. A hidden
           // action never authorizes a new signature or execution creation.
-          final executions = _executions;
-          final executionId = await _executionJournal.executionId(hidden);
+          final executions = _sponsoredExecutions;
+          final executionId = await _sponsoredJournal.executionId(hidden);
           _checkCancellation(isCancelled);
           if (executions != null && executionId != null) {
             final execution =
-                await _executionJournal.submissionStarted(executionId)
-                ? await _reconcileSubmission(executions, executionId)
+                await _sponsoredJournal.submissionStarted(executionId)
+                ? await _reconcileSponsoredSubmission(executions, executionId)
                 : await executions.get(executionId);
             _checkCancellation(isCancelled);
             _checkExecutionFailure(execution);
@@ -269,33 +274,45 @@ final class BstocksOrderExecutionRepositoryImpl
           final canAuthorize =
               action.status == BstocksOrderActionStatus.awaitingSignature &&
               order.walletActionBlocker == null;
-          final savedExecutionId = await _executionJournal.executionId(action);
+          final savedExecutionId = await _sponsoredJournal.executionId(action);
           _checkCancellation(isCancelled);
           if (knownHash == null &&
               !canAuthorize &&
-              (savedExecutionId == null || _executions == null)) {
+              (savedExecutionId == null || _sponsoredExecutions == null)) {
             throw const UnknownFailure(
               userAction:
                   'Wallet action is not currently available for execution',
             );
           }
-          if (knownHash != null) {
-            // Historical hashes are evidence only, never publishing authority.
-            await _reportTransaction(action, knownHash);
-          } else {
-            final executions = _executions;
-            if (executions == null) {
-              throw const UnknownFailure(
-                userAction: 'bStocks wallet execution service unavailable',
-              );
-            }
-            await _authorizeExecution(
-              executions,
-              _authorizationSigner,
+          final sponsoredExecutions = _sponsoredExecutions;
+          final authorizationSigner = _authorizationSigner;
+          if (knownHash == null &&
+              sponsoredExecutions != null &&
+              (authorizationSigner != null || savedExecutionId != null)) {
+            await _sendSponsored(
+              sponsoredExecutions,
+              authorizationSigner,
               action,
               isCancelled,
               canAuthorize: canAuthorize,
             );
+          } else {
+            final sender = _sender;
+            if (sender == null && knownHash == null) {
+              throw const UnknownFailure(
+                userAction: 'bStocks wallet transaction signer unavailable',
+              );
+            }
+            final txHash =
+                knownHash ??
+                await _broadcastJournal.broadcast(action, () {
+                  _checkCancellation(isCancelled);
+                  return _send(sender!, action!);
+                });
+            // The journal preserves the hash even if cancellation happened
+            // while the wallet was broadcasting. Reporting can resume later.
+            _checkCancellation(isCancelled);
+            await _reportTransaction(action, txHash);
           }
           submittedActions.add(action.actionId);
         }
@@ -362,15 +379,15 @@ final class BstocksOrderExecutionRepositoryImpl
         TradingOrderStatus.partiallyFilled,
       }.contains(order.status);
 
-  Future<void> _authorizeExecution(
+  Future<void> _sendSponsored(
     WalletActionExecutionRepository executions,
     WalletAuthorizationSigner? signer,
     BstocksOrderAction action,
     bool Function()? isCancelled, {
     required bool canAuthorize,
-  }) => _executionJournal.run(action, () async {
+  }) => _sponsoredJournal.run(action, () async {
     _checkCancellation(isCancelled);
-    var executionId = await _executionJournal.executionId(action);
+    var executionId = await _sponsoredJournal.executionId(action);
     _checkCancellation(isCancelled);
     if (executionId == null) {
       if (!canAuthorize) {
@@ -381,16 +398,16 @@ final class BstocksOrderExecutionRepositoryImpl
       final created = await executions.createOrderWalletActionExecution(
         orderId: action.orderId,
         actionId: action.actionId,
-        mode: GasPaymentMode.userPaidNative,
+        mode: GasPaymentMode.appSponsored,
         idempotencyKey: scopedIdempotencyKey(
-          'bstocks-native-${action.orderId}-${action.actionId}',
+          'bstocks-sponsored-${action.orderId}-${action.actionId}',
         ),
       );
       executionId = created.executionId;
-      await _executionJournal.saveExecutionId(action, executionId);
+      await _sponsoredJournal.saveExecutionId(action, executionId);
     }
-    if (await _executionJournal.submissionStarted(executionId)) {
-      await _reconcileSubmission(executions, executionId);
+    if (await _sponsoredJournal.submissionStarted(executionId)) {
+      await _reconcileSponsoredSubmission(executions, executionId);
       return;
     }
     // Preserve an execution created before cancellation, but do not sign it.
@@ -408,17 +425,16 @@ final class BstocksOrderExecutionRepositoryImpl
     if (execution.requiresUserPaidFallback) {
       throw UnknownFailure(
         userAction:
-            'bStocks gas payment unavailable: ${execution.gasPayment.decision.name}',
+            'bStocks gas sponsorship unavailable: ${execution.gasPayment.decision.name}',
       );
     }
     final authorization = execution.authorization;
     if (!execution.awaitsAuthorization || authorization == null) {
       throw UnknownFailure(
         userAction:
-            'bStocks wallet execution is not awaiting authorization: ${execution.status.name}',
+            'bStocks sponsored execution is not awaiting authorization: ${execution.status.name}',
       );
     }
-    _validateAuthorization(execution, executionId, action, authorization);
     if (signer == null) {
       throw const UnknownFailure(
         userAction: 'bStocks wallet authorization signer unavailable',
@@ -442,13 +458,13 @@ final class BstocksOrderExecutionRepositoryImpl
           )
           .timeout(const Duration(seconds: 55));
       _checkCancellation(isCancelled);
-      await _executionJournal.markSubmissionStarted(executionId);
+      await _sponsoredJournal.markSubmissionStarted(executionId);
       if (isCancelled?.call() ?? false) {
         // No POST has been issued, so this marker is provably unsent.
-        await _executionJournal.clearSubmissionStarted(executionId);
+        await _sponsoredJournal.clearSubmissionStarted(executionId);
         throw const CancelledFailure();
       }
-      final submitted = await _submitAuthorization(
+      final submitted = await _submitSponsoredAuthorization(
         executions,
         executionId,
         signature,
@@ -458,19 +474,19 @@ final class BstocksOrderExecutionRepositoryImpl
       throw UnknownFailure(
         retryable: true,
         userAction:
-            'bStocks wallet execution returned ${submitted.status.name}',
+            'bStocks sponsored execution returned ${submitted.status.name}',
       );
     } on TimeoutException catch (error) {
       throw UnknownFailure(
         retryable: true,
         userAction:
-            'bStocks wallet authorization timed out: ${error.message ?? 'Privy did not return a signature'}',
+            'bStocks sponsored authorization timed out: ${error.message ?? 'Privy did not return a signature'}',
       );
     } on WalletAuthorizationFailure catch (failure) {
       throw UnknownFailure(
         retryable: failure.retryable,
         userAction: [
-          'bStocks wallet authorization failed: ${failure.code.name}',
+          'bStocks sponsored authorization failed: ${failure.code.name}',
           if (failure.reason case final reason? when reason.trim().isNotEmpty)
             reason,
         ].join(' - '),
@@ -478,7 +494,7 @@ final class BstocksOrderExecutionRepositoryImpl
     }
   });
 
-  Future<WalletActionExecution> _submitAuthorization(
+  Future<WalletActionExecution> _submitSponsoredAuthorization(
     WalletActionExecutionRepository executions,
     String executionId,
     String signature,
@@ -499,16 +515,16 @@ final class BstocksOrderExecutionRepositoryImpl
       if (failure is AuthenticationFailure ||
           failure is ServerFailure &&
               const {401, 403, 429}.contains(failure.statusCode)) {
-        await _executionJournal.clearSubmissionStarted(executionId);
+        await _sponsoredJournal.clearSubmissionStarted(executionId);
         rethrow;
       }
-      return _reconcileSubmission(
+      return _reconcileSponsoredSubmission(
         executions,
         executionId,
         submissionFailure: failure,
       );
     } on TimeoutException {
-      return _reconcileSubmission(
+      return _reconcileSponsoredSubmission(
         executions,
         executionId,
         submissionFailure: const TimeoutFailure(
@@ -518,14 +534,18 @@ final class BstocksOrderExecutionRepositoryImpl
     }
   }
 
-  Future<WalletActionExecution> _reconcileSubmission(
+  Future<WalletActionExecution> _reconcileSponsoredSubmission(
     WalletActionExecutionRepository executions,
     String executionId, {
     ApiFailure? submissionFailure,
   }) async {
     ApiFailure? lastReadFailure;
     WalletActionExecution? lastExecution;
-    for (var attempt = 0; attempt < _reconciliationAttempts; attempt++) {
+    for (
+      var attempt = 0;
+      attempt < _sponsoredReconciliationAttempts;
+      attempt++
+    ) {
       WalletActionExecution? execution;
       try {
         execution = await executions.get(executionId);
@@ -537,8 +557,8 @@ final class BstocksOrderExecutionRepositoryImpl
         if (_isSubmittedExecution(execution)) return execution;
         _checkExecutionFailure(execution);
       }
-      if (attempt + 1 < _reconciliationAttempts) {
-        await Future<void>.delayed(_reconciliationDelay);
+      if (attempt + 1 < _sponsoredReconciliationAttempts) {
+        await Future<void>.delayed(_sponsoredReconciliationDelay);
       }
     }
 
@@ -583,64 +603,35 @@ final class BstocksOrderExecutionRepositoryImpl
         retryable: execution.status == WalletActionExecutionState.ambiguous,
         userAction:
             execution.failureReason ??
-            'bStocks wallet execution ${execution.status.name}',
+            'bStocks sponsored execution ${execution.status.name}',
       );
     }
   }
 
-  void _validateAuthorization(
-    WalletActionExecution execution,
-    String executionId,
+  Future<String> _send(
+    EmbeddedWalletTransactionSender sender,
     BstocksOrderAction action,
-    WalletAuthorizationRequest authorization,
-  ) {
-    final native = execution.mode == GasPaymentMode.userPaidNative;
-    final transaction = authorization.transaction;
-    final nonce = execution.nativeNonce;
-    final authorizedNonce = transaction.nonce;
-    final validNativeNonce =
-        nonce != null &&
-        RegExp(r'^(0|[1-9][0-9]*)$').hasMatch(nonce) &&
-        execution.transaction.nonce == nonce &&
-        authorizedNonce != null &&
-        RegExp(r'^0x(0|[1-9a-f][0-9a-f]*)$').hasMatch(authorizedNonce) &&
-        BigInt.parse(nonce) ==
-            BigInt.parse(authorizedNonce.substring(2), radix: 16);
-    final params = authorization.body['params'];
-    final bodyTransaction = params is Map ? params['transaction'] : null;
-    if (execution.executionId != executionId ||
-        execution.resourceId != action.orderId ||
-        execution.chainId != action.chainId ||
-        execution.walletAddress.toLowerCase() != action.from.toLowerCase() ||
-        execution.transaction.to.toLowerCase() != action.to.toLowerCase() ||
-        execution.transaction.data.toLowerCase() != action.data.toLowerCase() ||
-        execution.transaction.value != action.value ||
-        execution.gasPayment.mode != execution.mode ||
-        execution.gasPayment.platformPays == native ||
-        authorization.referenceId != executionId ||
-        authorization.caip2 != 'eip155:${action.chainId}' ||
-        authorization.sponsor == native ||
-        transaction.from.toLowerCase() != action.from.toLowerCase() ||
-        transaction.to.toLowerCase() != action.to.toLowerCase() ||
-        transaction.data.toLowerCase() != action.data.toLowerCase() ||
-        transaction.value != action.value ||
-        authorization.body['method'] != 'eth_sendTransaction' ||
-        authorization.body['reference_id'] != executionId ||
-        authorization.body['caip2'] != authorization.caip2 ||
-        authorization.body['sponsor'] != authorization.sponsor ||
-        bodyTransaction is! Map ||
-        bodyTransaction['from'] != transaction.from ||
-        bodyTransaction['to'] != transaction.to ||
-        bodyTransaction['data'] != transaction.data ||
-        bodyTransaction['value'] != transaction.value ||
-        (native &&
-            (execution.executionProvider != 'privy_native' ||
-                execution.nativeDeliveryState != 'prepared' ||
-                !validNativeNonce ||
-                bodyTransaction['nonce'] != authorizedNonce))) {
-      throw const CompatibilityFailure(
-        userAction:
-            'Wallet authorization does not match the frozen bStocks action',
+  ) async {
+    if (!action.validUntil.isAfter(DateTime.now().toUtc())) {
+      throw const WalletTransactionNotBroadcastFailure(
+        userAction: 'Wallet action expired; reconcile the original action before retrying',
+      );
+    }
+    try {
+      return await sender.sendTransaction(
+        expectedSigner: action.from,
+        chainId: action.chainId,
+        to: action.to,
+        data: action.data,
+        value: action.value,
+      );
+    } on IdentityFailure catch (failure) {
+      throw UnknownFailure(
+        retryable: failure.retryable,
+        userAction: [
+          'bStocks wallet transaction failed: ${failure.code.name}',
+          if (failure.reason case final reason? when reason.isNotEmpty) reason,
+        ].join(' - '),
       );
     }
   }

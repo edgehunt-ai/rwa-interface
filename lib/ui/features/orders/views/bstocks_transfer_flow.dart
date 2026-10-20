@@ -33,7 +33,7 @@ enum BstocksTransferFlowStage {
   review,
   fundingPending,
   submitting,
-  tradeResult,
+  tradeSuccess,
 }
 
 class _BstocksTransferFlowState
@@ -44,17 +44,6 @@ class _BstocksTransferFlowState
   late bool _fundingSubmitted;
   late FundingPlan _plan;
   late OrderPreview _orderPreview;
-  FundingTransfer? _lastTransfer;
-
-  bool get _requiresRecovery => switch (_lastTransfer?.status) {
-    FundingTransferState.failed ||
-    FundingTransferState.ambiguous ||
-    FundingTransferState.manualReview ||
-    FundingTransferState.refundPending ||
-    FundingTransferState.refunded ||
-    FundingTransferState.unknown => true,
-    _ => false,
-  };
 
   @override
   void initState() {
@@ -63,15 +52,6 @@ class _BstocksTransferFlowState
     _fundingSubmitted = widget.initialFundingSubmitted;
     _plan = widget.plan;
     _orderPreview = widget.orderPreview;
-    _fundingSubmitted =
-        _fundingSubmitted || _plan.legs.any((leg) => leg.transferId != null);
-    if (((_fundingSubmitted ||
-                _stage == BstocksTransferFlowStage.fundingPending) &&
-            !_plan.shouldPoll) ||
-        _plan.status == FundingPlanState.failed ||
-        _plan.status == FundingPlanState.manualReview) {
-      _stage = BstocksTransferFlowStage.review;
-    }
   }
 
   @override
@@ -91,7 +71,7 @@ class _BstocksTransferFlowState
             BstocksTransferFlowStage.review => _review(context),
             BstocksTransferFlowStage.fundingPending => _fundingPending(context),
             BstocksTransferFlowStage.submitting => _submitting(context),
-            BstocksTransferFlowStage.tradeResult => _tradeResult(context),
+            BstocksTransferFlowStage.tradeSuccess => _tradeSuccess(context),
           },
         ),
       ),
@@ -142,33 +122,12 @@ class _BstocksTransferFlowState
         _ConversionOverview(plan: _plan, preview: _orderPreview),
         const SizedBox(height: 16),
         _ReviewDetails(preview: _orderPreview),
-        if (error != null ||
-            (!_plan.isActionable &&
-                _plan.status != FundingPlanState.alreadyFunded))
-          Text(error ?? _fundingStatusMessage(context)),
-        for (final leg in _plan.legs)
-          if (leg.transferId case final id?) SelectableText(id),
-        if (_fundingSubmitted ||
-            (!_plan.isActionable &&
-                _plan.status != FundingPlanState.alreadyFunded))
-          OutlinedButton.icon(
-            key: const Key('bstocks-funding-check-status'),
-            onPressed: _checkFundingStatus,
-            icon: const Icon(Icons.refresh),
-            label: Text(l10n.transferCheckStatus),
-          ),
         const SizedBox(height: 16),
         _Actions(
           primary: '${l10n.confirm} ${l10n.buy}',
-          onBack: _fundingSubmitted
-              ? widget.onClose
-              : () => setState(() => _stage = BstocksTransferFlowStage.source),
-          onPrimary:
-              !_fundingSubmitted &&
-                  (_plan.isActionable ||
-                      _plan.status == FundingPlanState.alreadyFunded)
-              ? _submitTransfer
-              : null,
+          onBack: () =>
+              setState(() => _stage = BstocksTransferFlowStage.source),
+          onPrimary: _submitTransfer,
         ),
       ],
     );
@@ -189,24 +148,24 @@ class _BstocksTransferFlowState
           authorization: authorization,
         );
         if (!mounted) return;
-        setState(() {
-          _fundingSubmitted = true;
-          _lastTransfer = transfer;
-        });
-        plan = await commands.refresh(plan.planId);
-        if (!mounted) return;
-        _plan = plan;
-        if (!transfer.isCompleted) {
+        setState(() => _fundingSubmitted = true);
+        if (transfer.status != FundingTransferState.completed) {
           setState(() {
-            _stage = plan.shouldPoll && !_requiresRecovery
-                ? BstocksTransferFlowStage.fundingPending
-                : BstocksTransferFlowStage.review;
-            error =
-                transfer.reason ??
-                (_requiresRecovery ? _fundingStatusMessage(context) : null);
+            _stage = switch (transfer.status) {
+              FundingTransferState.failed ||
+              FundingTransferState.ambiguous ||
+              FundingTransferState.manualReview =>
+                BstocksTransferFlowStage.review,
+              _ => BstocksTransferFlowStage.fundingPending,
+            };
+            error = transfer.failureReason;
           });
           return;
         }
+        plan = await ref
+            .read(fundingRepositoryProvider)
+            .getFundingPlan(plan.planId);
+        if (!mounted) return;
       }
       if (plan.status == FundingPlanState.alreadyFunded) {
         _plan = plan;
@@ -218,7 +177,6 @@ class _BstocksTransferFlowState
         return;
       }
       setState(() {
-        _plan = plan;
         _stage = BstocksTransferFlowStage.review;
         error = plan.blocker ?? AppLocalizations.of(context).fundingNotReady;
       });
@@ -228,57 +186,6 @@ class _BstocksTransferFlowState
           _stage = BstocksTransferFlowStage.review;
           error = AppLocalizations.of(context).transferStartFailed;
         });
-      }
-    }
-  }
-
-  String _fundingStatusMessage(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return _lastTransfer?.reason ??
-        _plan.blocker ??
-        switch (_lastTransfer?.status) {
-          FundingTransferState.refundPending => l10n.transferRefundPending,
-          FundingTransferState.refunded => l10n.transferRefunded,
-          FundingTransferState.manualReview =>
-            l10n.transferRequiresManualReview,
-          FundingTransferState.failed => l10n.transferFailed,
-          _ => switch (_plan.status) {
-            FundingPlanState.manualReview => l10n.transferRequiresManualReview,
-            FundingPlanState.failed => l10n.transferFailed,
-            FundingPlanState.partiallyFunded => l10n.transferPartiallySettled,
-            _ => l10n.transferUnresolved,
-          },
-        };
-  }
-
-  Future<void> _checkFundingStatus() async {
-    try {
-      final plan = await ref
-          .read(fundingTransferCommandsProvider)
-          .refresh(_plan.planId);
-      if (!mounted) return;
-      _plan = plan;
-      for (final leg in plan.legs) {
-        if (leg.transferId case final id?) {
-          ref.invalidate(fundingTransferProvider(id));
-          _lastTransfer = await ref.read(fundingTransferProvider(id).future);
-          if (!mounted) return;
-          if (_requiresRecovery) break;
-        }
-      }
-      if (plan.status == FundingPlanState.alreadyFunded) {
-        await _refreshOrderPreviewAfterFunding(plan);
-        return;
-      }
-      setState(() {
-        _stage = plan.shouldPoll && !_requiresRecovery
-            ? BstocksTransferFlowStage.fundingPending
-            : BstocksTransferFlowStage.review;
-        error = _fundingStatusMessage(context);
-      });
-    } on Object {
-      if (mounted) {
-        setState(() => error = AppLocalizations.of(context).transferUnresolved);
       }
     }
   }
@@ -306,18 +213,13 @@ class _BstocksTransferFlowState
           .read(orderCommandProvider.notifier)
           .submit(preview.intent, previewId: preview.previewId);
       if (!mounted) return;
-      final observed =
-          result?.resource ??
-          ref
-              .read(orderCommandProvider.notifier)
-              .observedOrderFor(preview.intent);
       setState(() {
-        _submittedOrder = observed;
-        _stage = observed == null
+        _submittedOrder = result?.resource;
+        _stage = result == null
             ? BstocksTransferFlowStage.review
-            : BstocksTransferFlowStage.tradeResult;
-        error = observed == null
-            ? AppLocalizations.of(context).orderStatusInActivity
+            : BstocksTransferFlowStage.tradeSuccess;
+        error = result == null
+            ? AppLocalizations.of(context).orderSubmissionFailed
             : null;
       });
     } on Object {
@@ -356,12 +258,6 @@ class _BstocksTransferFlowState
             color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
             fontSize: 12,
           ),
-        ),
-        OutlinedButton.icon(
-          key: const Key('bstocks-funding-check-status'),
-          onPressed: _checkFundingStatus,
-          icon: const Icon(Icons.refresh),
-          label: Text(l10n.transferCheckStatus),
         ),
         if (_fundingSubmitted) ...[
           const SizedBox(height: 16),
@@ -407,53 +303,34 @@ class _BstocksTransferFlowState
     );
   }
 
-  Widget _tradeResult(BuildContext context) {
+  Widget _tradeSuccess(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final filled = _submittedOrder?.status == TradingOrderStatus.filled;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
         const Divider(),
-        Icon(
-          filled ? Icons.check_circle_outline : Icons.info_outline,
-          size: 64,
-        ),
+        const Icon(Icons.check_circle_outline, size: 64),
         const SizedBox(height: 12),
         Text(
-          switch (_submittedOrder?.status) {
-            TradingOrderStatus.filled => l10n.tradeSuccessful,
-            TradingOrderStatus.open => l10n.openTab,
-            TradingOrderStatus.partiallyFilled => l10n.orderPartiallyFilled,
-            TradingOrderStatus.manualReview => l10n.activityManualReview,
-            TradingOrderStatus.ambiguous => l10n.orderAmbiguous,
-            TradingOrderStatus.failed => l10n.activityFailed,
-            TradingOrderStatus.cancelled => l10n.activityCancelled,
-            TradingOrderStatus.awaitingConfirmation =>
-              l10n.orderAwaitingConfirmation,
-            TradingOrderStatus.pendingSignature => l10n.hip3PendingSignature,
-            TradingOrderStatus.submitted => l10n.orderSubmitted,
-            TradingOrderStatus.pending => l10n.activityInProgress,
-            _ => l10n.activityUnknown,
-          },
+          l10n.tradeSuccessful,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleMedium,
         ),
-        if (!filled) Text(l10n.orderStatusInActivity),
         const SizedBox(height: 16),
         FilledButton(
           key: const Key('bstocks-transfer-result-action'),
           onPressed: () {
             final order = _submittedOrder;
             final onViewPosition = widget.onViewPosition;
-            if (filled && order != null && onViewPosition != null) {
+            if (order != null && onViewPosition != null) {
               onViewPosition(order);
             } else {
               widget.onClose?.call();
             }
           },
-          child: Text(filled ? l10n.viewPosition : l10n.closeViewLater),
+          child: Text(l10n.viewPosition),
         ),
       ],
     );

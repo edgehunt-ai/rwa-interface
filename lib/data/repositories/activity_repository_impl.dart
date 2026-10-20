@@ -41,14 +41,16 @@ final class ActivityRepositoryImpl implements ActivityRepository {
       _ => ActivityCategory.unknown,
     },
     type: _activityType(value.type),
-    status: _state(value),
+    status: switch (value.status) {
+      api.ActivityStatus.pending => ActivityState.pending,
+      api.ActivityStatus.success => ActivityState.success,
+      api.ActivityStatus.failed => ActivityState.failed,
+      api.ActivityStatus.cancelled => ActivityState.cancelled,
+      _ => ActivityState.unknown,
+    },
     title: value.title,
     businessType: _businessType(value.businessType),
     rawStatus: _activityStatus(value.status),
-    economicStatus: _economicStatus(value.economicStatus?.name),
-    financialObligationIds: List.unmodifiable(
-      value.financialObligationIds ?? const <String>[],
-    ),
     amount: value.amount == null
         ? null
         : DecimalValue(value.amount!, asset: value.asset, unit: 'activity'),
@@ -129,42 +131,6 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     api.ActivityStatus.manualReview => 'manual_review',
     _ => value.name,
   };
-  String? _economicStatus(String? value) => switch (value) {
-    'sourceDebited' => 'source_debited',
-    'inTransit' => 'in_transit',
-    'refundPending' => 'refund_pending',
-    'partiallySettled' => 'partially_settled',
-    'partiallyRefunded' => 'partially_refunded',
-    _ => value,
-  };
-
-  ActivityState _state(api.ActivityRecord value) {
-    final economic = _economicStatus(value.economicStatus?.name);
-    if (economic != null) {
-      return switch (economic) {
-        'reserved' => ActivityState.reserved,
-        'source_debited' => ActivityState.sourceDebited,
-        'in_transit' => ActivityState.inTransit,
-        'refund_pending' => ActivityState.refundPending,
-        'partially_settled' => ActivityState.partiallySettled,
-        'partially_refunded' => ActivityState.partiallyRefunded,
-        'credited' => ActivityState.credited,
-        'refunded' => ActivityState.refunded,
-        'compensated' => ActivityState.compensated,
-        'released' => ActivityState.released,
-        'settled' => ActivityState.settled,
-        _ => ActivityState.unknown,
-      };
-    }
-    return switch (value.status) {
-      api.ActivityStatus.pending => ActivityState.pending,
-      api.ActivityStatus.success => ActivityState.success,
-      api.ActivityStatus.failed => ActivityState.failed,
-      api.ActivityStatus.cancelled => ActivityState.cancelled,
-      api.ActivityStatus.manualReview => ActivityState.manualReview,
-      _ => ActivityState.unknown,
-    };
-  }
 
   ActivityBusinessType? _businessType(
     api.ActivityRecordBusinessTypeEnum? value,
@@ -223,13 +189,7 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     ActivityState.success => api.ActivityStatus.success,
     ActivityState.failed => api.ActivityStatus.failed,
     ActivityState.cancelled => api.ActivityStatus.cancelled,
-    ActivityState.manualReview => api.ActivityStatus.manualReview,
-    null || ActivityState.unknown => null,
-    _ => throw ArgumentError.value(
-      value,
-      'status',
-      'Economic states are not technical activity status filters',
-    ),
+    _ => null,
   };
 
   api.ActivityType? _type(String? value) => switch (value) {

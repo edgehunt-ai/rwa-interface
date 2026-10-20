@@ -26,33 +26,6 @@ final BuiltSet<PerpFundingTargetBalanceSnapshotAccountEnum>
   _$perpFundingTargetBalanceSnapshotAccountEnum_hip3,
 ]);
 
-const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum
-    _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet =
-    const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum._('mainnet');
-const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum
-    _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet =
-    const PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum._('testnet');
-
-PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum
-    _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(
-        String name) {
-  switch (name) {
-    case 'mainnet':
-      return _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
-    case 'testnet':
-      return _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum>
-    _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumValues = BuiltSet<
-        PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum>(const <PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum>[
-  _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet,
-  _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet,
-]);
-
 const PerpFundingTargetBalanceSnapshotSource_Enum
     _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo =
     const PerpFundingTargetBalanceSnapshotSource_Enum._('hyperliquidInfo');
@@ -76,9 +49,6 @@ final BuiltSet<PerpFundingTargetBalanceSnapshotSource_Enum>
 Serializer<PerpFundingTargetBalanceSnapshotAccountEnum>
     _$perpFundingTargetBalanceSnapshotAccountEnumSerializer =
     _$PerpFundingTargetBalanceSnapshotAccountEnumSerializer();
-Serializer<PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum>
-    _$perpFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer =
-    _$PerpFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer();
 Serializer<PerpFundingTargetBalanceSnapshotSource_Enum>
     _$perpFundingTargetBalanceSnapshotSourceEnumSerializer =
     _$PerpFundingTargetBalanceSnapshotSource_EnumSerializer();
@@ -111,41 +81,6 @@ class _$PerpFundingTargetBalanceSnapshotAccountEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       PerpFundingTargetBalanceSnapshotAccountEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$PerpFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer
-    implements
-        PrimitiveSerializer<
-            PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'mainnet': 'mainnet',
-    'testnet': 'testnet',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'mainnet': 'mainnet',
-    'testnet': 'testnet',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum
-  ];
-  @override
-  final String wireName =
-      'PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -189,9 +124,6 @@ class _$PerpFundingTargetBalanceSnapshot
   @override
   final PerpFundingTargetAsset asset;
   @override
-  final PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum?
-      targetEnvironment;
-  @override
   final String availableAmount;
   @override
   final PerpFundingTargetBalanceSnapshotSource_Enum source_;
@@ -208,7 +140,6 @@ class _$PerpFundingTargetBalanceSnapshot
       {required this.account,
       required this.accountRef,
       required this.asset,
-      this.targetEnvironment,
       required this.availableAmount,
       required this.source_,
       required this.observedAt,
@@ -230,7 +161,6 @@ class _$PerpFundingTargetBalanceSnapshot
         account == other.account &&
         accountRef == other.accountRef &&
         asset == other.asset &&
-        targetEnvironment == other.targetEnvironment &&
         availableAmount == other.availableAmount &&
         source_ == other.source_ &&
         observedAt == other.observedAt &&
@@ -243,7 +173,6 @@ class _$PerpFundingTargetBalanceSnapshot
     _$hash = $jc(_$hash, account.hashCode);
     _$hash = $jc(_$hash, accountRef.hashCode);
     _$hash = $jc(_$hash, asset.hashCode);
-    _$hash = $jc(_$hash, targetEnvironment.hashCode);
     _$hash = $jc(_$hash, availableAmount.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
@@ -258,7 +187,6 @@ class _$PerpFundingTargetBalanceSnapshot
           ..add('account', account)
           ..add('accountRef', accountRef)
           ..add('asset', asset)
-          ..add('targetEnvironment', targetEnvironment)
           ..add('availableAmount', availableAmount)
           ..add('source_', source_)
           ..add('observedAt', observedAt)
@@ -286,14 +214,6 @@ class PerpFundingTargetBalanceSnapshotBuilder
   PerpFundingTargetAssetBuilder get asset =>
       _$this._asset ??= PerpFundingTargetAssetBuilder();
   set asset(PerpFundingTargetAssetBuilder? asset) => _$this._asset = asset;
-
-  PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum? _targetEnvironment;
-  PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum?
-      get targetEnvironment => _$this._targetEnvironment;
-  set targetEnvironment(
-          PerpFundingTargetBalanceSnapshotTargetEnvironmentEnum?
-              targetEnvironment) =>
-      _$this._targetEnvironment = targetEnvironment;
 
   String? _availableAmount;
   String? get availableAmount => _$this._availableAmount;
@@ -323,7 +243,6 @@ class PerpFundingTargetBalanceSnapshotBuilder
       _account = $v.account;
       _accountRef = $v.accountRef;
       _asset = $v.asset.toBuilder();
-      _targetEnvironment = $v.targetEnvironment;
       _availableAmount = $v.availableAmount;
       _source_ = $v.source_;
       _observedAt = $v.observedAt;
@@ -356,7 +275,6 @@ class PerpFundingTargetBalanceSnapshotBuilder
             accountRef: BuiltValueNullFieldError.checkNotNull(
                 accountRef, r'PerpFundingTargetBalanceSnapshot', 'accountRef'),
             asset: asset.build(),
-            targetEnvironment: targetEnvironment,
             availableAmount: BuiltValueNullFieldError.checkNotNull(
                 availableAmount,
                 r'PerpFundingTargetBalanceSnapshot',
