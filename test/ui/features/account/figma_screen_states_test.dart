@@ -8,6 +8,7 @@ import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/data/services/cache_storage_service.dart';
 import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/account_deletion.dart';
 import 'package:nobell/domain/repositories/account_repository.dart';
 import 'package:nobell/domain/models/user_account.dart';
@@ -108,6 +109,34 @@ void main() {
 
     expect(identity.unlinkPasskeyCalls, 1);
     expect(find.text('Not set up'), findsOneWidget);
+  });
+
+  testWidgets('passkey setup shows the SDK reason and allows retry', (
+    tester,
+  ) async {
+    final identity = FakeIdentityAuthGateway()
+      ..passkeyFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+        reason: '[50152] RP ID cannot be validated.',
+      );
+    await tester.pumpWidget(_settingsApp(identity, _SessionRepository()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Passkey'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Set Up'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('[50152] RP ID cannot be validated.'), findsOneWidget);
+    expect(find.text('Passkey setup failed. Please try again.'), findsNothing);
+    expect(find.text('Set Up Passkey'), findsOneWidget);
+
+    identity.passkeyFailure = null;
+    await tester.tap(find.widgetWithText(FilledButton, 'Set Up'));
+    await tester.pumpAndSettle();
+    expect(identity.linkPasskeyCalls, 2);
+    expect(find.text('Enabled'), findsOneWidget);
   });
 
   testWidgets('language sheet maps zh-CN and shows the selected control', (
