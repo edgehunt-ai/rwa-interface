@@ -548,12 +548,12 @@ void main() {
   });
 
   testWidgets(
-    'Perps Relay review accepts equivalent gross amounts with trailing zeros',
+    'Perps Relay review rejects inconsistent fees and accepts trailing-zero amounts',
     (tester) async {
       await configureDisplay(tester, size: const Size(393, 852));
       final repository =
           _TestHip3WithdrawalRepository(
-              previewAmount: '1.000000',
+              previewAmount: '51.400000',
               previewRail: 'relay',
               previewChainId: '42161',
             )
@@ -564,7 +564,7 @@ void main() {
           overrides: [
             deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
             hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
-            hip3TransferBalanceProvider.overrideWith((_) async => '1.957788'),
+            hip3TransferBalanceProvider.overrideWith((_) async => '100'),
             tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
             walletsProvider(null).overrideWith((_) async => _currentWallets),
           ],
@@ -575,7 +575,7 @@ void main() {
 
       await tester.enterText(
         find.byKey(const Key('perps-withdrawal-amount-field')),
-        '1',
+        '51.4',
       );
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump();
@@ -583,7 +583,7 @@ void main() {
       final reviewButton = find.byKey(
         const Key('perps-withdrawal-review-button'),
       );
-      expect(repository.previewAmounts, ['1']);
+      expect(repository.previewAmounts, ['51.4']);
       expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
       expect(
         find.text('Unable to prepare this withdrawal. Try again.'),
@@ -604,7 +604,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(repository.createdAmounts, ['1']);
+      expect(repository.createdAmounts, ['51.4']);
       expect(
         find.byKey(const Key('perps-withdrawal-amount-field')),
         findsOneWidget,
@@ -622,7 +622,7 @@ void main() {
       await tester.tap(submitButton);
       await tester.pump();
       await tester.pump();
-      expect(repository.createdAmounts, ['1', '1']);
+      expect(repository.createdAmounts, ['51.4', '51.4']);
       expect(find.text('Withdrawal successful'), findsNothing);
       expect(
         find.text('Transfer submitted. Waiting for funds to arrive.'),
@@ -645,7 +645,7 @@ void main() {
       final checks = repository.getCalls;
       await tester.pump(const Duration(seconds: 10));
       expect(repository.getCalls, greaterThan(checks));
-      expect(repository.createdAmounts, ['1', '1']);
+      expect(repository.createdAmounts, ['51.4', '51.4']);
       repository.failureReason = null;
       repository.resourceStatus = 'completed';
       expect(find.byKey(const Key('perps-withdrawal-refresh')), findsNothing);

@@ -69,6 +69,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     ..onTap = () => pushLegalDocument(context, LegalDocument.privacy);
   bool _emailFlow = false;
   bool _showEmailFormatError = false;
+  bool _finishingLogin = false;
   String? _recentMethod;
   String? _scheduledEmailSync;
 
@@ -188,13 +189,21 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     ref.listen<AuthenticationState>(authenticationProvider, (previous, next) {
       if (next is! AuthenticationAuthenticated ||
           next.setupStatus != AuthenticationSetupStatus.ready ||
-          !mounted) {
+          !mounted ||
+          _finishingLogin) {
         return;
       }
+      _finishingLogin = true;
       if (widget.returnToHomeOnSuccess) {
         context.goNamed(AppRoutes.homeName);
       } else {
-        Navigator.of(context).maybePop();
+        final navigator = Navigator.of(context);
+        final loginRoute = ModalRoute.of(context);
+        if (loginRoute != null) {
+          // Legal documents can cover this route while authentication finishes.
+          navigator.popUntil((route) => route == loginRoute);
+        }
+        if (navigator.canPop()) navigator.pop();
       }
     });
     final state = widget.authentication;

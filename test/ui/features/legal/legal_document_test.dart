@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/domain/auth/authentication.dart';
+import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/legal/views/legal_document_screen.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +16,90 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final initialState in <AuthenticationState>[
+    const AuthenticationAuthenticating(),
+    const AuthenticationAwaitingCode('reader@example.com'),
+  ]) {
+    for (final document in LegalDocument.values) {
+      testWidgets(
+        'authentication from $initialState closes login and ${document.name}',
+        (tester) async {
+          SharedPreferences.setMockInitialValues({});
+          var authentication = initialState;
+          final container = ProviderContainer(
+            overrides: [
+              identityAuthGatewayProvider.overrideWithValue(
+                FakeIdentityAuthGateway(),
+              ),
+              authenticationProvider.overrideWithBuild(
+                (_, _) => authentication,
+              ),
+            ],
+          );
+          addTearDown(container.dispose);
+          var loginReturned = false;
+          var actionResumed = false;
+          await tester.pumpWidget(
+            UncontrolledProviderScope(
+              container: container,
+              child: buildTestApp(
+                Consumer(
+                  builder: (context, ref, _) => TextButton(
+                    onPressed: () async {
+                      actionResumed = await requireAuthentication(context, ref);
+                      loginReturned = true;
+                    },
+                    child: const Text('Open login'),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.tap(find.text('Open login'));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 400));
+          final documentClosed = pushLegalDocument(
+            tester.element(find.byType(PrivyLoginScreen)),
+            document,
+          );
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 400));
+          expect(find.byType(LegalDocumentScreen), findsOneWidget);
+          authentication = AuthenticationAuthenticated(
+            ProductSession(
+              sessionId: 'session',
+              createdAt: DateTime.utc(2026),
+              expiresAt: DateTime.utc(2030),
+              generation: 1,
+              accountCreated: true,
+              account: const UserAccount(
+                userId: 'user',
+                settings: UserPreferences(
+                  language: 'en',
+                  pushEnabled: false,
+                  notifyOrderFilled: true,
+                  notifyOrderFailed: true,
+                  notifyLiquidationWarning: true,
+                ),
+              ),
+            ),
+            principal: const IdentityPrincipal('user'),
+          );
+          container.invalidate(authenticationProvider);
+          container.read(authenticationProvider);
+          await tester.pumpAndSettle();
+          await documentClosed;
+          expect(find.byType(LegalDocumentScreen), findsNothing);
+          expect(find.byType(PrivyLoginScreen), findsNothing);
+          expect(loginReturned, isTrue);
+          expect(actionResumed, isTrue);
+          expect(find.text('Open login'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   for (final entry in [
     ('/terms', 'Term of Use'),
     ('/privacy', 'Privacy Policy'),
