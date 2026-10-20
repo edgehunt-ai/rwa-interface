@@ -8,6 +8,7 @@ class RwaRichTooltip extends StatefulWidget {
     required this.message,
     this.alignToCenter = false,
     this.autoFlipVertically = false,
+    this.constrainToViewport = false,
     this.borderColor,
     this.tooltipKey,
   });
@@ -16,6 +17,7 @@ class RwaRichTooltip extends StatefulWidget {
   final InlineSpan message;
   final bool alignToCenter;
   final bool autoFlipVertically;
+  final bool constrainToViewport;
   final Color? borderColor;
   final Key? tooltipKey;
 
@@ -48,6 +50,12 @@ class _RwaRichTooltipState extends State<RwaRichTooltip> {
       ancestor: overlayBox,
     );
     _showBelow = widget.autoFlipVertically && targetTop.dy < 280;
+    final anchorX =
+        targetTop.dx + targetBox.size.width * (widget.alignToCenter ? .5 : 1);
+    final tooltipLeft = anchorX - (widget.alignToCenter ? 120 : 240);
+    final horizontalOffset = widget.constrainToViewport
+        ? tooltipLeft.clamp(12.0, overlayBox.size.width - 252) - tooltipLeft
+        : 0.0;
     final entry = OverlayEntry(
       builder: (context) => _RwaTooltipOverlay(
         layerLink: _layerLink,
@@ -56,6 +64,7 @@ class _RwaRichTooltipState extends State<RwaRichTooltip> {
         borderColor: widget.borderColor,
         tooltipKey: widget.tooltipKey,
         showBelow: _showBelow,
+        horizontalOffset: horizontalOffset,
         onDismiss: _removeTooltip,
       ),
     );
@@ -89,6 +98,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
     required this.borderColor,
     required this.tooltipKey,
     required this.showBelow,
+    required this.horizontalOffset,
     required this.onDismiss,
   });
 
@@ -98,6 +108,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
   final Color? borderColor;
   final Key? tooltipKey;
   final bool showBelow;
+  final double horizontalOffset;
   final VoidCallback onDismiss;
 
   @override
@@ -122,41 +133,44 @@ class _RwaTooltipOverlay extends StatelessWidget {
               : (alignToCenter
                     ? Alignment.bottomCenter
                     : Alignment.bottomRight),
-          offset: Offset(0, showBelow ? 8 : -8),
+          offset: Offset(horizontalOffset, showBelow ? 8 : -8),
           child: Material(
             color: Colors.transparent,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: alignToCenter
-                  ? CrossAxisAlignment.center
-                  : CrossAxisAlignment.end,
-              children: [
-                if (showBelow)
-                  _TooltipArrow(
-                    pointsUp: true,
-                    color: colors.surface,
-                    borderColor: borderColor ?? colors.border,
-                    alignToCenter: alignToCenter,
+            child: SizedBox(
+              width: 240,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: alignToCenter
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.end,
+                children: [
+                  if (showBelow)
+                    _TooltipArrow(
+                      pointsUp: true,
+                      color: colors.surface,
+                      borderColor: borderColor ?? colors.border,
+                      alignToCenter: alignToCenter,
+                    ),
+                  Container(
+                    key: tooltipKey,
+                    width: 240,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      border: Border.all(color: borderColor ?? colors.border),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: RichText(text: message),
                   ),
-                Container(
-                  key: tooltipKey,
-                  width: 240,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    border: Border.all(color: borderColor ?? colors.border),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: RichText(text: message),
-                ),
-                if (!showBelow)
-                  _TooltipArrow(
-                    pointsUp: false,
-                    color: colors.surface,
-                    borderColor: borderColor ?? colors.border,
-                    alignToCenter: alignToCenter,
-                  ),
-              ],
+                  if (!showBelow)
+                    _TooltipArrow(
+                      pointsUp: false,
+                      color: colors.surface,
+                      borderColor: borderColor ?? colors.border,
+                      alignToCenter: alignToCenter,
+                    ),
+                ],
+              ),
             ),
           ),
         ),

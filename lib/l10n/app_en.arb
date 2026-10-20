@@ -962,5 +962,8 @@
   "orderFilledTotalLabel": "Filled / Total",
   "orderProgressLabel": "Progress",
   "takeProfitShortLabel": "TP",
-  "stopLossShortLabel": "SL"
+  "stopLossShortLabel": "SL",
+  "spotMarketDataSource": "*Spot data is sourced from Binance for reference only.",
+  "marketDataSourceBinance": "Market data from Binance",
+  "marketDataSourceDisclaimer": "Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform."
 }

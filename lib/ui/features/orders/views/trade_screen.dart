@@ -26,6 +26,7 @@ import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/markets/market_data_source.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/empty_state.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
@@ -909,6 +910,10 @@ class _ProductHeader extends StatelessWidget {
             ],
           ],
         ),
+        if (kind == MarketProductKind.bstock) ...[
+          const SizedBox(height: 4),
+          const TradeMarketDataSource(),
+        ],
       ],
     );
   }

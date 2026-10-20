@@ -178,6 +178,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('+2.5%'), findsOneWidget);
+    expect(
+      find.text('*Spot data is sourced from Binance for reference only.'),
+      findsNothing,
+    );
     expect(find.text(r'Vol $1.23M'), findsNothing);
 
     await tester.drag(find.text('Popular'), const Offset(-80, 0));
@@ -185,6 +189,10 @@ void main() {
     await tester.tap(find.text('Volume'));
     await tester.pumpAndSettle();
 
+    expect(
+      find.text('*Spot data is sourced from Binance for reference only.'),
+      findsOneWidget,
+    );
     expect(requestedGroups, contains('volume'));
     expect(find.text('+2.5%'), findsNothing);
     expect(find.text(r'Vol $1.23M'), findsOneWidget);

@@ -924,5 +924,8 @@
   "orderFilledTotalLabel": "已成交 / 总计",
   "orderProgressLabel": "进度",
   "takeProfitShortLabel": "止盈",
-  "stopLossShortLabel": "止损"
+  "stopLossShortLabel": "止损",
+  "spotMarketDataSource": "*现货数据来源于 Binance，仅供参考。",
+  "marketDataSourceBinance": "市场数据来源于 Binance",
+  "marketDataSourceDisclaimer": "价格、图表及相关市场数据来源于 Binance，仅供参考，可能与本平台的实际交易情况有所不同。"
 }

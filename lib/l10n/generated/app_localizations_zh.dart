@@ -2708,4 +2708,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stopLossShortLabel => '止损';
+
+  @override
+  String get spotMarketDataSource => '*现货数据来源于 Binance，仅供参考。';
+
+  @override
+  String get marketDataSourceBinance => '市场数据来源于 Binance';
+
+  @override
+  String get marketDataSourceDisclaimer =>
+      '价格、图表及相关市场数据来源于 Binance，仅供参考，可能与本平台的实际交易情况有所不同。';
 }

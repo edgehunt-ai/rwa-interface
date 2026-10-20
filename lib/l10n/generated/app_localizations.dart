@@ -5106,6 +5106,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'SL'**
   String get stopLossShortLabel;
+
+  /// No description provided for @spotMarketDataSource.
+  ///
+  /// In en, this message translates to:
+  /// **'*Spot data is sourced from Binance for reference only.'**
+  String get spotMarketDataSource;
+
+  /// No description provided for @marketDataSourceBinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Market data from Binance'**
+  String get marketDataSourceBinance;
+
+  /// No description provided for @marketDataSourceDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.'**
+  String get marketDataSourceDisclaimer;
 }
 
 class _AppLocalizationsDelegate

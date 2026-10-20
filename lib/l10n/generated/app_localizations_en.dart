@@ -2867,4 +2867,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopLossShortLabel => 'SL';
+
+  @override
+  String get spotMarketDataSource =>
+      '*Spot data is sourced from Binance for reference only.';
+
+  @override
+  String get marketDataSourceBinance => 'Market data from Binance';
+
+  @override
+  String get marketDataSourceDisclaimer =>
+      'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.';
 }
