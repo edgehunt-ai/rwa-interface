@@ -63,13 +63,7 @@ class ActivityDetailScreen extends ConsumerWidget {
               )
             : ListView(
                 children: [
-                  Card(
-                    child: _ActivityRow(
-                      record,
-                      initiallyExpanded: true,
-                      showDetailLink: false,
-                    ),
-                  ),
+                  Card(child: _ActivityRow(record, initiallyExpanded: true)),
                 ],
               ),
       );
@@ -667,14 +661,9 @@ class _ActivityList extends StatelessWidget {
 }
 
 class _ActivityRow extends StatelessWidget {
-  const _ActivityRow(
-    this.record, {
-    this.initiallyExpanded = false,
-    this.showDetailLink = true,
-  });
+  const _ActivityRow(this.record, {this.initiallyExpanded = false});
   final ActivityRecord record;
   final bool initiallyExpanded;
-  final bool showDetailLink;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -689,7 +678,6 @@ class _ActivityRow extends StatelessWidget {
       key: ValueKey(record.id),
       record: record,
       initiallyExpanded: initiallyExpanded,
-      showDetailLink: showDetailLink,
       statusColor: statusColor,
       amount: _amount(record),
     );
@@ -716,11 +704,9 @@ class _ExpandableActivityRow extends StatefulWidget {
     required this.statusColor,
     required this.amount,
     required this.initiallyExpanded,
-    required this.showDetailLink,
   });
   final ActivityRecord record;
   final bool initiallyExpanded;
-  final bool showDetailLink;
   final Color statusColor;
   final String amount;
 
@@ -767,8 +753,31 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                           Row(
                             children: [
                               Flexible(
-                                child: Text(
-                                  title,
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      for (
+                                        var i = 0;
+                                        i < title.split('→').length;
+                                        i++
+                                      ) ...[
+                                        if (i > 0)
+                                          const WidgetSpan(
+                                            alignment:
+                                                PlaceholderAlignment.middle,
+                                            child: Icon(
+                                              Icons.arrow_forward,
+                                              size: 14,
+                                            ),
+                                          ),
+                                        TextSpan(
+                                          text: title.split('→')[i].trim(),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  key: ValueKey('activity-title-${record.id}'),
+                                  semanticsLabel: title,
                                   style: const TextStyle(
                                     fontSize: 15,
                                     height: 22 / 15,
@@ -885,19 +894,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                 ),
               ),
             ),
-            if (expanded) ...[
-              _ActivityDetails(record: record),
-              if (widget.showDetailLink)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    key: ValueKey('activity-detail-link-${record.id}'),
-                    onPressed: () =>
-                        context.go(AppRoutes.activityDetailLocation(record.id)),
-                    child: Text(AppLocalizations.of(context).details),
-                  ),
-                ),
-            ],
+            if (expanded) _ActivityDetails(record: record),
             Container(height: 1, color: colors.subtleSurface),
           ],
         ),
@@ -946,59 +943,49 @@ class _TypeBadge extends StatelessWidget {
 class _NetworkPath extends StatelessWidget {
   const _NetworkPath({required this.networks});
   final List<({String chain, String label})> networks;
+
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    if (networks.isEmpty) return const SizedBox.shrink();
-    // Share constrained space in proportion to each label's natural width.
-    // Equal shares can truncate a long name while its shorter neighbor has room.
-    final widths = [
-      for (final network in networks)
-        _networkLabelWidth(context, network.label),
-    ];
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var index = 0; index < networks.length; index++) ...[
-          if (index > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                '→',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 16 / 12,
-                  color: colors.secondaryText,
-                ),
-              ),
-            ),
-          Flexible(
-            flex: widths[index],
-            child: _NetworkLabel(
-              network: networks[index].chain,
-              label: networks[index].label,
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (var index = 0; index < networks.length; index++) ...[
+        if (index > 0)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Icon(
+              Icons.arrow_forward,
+              size: 12,
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
             ),
           ),
-        ],
+        Tooltip(
+          message: networks[index].label,
+          child: _NetworkIcon(network: networks[index].chain),
+        ),
       ],
-    );
-  }
+    ],
+  );
 }
 
-int _networkLabelWidth(BuildContext context, String label) {
-  final painter = TextPainter(
-    text: TextSpan(
-      text: label,
-      style: DefaultTextStyle.of(context).style
-          .copyWith(fontSize: 12, height: 16 / 12),
-    ),
-    textDirection: Directionality.of(context),
-    textScaler: MediaQuery.textScalerOf(context),
-    maxLines: 1,
-  )..layout();
-  final width = (painter.width + 18).ceil();
-  painter.dispose();
-  return width;
+class _NetworkIcon extends StatelessWidget {
+  const _NetworkIcon({required this.network});
+  final String network;
+
+  @override
+  Widget build(BuildContext context) {
+    final asset = networkIconAssetPath(network);
+    return asset != null
+        ? SvgPicture.asset(asset, width: 14, height: 14)
+        : Container(
+            width: 14,
+            height: 14,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFF8247E5),
+            ),
+            child: const Icon(Icons.link, size: 9, color: Colors.white),
+          );
+  }
 }
 
 class _VenueLabel extends StatelessWidget {
@@ -1040,22 +1027,10 @@ class _NetworkLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final asset = networkIconAssetPath(network);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (asset != null)
-          SvgPicture.asset(asset, width: 14, height: 14)
-        else
-          Container(
-            width: 14,
-            height: 14,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF8247E5),
-            ),
-            child: const Icon(Icons.link, size: 9, color: Colors.white),
-          ),
+        _NetworkIcon(network: network),
         const SizedBox(width: 4),
         Flexible(
           child: Tooltip(
@@ -1067,7 +1042,8 @@ class _NetworkLabel extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
-                color: colors.secondaryText,
+                color: colors.primaryText,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1099,6 +1075,38 @@ class _ActivityDetails extends StatelessWidget {
         ),
       );
     }
+    final flow = record.cashFlow;
+    if (record.category == ActivityCategory.cash && flow != null) {
+      for (final (label, endpoint) in [
+        ('From', flow.source),
+        ('To', flow.destination),
+      ]) {
+        if (!_hasField(fields, label)) {
+          final index = fields.indexWhere(
+            (field) => [
+              'fee',
+              'total fee',
+              'status',
+            ].contains(field.label.trim().toLowerCase()),
+          );
+          fields.insert(
+            index < 0 ? fields.length : index,
+            ActivityField(label: label, value: _cashNetworkLabel(endpoint)),
+          );
+        }
+      }
+    }
+    if (record.category == ActivityCategory.cash &&
+        flow == null &&
+        record.chain != null &&
+        !_hasField(fields, 'network')) {
+      fields.add(
+        ActivityField(
+          label: 'Network',
+          value: networkDisplayName(record.chain!),
+        ),
+      );
+    }
     if (!_hasField(fields, 'status')) {
       fields.add(
         ActivityField(
@@ -1114,7 +1122,19 @@ class _ActivityDetails extends StatelessWidget {
           for (final field in fields)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: _DetailRow(field: field, colors: colors),
+              child: _DetailRow(
+                field: field,
+                colors: colors,
+                network: flow == null
+                    ? (field.label.trim().toLowerCase() == 'network'
+                          ? record.chain
+                          : null)
+                    : switch (field.label.trim().toLowerCase()) {
+                        'from' => flow.source.chain,
+                        'to' => flow.destination.chain,
+                        _ => null,
+                      },
+              ),
             ),
         ],
       ),
@@ -1131,7 +1151,8 @@ String _formatActivityAmount(DecimalValue amount, String? asset) {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.field, required this.colors});
+  const _DetailRow({required this.field, required this.colors, this.network});
+  final String? network;
   final ActivityField field;
   final AppRwaColors colors;
   @override
@@ -1155,7 +1176,9 @@ class _DetailRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Flexible(
-          child: isAddress
+          child: network != null
+              ? _NetworkLabel(network: network!, label: displayValue)
+              : isAddress
               ? _CompactCopyValue(value: field.value, label: label)
               : Text(
                   displayValue,
@@ -1180,6 +1203,12 @@ String _detailLabel(String label, AppLocalizations l10n) =>
       'limit price' => l10n.limitPrice,
       'filled quantity' => l10n.activityFilledQuantity,
       'average price' => l10n.activityAveragePrice,
+      'network' => l10n.network,
+      'from' => l10n.activityFrom,
+      'to' => l10n.to,
+      'send amount' => l10n.sendAmount,
+      'receive amount' => l10n.receiveAmount,
+      'total fee' => l10n.totalFee,
       'amount' => l10n.amount,
       'status' => l10n.status,
       'side' => l10n.activitySide,

@@ -4116,6 +4116,12 @@ abstract class AppLocalizations {
   /// **'To your Arbitrum USDC address:'**
   String get hip3TransferDestination;
 
+  /// No description provided for @activityFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get activityFrom;
+
   /// No description provided for @sendAmount.
   ///
   /// In en, this message translates to:

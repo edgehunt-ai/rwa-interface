@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/domain/models/activity_record.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
@@ -79,8 +80,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('USDT'), findsOneWidget);
-      expect(find.text('ETH→USDT'), findsOneWidget);
-      expect(find.text('USDT→USDC'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('activity-title-transfer')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('activity-title-address-transfer')),
+        findsOneWidget,
+      );
       expect(find.text('1,000'), findsOneWidget);
       expect(find.text('1.607487'), findsOneWidget);
       expect(find.text('1,000 USDT'), findsNothing);
@@ -152,17 +159,21 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('USDT → USDC'), findsOneWidget);
+      expect(find.byKey(const ValueKey('activity-title-flow')), findsOneWidget);
       final titleParagraph = tester.renderObject<RenderParagraph>(
-        find.descendant(
-          of: find.text('USDT → USDC'),
-          matching: find.byType(RichText),
-        ),
+        find
+            .descendant(
+              of: find.byKey(const ValueKey('activity-title-flow')),
+              matching: find.byType(RichText),
+            )
+            .first,
       );
       // Use the room left by the amount and badge, including with the wider
       // synthetic font used by widget tests.
       final amountBounds = tester.getRect(find.text('4.95'));
-      final titleBounds = tester.getRect(find.text('USDT → USDC'));
+      final titleBounds = tester.getRect(
+        find.byKey(const ValueKey('activity-title-flow')),
+      );
       final badgeBounds = tester.getRect(
         find
             .ancestor(
@@ -178,12 +189,31 @@ void main() {
           1,
         ),
       );
+      expect(find.text(sourceLabel), findsNothing);
+      expect(find.text(destinationLabel), findsNothing);
+      final arrow = find.byIcon(Icons.arrow_forward);
+      expect(arrow, findsNWidgets(2));
+      final icons = find.descendant(
+        of: find.byTooltip(sourceLabel),
+        matching: find.byType(SvgPicture),
+      );
+      final pathArrow = tester.getCenter(arrow.last);
+      expect(pathArrow.dy, closeTo(tester.getCenter(icons.first).dy, 0.01));
+      await tester.tap(find.byKey(const ValueKey('activity-title-flow')));
+      await tester.pumpAndSettle();
+      expect(find.text('From'), findsOneWidget);
+      expect(find.text('To'), findsOneWidget);
+      expect(find.text('Details'), findsNothing);
       expect(find.text(sourceLabel), findsOneWidget);
       expect(find.text(destinationLabel), findsOneWidget);
       expect(find.text('Ethereum'), findsNothing);
       expect(find.text('Polygon'), findsNothing);
       expect(find.text('4.95'), findsOneWidget);
-      expect(find.text('4.95 USDC'), findsNothing);
+      expect(find.text('4.95 USDT'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('activity-title-flow')));
+      await tester.pumpAndSettle();
+      expect(find.text(sourceLabel), findsNothing);
+      expect(find.text(destinationLabel), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
@@ -218,8 +248,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('USDT → USDC'), findsOneWidget);
+    expect(find.byKey(const ValueKey('activity-title-legacy')), findsOneWidget);
+    expect(find.text('Arbitrum'), findsNothing);
+    expect(find.byTooltip('Arbitrum'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('activity-title-legacy')));
+    await tester.pumpAndSettle();
     expect(find.text('Arbitrum'), findsOneWidget);
+    expect(find.text('From'), findsNothing);
+    expect(find.text('To'), findsNothing);
     expect(find.text('BNB Smart Chain'), findsNothing);
     expect(find.text('Hyperliquid'), findsNothing);
     expect(tester.takeException(), isNull);

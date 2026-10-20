@@ -2269,6 +2269,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3TransferDestination => 'To your Arbitrum USDC address:';
 
   @override
+  String get activityFrom => 'From';
+
+  @override
   String get sendAmount => 'Send amount';
 
   @override

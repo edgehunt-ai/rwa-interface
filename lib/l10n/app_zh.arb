@@ -727,6 +727,7 @@
   "receiveAccount": "接收账户",
   "swapAccounts": "交换账户",
   "hip3TransferDestination": "转至您的 Arbitrum USDC 地址：",
+  "activityFrom": "从",
   "sendAmount": "转出数量",
   "receiveAmount": "接收数量",
   "signAndTransfer": "签名并转账",
