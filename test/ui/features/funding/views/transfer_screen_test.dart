@@ -357,6 +357,10 @@ void main() {
     expect(withdrawals.getCalls, greaterThan(checks));
     expect(withdrawals.submissions, 1);
     expect(find.byKey(const Key('transfer-withdrawal-refresh')), findsNothing);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -1209,7 +1213,7 @@ void main() {
     );
   });
 
-  testWidgets('refresh failure preserves an already transferring session', (
+  testWidgets('transferring session resumes only after an explicit tap', (
     tester,
   ) async {
     final funding = _CapacityTransferRepository();
@@ -1218,20 +1222,116 @@ void main() {
     await tester.pump(const Duration(milliseconds: 501));
     await tester.pump();
     funding.status = 'transferring';
-    funding.missing = true;
-    await tester.tap(find.byType(FilledButton));
-    await tester.pump();
-    await tester.pump();
-    funding.failRefresh = true;
     await tester.pump(const Duration(seconds: 5));
+    await tester.pump();
+
+    expect(funding.planCalls, 0);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+
+    await tester.tap(find.byType(FilledButton));
     await tester.pump();
 
     expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
     expect(funding.refreshCalls, 2);
-    expect(funding.planCalls, 0);
+    expect(funding.planCalls, 1);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+    final sessionRefreshes = funding.refreshCalls;
     await tester.pump(const Duration(seconds: 5));
-    expect(funding.refreshCalls, 3);
+    expect(funding.refreshCalls, sessionRefreshes);
+    expect(funding.planReads, greaterThan(1));
+  });
+
+  testWidgets('failed plan with a transfer id is terminal', (tester) async {
+    final funding = _CapacityTransferRepository()
+      ..planStatus = FundingPlanState.failed
+      ..planTransferId = 'failed-transfer';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+
+    expect(funding.planCalls, 1);
+    expect(funding.transferReads, 0);
+    expect(find.text('Transfer failed.'), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
+  });
+
+  testWidgets('resume surfaces authoritative manual review without a plan', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository();
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    funding.status = 'transferring';
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump();
+    funding.status = 'manualReview';
+
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+
+    expect(funding.planCalls, 0);
+    expect(find.text('Transfer requires manual review.'), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('plan polling exposes a released action without executing it', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..planTransferId = 'transfer-with-origin-action'
+      ..nextActionId = 'origin-action';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump();
+
+    expect(funding.planCalls, 1);
+    expect(funding.transferReads, 1);
+    expect(find.text('Authorization required'), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+    expect(
+      find.widgetWithText(FilledButton, 'Sign & Transfer'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('manual review snapshot cannot enable transfer submission', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()..status = 'manualReview';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+
+    expect(find.text('Transfer requires manual review.'), findsOneWidget);
+    expect(funding.planCalls, 0);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
   });
 
   testWidgets('own reservation does not interrupt an executing transfer', (
@@ -1255,9 +1355,10 @@ void main() {
     options = _capacityOptions(available: '0', eligible: false);
     container.invalidate(transferOptionsProvider);
     await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump();
     expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
-    expect(funding.planReads, greaterThan(1));
+    expect(funding.planReads, greaterThan(0));
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -1337,10 +1438,14 @@ final class _CapacityTransferRepository implements FundingRepository {
   bool missing = false;
   bool failRefresh = false;
   String status = 'ready_to_confirm';
+  FundingPlanState planStatus = FundingPlanState.executing;
+  String? planTransferId;
+  String? nextActionId;
   Completer<FundingSessionSummary>? quoteResponse;
   int refreshCalls = 0;
   int planCalls = 0;
   int planReads = 0;
+  int transferReads = 0;
 
   FundingSessionSummary get _session => FundingSessionSummary(
     sessionId: 'capacity-session',
@@ -1376,9 +1481,22 @@ final class _CapacityTransferRepository implements FundingRepository {
 
   FundingPlan get _plan => FundingPlan(
     planId: 'capacity-plan',
-    tradePreviewId: '',
+    tradePreviewId: 'capacity-session',
     shortfall: DecimalValue('20'),
-    status: FundingPlanState.executing,
+    status: planStatus,
+    legs: planTransferId == null
+        ? const []
+        : [
+            FundingLeg(
+              legId: 'capacity-leg',
+              walletId: 'capacity-wallet',
+              asset: 'USDT',
+              maximumAmount: DecimalValue('20'),
+              outputAmount: DecimalValue('19.5'),
+              status: FundingLegState.submitted,
+              transferId: planTransferId,
+            ),
+          ],
   );
 
   @override
@@ -1395,6 +1513,18 @@ final class _CapacityTransferRepository implements FundingRepository {
   Future<FundingPlan> getFundingPlan(String id) async {
     planReads++;
     return _plan;
+  }
+
+  @override
+  Future<FundingTransfer> getFundingTransfer(String id) async {
+    transferReads++;
+    return FundingTransfer(
+      transferId: id,
+      planId: 'capacity-plan',
+      amount: DecimalValue('20'),
+      status: FundingTransferState.awaitingWallet,
+      nextActionId: nextActionId,
+    );
   }
 
   @override
