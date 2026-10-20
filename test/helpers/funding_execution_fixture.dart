@@ -9,7 +9,8 @@ const fundingData = '0xa9059cbb';
 
 WalletActionExecution fundingExecution({
   GasPaymentMode mode = GasPaymentMode.userPaidNative,
-  WalletActionExecutionState status = WalletActionExecutionState.awaitingUserAuthorization,
+  WalletActionExecutionState status =
+      WalletActionExecutionState.awaitingUserAuthorization,
   String resourceId = 'withdrawal-1',
   String executionId = 'execution-1',
   String provider = 'privy_native',
@@ -23,7 +24,8 @@ WalletActionExecution fundingExecution({
   bool includeAuthorization = true,
 }) {
   final sponsored = mode == GasPaymentMode.appSponsored;
-  final expiry = expiresAt ?? DateTime.now().toUtc().add(const Duration(seconds: 45));
+  final expiry =
+      expiresAt ?? DateTime.now().toUtc().add(const Duration(seconds: 45));
   final to = authorizedTo ?? fundingTarget;
   return WalletActionExecution(
     executionId: executionId,
@@ -40,7 +42,9 @@ WalletActionExecution fundingExecution({
       decision: status == WalletActionExecutionState.userGasConfirmationRequired
           ? GasSponsorshipDecision.userGasConfirmationRequired
           : GasSponsorshipDecision.eligible,
-      platformPays: sponsored && status != WalletActionExecutionState.userGasConfirmationRequired,
+      platformPays:
+          sponsored &&
+          status != WalletActionExecutionState.userGasConfirmationRequired,
       nativeAsset: 'BNB',
       estimatedNativeFee: DecimalValue('0.000065'),
       estimatedFeeUsd: DecimalValue('0.05'),
@@ -53,47 +57,50 @@ WalletActionExecution fundingExecution({
       value: '0x0',
       nonce: sponsored ? null : nonce,
     ),
-    authorization: !includeAuthorization ? null : WalletAuthorizationRequest(
-      version: 1,
-      method: 'POST',
-      url: 'https://api.privy.io/v1/wallets/wallet-1/rpc',
-      headers: {
-        'privy-app-id': 'app',
-        'privy-idempotency-key': executionId,
-        'privy-request-expiry': '${expiry.millisecondsSinceEpoch}',
-      },
-      body: {
-        'method': 'eth_sendTransaction',
-        'chain_type': 'ethereum',
-        'sponsor': sponsor ?? sponsored,
-        'reference_id': executionId,
-        'caip2': 'eip155:56',
-        'params': {
-          'transaction': {
-            'from': fundingSigner,
-            'to': rawTo ?? to,
-            'data': fundingData,
-            'value': '0x0',
-            if (!sponsored) 'nonce': authorizedNonce,
-          },
-        },
-      },
-      referenceId: executionId,
-      sponsor: sponsor ?? sponsored,
-      caip2: 'eip155:56',
-      transaction: AuthorizedTransaction(
-        from: fundingSigner,
-        to: to,
-        data: fundingData,
-        value: '0x0',
-        nonce: sponsored ? null : authorizedNonce,
-      ),
-    ),
+    authorization: !includeAuthorization
+        ? null
+        : WalletAuthorizationRequest(
+            version: 1,
+            method: 'POST',
+            url: 'https://api.privy.io/v1/wallets/wallet-1/rpc',
+            headers: {
+              'privy-app-id': 'app',
+              'privy-idempotency-key': executionId,
+              'privy-request-expiry': '${expiry.millisecondsSinceEpoch}',
+            },
+            body: {
+              'method': 'eth_sendTransaction',
+              'chain_type': 'ethereum',
+              'sponsor': sponsor ?? sponsored,
+              'reference_id': executionId,
+              'caip2': 'eip155:56',
+              'params': {
+                'transaction': {
+                  'from': fundingSigner,
+                  'to': rawTo ?? to,
+                  'data': fundingData,
+                  'value': '0x0',
+                  if (!sponsored) 'nonce': authorizedNonce,
+                },
+              },
+            },
+            referenceId: executionId,
+            sponsor: sponsor ?? sponsored,
+            caip2: 'eip155:56',
+            transaction: AuthorizedTransaction(
+              from: fundingSigner,
+              to: to,
+              data: fundingData,
+              value: '0x0',
+              nonce: sponsored ? null : authorizedNonce,
+            ),
+          ),
     authorizationExpiresAt: expiry,
   );
 }
 
-final class RecordingFundingExecutions implements WalletActionExecutionRepository {
+final class RecordingFundingExecutions
+    implements WalletActionExecutionRepository {
   RecordingFundingExecutions({
     required this.created,
     this.current,

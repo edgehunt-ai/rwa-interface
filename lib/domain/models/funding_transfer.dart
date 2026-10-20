@@ -43,14 +43,17 @@ final class FundingPlan {
   final DateTime? expiresAt;
 
   bool get shouldPoll =>
-      (status == FundingPlanState.executing || isActionable ||
+      (status == FundingPlanState.executing ||
+          isActionable ||
           ((status == FundingPlanState.ready ||
                   status == FundingPlanState.partiallyFunded) &&
               legs.any((leg) => leg.isInTransit))) &&
-      !legs.any((leg) =>
-          leg.status == FundingLegState.failed ||
-          leg.status == FundingLegState.ambiguous ||
-          leg.status == FundingLegState.manualReview);
+      !legs.any(
+        (leg) =>
+            leg.status == FundingLegState.failed ||
+            leg.status == FundingLegState.ambiguous ||
+            leg.status == FundingLegState.manualReview,
+      );
 
   bool get isActionable =>
       status == FundingPlanState.ready && nextActionableLeg != null;
@@ -102,6 +105,7 @@ final class FundingLeg {
   final String? feeAsset;
   final String? transferId;
   final FundingSessionFees? fees;
+
   /// Exact route-frozen refund identity; never inferred from the source symbol.
   final Map<String, Object?>? refundAsset;
   final String? targetEnvironment;
@@ -198,6 +202,7 @@ final class FundingTransfer {
   final Map<String, Object?>? sourceTransaction;
   final Map<String, Object?>? providerObservation;
   final Map<String, Object?>? targetCredit;
+
   /// Current distinct-event aggregate, not the latest credit or wallet balance.
   final DecimalValue? targetReceivedAmount;
   final String? targetEnvironment;

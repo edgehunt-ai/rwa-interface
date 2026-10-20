@@ -9,7 +9,9 @@ import '../../../../domain/models/wallet_action_execution.dart';
 final walletExecutionEvidenceProvider = FutureProvider.autoDispose
     .family<WalletActionExecution, String>((ref, executionId) {
       ref.watch(sessionGenerationProvider);
-      return ref.watch(walletActionExecutionRepositoryProvider).get(executionId);
+      return ref
+          .watch(walletActionExecutionRepositoryProvider)
+          .get(executionId);
     }, retry: (_, _) => null);
 
 final nativeExecutionRecoveryCommandsProvider = Provider((ref) {
@@ -34,7 +36,9 @@ final class NativeExecutionRecoveryCommands {
       final cancellation = current.nativeCancellation;
       await repository.prepareCancellation(
         executionId: executionId,
-        idempotencyKey: scopedIdempotencyKey('native-cancellation-$executionId-${cancellation?.cancellationId ?? 'initial'}-${cancellation?.authorizationExpiresAt?.millisecondsSinceEpoch ?? 'none'}'),
+        idempotencyKey: scopedIdempotencyKey(
+          'native-cancellation-$executionId-${cancellation?.cancellationId ?? 'initial'}-${cancellation?.authorizationExpiresAt?.millisecondsSinceEpoch ?? 'none'}',
+        ),
       );
       _ref.invalidate(walletExecutionEvidenceProvider(executionId));
       return repository.get(executionId);
@@ -68,42 +72,68 @@ final class NativeExecutionRecoveryCommands {
       final requestExpiry = int.tryParse(
         authorization?.headers['privy-request-expiry'] ?? '',
       );
-      if (authorization == null || transaction == null || requestId == null || requestId.isEmpty ||
-          expiry == null || !expiry.isAfter(DateTime.now().toUtc()) ||
-          requestExpiry == null || requestExpiry <= DateTime.now().millisecondsSinceEpoch ||
-          authorization.version != 1 || authorization.method != 'POST' ||
-          !RegExp(r'^https://api\.privy\.io/v1/wallets/[^/]+/rpc$').hasMatch(authorization.url) ||
-          authorization.sponsor || current.gasPayment.platformPays ||
+      if (authorization == null ||
+          transaction == null ||
+          requestId == null ||
+          requestId.isEmpty ||
+          expiry == null ||
+          !expiry.isAfter(DateTime.now().toUtc()) ||
+          requestExpiry == null ||
+          requestExpiry <= DateTime.now().millisecondsSinceEpoch ||
+          authorization.version != 1 ||
+          authorization.method != 'POST' ||
+          !RegExp(r'^https://api\.privy\.io/v1/wallets/[^/]+/rpc$')
+              .hasMatch(authorization.url) ||
+          authorization.sponsor ||
+          current.gasPayment.platformPays ||
           current.nativeDeliveryState != 'dispatching' ||
-          const {WalletActionExecutionState.chainConfirmed, WalletActionExecutionState.completed}.contains(current.status) ||
+          const {
+            WalletActionExecutionState.chainConfirmed,
+            WalletActionExecutionState.completed,
+          }.contains(current.status) ||
           authorization.referenceId != cancellation.cancellationId ||
           authorization.caip2 != 'eip155:${current.chainId}' ||
           cancellation.nonce != current.nativeNonce ||
           current.transaction.nonce != current.nativeNonce ||
           !RegExp(r'^(0|[1-9][0-9]*)$').hasMatch(cancellation.nonce) ||
-          nonce == null || !RegExp(r'^0x(0|[1-9a-f][0-9a-f]*)$').hasMatch(nonce) ||
-          BigInt.parse(cancellation.nonce) != BigInt.parse(nonce.substring(2), radix: 16) ||
-          transaction.from.toLowerCase() != current.walletAddress.toLowerCase() ||
+          nonce == null ||
+          !RegExp(r'^0x(0|[1-9a-f][0-9a-f]*)$').hasMatch(nonce) ||
+          BigInt.parse(cancellation.nonce) !=
+              BigInt.parse(nonce.substring(2), radix: 16) ||
+          transaction.from.toLowerCase() !=
+              current.walletAddress.toLowerCase() ||
           transaction.to.toLowerCase() != cancellation.to.toLowerCase() ||
-          transaction.value != '0x0' || transaction.data != '0x' ||
+          transaction.value != '0x0' ||
+          transaction.data != '0x' ||
           authorization.body['method'] != 'eth_sendTransaction' ||
           authorization.body['chain_type'] != 'ethereum' ||
           authorization.body['sponsor'] != false ||
           authorization.body['reference_id'] != cancellation.cancellationId ||
           authorization.body['caip2'] != authorization.caip2 ||
-          raw is! Map || raw['from'] != transaction.from ||
-          raw['to'] != transaction.to || raw['data'] != '0x' ||
-          raw['value'] != '0x0' || raw['nonce'] != nonce) {
-        throw StateError('Cancellation authorization does not match the original native nonce');
+          raw is! Map ||
+          raw['from'] != transaction.from ||
+          raw['to'] != transaction.to ||
+          raw['data'] != '0x' ||
+          raw['value'] != '0x0' ||
+          raw['nonce'] != nonce) {
+        throw StateError(
+          'Cancellation authorization does not match the original native nonce',
+        );
       }
-      final signature = await _ref.read(walletAuthorizationSignerProvider)
-          .signWalletAuthorization(expectedSigner: current.walletAddress, request: authorization);
+      final signature = await _ref
+          .read(walletAuthorizationSignerProvider)
+          .signWalletAuthorization(
+            expectedSigner: current.walletAddress,
+            request: authorization,
+          );
       _submitted.add(submissionIdentity);
       try {
         return await repository.submitCancellationAuthorization(
           executionId: executionId,
           signature: signature,
-          idempotencyKey: scopedIdempotencyKey('native-cancellation-submit-$submissionIdentity'),
+          idempotencyKey: scopedIdempotencyKey(
+            'native-cancellation-submit-$submissionIdentity',
+          ),
         );
       } finally {
         // A lost response never authorizes a second send or claims no spend.
@@ -117,7 +147,9 @@ final class NativeExecutionRecoveryCommands {
         execution.executionProvider != 'privy_native' ||
         execution.mode != GasPaymentMode.userPaidNative ||
         execution.nativeNonce == null) {
-      throw StateError('Historical or non-native execution is observation-only');
+      throw StateError(
+        'Historical or non-native execution is observation-only',
+      );
     }
   }
 }

@@ -680,13 +680,17 @@ class _ActivityRow extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final statusColor = switch (record.status) {
-      ActivityState.success || ActivityState.settled || ActivityState.credited =>
-        semantic.success,
+      ActivityState.success ||
+      ActivityState.settled ||
+      ActivityState.credited => semantic.success,
       ActivityState.failed => semantic.loss,
-      ActivityState.pending || ActivityState.refundPending ||
+      ActivityState.pending ||
+      ActivityState.refundPending ||
       ActivityState.partiallySettled ||
-      ActivityState.partiallyRefunded || ActivityState.reserved ||
-      ActivityState.sourceDebited || ActivityState.inTransit ||
+      ActivityState.partiallyRefunded ||
+      ActivityState.reserved ||
+      ActivityState.sourceDebited ||
+      ActivityState.inTransit ||
       ActivityState.manualReview => semantic.warning,
       _ => colors.secondaryText,
     };
@@ -1098,7 +1102,9 @@ class _ActivityDetails extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final fields = [...record.fields];
     if (record.economicStatus != null) {
-      fields.removeWhere((field) => field.label.trim().toLowerCase() == 'status');
+      fields.removeWhere(
+        (field) => field.label.trim().toLowerCase() == 'status',
+      );
     }
     if (record.category == ActivityCategory.orders &&
         _orderTypeConveysDirection(record, AppLocalizations.of(context))) {
@@ -1134,14 +1140,22 @@ class _ActivityDetails extends StatelessWidget {
           label: AppLocalizations.of(context).fundsEconomicStatus,
           value: status,
         ),
-      ActivityField(label: 'Activity ID', value: record.id),
+      if (!fields.any(
+        (field) =>
+            field.label.trim().toLowerCase().endsWith(' id') &&
+            field.value == record.id,
+      ))
+        ActivityField(label: 'Activity ID', value: record.id),
       if (record.reference case final reference?)
         ActivityField(label: '${reference.type} ID', value: reference.id),
       if (record.relatedId case final id?)
         ActivityField(label: 'Related ID', value: id),
       if (record.failureReason case final reason?)
         ActivityField(label: 'Reason', value: reason),
-      ActivityField(label: 'Created at', value: record.createdAt.toIso8601String()),
+      ActivityField(
+        label: 'Created at',
+        value: record.createdAt.toIso8601String(),
+      ),
       if (record.updatedAt case final timestamp?)
         ActivityField(label: 'Updated at', value: timestamp.toIso8601String()),
     ]) {
@@ -1149,31 +1163,34 @@ class _ActivityDetails extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          for (final field in fields)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _DetailRow(field: field, colors: colors),
-            ),
-          for (final id in record.financialObligationIds)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _DetailRow(
-                field: ActivityField(
-                  label: AppLocalizations.of(context).fundsObligationId,
-                  value: id,
-                ),
-                colors: colors,
+      child: SelectionArea(
+        child: Column(
+          children: [
+            for (final field in fields)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _DetailRow(field: field, colors: colors),
               ),
-            ),
-          if (record.financialObligationIds.isNotEmpty)
-            TextButton(
-              key: ValueKey('activity-obligations-${record.id}'),
-              onPressed: () => context.pushNamed(AppRoutes.fundsObligationsName),
-              child: Text(AppLocalizations.of(context).fundsObligationsTitle),
-            ),
-        ],
+            for (final id in record.financialObligationIds)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _DetailRow(
+                  field: ActivityField(
+                    label: AppLocalizations.of(context).fundsObligationId,
+                    value: id,
+                  ),
+                  colors: colors,
+                ),
+              ),
+            if (record.financialObligationIds.isNotEmpty)
+              TextButton(
+                key: ValueKey('activity-obligations-${record.id}'),
+                onPressed: () =>
+                    context.pushNamed(AppRoutes.fundsObligationsName),
+                child: Text(AppLocalizations.of(context).fundsObligationsTitle),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1194,9 +1211,9 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final normalizedLabel = field.label.trim().toLowerCase();
-    final isAddress = field.value.startsWith('0x') ||
-        normalizedLabel.endsWith(' id') ||
-        normalizedLabel.endsWith(' hash');
+    final isAddress =
+        !normalizedLabel.endsWith(' id') &&
+        (field.value.startsWith('0x') || normalizedLabel.endsWith(' hash'));
     final l10n = AppLocalizations.of(context);
     final displayValue = _detailValue(field, l10n);
     final label = _detailLabel(field.label, l10n);

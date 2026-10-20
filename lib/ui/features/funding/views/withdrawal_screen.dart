@@ -29,6 +29,7 @@ import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_p
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+
 import 'native_execution_recovery_screen.dart';
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
@@ -61,7 +62,6 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   int pollAttempts = 0;
   // Each visit to the review step asks the server for its own gas observation.
   int prepareAttempt = 0;
-
 
   @override
   void dispose() {
@@ -214,7 +214,10 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     });
     if (result.isCompleted && !wasCompleted) {
       ref.invalidate(portfolioSummaryProvider);
-      AppToast.showSuccess(context, AppLocalizations.of(context).withdrawalSucceeded);
+      AppToast.showSuccess(
+        context,
+        AppLocalizations.of(context).withdrawalSucceeded,
+      );
     } else if (result.shouldPoll && pollAttempts < 15) {
       withdrawalPoll = Timer(const Duration(seconds: 2), () {
         pollAttempts++;
@@ -249,7 +252,8 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
             SelfCustodialWithdrawalState.confirming => l10n.withdrawalSubmitted,
             SelfCustodialWithdrawalState.failed => l10n.withdrawalFailed,
             SelfCustodialWithdrawalState.manualReview => l10n.hip3PendingReview,
-            SelfCustodialWithdrawalState.noncanonical => l10n.withdrawalNoncanonical,
+            SelfCustodialWithdrawalState.noncanonical =>
+              l10n.withdrawalNoncanonical,
             _ => l10n.withdrawalUnresolved,
           };
     return ListView(
@@ -262,7 +266,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         SelectableText('${current.amount.value} ${current.assetSymbol}'),
         SelectableText('${l10n.to}: ${current.destinationAddress}'),
         if (current.txHash != null)
-          SelectableText('${l10n.withdrawalTransactionLabel}: ${current.txHash}'),
+          SelectableText(
+            '${l10n.withdrawalTransactionLabel}: ${current.txHash}',
+          ),
         if (current.userOperationHash != null)
           SelectableText(current.userOperationHash!),
         if (current.walletActionExecutionId != null)
@@ -270,16 +276,21 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         if (current.walletActionExecutionId != null)
           OutlinedButton(
             key: const Key('withdrawal-native-recovery'),
-            onPressed: () => Navigator.of(context).push<void>(MaterialPageRoute(
-              builder: (_) => NativeExecutionRecoveryScreen(executionId: current.walletActionExecutionId!),
-            )),
+            onPressed: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => NativeExecutionRecoveryScreen(
+                  executionId: current.walletActionExecutionId!,
+                ),
+              ),
+            ),
             child: Text(l10n.nativeRecoveryTitle),
           ),
         if (current.confirmations != null)
           Text('${current.confirmations}/${current.requiredConfirmations}'),
         if (current.confirmedAt != null)
           Text(current.confirmedAt!.toIso8601String()),
-        if (current.manualReviewReason != null) Text(current.manualReviewReason!),
+        if (current.manualReviewReason != null)
+          Text(current.manualReviewReason!),
         if (current.failureReason != null) Text(current.failureReason!),
         if (error != null) Text(error!),
         OutlinedButton.icon(
@@ -306,7 +317,6 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     if (message.isNotEmpty && message != 'null') return message;
     return AppLocalizations.of(context).prepareWithdrawalFailed;
   }
-
 
   Future<bool> _confirmUserPaidGas(SponsoredGasUnavailable refusal) async {
     if (!mounted) return false;

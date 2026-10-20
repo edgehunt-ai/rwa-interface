@@ -29,5 +29,4 @@ final class BstocksBroadcastJournal {
     }
     return previous;
   }
-
 }

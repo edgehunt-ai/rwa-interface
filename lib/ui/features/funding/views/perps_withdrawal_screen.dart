@@ -691,8 +691,11 @@ class _PerpsWithdrawalReview extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = withdrawal;
-    final amount = '${TokenAmountFormatter.formatText(current?.amount ?? preview.amount)} USDC';
-    final status = current == null ? null : current.requiresManualReview
+    final amount =
+        '${TokenAmountFormatter.formatText(current?.amount ?? preview.amount)} USDC';
+    final status = current == null
+        ? null
+        : current.requiresManualReview
         ? l10n.hip3PendingReview
         : switch (current.status) {
             'completed' => l10n.withdrawalSucceeded,
@@ -733,25 +736,32 @@ class _PerpsWithdrawalReview extends StatelessWidget {
               _DetailRow(
                 label: l10n.fromPerpsAccount,
                 value: _shortAddress(
-                  current?.ownerAddress ?? sourceAddress ?? preview.destinationAddress,
+                  current?.ownerAddress ??
+                      sourceAddress ??
+                      preview.destinationAddress,
                 ),
               ),
               const SizedBox(height: 8),
               _DetailRow(
                 label: l10n.to,
-                value: _shortAddress(current?.destinationAddress ?? preview.destinationAddress),
+                value: _shortAddress(
+                  current?.destinationAddress ?? preview.destinationAddress,
+                ),
               ),
               const SizedBox(height: 8),
               _DetailRow(
                 label: l10n.network,
-                value: _chainName(current?.payoutChainId?.toString() ?? preview.chainId),
+                value: _chainName(
+                  current?.payoutChainId?.toString() ?? preview.chainId,
+                ),
               ),
               const SizedBox(height: 8),
               _DetailRow(
                 label: (current?.rail ?? preview.rail) == 'relay'
                     ? l10n.estimatedFee
                     : l10n.networkFee,
-                value: '≈ ${TokenAmountFormatter.formatText(current?.fee ?? preview.fee)} USDC',
+                value:
+                    '≈ ${TokenAmountFormatter.formatText(current?.fee ?? preview.fee)} USDC',
               ),
             ],
           ),
@@ -785,7 +795,9 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           SelectableText('${l10n.networkFee}: ${current.fee}'),
           SelectableText('${l10n.to}: ${current.destinationAddress}'),
           if (current.payoutTxHash != null)
-            SelectableText('${l10n.withdrawalTransactionLabel}: ${current.payoutTxHash}'),
+            SelectableText(
+              '${l10n.withdrawalTransactionLabel}: ${current.payoutTxHash}',
+            ),
           if (current.relayRequestId != null)
             SelectableText(current.relayRequestId!),
           if (current.failureReason != null && current.failureReason != error)

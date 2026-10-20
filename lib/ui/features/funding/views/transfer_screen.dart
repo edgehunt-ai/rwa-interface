@@ -87,7 +87,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   String? _tokenNetworkFilter;
 
   bool get _operationLocked =>
-      _transferPending || _activePlan != null || _recoveryPlan != null ||
+      _transferPending ||
+      _activePlan != null ||
+      _recoveryPlan != null ||
       _quote?.requiresReview == true ||
       (_withdrawal != null && _withdrawal!.status != 'awaiting_signature');
 
@@ -382,7 +384,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _applyQuote(FundingSessionSummary quote) {
     _quote = quote;
-    if (!quote.requiresReview && quote.status != 'transferring' && quote.status != 'funded') {
+    if (!quote.requiresReview &&
+        quote.status != 'transferring' &&
+        quote.status != 'funded') {
       _preparePositions(quote.positions);
       if (_allocations.isEmpty) {
         _quote = null;
@@ -532,7 +536,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _submitHip3Withdrawal() async {
-    if (_withdrawal != null && _withdrawal!.status != 'awaiting_signature') return;
+    if (_withdrawal != null && _withdrawal!.status != 'awaiting_signature') {
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     final amount = _withdrawalAmount.text.trim();
     try {
@@ -674,17 +680,19 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _withdrawal = withdrawal;
       _transferPending = withdrawal.shouldPoll;
       final l10n = AppLocalizations.of(context);
-      _statusMessage = withdrawal.requiresManualReview ? null : switch (withdrawal.status) {
-        'submitting' || 'submitted' => l10n.withdrawalSubmitted,
-        'payout' => l10n.transferSettlementPending,
-        'refund_pending' => l10n.withdrawalRefundPending,
-        'refunded' => l10n.withdrawalRefunded,
-        'credited' => l10n.withdrawalCredited,
-        'partial' || 'partially_completed' => l10n.withdrawalPartial,
-        'recovering' => l10n.withdrawalRecovering,
-        'failed' || 'expired' => null,
-        _ => l10n.withdrawalUnresolved,
-      };
+      _statusMessage = withdrawal.requiresManualReview
+          ? null
+          : switch (withdrawal.status) {
+              'submitting' || 'submitted' => l10n.withdrawalSubmitted,
+              'payout' => l10n.transferSettlementPending,
+              'refund_pending' => l10n.withdrawalRefundPending,
+              'refunded' => l10n.withdrawalRefunded,
+              'credited' => l10n.withdrawalCredited,
+              'partial' || 'partially_completed' => l10n.withdrawalPartial,
+              'recovering' => l10n.withdrawalRecovering,
+              'failed' || 'expired' => null,
+              _ => l10n.withdrawalUnresolved,
+            };
       _error = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
@@ -892,14 +900,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       });
     } catch (error) {
       if (mounted) {
-        setState(() => _error = errorMessage(error,
-            fallback: AppLocalizations.of(context).transferUnresolved));
+        setState(
+          () => _error = errorMessage(
+            error,
+            fallback: AppLocalizations.of(context).transferUnresolved,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _checkingRecovery = false);
     }
   }
-
 
   String _planFailureMessage(FundingPlan plan) {
     if (plan.blocker case final blocker? when blocker.isNotEmpty) {
@@ -1049,7 +1060,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final canSubmit =
         !_submitting &&
         (_recoveryPlan == null || _recoveryPlan!.shouldPoll) &&
-        (_sendFromSpot || _withdrawal == null ||
+        (_sendFromSpot ||
+            _withdrawal == null ||
             _withdrawal!.status == 'awaiting_signature') &&
         (_sendFromSpot
             ? (_planActionRequired &&
@@ -1255,7 +1267,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       ],
                       if (_recoveryPlan case final plan?) ...[
                         if (plan.targetEnvironment != null)
-                          SelectableText('target_environment: ${plan.targetEnvironment}'),
+                          SelectableText(
+                            'target_environment: ${plan.targetEnvironment}',
+                          ),
                         for (final leg in plan.legs)
                           if (leg.refundAsset != null)
                             SelectableText('refund_asset: ${leg.refundAsset}'),
@@ -1268,7 +1282,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         OutlinedButton.icon(
                           key: const Key('transfer-plan-refresh'),
                           onPressed: _submitting || _checkingRecovery
-                              ? null : _refreshRecoveryEvidence,
+                              ? null
+                              : _refreshRecoveryEvidence,
                           icon: const Icon(Icons.refresh),
                           label: Text(l10n.transferCheckStatus),
                         ),
@@ -1276,7 +1291,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       if (_activePlan == null && _quote?.requiresReview == true)
                         OutlinedButton.icon(
                           key: const Key('transfer-session-refresh'),
-                          onPressed: () => _refreshQuote(_quote!.sessionId, _quoteSequence),
+                          onPressed: () =>
+                              _refreshQuote(_quote!.sessionId, _quoteSequence),
                           icon: const Icon(Icons.refresh),
                           label: Text(l10n.transferCheckStatus),
                         ),
@@ -1363,35 +1379,72 @@ class _FundingTransferStatus extends ConsumerWidget {
               children: [
                 Text(switch (transfer.status) {
                   FundingTransferState.completed => l10n.transferCompleted,
-                  FundingTransferState.refundPending => l10n.transferRefundPending,
+                  FundingTransferState.refundPending =>
+                    l10n.transferRefundPending,
                   FundingTransferState.refunded => l10n.transferRefunded,
-                  FundingTransferState.originConfirmed => l10n.transferSourceConfirmed,
-                  FundingTransferState.manualReview => l10n.transferRequiresManualReview,
+                  FundingTransferState.originConfirmed =>
+                    l10n.transferSourceConfirmed,
+                  FundingTransferState.manualReview =>
+                    l10n.transferRequiresManualReview,
                   FundingTransferState.failed => l10n.transferFailed,
-                  FundingTransferState.ambiguous || FundingTransferState.unknown => l10n.transferUnresolved,
+                  FundingTransferState.ambiguous ||
+                  FundingTransferState.unknown => l10n.transferUnresolved,
                   _ => l10n.transferSettlementPending,
                 }),
-                Text('${l10n.transferAmount}: ${transfer.amount.value} ${transfer.amount.asset ?? ''}'),
+                Text(
+                  '${l10n.transferAmount}: ${transfer.amount.value} ${transfer.amount.asset ?? ''}',
+                ),
                 if (transfer.targetEnvironment != null)
-                  SelectableText('target_environment: ${transfer.targetEnvironment}'),
+                  SelectableText(
+                    'target_environment: ${transfer.targetEnvironment}',
+                  ),
                 if (transfer.reason case final reason?) Text(reason),
-                if (transfer.refundStatus case final status? when status != 'notApplicable')
-                  Text('${status == 'confirmed' ? l10n.transferRefunded : status == 'pending' ? l10n.transferRefundPending : l10n.transferUnresolved}: ${transfer.refund?['amount'] ?? '-'}'),
+                if (transfer.refundStatus case final status?
+                    when status != 'notApplicable')
+                  Text(
+                    '${status == 'confirmed'
+                        ? l10n.transferRefunded
+                        : status == 'pending'
+                        ? l10n.transferRefundPending
+                        : l10n.transferUnresolved}: ${transfer.refund?['amount'] ?? '-'}',
+                  ),
                 if (transfer.targetReceivedAmount case final amount?)
-                  Text('${l10n.transferCredited}: ${amount.value} ${amount.asset ?? ''}'),
-                for (final evidence in [transfer.sourceTransaction, transfer.refund, transfer.targetCredit])
+                  Text(
+                    '${l10n.transferCredited}: ${amount.value} ${amount.asset ?? ''}',
+                  ),
+                for (final evidence in [
+                  transfer.sourceTransaction,
+                  transfer.refund,
+                  transfer.targetCredit,
+                ])
                   if (evidence != null)
                     for (final key in [
-                      'tx_hash', 'address', 'account_ref', 'observed_at',
-                      'required_confirmations', 'actual_debited_amount',
-                      'debit_basis', 'debit_log_indices', 'user_operation_hash',
-                      'block_number', 'block_hash', 'transaction_index',
-                      'canonical', 'finality_satisfied',
-                      'evidence_reference', 'transaction_hash', 'log_index',
-                      'venue_reference', 'actual_fee_amount', 'asset', 'credited_amount',
+                      'tx_hash',
+                      'address',
+                      'account_ref',
+                      'observed_at',
+                      'required_confirmations',
+                      'actual_debited_amount',
+                      'debit_basis',
+                      'debit_log_indices',
+                      'user_operation_hash',
+                      'block_number',
+                      'block_hash',
+                      'transaction_index',
+                      'canonical',
+                      'finality_satisfied',
+                      'evidence_reference',
+                      'transaction_hash',
+                      'log_index',
+                      'venue_reference',
+                      'actual_fee_amount',
+                      'asset',
+                      'credited_amount',
                     ])
-                      if (evidence[key] case final value?) SelectableText('$key: $value'),
-                if (transfer.updatedAt case final time?) Text(time.toUtc().toIso8601String()),
+                      if (evidence[key] case final value?)
+                        SelectableText('$key: $value'),
+                if (transfer.updatedAt case final time?)
+                  Text(time.toUtc().toIso8601String()),
               ],
             ),
           ),

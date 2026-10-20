@@ -52,7 +52,9 @@ class _Details extends ConsumerWidget {
           (order) =>
               order.kind == kind &&
               order.symbol == symbol &&
-              (kind == MarketProductKind.bstock ? !order.isTerminal : order.isOpen),
+              (kind == MarketProductKind.bstock
+                  ? !order.isTerminal
+                  : order.isOpen),
         )
         .length;
     const tabs = ['Open', 'Position', 'Details'];
@@ -443,24 +445,21 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            switch (order.status) {
-              TradingOrderStatus.pending => l10n.activityInProgress,
-              TradingOrderStatus.awaitingConfirmation =>
-                l10n.orderAwaitingConfirmation,
-              TradingOrderStatus.pendingSignature => l10n.hip3PendingSignature,
-              TradingOrderStatus.submitted => l10n.orderSubmitted,
-              TradingOrderStatus.open => l10n.openTab,
-              TradingOrderStatus.partiallyFilled => l10n.orderPartiallyFilled,
-              TradingOrderStatus.ambiguous => l10n.orderAmbiguous,
-              TradingOrderStatus.manualReview => l10n.activityManualReview,
-              TradingOrderStatus.filled => l10n.filled,
-              TradingOrderStatus.cancelled => l10n.activityCancelled,
-              TradingOrderStatus.failed => l10n.activityFailed,
-              TradingOrderStatus.unknown => l10n.activityUnknown,
-            },
-            key: ValueKey('trade-order-status-${order.orderId}'),
-          ),
+          Text(switch (order.status) {
+            TradingOrderStatus.pending => l10n.activityInProgress,
+            TradingOrderStatus.awaitingConfirmation =>
+              l10n.orderAwaitingConfirmation,
+            TradingOrderStatus.pendingSignature => l10n.hip3PendingSignature,
+            TradingOrderStatus.submitted => l10n.orderSubmitted,
+            TradingOrderStatus.open => l10n.openTab,
+            TradingOrderStatus.partiallyFilled => l10n.orderPartiallyFilled,
+            TradingOrderStatus.ambiguous => l10n.orderAmbiguous,
+            TradingOrderStatus.manualReview => l10n.activityManualReview,
+            TradingOrderStatus.filled => l10n.filled,
+            TradingOrderStatus.cancelled => l10n.activityCancelled,
+            TradingOrderStatus.failed => l10n.activityFailed,
+            TradingOrderStatus.unknown => l10n.activityUnknown,
+          }, key: ValueKey('trade-order-status-${order.orderId}')),
           if (!order.isOpen) ...[
             SelectableText(order.orderId),
             if (order.failureReason case final reason?) Text(reason),

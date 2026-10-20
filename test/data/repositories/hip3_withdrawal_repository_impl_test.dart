@@ -6,32 +6,42 @@ import 'package:nobell/domain/models/hip3_withdrawal.dart' as domain;
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
-  test('retains payout evidence without promoting payout to completed', () async {
-    final service = _Service();
-    final wire = service._resource(api.Hip3WithdrawalStatus.payout).rebuild((b) => b
-      ..amount = '9007199254740993.123456'
-      ..fee = '0.000001'
-      ..minimumReceived = '9007199254740993.123455'
-      ..relayRequestId = 'relay-immutable'
-      ..payoutTxHash = '0xpayout'
-      ..observedLedgerTime = 123456789
-      ..submittedAt = DateTime.utc(2026, 1, 2)
-      ..confirmedAt = DateTime.utc(2026, 1, 3));
-    service.getResource = wire;
-    final withdrawal = await Hip3WithdrawalRepositoryImpl(service, _Signer()).get('id');
-    expect(withdrawal.status, 'payout');
-    expect(withdrawal.isCompleted, isFalse);
-    expect(withdrawal.amount, wire.amount);
-    expect(withdrawal.fee, wire.fee);
-    expect(withdrawal.minimumReceived, wire.minimumReceived);
-    expect(withdrawal.relayRequestId, 'relay-immutable');
-    expect(withdrawal.payoutTxHash, '0xpayout');
-    expect(withdrawal.observedLedgerTime, 123456789);
-    expect(withdrawal.createdAt, wire.createdAt.toUtc());
-    expect(withdrawal.updatedAt, wire.updatedAt.toUtc());
-    expect(withdrawal.submittedAt, wire.submittedAt);
-    expect(withdrawal.confirmedAt, wire.confirmedAt);
-  });
+  test(
+    'retains payout evidence without promoting payout to completed',
+    () async {
+      final service = _Service();
+      final wire = service
+          ._resource(api.Hip3WithdrawalStatus.payout)
+          .rebuild(
+            (b) => b
+              ..amount = '9007199254740993.123456'
+              ..fee = '0.000001'
+              ..minimumReceived = '9007199254740993.123455'
+              ..relayRequestId = 'relay-immutable'
+              ..payoutTxHash = '0xpayout'
+              ..observedLedgerTime = 123456789
+              ..submittedAt = DateTime.utc(2026, 1, 2)
+              ..confirmedAt = DateTime.utc(2026, 1, 3),
+          );
+      service.getResource = wire;
+      final withdrawal = await Hip3WithdrawalRepositoryImpl(
+        service,
+        _Signer(),
+      ).get('id');
+      expect(withdrawal.status, 'payout');
+      expect(withdrawal.isCompleted, isFalse);
+      expect(withdrawal.amount, wire.amount);
+      expect(withdrawal.fee, wire.fee);
+      expect(withdrawal.minimumReceived, wire.minimumReceived);
+      expect(withdrawal.relayRequestId, 'relay-immutable');
+      expect(withdrawal.payoutTxHash, '0xpayout');
+      expect(withdrawal.observedLedgerTime, 123456789);
+      expect(withdrawal.createdAt, wire.createdAt.toUtc());
+      expect(withdrawal.updatedAt, wire.updatedAt.toUtc());
+      expect(withdrawal.submittedAt, wire.submittedAt);
+      expect(withdrawal.confirmedAt, wire.confirmedAt);
+    },
+  );
 
   test('previews with auto rail and maps risk details', () async {
     final service = _Service();

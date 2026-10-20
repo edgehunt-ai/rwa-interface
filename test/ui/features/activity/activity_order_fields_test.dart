@@ -28,73 +28,82 @@ void main() {
     (ActivityState.settled, 'Settled'),
     (ActivityState.manualReview, 'Manual review'),
   ]) {
-    testWidgets('$state is not Completed and retains exact financial evidence', (
-      tester,
-    ) async {
-      await configureDisplay(tester, size: const Size(393, 852));
-      const exactAmount = '123456789.123456789123456789';
-      const exactFee = '0.000000000000000001';
-      const reason = 'Refund is awaiting provider confirmation';
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authenticatedStateOverride,
-            activityRepositoryProvider.overrideWithValue(
-              _OrderActivityRepository([
-                ActivityRecord(
-                  id: 'closure-1',
-                  category: ActivityCategory.cash,
-                  type: 'bridge',
-                  status: state,
-                  economicStatus: state == ActivityState.manualReview
-                      ? null
-                      : state.name,
-                  rawStatus: state == ActivityState.manualReview
-                      ? 'manual_review'
-                      : 'success',
-                  financialObligationIds: const ['obligation-1'],
-                  title: 'Transfer',
-                  asset: 'USDT',
-                  amount: DecimalValue(exactAmount, asset: 'USDT'),
-                  failureReason: reason,
-                  reference: const ActivityReference(type: 'transfer', id: 'tx-1'),
-                  relatedId: 'refund-1',
-                  createdAt: DateTime.utc(2026, 1, 1),
-                  updatedAt: DateTime.utc(2026, 1, 2),
-                  fields: [
-                    if (state != ActivityState.manualReview)
-                      const ActivityField(label: 'Status', value: 'Completed'),
-                    ActivityField(label: 'Refund Amount', value: exactAmount),
-                    ActivityField(label: 'Refund Fee', value: exactFee),
-                  ],
-                ),
-              ]),
+    testWidgets(
+      '$state is not Completed and retains exact financial evidence',
+      (tester) async {
+        await configureDisplay(tester, size: const Size(393, 852));
+        const exactAmount = '123456789.123456789123456789';
+        const exactFee = '0.000000000000000001';
+        const reason = 'Refund is awaiting provider confirmation';
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authenticatedStateOverride,
+              activityRepositoryProvider.overrideWithValue(
+                _OrderActivityRepository([
+                  ActivityRecord(
+                    id: 'closure-1',
+                    category: ActivityCategory.cash,
+                    type: 'bridge',
+                    status: state,
+                    economicStatus: state == ActivityState.manualReview
+                        ? null
+                        : state.name,
+                    rawStatus: state == ActivityState.manualReview
+                        ? 'manual_review'
+                        : 'success',
+                    financialObligationIds: const ['obligation-1'],
+                    title: 'Transfer',
+                    asset: 'USDT',
+                    amount: DecimalValue(exactAmount, asset: 'USDT'),
+                    failureReason: reason,
+                    reference: const ActivityReference(
+                      type: 'transfer',
+                      id: 'tx-1',
+                    ),
+                    relatedId: 'refund-1',
+                    createdAt: DateTime.utc(2026, 1, 1),
+                    updatedAt: DateTime.utc(2026, 1, 2),
+                    fields: [
+                      if (state != ActivityState.manualReview)
+                        const ActivityField(
+                          label: 'Status',
+                          value: 'Completed',
+                        ),
+                      ActivityField(label: 'Refund Amount', value: exactAmount),
+                      ActivityField(label: 'Refund Fee', value: exactFee),
+                    ],
+                  ),
+                ]),
+              ),
+            ],
+            child: buildTestApp(
+              const ActivityScreen(initialCategory: ActivityCategory.cash),
             ),
-          ],
-          child: buildTestApp(
-            const ActivityScreen(initialCategory: ActivityCategory.cash),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text(label), findsOneWidget);
-      expect(find.text('Completed'), findsNothing);
-      await tester.tap(find.text(label));
-      await tester.pumpAndSettle();
-      expect(find.text(exactAmount), findsOneWidget);
-      expect(find.text('$exactAmount USDT'), findsOneWidget);
-      expect(find.text(exactFee), findsOneWidget);
-      expect(find.text('closure-1'), findsOneWidget);
-      expect(find.text('tx-1'), findsOneWidget);
-      expect(find.text('refund-1'), findsOneWidget);
-      expect(find.text(reason), findsOneWidget);
-      expect(find.text('2026-01-02T00:00:00.000Z'), findsOneWidget);
-      expect(find.text('Completed'), findsNothing);
-      expect(find.text('obligation-1'), findsOneWidget);
-      expect(find.byKey(const ValueKey('activity-obligations-closure-1')),
-          findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(label), findsOneWidget);
+        expect(find.text('Completed'), findsNothing);
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        expect(find.text(exactAmount), findsOneWidget);
+        expect(find.text('$exactAmount USDT'), findsOneWidget);
+        expect(find.text(exactFee), findsOneWidget);
+        expect(find.text('closure-1'), findsOneWidget);
+        expect(find.text('tx-1'), findsOneWidget);
+        expect(find.text('refund-1'), findsOneWidget);
+        expect(find.text(reason), findsOneWidget);
+        expect(find.text('2026-01-02T00:00:00.000Z'), findsOneWidget);
+        expect(find.text('Completed'), findsNothing);
+        expect(find.text('obligation-1'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('activity-obligations-closure-1')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets(

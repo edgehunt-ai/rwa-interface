@@ -29,65 +29,104 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('new native execution signs current GET and submits only authorization', () async {
-    final action = _action(
-      orderId: 'order-1', stepId: 'swap-1',
-      kind: BstocksOrderActionKind.executeIocOrder,
-    );
-    final current = _order('order-1', action: action);
-    final executions = _Executions(action, [
-      _execution(action, WalletActionExecutionState.awaitingUserAuthorization),
-    ]);
-    final signer = _Signer();
-    final actions = _Actions();
-    final result = await BstocksOrderExecutionRepositoryImpl(
-      _ScriptedOrders(initial: current, refreshes: [
-        current, _order('order-1', status: TradingOrderStatus.filled),
-      ]),
-      actions, executions: executions, authorizationSigner: signer,
-    ).executeExisting(order: ResourceResult(resource: current));
-    expect(result.resource.status, TradingOrderStatus.filled);
-    expect(executions.createModes, [GasPaymentMode.userPaidNative]);
-    expect(executions.getIds, ['execution-1']);
-    expect(signer.requests.single.headers['payload'], 'current');
-    expect(signer.requests.single.sponsor, isFalse);
-    expect(signer.requests.single.transaction.nonce, '0xa');
-    expect(executions.submitSignatures, ['signature']);
-    expect(actions.transactionHashes, isEmpty);
-  });
+  test(
+    'new native execution signs current GET and submits only authorization',
+    () async {
+      final action = _action(
+        orderId: 'order-1',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.executeIocOrder,
+      );
+      final current = _order('order-1', action: action);
+      final executions = _Executions(action, [
+        _execution(
+          action,
+          WalletActionExecutionState.awaitingUserAuthorization,
+        ),
+      ]);
+      final signer = _Signer();
+      final actions = _Actions();
+      final result = await BstocksOrderExecutionRepositoryImpl(
+        _ScriptedOrders(
+          initial: current,
+          refreshes: [
+            current,
+            _order('order-1', status: TradingOrderStatus.filled),
+          ],
+        ),
+        actions,
+        executions: executions,
+        authorizationSigner: signer,
+      ).executeExisting(order: ResourceResult(resource: current));
+      expect(result.resource.status, TradingOrderStatus.filled);
+      expect(executions.createModes, [GasPaymentMode.userPaidNative]);
+      expect(executions.getIds, ['execution-1']);
+      expect(signer.requests.single.headers['payload'], 'current');
+      expect(signer.requests.single.sponsor, isFalse);
+      expect(signer.requests.single.transaction.nonce, '0xa');
+      expect(executions.submitSignatures, ['signature']);
+      expect(actions.transactionHashes, isEmpty);
+    },
+  );
 
   for (final invalid in [
-    'legacy provider', 'missing nonce', 'noncanonical nonce',
-    'frozen nonce', 'authorized nonce', 'noncanonical hex',
-    'sponsor', 'authorized call', 'signed body',
-    'dispatching', 'rejected', 'voided', 'cancelled',
+    'legacy provider',
+    'missing nonce',
+    'noncanonical nonce',
+    'frozen nonce',
+    'authorized nonce',
+    'noncanonical hex',
+    'sponsor',
+    'authorized call',
+    'signed body',
+    'dispatching',
+    'rejected',
+    'voided',
+    'cancelled',
   ]) {
     test('native $invalid cannot grant signing authority', () async {
       final action = _action(
-        orderId: 'order-1', stepId: 'swap-1',
+        orderId: 'order-1',
+        stepId: 'swap-1',
         kind: BstocksOrderActionKind.executeIocOrder,
       );
       final current = _order('order-1', action: action);
       final execution = _execution(
-        action, WalletActionExecutionState.awaitingUserAuthorization,
+        action,
+        WalletActionExecutionState.awaitingUserAuthorization,
         provider: invalid == 'legacy provider' ? 'user_wallet' : 'privy_native',
-        nativeNonce: invalid == 'missing nonce' ? null
-            : invalid == 'noncanonical nonce' ? '010' : '10',
+        nativeNonce: invalid == 'missing nonce'
+            ? null
+            : invalid == 'noncanonical nonce'
+            ? '010'
+            : '10',
         frozenNonce: invalid == 'frozen nonce' ? '11' : '10',
-        authorizedNonce: invalid == 'authorized nonce' ? '0xb'
-            : invalid == 'noncanonical hex' ? '0x0a' : '0xa',
+        authorizedNonce: invalid == 'authorized nonce'
+            ? '0xb'
+            : invalid == 'noncanonical hex'
+            ? '0x0a'
+            : '0xa',
         sponsor: invalid == 'sponsor',
         authorizedTo: invalid == 'authorized call' ? action.from : null,
         bodyTo: invalid == 'signed body' ? action.from : null,
-        deliveryState: const {'dispatching', 'rejected', 'voided', 'cancelled'}
-            .contains(invalid) ? invalid : 'prepared',
+        deliveryState:
+            const {
+              'dispatching',
+              'rejected',
+              'voided',
+              'cancelled',
+            }.contains(invalid)
+            ? invalid
+            : 'prepared',
       );
       final executions = _Executions(action, [execution]);
       final signer = _Signer();
       await expectLater(
         BstocksOrderExecutionRepositoryImpl(
           _ScriptedOrders(initial: current, refreshes: [current]),
-          _Actions(), executions: executions, authorizationSigner: signer,
+          _Actions(),
+          executions: executions,
+          authorizationSigner: signer,
         ).executeExisting(order: ResourceResult(resource: current)),
         throwsA(isA<CompatibilityFailure>()),
       );
@@ -99,18 +138,24 @@ void main() {
 
   test('native gas refusal does not create a fallback execution', () async {
     final action = _action(
-      orderId: 'order-1', stepId: 'swap-1',
+      orderId: 'order-1',
+      stepId: 'swap-1',
       kind: BstocksOrderActionKind.executeIocOrder,
     );
     final current = _order('order-1', action: action);
     final executions = _Executions(action, [
-      _execution(action, WalletActionExecutionState.userGasConfirmationRequired),
+      _execution(
+        action,
+        WalletActionExecutionState.userGasConfirmationRequired,
+      ),
     ]);
     final signer = _Signer();
     await expectLater(
       BstocksOrderExecutionRepositoryImpl(
         _ScriptedOrders(initial: current, refreshes: [current]),
-        _Actions(), executions: executions, authorizationSigner: signer,
+        _Actions(),
+        executions: executions,
+        authorizationSigner: signer,
       ).executeExisting(order: ResourceResult(resource: current)),
       throwsA(isA<UnknownFailure>()),
     );
@@ -160,7 +205,8 @@ void main() {
         ]);
         if (mode == GasPaymentMode.appSponsored) {
           await BstocksExecutionJournal.persistent().saveExecutionId(
-            action, 'execution-1',
+            action,
+            'execution-1',
           );
         }
         BstocksOrderExecutionRepositoryImpl repository() =>
@@ -201,32 +247,40 @@ void main() {
         );
         expect(result.resource.status, TradingOrderStatus.filled);
         expect(executions.submitCalls, 1);
-        expect(executions.createModes,
-            mode == GasPaymentMode.userPaidNative ? [mode] : isEmpty);
+        expect(
+          executions.createModes,
+          mode == GasPaymentMode.userPaidNative ? [mode] : isEmpty,
+        );
       },
     );
   }
 
-  test('historical pending broadcast blocks new native authorization', () async {
-    final action = _action(
-      orderId: 'order-1', stepId: 'swap-1',
-      kind: BstocksOrderActionKind.executeIocOrder,
-    );
-    await _saveHistoricalHash(action, '');
-    final current = _order('order-1', action: action);
-    final executions = _Executions();
-    final signer = _Signer();
-    await expectLater(
-      BstocksOrderExecutionRepositoryImpl(
-        _ScriptedOrders(initial: current, refreshes: [current]),
-        _Actions(), executions: executions, authorizationSigner: signer,
-        broadcastJournal: BstocksBroadcastJournal.persistent(),
-      ).executeExisting(order: ResourceResult(resource: current)),
-      throwsA(isA<UnknownFailure>()),
-    );
-    expect(executions.createKeys, isEmpty);
-    expect(signer.requests, isEmpty);
-  });
+  test(
+    'historical pending broadcast blocks new native authorization',
+    () async {
+      final action = _action(
+        orderId: 'order-1',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.executeIocOrder,
+      );
+      await _saveHistoricalHash(action, '');
+      final current = _order('order-1', action: action);
+      final executions = _Executions();
+      final signer = _Signer();
+      await expectLater(
+        BstocksOrderExecutionRepositoryImpl(
+          _ScriptedOrders(initial: current, refreshes: [current]),
+          _Actions(),
+          executions: executions,
+          authorizationSigner: signer,
+          broadcastJournal: BstocksBroadcastJournal.persistent(),
+        ).executeExisting(order: ResourceResult(resource: current)),
+        throwsA(isA<UnknownFailure>()),
+      );
+      expect(executions.createKeys, isEmpty);
+      expect(signer.requests, isEmpty);
+    },
+  );
 
   test('cancellation after authorization POST begins keeps unknown submission locked', () async {
     var cancelled = false;
@@ -701,52 +755,46 @@ void main() {
     );
   }
 
-  test(
-    'lost relay submission is reconciled without reconstruction',
-    () async {
-      final action = _action(
-        orderId: 'order-1',
-        stepId: 'swap-1',
-        kind: BstocksOrderActionKind.executeIocOrder,
-      );
-      final current = _order('order-1', action: action);
-      final orders = _ScriptedOrders(
-        initial: current,
-        refreshes: [
-          current,
-          current,
-          _order('order-1', status: TradingOrderStatus.filled),
-        ],
-      );
-      final executions = _Executions(action, [
-        _execution(
-          action,
-          WalletActionExecutionState.awaitingUserAuthorization,
-        ),
-        const NetworkFailure(),
-        _execution(action, WalletActionExecutionState.providerSubmitted),
-      ])..submitFailure = const NetworkFailure();
-      final signer = _Signer();
-      BstocksOrderExecutionRepositoryImpl repository() =>
-          BstocksOrderExecutionRepositoryImpl(
-            orders,
-            _Actions(),
-            executions: executions,
-            authorizationSigner: signer,
-            executionJournal: BstocksExecutionJournal.persistent(),
-            reconciliationAttempts: 2,
-            reconciliationDelay: Duration.zero,
-          );
-      final result = await repository().executeExisting(
-        order: ResourceResult(resource: current),
-      );
-      expect(result.resource.status, TradingOrderStatus.filled);
-      expect(executions.createKeys, hasLength(1));
-      expect(executions.submitCalls, 1);
-      expect(signer.requests, hasLength(1));
-      expect(signer.requests.single.headers['payload'], 'current');
-    },
-  );
+  test('lost relay submission is reconciled without reconstruction', () async {
+    final action = _action(
+      orderId: 'order-1',
+      stepId: 'swap-1',
+      kind: BstocksOrderActionKind.executeIocOrder,
+    );
+    final current = _order('order-1', action: action);
+    final orders = _ScriptedOrders(
+      initial: current,
+      refreshes: [
+        current,
+        current,
+        _order('order-1', status: TradingOrderStatus.filled),
+      ],
+    );
+    final executions = _Executions(action, [
+      _execution(action, WalletActionExecutionState.awaitingUserAuthorization),
+      const NetworkFailure(),
+      _execution(action, WalletActionExecutionState.providerSubmitted),
+    ])..submitFailure = const NetworkFailure();
+    final signer = _Signer();
+    BstocksOrderExecutionRepositoryImpl repository() =>
+        BstocksOrderExecutionRepositoryImpl(
+          orders,
+          _Actions(),
+          executions: executions,
+          authorizationSigner: signer,
+          executionJournal: BstocksExecutionJournal.persistent(),
+          reconciliationAttempts: 2,
+          reconciliationDelay: Duration.zero,
+        );
+    final result = await repository().executeExisting(
+      order: ResourceResult(resource: current),
+    );
+    expect(result.resource.status, TradingOrderStatus.filled);
+    expect(executions.createKeys, hasLength(1));
+    expect(executions.submitCalls, 1);
+    expect(signer.requests, hasLength(1));
+    expect(signer.requests.single.headers['payload'], 'current');
+  });
 
   test(
     'uncertain relay submission cannot re-sign an awaiting snapshot',
@@ -2116,7 +2164,9 @@ WalletActionExecution _execution(
   mode: mode,
   executionProvider: provider,
   nativeNonce: mode == GasPaymentMode.userPaidNative ? nativeNonce : null,
-  nativeDeliveryState: mode == GasPaymentMode.userPaidNative ? deliveryState : null,
+  nativeDeliveryState: mode == GasPaymentMode.userPaidNative
+      ? deliveryState
+      : null,
   status: status,
   transaction: FrozenTransaction(
     to: action.to,
@@ -2151,7 +2201,8 @@ WalletActionExecution _execution(
                 'to': bodyTo ?? authorizedTo ?? action.to,
                 'data': action.data,
                 'value': action.value,
-                if (mode == GasPaymentMode.userPaidNative) 'nonce': authorizedNonce,
+                if (mode == GasPaymentMode.userPaidNative)
+                  'nonce': authorizedNonce,
               },
             },
           },
@@ -2163,7 +2214,9 @@ WalletActionExecution _execution(
             to: authorizedTo ?? action.to,
             data: action.data,
             value: action.value,
-            nonce: mode == GasPaymentMode.userPaidNative ? authorizedNonce : null,
+            nonce: mode == GasPaymentMode.userPaidNative
+                ? authorizedNonce
+                : null,
           ),
         )
       : null,
@@ -2186,7 +2239,10 @@ final class _Executions implements WalletActionExecutionRepository {
   Future<WalletActionExecution> get(String executionId) async {
     getIds.add(executionId);
     final next = reads.isEmpty
-        ? _execution(action!, WalletActionExecutionState.awaitingUserAuthorization)
+        ? _execution(
+            action!,
+            WalletActionExecutionState.awaitingUserAuthorization,
+          )
         : reads.removeAt(0);
     if (next is ApiFailure) throw next;
     return next as WalletActionExecution;
@@ -2207,8 +2263,8 @@ final class _Executions implements WalletActionExecutionRepository {
       kind: actionId.startsWith('approval')
           ? BstocksOrderActionKind.erc20Approval
           : actionId.contains('cancel')
-              ? BstocksOrderActionKind.cancelOrder
-              : BstocksOrderActionKind.executeIocOrder,
+          ? BstocksOrderActionKind.cancelOrder
+          : BstocksOrderActionKind.executeIocOrder,
     );
     onCreate?.call();
     return _execution(

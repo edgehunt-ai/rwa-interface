@@ -51,14 +51,25 @@ final class Hip3Withdrawal {
 
   bool get isCompleted => status == 'completed' && !requiresManualReview;
 
-  bool get isPending => !isCompleted &&
-      status != 'awaiting_signature' && status != 'failed' &&
-      status != 'expired' && status != 'refunded' && status != 'credited';
+  bool get isPending =>
+      !isCompleted &&
+      status != 'awaiting_signature' &&
+      status != 'failed' &&
+      status != 'expired' &&
+      status != 'refunded' &&
+      status != 'credited';
 
-  bool get shouldPoll => !requiresManualReview && const {
-    'submitting', 'submitted', 'payout', 'refund_pending', 'recovering',
-  }.contains(status);
+  bool get shouldPoll =>
+      !requiresManualReview &&
+      const {
+        'submitting',
+        'submitted',
+        'payout',
+        'refund_pending',
+        'recovering',
+      }.contains(status);
 
-  bool get requiresManualReview => status == 'manual_review' ||
+  bool get requiresManualReview =>
+      status == 'manual_review' ||
       (failureReason?.contains('requires_manual_review') ?? false);
 }

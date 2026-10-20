@@ -51,10 +51,12 @@ final class SelfCustodialWithdrawalSummary {
   final DateTime? submittedAt;
   final DateTime? confirmedAt;
 
-  bool get isCompleted => status == SelfCustodialWithdrawalState.confirmed &&
+  bool get isCompleted =>
+      status == SelfCustodialWithdrawalState.confirmed &&
       manualReviewReason == null;
 
-  bool get shouldPoll => manualReviewReason == null &&
+  bool get shouldPoll =>
+      manualReviewReason == null &&
       (status == SelfCustodialWithdrawalState.submitted ||
-       status == SelfCustodialWithdrawalState.confirming);
+          status == SelfCustodialWithdrawalState.confirming);
 }

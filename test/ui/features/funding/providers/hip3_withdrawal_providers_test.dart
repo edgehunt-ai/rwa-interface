@@ -137,24 +137,32 @@ void main() {
     },
   );
 
-  for (final status in ['manual_review', 'partial', 'refund_pending', 'ambiguous']) {
-    test('$status reconciles the same withdrawal without creating another', () async {
-      final repo = _Repository();
-      final container = makeContainer(repo);
-      addTearDown(container.dispose);
-      final commands = container.read(hip3WithdrawalCommandsProvider);
-      await commands.preview('51.4');
-      final prepared = await commands.prepare('51.4', rail: 'float');
-      repo.status = status;
-      for (var i = 0; i < 2; i++) {
-        final repeated = await commands.prepare('51.4', rail: 'float');
-        expect(repeated.id, prepared.id);
-        expect(repeated.status, status);
-        expect(repeated.isCompleted, isFalse);
-      }
-      expect(repo.creationKeys, hasLength(1));
-      expect(repo.submitted, 0);
-    });
+  for (final status in [
+    'manual_review',
+    'partial',
+    'refund_pending',
+    'ambiguous',
+  ]) {
+    test(
+      '$status reconciles the same withdrawal without creating another',
+      () async {
+        final repo = _Repository();
+        final container = makeContainer(repo);
+        addTearDown(container.dispose);
+        final commands = container.read(hip3WithdrawalCommandsProvider);
+        await commands.preview('51.4');
+        final prepared = await commands.prepare('51.4', rail: 'float');
+        repo.status = status;
+        for (var i = 0; i < 2; i++) {
+          final repeated = await commands.prepare('51.4', rail: 'float');
+          expect(repeated.id, prepared.id);
+          expect(repeated.status, status);
+          expect(repeated.isCompleted, isFalse);
+        }
+        expect(repo.creationKeys, hasLength(1));
+        expect(repo.submitted, 0);
+      },
+    );
   }
 
   test('a successful submit response retains the pending withdrawal for reconciliation', () async {
@@ -401,26 +409,29 @@ void main() {
     ]);
   });
 
-  test('a terminal observation precedes an explicit new creation key', () async {
-    final repo = _Repository();
-    final container = ProviderContainer(
-      overrides: [
-        deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
-        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
-      ],
-    );
-    addTearDown(container.dispose);
-    final commands = container.read(hip3WithdrawalCommandsProvider);
-    final preview = await commands.preview('51.4');
-    await commands.prepare('51.4', rail: preview.rail);
-    repo.status = 'failed';
-    final failed = await commands.prepare('51.4', rail: preview.rail);
-    expect(failed.status, 'failed');
-    expect(repo.creationKeys, hasLength(1));
-    await commands.prepare('51.4', rail: preview.rail);
-    expect(repo.creationKeys, hasLength(2));
-    expect(repo.creationKeys.toSet(), hasLength(2));
-  });
+  test(
+    'a terminal observation precedes an explicit new creation key',
+    () async {
+      final repo = _Repository();
+      final container = ProviderContainer(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      final preview = await commands.preview('51.4');
+      await commands.prepare('51.4', rail: preview.rail);
+      repo.status = 'failed';
+      final failed = await commands.prepare('51.4', rail: preview.rail);
+      expect(failed.status, 'failed');
+      expect(repo.creationKeys, hasLength(1));
+      await commands.prepare('51.4', rail: preview.rail);
+      expect(repo.creationKeys, hasLength(2));
+      expect(repo.creationKeys.toSet(), hasLength(2));
+    },
+  );
 
   test('an old account session cannot submit its frozen intent', () async {
     final repo = _Repository();

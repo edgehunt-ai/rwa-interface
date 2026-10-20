@@ -726,7 +726,9 @@ final class FundingRepositoryImpl implements FundingRepository {
       final plan = value as dynamic;
       final targetAsset = (plan.targetSnapshot as dynamic).asset as dynamic;
       final rawTargetToken = (targetAsset.token as dynamic).name as String;
-      final targetToken = rawTargetToken == 'USDC_PERPS' ? 'USDC-PERPS' : rawTargetToken;
+      final targetToken = rawTargetToken == 'USDC_PERPS'
+          ? 'USDC-PERPS'
+          : rawTargetToken;
       final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
           .map((leg) {
             final source = leg.sourcePositionSnapshot;
@@ -736,10 +738,16 @@ final class FundingRepositoryImpl implements FundingRepository {
               asset: source.asset.token,
               sourcePositionId: source.positionId,
               network: source.asset.network,
-              maximumAmount: DecimalValue(leg.route.maximumInputAmount,
-                  asset: source.asset.token, unit: 'token'),
-              outputAmount: DecimalValue(leg.outputAmount,
-                  asset: targetToken, unit: 'token'),
+              maximumAmount: DecimalValue(
+                leg.route.maximumInputAmount,
+                asset: source.asset.token,
+                unit: 'token',
+              ),
+              outputAmount: DecimalValue(
+                leg.outputAmount,
+                asset: targetToken,
+                unit: 'token',
+              ),
               status: switch (leg.status.name) {
                 'planned' => FundingLegState.planned,
                 'actionReleased' => FundingLegState.actionReleased,
@@ -755,10 +763,16 @@ final class FundingRepositoryImpl implements FundingRepository {
                 _ => FundingLegState.unknown,
               },
               etaSeconds: leg.route.etaSeconds,
-              bridgeFee: DecimalValue(leg.route.fees.bridgeFee,
-                  asset: leg.route.fees.feeAsset, unit: 'token'),
-              networkFee: DecimalValue(leg.route.fees.networkFee,
-                  asset: leg.route.fees.feeAsset, unit: 'token'),
+              bridgeFee: DecimalValue(
+                leg.route.fees.bridgeFee,
+                asset: leg.route.fees.feeAsset,
+                unit: 'token',
+              ),
+              networkFee: DecimalValue(
+                leg.route.fees.networkFee,
+                asset: leg.route.fees.feeAsset,
+                unit: 'token',
+              ),
               fees: FundingSessionFees(
                 asset: leg.route.fees.feeAsset,
                 providerFee: leg.route.fees.providerFee,
@@ -771,11 +785,14 @@ final class FundingRepositoryImpl implements FundingRepository {
               feeAsset: leg.route.fees.feeAsset,
               transferId: leg.transferId,
               targetEnvironment: leg.route.targetEnvironment?.name,
-              refundAsset: leg.route.refund.asset == null ? null : _transferEvidence(
-                api.standardSerializers.serializeWith(
-                  api.FundingAssetIdentity.serializer, leg.route.refund.asset,
-                ),
-              ),
+              refundAsset: leg.route.refund.asset == null
+                  ? null
+                  : _transferEvidence(
+                      api.standardSerializers.serializeWith(
+                        api.FundingAssetIdentity.serializer,
+                        leg.route.refund.asset,
+                      ),
+                    ),
             );
           })
           .toList(growable: false);
@@ -785,16 +802,26 @@ final class FundingRepositoryImpl implements FundingRepository {
         fundingSessionId: plan.fundingSessionId as String?,
         createdAt: (plan.createdAt as DateTime).toUtc(),
         expiresAt: (plan.expiresAt as DateTime?)?.toUtc(),
-        shortfall: DecimalValue(plan.shortfall as String,
-            asset: targetToken, unit: 'token'),
-        requiredTargetAmount: DecimalValue(plan.requiredTargetAmount as String,
-            asset: targetToken, unit: 'token'),
+        shortfall: DecimalValue(
+          plan.shortfall as String,
+          asset: targetToken,
+          unit: 'token',
+        ),
+        requiredTargetAmount: DecimalValue(
+          plan.requiredTargetAmount as String,
+          asset: targetToken,
+          unit: 'token',
+        ),
         targetAvailableAmount: DecimalValue(
           (plan.targetSnapshot as dynamic).availableAmount as String,
-          asset: targetToken, unit: 'token',
+          asset: targetToken,
+          unit: 'token',
         ),
         targetAsset: targetToken,
-        targetEnvironment: ((plan.targetSnapshot as dynamic).targetEnvironment as dynamic)?.name as String?,
+        targetEnvironment:
+            ((plan.targetSnapshot as dynamic).targetEnvironment as dynamic)
+                    ?.name
+                as String?,
         targetNetwork: canonicalChainName(
           (targetAsset.network as dynamic).name as String,
         ),
@@ -826,11 +853,18 @@ final class FundingRepositoryImpl implements FundingRepository {
       transferId: value.transferId,
       planId: value.planId,
       targetEnvironment: value.target.targetEnvironment?.name,
-      amount: DecimalValue(value.amount,
-          asset: value.target.asset.token, unit: 'token'),
-      targetReceivedAmount: value.targetReceivedAmount == null ? null : DecimalValue(
-        value.targetReceivedAmount!, asset: value.target.asset.token, unit: 'token',
+      amount: DecimalValue(
+        value.amount,
+        asset: value.target.asset.token,
+        unit: 'token',
       ),
+      targetReceivedAmount: value.targetReceivedAmount == null
+          ? null
+          : DecimalValue(
+              value.targetReceivedAmount!,
+              asset: value.target.asset.token,
+              unit: 'token',
+            ),
       status: switch (value.status.name) {
         'awaitingAuthorization' => FundingTransferState.awaitingAuthorization,
         'awaitingWallet' => FundingTransferState.awaitingWallet,
@@ -880,7 +914,9 @@ final class FundingRepositoryImpl implements FundingRepository {
     final gas = value['gas_payment'];
     final mode = value.containsKey('gas_payment_mode')
         ? value['gas_payment_mode']
-        : gas is Map ? gas['mode'] : null;
+        : gas is Map
+        ? gas['mode']
+        : null;
     return FundingTransferAction(
       actionId: value['action_id'] as String,
       status: value['status'] as String,
@@ -900,9 +936,8 @@ final class FundingRepositoryImpl implements FundingRepository {
     );
   }
 
-  Map<String, Object?>? _transferEvidence(Object? value) => value == null
-      ? null
-      : Map<String, Object?>.unmodifiable(value as Map);
+  Map<String, Object?>? _transferEvidence(Object? value) =>
+      value == null ? null : Map<String, Object?>.unmodifiable(value as Map);
 
   DecimalValue? _money(String? value) =>
       value == null ? null : DecimalValue(value, asset: 'USDC', unit: 'token');

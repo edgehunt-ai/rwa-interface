@@ -147,7 +147,12 @@ final class SelfCustodialWithdrawalCommands {
       var execution = _executions[withdrawalId];
       if (execution != null) {
         final current = await repository.get(execution.executionId);
-        _validateExecution(current, prepared, execution.mode, previous: execution);
+        _validateExecution(
+          current,
+          prepared,
+          execution.mode,
+          previous: execution,
+        );
         execution = current;
         _executions[withdrawalId] = current;
         if (_authorizationSubmissions.contains(current.executionId)) {
@@ -163,7 +168,9 @@ final class SelfCustodialWithdrawalCommands {
         }
       } else if (_executionModes[withdrawalId] case final previousMode?) {
         if (previousMode != mode) {
-          throw StateError('Unresolved execution must be observed before changing gas mode');
+          throw StateError(
+            'Unresolved execution must be observed before changing gas mode',
+          );
         }
       }
       if (execution == null) {
@@ -190,8 +197,12 @@ final class SelfCustodialWithdrawalCommands {
       if (!execution.awaitsAuthorization) return _reload(withdrawalId);
       validateFundingAuthorization(execution);
       if (!prepared.transaction.validUntil.isAfter(DateTime.now().toUtc()) ||
-          execution.authorizationExpiresAt!.isAfter(prepared.transaction.validUntil)) {
-        throw StateError('Authorization exceeds the frozen withdrawal lifetime');
+          execution.authorizationExpiresAt!.isAfter(
+            prepared.transaction.validUntil,
+          )) {
+        throw StateError(
+          'Authorization exceeds the frozen withdrawal lifetime',
+        );
       }
       final signature = await _ref
           .read(walletAuthorizationSignerProvider)
@@ -216,7 +227,6 @@ final class SelfCustodialWithdrawalCommands {
     final gas = prepared.gas;
     if (gas != null && !gas.canPayGas) throw InsufficientWithdrawalGas(gas);
   }
-
 
   Future<SelfCustodialWithdrawalSummary> _reload(String withdrawalId) async {
     _ref.invalidate(selfCustodialWithdrawalProvider(withdrawalId));

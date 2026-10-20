@@ -44,55 +44,102 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
-  for (final status in [TradingOrderStatus.submitted, TradingOrderStatus.manualReview,
-      TradingOrderStatus.partiallyFilled, TradingOrderStatus.failed]) {
-    testWidgets('funded trade $status is not a successful fill', (tester) async {
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          bstocksSettlementTokenProvider.overrideWith((_) => _environment().bstocksSettlementToken),
-          ordersRepositoryProvider.overrideWithValue(_FilledOrdersRepository(status: status)),
-          unifiedFundingAccountProvider.overrideWith((_) async => _transferOptions('1000').account),
-        ],
-        child: buildTestApp(BstocksTransferFlowSheet(
-          amountNeeded: DecimalValue('100'),
-          initialStage: BstocksTransferFlowStage.review,
-          plan: FundingPlan(planId: 'funded-plan', tradePreviewId: 'preview-1',
-              shortfall: DecimalValue('0'), status: FundingPlanState.alreadyFunded),
-          orderPreview: _fundedPreview, symbol: 'NVDAB',
-        )),
-      ));
+  for (final status in [
+    TradingOrderStatus.submitted,
+    TradingOrderStatus.manualReview,
+    TradingOrderStatus.partiallyFilled,
+    TradingOrderStatus.failed,
+  ]) {
+    testWidgets('funded trade $status is not a successful fill', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bstocksSettlementTokenProvider.overrideWith(
+              (_) => _environment().bstocksSettlementToken,
+            ),
+            ordersRepositoryProvider.overrideWithValue(
+              _FilledOrdersRepository(status: status),
+            ),
+            unifiedFundingAccountProvider.overrideWith(
+              (_) async => _transferOptions('1000').account,
+            ),
+          ],
+          child: buildTestApp(
+            BstocksTransferFlowSheet(
+              amountNeeded: DecimalValue('100'),
+              initialStage: BstocksTransferFlowStage.review,
+              plan: FundingPlan(
+                planId: 'funded-plan',
+                tradePreviewId: 'preview-1',
+                shortfall: DecimalValue('0'),
+                status: FundingPlanState.alreadyFunded,
+              ),
+              orderPreview: _fundedPreview,
+              symbol: 'NVDAB',
+            ),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm Buy'));
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Confirm Buy'),
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.pumpAndSettle();
       expect(find.text('Trade Successful'), findsNothing);
       expect(find.widgetWithText(FilledButton, 'View Position'), findsNothing);
-      expect(find.widgetWithText(FilledButton, 'Close & View Later'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Close & View Later'),
+        findsOneWidget,
+      );
       expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsNothing);
-      if (status == TradingOrderStatus.manualReview) expect(find.text('Manual review'), findsOneWidget);
-      if (status == TradingOrderStatus.failed) expect(find.text('Failed'), findsOneWidget);
+      if (status == TradingOrderStatus.manualReview) {
+        expect(find.text('Manual review'), findsOneWidget);
+      }
+      if (status == TradingOrderStatus.failed) {
+        expect(find.text('Failed'), findsOneWidget);
+      }
     });
   }
-  for (final status in [FundingPlanState.failed, FundingPlanState.manualReview]) {
-    testWidgets('order funding $status retains ID without perpetual arrival', (tester) async {
+  for (final status in [
+    FundingPlanState.failed,
+    FundingPlanState.manualReview,
+  ]) {
+    testWidgets('order funding $status retains ID without perpetual arrival', (
+      tester,
+    ) async {
       final funding = _TerminalFundingRepository(status);
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          fundingRepositoryProvider.overrideWithValue(funding),
-          walletsRepositoryProvider.overrideWithValue(_FundingWalletsRepository()),
-          transferOptionsProvider.overrideWith((_) async => _transferOptions('1000')),
-        ],
-        child: buildTestApp(OrderFundingSheet(
-          plan: _readyFundingPlan, kind: MarketProductKind.bstock,
-          canConfirmTransfer: true,
-        )),
-      ));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(funding),
+            walletsRepositoryProvider.overrideWithValue(
+              _FundingWalletsRepository(),
+            ),
+            transferOptionsProvider.overrideWith(
+              (_) async => _transferOptions('1000'),
+            ),
+          ],
+          child: buildTestApp(
+            OrderFundingSheet(
+              plan: _readyFundingPlan,
+              kind: MarketProductKind.bstock,
+              canConfirmTransfer: true,
+            ),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('order-funding-spot-option')));
       await tester.pump();
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('order-funding-transfer-pending')), findsNothing);
+      expect(
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsNothing,
+      );
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('pending-transfer'), findsOneWidget);
       expect(find.byKey(const Key('order-funding-error')), findsOneWidget);
@@ -106,26 +153,49 @@ void main() {
       expect(funding.transfers, 1);
       await tester.pumpWidget(const SizedBox());
     });
-    testWidgets('restored bstock $status shows recovery instead of arrival', (tester) async {
+    testWidgets('restored bstock $status shows recovery instead of arrival', (
+      tester,
+    ) async {
       final funding = _TerminalFundingRepository(status);
       final plan = await funding.getFundingPlan('terminal-plan');
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          fundingRepositoryProvider.overrideWithValue(funding),
-          unifiedFundingAccountProvider.overrideWith((_) async => _transferOptions('1000').account),
-        ],
-        child: buildTestApp(BstocksTransferFlowSheet(
-          amountNeeded: DecimalValue('100'), plan: plan,
-          initialStage: BstocksTransferFlowStage.fundingPending,
-          initialFundingSubmitted: true,
-          orderPreview: _fundedPreview, symbol: 'NVDAB',
-        )),
-      ));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(funding),
+            unifiedFundingAccountProvider.overrideWith(
+              (_) async => _transferOptions('1000').account,
+            ),
+          ],
+          child: buildTestApp(
+            BstocksTransferFlowSheet(
+              amountNeeded: DecimalValue('100'),
+              plan: plan,
+              initialStage: BstocksTransferFlowStage.fundingPending,
+              initialFundingSubmitted: true,
+              orderPreview: _fundedPreview,
+              symbol: 'NVDAB',
+            ),
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
-      expect(find.image(const AssetImage('assets/figma/trade/funding_pending.webp')), findsNothing);
-      expect(find.byKey(const Key('bstocks-funding-check-status')), findsOneWidget);
+      expect(
+        find.image(const AssetImage('assets/figma/trade/funding_pending.webp')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('bstocks-funding-check-status')),
+        findsOneWidget,
+      );
       expect(find.text('pending-transfer'), findsOneWidget);
-      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm Buy')).onPressed, isNull);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Confirm Buy'),
+            )
+            .onPressed,
+        isNull,
+      );
       await tester.pump(const Duration(seconds: 12));
       expect(funding.transfers, 0);
       expect(funding.planReads, 1);
@@ -4441,13 +4511,21 @@ final class _TerminalFundingRepository extends _PendingFundingRepository {
   Future<FundingPlan> getFundingPlan(String id) async {
     planReads++;
     return FundingPlan(
-      planId: id, tradePreviewId: 'preview-1', shortfall: DecimalValue('100'),
+      planId: id,
+      tradePreviewId: 'preview-1',
+      shortfall: DecimalValue('100'),
       status: status,
-      legs: [FundingLeg(
-        legId: 'leg-1', walletId: 'wallet-1', asset: 'USDC',
-        maximumAmount: DecimalValue('100'), outputAmount: DecimalValue('100'),
-        status: FundingLegState.submitted, transferId: 'pending-transfer',
-      )],
+      legs: [
+        FundingLeg(
+          legId: 'leg-1',
+          walletId: 'wallet-1',
+          asset: 'USDC',
+          maximumAmount: DecimalValue('100'),
+          outputAmount: DecimalValue('100'),
+          status: FundingLegState.submitted,
+          transferId: 'pending-transfer',
+        ),
+      ],
     );
   }
 }

@@ -69,7 +69,10 @@ final class FinancialObligationAsset {
 }
 
 final class FinancialObligationAmounts {
-  const FinancialObligationAmounts({required this.asset, required this.buckets});
+  const FinancialObligationAmounts({
+    required this.asset,
+    required this.buckets,
+  });
   final FinancialObligationAsset asset;
   // Buckets overlap: outstanding must not be added to in_transit or refund_due.
   final Map<String, FinancialObligationAmount> buckets;

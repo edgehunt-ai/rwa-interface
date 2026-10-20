@@ -20,17 +20,13 @@ final class BstocksOrderExecutionRepositoryImpl
   BstocksOrderExecutionRepositoryImpl(
     this._orders,
     this._actions, {
-    WalletActionExecutionRepository? executions,
-    WalletAuthorizationSigner? authorizationSigner,
+    this._executions,
+    this._authorizationSigner,
     BstocksBroadcastJournal? broadcastJournal,
     BstocksExecutionJournal? executionJournal,
-    int reconciliationAttempts = 30,
-    Duration reconciliationDelay = const Duration(seconds: 1),
-  }) : _executions = executions,
-       _authorizationSigner = authorizationSigner,
-       _reconciliationAttempts = reconciliationAttempts,
-       _reconciliationDelay = reconciliationDelay,
-       _broadcastJournal = broadcastJournal ?? BstocksBroadcastJournal(),
+    this._reconciliationAttempts = 30,
+    this._reconciliationDelay = const Duration(seconds: 1),
+  }) : _broadcastJournal = broadcastJournal ?? BstocksBroadcastJournal(),
        _executionJournal = executionJournal ?? BstocksExecutionJournal();
 
   final OrdersRepository _orders;
@@ -529,11 +525,7 @@ final class BstocksOrderExecutionRepositoryImpl
   }) async {
     ApiFailure? lastReadFailure;
     WalletActionExecution? lastExecution;
-    for (
-      var attempt = 0;
-      attempt < _reconciliationAttempts;
-      attempt++
-    ) {
+    for (var attempt = 0; attempt < _reconciliationAttempts; attempt++) {
       WalletActionExecution? execution;
       try {
         execution = await executions.get(executionId);
@@ -606,12 +598,14 @@ final class BstocksOrderExecutionRepositoryImpl
     final transaction = authorization.transaction;
     final nonce = execution.nativeNonce;
     final authorizedNonce = transaction.nonce;
-    final validNativeNonce = nonce != null &&
+    final validNativeNonce =
+        nonce != null &&
         RegExp(r'^(0|[1-9][0-9]*)$').hasMatch(nonce) &&
         execution.transaction.nonce == nonce &&
         authorizedNonce != null &&
         RegExp(r'^0x(0|[1-9a-f][0-9a-f]*)$').hasMatch(authorizedNonce) &&
-        BigInt.parse(nonce) == BigInt.parse(authorizedNonce.substring(2), radix: 16);
+        BigInt.parse(nonce) ==
+            BigInt.parse(authorizedNonce.substring(2), radix: 16);
     final params = authorization.body['params'];
     final bodyTransaction = params is Map ? params['transaction'] : null;
     if (execution.executionId != executionId ||
@@ -645,9 +639,9 @@ final class BstocksOrderExecutionRepositoryImpl
                 !validNativeNonce ||
                 bodyTransaction['nonce'] != authorizedNonce))) {
       throw const CompatibilityFailure(
-        userAction: 'Wallet authorization does not match the frozen bStocks action',
+        userAction:
+            'Wallet authorization does not match the frozen bStocks action',
       );
     }
   }
-
 }

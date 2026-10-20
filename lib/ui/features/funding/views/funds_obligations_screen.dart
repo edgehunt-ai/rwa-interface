@@ -11,18 +11,22 @@ class FundsObligationsScreen extends ConsumerStatefulWidget {
   const FundsObligationsScreen({super.key});
 
   @override
-  ConsumerState<FundsObligationsScreen> createState() => _FundsObligationsScreenState();
+  ConsumerState<FundsObligationsScreen> createState() =>
+      _FundsObligationsScreenState();
 }
 
-class _FundsObligationsScreenState extends ConsumerState<FundsObligationsScreen> {
+class _FundsObligationsScreenState
+    extends ConsumerState<FundsObligationsScreen> {
   final _cursors = <String?>[null];
   bool _includeResolved = false;
 
   void _refresh() {
     ref.invalidate(financialObligationsProvider);
-    setState(() => _cursors
-      ..clear()
-      ..add(null));
+    setState(
+      () => _cursors
+        ..clear()
+        ..add(null),
+    );
   }
 
   @override
@@ -32,11 +36,13 @@ class _FundsObligationsScreenState extends ConsumerState<FundsObligationsScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.fundsObligationsTitle),
-        actions: [IconButton(
-          tooltip: l10n.fundsRefresh,
-          onPressed: _refresh,
-          icon: const Icon(Icons.refresh),
-        )],
+        actions: [
+          IconButton(
+            tooltip: l10n.fundsRefresh,
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -54,33 +60,49 @@ class _FundsObligationsScreenState extends ConsumerState<FundsObligationsScreen>
             }),
           ),
           for (final cursor in _cursors)
-            ref.watch(financialObligationsProvider((
-              cursor: cursor, includeResolved: _includeResolved,
-            ))).when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => Column(children: [
-                Text(l10n.fundsObligationsUnavailable),
-                TextButton(onPressed: _refresh, child: Text(l10n.fundsRefresh)),
-              ]),
-              data: (page) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (cursor == null && page.items.isEmpty && !page.hasMore)
-                    Text(l10n.fundsObligationsEmpty),
-                  for (final item in page.items)
-                    if (seen.add(item.id))
-                      FinancialObligationCard(obligation: item, onObserve: _refresh),
-                  if (page.hasMore && cursor == _cursors.last)
-                    if (page.nextCursor != null && !_cursors.contains(page.nextCursor))
-                      TextButton(
-                        onPressed: () => setState(() => _cursors.add(page.nextCursor)),
-                        child: Text(l10n.fundsLoadMore),
-                      )
-                    else
+            ref
+                .watch(
+                  financialObligationsProvider((
+                    cursor: cursor,
+                    includeResolved: _includeResolved,
+                  )),
+                )
+                .when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => Column(
+                    children: [
                       Text(l10n.fundsObligationsUnavailable),
-                ],
-              ),
-            ),
+                      TextButton(
+                        onPressed: _refresh,
+                        child: Text(l10n.fundsRefresh),
+                      ),
+                    ],
+                  ),
+                  data: (page) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (cursor == null && page.items.isEmpty && !page.hasMore)
+                        Text(l10n.fundsObligationsEmpty),
+                      for (final item in page.items)
+                        if (seen.add(item.id))
+                          FinancialObligationCard(
+                            obligation: item,
+                            onObserve: _refresh,
+                          ),
+                      if (page.hasMore && cursor == _cursors.last)
+                        if (page.nextCursor != null &&
+                            !_cursors.contains(page.nextCursor))
+                          TextButton(
+                            onPressed: () =>
+                                setState(() => _cursors.add(page.nextCursor)),
+                            child: Text(l10n.fundsLoadMore),
+                          )
+                        else
+                          Text(l10n.fundsObligationsUnavailable),
+                    ],
+                  ),
+                ),
         ],
       ),
     );
@@ -110,72 +132,124 @@ class FinancialObligationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SelectableText(value.id, style: Theme.of(context).textTheme.titleMedium),
-            _field(l10n.fundsEconomicStatus, _economicLabel(l10n, value.economicStatus)),
+            SelectableText(
+              value.id,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            _field(
+              l10n.fundsEconomicStatus,
+              _economicLabel(l10n, value.economicStatus),
+            ),
             if (value.unresolved) Text(l10n.fundsUnresolved),
             _field(l10n.fundsTechnicalStatus, value.technicalStatus),
             if (value.reason != null) SelectableText(value.reason!),
             SelectableText(value.businessReference.toString()),
             for (final reference in value.relatedReferences)
               SelectableText(reference.toString()),
-            for (final executionId in [value.businessReference, ...value.relatedReferences]
-                .where((reference) => reference.type == 'wallet_action_execution')
-                .map((reference) => reference.id).toSet())
+            for (final executionId
+                in [value.businessReference, ...value.relatedReferences]
+                    .where(
+                      (reference) =>
+                          reference.type == 'wallet_action_execution',
+                    )
+                    .map((reference) => reference.id)
+                    .toSet())
               TextButton(
                 key: ValueKey('native-recovery-$executionId'),
-                onPressed: () => Navigator.of(context).push<void>(MaterialPageRoute(
-                  builder: (_) => NativeExecutionRecoveryScreen(executionId: executionId),
-                )),
+                onPressed: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        NativeExecutionRecoveryScreen(executionId: executionId),
+                  ),
+                ),
                 child: Text(l10n.nativeRecoveryTitle),
               ),
             for (final row in value.amounts) ...[
               const Divider(),
               if (row.asset.status == 'unknown')
                 _field(l10n.fundsUnknownAsset, row.asset.unknownReason!),
-              SelectableText([
-                if (row.asset.token != null) row.asset.token!,
-                if (row.asset.network != null) row.asset.network!,
-                if (row.asset.chainId != null) row.asset.chainId.toString(),
-              ].join(' · ')),
+              SelectableText(
+                [
+                  if (row.asset.token != null) row.asset.token!,
+                  if (row.asset.network != null) row.asset.network!,
+                  if (row.asset.chainId != null) row.asset.chainId.toString(),
+                ].join(' · '),
+              ),
               if (row.asset.assetId != null) SelectableText(row.asset.assetId!),
-              if (row.asset.namespace != null) SelectableText(row.asset.namespace!),
-              if (row.asset.environment != null) SelectableText(row.asset.environment!),
-              if (row.asset.tokenContract != null) SelectableText(row.asset.tokenContract!),
-              if (row.asset.observedAssetRef != null) SelectableText(row.asset.observedAssetRef!),
-              if (row.asset.provenance != null) SelectableText(row.asset.provenance!),
-              _field(l10n.fundsTokenDecimals, row.asset.tokenDecimals?.toString() ?? l10n.fundsUnknownAmount),
+              if (row.asset.namespace != null)
+                SelectableText(row.asset.namespace!),
+              if (row.asset.environment != null)
+                SelectableText(row.asset.environment!),
+              if (row.asset.tokenContract != null)
+                SelectableText(row.asset.tokenContract!),
+              if (row.asset.observedAssetRef != null)
+                SelectableText(row.asset.observedAssetRef!),
+              if (row.asset.provenance != null)
+                SelectableText(row.asset.provenance!),
+              _field(
+                l10n.fundsTokenDecimals,
+                row.asset.tokenDecimals?.toString() ?? l10n.fundsUnknownAmount,
+              ),
               for (final bucket in row.buckets.entries)
                 _amount(l10n, row.asset, bucket.key, bucket.value),
             ],
             const Divider(),
             _field(l10n.fundsCreatedAt, value.createdAt.toIso8601String()),
-            _field(l10n.fundsAge, DateTime.now().toUtc().difference(value.createdAt).inDays.toString()),
+            _field(
+              l10n.fundsAge,
+              DateTime.now()
+                  .toUtc()
+                  .difference(value.createdAt)
+                  .inDays
+                  .toString(),
+            ),
             _field(l10n.fundsUpdatedAt, value.updatedAt.toIso8601String()),
-            _field(l10n.fundsLastObservedAt, value.lastObservedAt?.toIso8601String() ?? l10n.fundsObservationUnknown),
-            _field(l10n.fundsNextObservationAt, value.nextObservationAt?.toIso8601String() ?? l10n.fundsObservationUnknown),
+            _field(
+              l10n.fundsLastObservedAt,
+              value.lastObservedAt?.toIso8601String() ??
+                  l10n.fundsObservationUnknown,
+            ),
+            _field(
+              l10n.fundsNextObservationAt,
+              value.nextObservationAt?.toIso8601String() ??
+                  l10n.fundsObservationUnknown,
+            ),
             const Divider(),
-            Text(l10n.fundsEvidence, style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              l10n.fundsEvidence,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             if (value.evidence.isEmpty) const Text('—'),
             for (final evidence in value.evidence)
-              SelectableText([
-                '${evidence.kind} · ${evidence.status}',
-                evidence.id,
-                evidence.reference.toString(),
-                evidence.observedAt.toIso8601String(),
-                if (evidence.chainId != null) 'chain_id: ${evidence.chainId}',
-                if (evidence.txHash != null) 'tx_hash: ${evidence.txHash}',
-                if (evidence.logIndex != null) 'log_index: ${evidence.logIndex}',
-                if (evidence.venueReference != null) 'venue_reference: ${evidence.venueReference}',
-                if (evidence.commandReference != null) 'command_reference: ${evidence.commandReference}',
-              ].join('\n')),
+              SelectableText(
+                [
+                  '${evidence.kind} · ${evidence.status}',
+                  evidence.id,
+                  evidence.reference.toString(),
+                  evidence.observedAt.toIso8601String(),
+                  if (evidence.chainId != null) 'chain_id: ${evidence.chainId}',
+                  if (evidence.txHash != null) 'tx_hash: ${evidence.txHash}',
+                  if (evidence.logIndex != null)
+                    'log_index: ${evidence.logIndex}',
+                  if (evidence.venueReference != null)
+                    'venue_reference: ${evidence.venueReference}',
+                  if (evidence.commandReference != null)
+                    'command_reference: ${evidence.commandReference}',
+                ].join('\n'),
+              ),
             const Divider(),
-            Text(l10n.fundsResponsibility, style: Theme.of(context).textTheme.titleSmall),
-            SelectableText([
-              responsibility.queue,
-              responsibility.escalationStatus,
-              if (responsibility.owner != null) responsibility.owner!,
-              if (responsibility.caseId != null) responsibility.caseId!,
-            ].join('\n')),
+            Text(
+              l10n.fundsResponsibility,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            SelectableText(
+              [
+                responsibility.queue,
+                responsibility.escalationStatus,
+                if (responsibility.owner != null) responsibility.owner!,
+                if (responsibility.caseId != null) responsibility.caseId!,
+              ].join('\n'),
+            ),
             Text(l10n.fundsAllowedActions),
             if (actions.isEmpty) Text(l10n.fundsNoUserAction),
             for (final action in actions) Text(_actionLabel(l10n, action)),
@@ -183,10 +257,16 @@ class FinancialObligationCard extends StatelessWidget {
               spacing: 8,
               children: [
                 if (actions.contains('observe'))
-                  TextButton(onPressed: onObserve, child: Text(l10n.fundsRefresh)),
-                if (actions.contains('contactSupport') || actions.contains('contact_support'))
                   TextButton(
-                    onPressed: () => Clipboard.setData(ClipboardData(text: value.supportReference)),
+                    onPressed: onObserve,
+                    child: Text(l10n.fundsRefresh),
+                  ),
+                if (actions.contains('contactSupport') ||
+                    actions.contains('contact_support'))
+                  TextButton(
+                    onPressed: () => Clipboard.setData(
+                      ClipboardData(text: value.supportReference),
+                    ),
                     child: Text(l10n.fundsCopyReference),
                   ),
               ],
@@ -197,20 +277,30 @@ class FinancialObligationCard extends StatelessWidget {
     );
   }
 
-  Widget _amount(AppLocalizations l10n, FinancialObligationAsset asset,
-      String bucket, FinancialObligationAmount amount) {
+  Widget _amount(
+    AppLocalizations l10n,
+    FinancialObligationAsset asset,
+    String bucket,
+    FinancialObligationAmount amount,
+  ) {
     final raw = amount.raw;
     final decimals = asset.tokenDecimals;
     final label = _bucketLabel(l10n, bucket);
     if (raw == null) {
-      return _field(label, '${l10n.fundsUnknownAmount} · ${amount.unknownReason}');
+      return _field(
+        label,
+        '${l10n.fundsUnknownAmount} · ${amount.unknownReason}',
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _field(label, decimals == null
-            ? '${l10n.fundsRawAmount}: $raw'
-            : '${amount.decimal(decimals)} ${asset.token}'),
+        _field(
+          label,
+          decimals == null
+              ? '${l10n.fundsRawAmount}: $raw'
+              : '${amount.decimal(decimals)} ${asset.token}',
+        ),
         if (decimals != null) _field(l10n.fundsRawAmount, raw),
       ],
     );

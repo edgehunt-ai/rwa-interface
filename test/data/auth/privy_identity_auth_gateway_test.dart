@@ -355,32 +355,35 @@ void main() {
   });
 
   group('Privy authorization signatures', () {
-    WalletAuthorizationRequest request({String? from, String? url, bool sponsor = true}) =>
-        WalletAuthorizationRequest(
-          version: 1,
-          method: 'POST',
-          url: url ?? 'https://api.privy.io/v1/wallets/wallet-1/rpc',
-          headers: const {
-            'privy-app-id': 'app-id',
-            'privy-idempotency-key': 'privy-key-1',
-            'privy-request-expiry': '1780000000000',
-          },
-          body: {
-            'method': 'eth_sendTransaction',
-            'sponsor': sponsor,
-            'reference_id': 'execution-1',
-          },
-          referenceId: 'execution-1',
-          sponsor: sponsor,
-          caip2: 'eip155:56',
-          transaction: AuthorizedTransaction(
-            from: from ?? '0x0000000000000000000000000000000000000002',
-            to: '0x0000000000000000000000000000000000000003',
-            data: '0xa9059cbb',
-            value: '0x0',
-            nonce: sponsor ? null : '0xa',
-          ),
-        );
+    WalletAuthorizationRequest request({
+      String? from,
+      String? url,
+      bool sponsor = true,
+    }) => WalletAuthorizationRequest(
+      version: 1,
+      method: 'POST',
+      url: url ?? 'https://api.privy.io/v1/wallets/wallet-1/rpc',
+      headers: const {
+        'privy-app-id': 'app-id',
+        'privy-idempotency-key': 'privy-key-1',
+        'privy-request-expiry': '1780000000000',
+      },
+      body: {
+        'method': 'eth_sendTransaction',
+        'sponsor': sponsor,
+        'reference_id': 'execution-1',
+      },
+      referenceId: 'execution-1',
+      sponsor: sponsor,
+      caip2: 'eip155:56',
+      transaction: AuthorizedTransaction(
+        from: from ?? '0x0000000000000000000000000000000000000002',
+        to: '0x0000000000000000000000000000000000000003',
+        data: '0xa9059cbb',
+        value: '0x0',
+        nonce: sponsor ? null : '0xa',
+      ),
+    );
 
     EmbeddedEthereumWallet wallet() => EmbeddedEthereumWallet(
       address: '0x0000000000000000000000000000000000000002',
@@ -388,36 +391,43 @@ void main() {
     );
 
     for (final sponsor in [false, true]) {
-    test('signs the server payload verbatim with sponsor=$sponsor', () async {
-      WalletApiPayload? captured;
-      final gateway = PrivyIdentityAuthGateway(
-        createPrivy: (_) => _FakePrivy(
-          authState: Authenticated(
-            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet()]),
+      test('signs the server payload verbatim with sponsor=$sponsor', () async {
+        WalletApiPayload? captured;
+        final gateway = PrivyIdentityAuthGateway(
+          createPrivy: (_) => _FakePrivy(
+            authState: Authenticated(
+              _FakeUser(
+                id: 'user',
+                token: 'token',
+                ethereumWallets: [wallet()],
+              ),
+            ),
           ),
-        ),
-        signAuthorization: (_, payload) async {
-          captured = payload;
-          return const Success('privy-signature');
-        },
-      );
-      await gateway.initialize(configuration);
-      final authorization = request(sponsor: sponsor);
+          signAuthorization: (_, payload) async {
+            captured = payload;
+            return const Success('privy-signature');
+          },
+        );
+        await gateway.initialize(configuration);
+        final authorization = request(sponsor: sponsor);
 
-      final signature = await gateway.signWalletAuthorization(
-        expectedSigner: wallet().address.toUpperCase().replaceFirst('0X', '0x'),
-        request: authorization,
-      );
+        final signature = await gateway.signWalletAuthorization(
+          expectedSigner: wallet().address.toUpperCase().replaceFirst(
+            '0X',
+            '0x',
+          ),
+          request: authorization,
+        );
 
-      expect(signature, 'privy-signature');
-      expect(captured?.version, 1);
-      expect(captured?.method, 'POST');
-      expect(captured?.url, 'https://api.privy.io/v1/wallets/wallet-1/rpc');
-      expect(captured?.headers['privy-idempotency-key'], 'privy-key-1');
-      expect(captured?.body['reference_id'], 'execution-1');
-      expect(captured?.body, authorization.body);
-      expect(captured?.body['sponsor'], sponsor);
-    });
+        expect(signature, 'privy-signature');
+        expect(captured?.version, 1);
+        expect(captured?.method, 'POST');
+        expect(captured?.url, 'https://api.privy.io/v1/wallets/wallet-1/rpc');
+        expect(captured?.headers['privy-idempotency-key'], 'privy-key-1');
+        expect(captured?.body['reference_id'], 'execution-1');
+        expect(captured?.body, authorization.body);
+        expect(captured?.body['sponsor'], sponsor);
+      });
     }
 
     test('fails closed when the payload binds another wallet', () async {

@@ -123,23 +123,27 @@ final class WalletActionExecutionRepositoryImpl
   Future<WalletActionExecution> prepareCancellation({
     required String executionId,
     required String idempotencyKey,
-  }) async => _execution(await _service.prepareCancellation(
-    executionId,
-    idempotencyKey: idempotencyKey,
-  ));
+  }) async => _execution(
+    await _service.prepareCancellation(
+      executionId,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
 
   @override
   Future<WalletActionExecution> submitCancellationAuthorization({
     required String executionId,
     required String signature,
     required String idempotencyKey,
-  }) async => _execution(await _service.submitCancellation(
-    executionId,
-    api.WalletActionAuthorizationSubmissionRequest(
-      (request) => request.privyAuthorizationSignature = signature,
+  }) async => _execution(
+    await _service.submitCancellation(
+      executionId,
+      api.WalletActionAuthorizationSubmissionRequest(
+        (request) => request.privyAuthorizationSignature = signature,
+      ),
+      idempotencyKey: idempotencyKey,
     ),
-    idempotencyKey: idempotencyKey,
-  ));
+  );
 
   WalletActionExecution _execution(api.WalletActionExecution value) =>
       WalletActionExecution(
@@ -196,35 +200,42 @@ final class WalletActionExecutionRepositoryImpl
       );
 
   NativeCancellation? _cancellation(api.NativeCancellation? value) =>
-      value == null ? null : NativeCancellation(
-        cancellationId: value.cancellationId,
-        nonce: value.nonce,
-        to: value.to,
-        status: switch (value.status) {
-          api.NativeCancellationStatus.awaitingUserAuthorization => 'awaiting_user_authorization',
-          api.NativeCancellationStatus.providerSubmitted => 'provider_submitted',
-          _ => value.status.name,
-        },
-        authorization: _authorization(value.privyAuthorizationPayload),
-        authorizationExpiresAt: value.authorizationExpiresAt?.toUtc(),
-        txHash: value.txHash,
-        chainObservation: _observation(value.chainObservation),
-      );
+      value == null
+      ? null
+      : NativeCancellation(
+          cancellationId: value.cancellationId,
+          nonce: value.nonce,
+          to: value.to,
+          status: switch (value.status) {
+            api.NativeCancellationStatus.awaitingUserAuthorization =>
+              'awaiting_user_authorization',
+            api.NativeCancellationStatus.providerSubmitted =>
+              'provider_submitted',
+            _ => value.status.name,
+          },
+          authorization: _authorization(value.privyAuthorizationPayload),
+          authorizationExpiresAt: value.authorizationExpiresAt?.toUtc(),
+          txHash: value.txHash,
+          chainObservation: _observation(value.chainObservation),
+        );
 
-  WalletChainObservation? _observation(api.WalletActionChainObservation? value) =>
-      value == null ? null : WalletChainObservation(
-        txHash: value.txHash,
-        sender: value.sender,
-        recipient: value.recipient,
-        payloadHash: value.payloadHash,
-        value: '0x0',
-        receiptSuccess: value.receiptSuccess,
-        canonical: value.canonical,
-        blockNumber: value.blockNumber,
-        blockHash: value.blockHash,
-        confirmations: value.confirmations,
-        observedAt: value.observedAt.toUtc(),
-      );
+  WalletChainObservation? _observation(
+    api.WalletActionChainObservation? value,
+  ) => value == null
+      ? null
+      : WalletChainObservation(
+          txHash: value.txHash,
+          sender: value.sender,
+          recipient: value.recipient,
+          payloadHash: value.payloadHash,
+          value: '0x0',
+          receiptSuccess: value.receiptSuccess,
+          canonical: value.canonical,
+          blockNumber: value.blockNumber,
+          blockHash: value.blockHash,
+          confirmations: value.confirmations,
+          observedAt: value.observedAt.toUtc(),
+        );
 
   GasPaymentMode _mode(api.GasPaymentMode value) => switch (value) {
     api.GasPaymentMode.userPaidNative => GasPaymentMode.userPaidNative,

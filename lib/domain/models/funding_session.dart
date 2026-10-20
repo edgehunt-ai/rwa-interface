@@ -54,7 +54,8 @@ final class FundingSessionSummary {
       canConfirmTransfer &&
       (status == 'readyToConfirm' || status == 'ready_to_confirm');
 
-  bool get requiresReview => status == 'manualReview' || status == 'manual_review';
+  bool get requiresReview =>
+      status == 'manualReview' || status == 'manual_review';
 }
 
 final class FundingSessionFees {

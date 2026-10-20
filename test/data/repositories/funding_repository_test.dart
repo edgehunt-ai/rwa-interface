@@ -10,89 +10,116 @@ import 'package:nobell/domain/models/wallet_action_execution.dart';
 
 void main() {
   for (final scalarMode in [false, true]) {
-  for (final mode in ['app_sponsored', 'user_paid_native', null, 'unsupported']) {
-    test('transfer action maps exact call and gas mode $mode (scalar: $scalarMode)', () async {
-      final transfer = await FundingRepositoryImpl(_TransferEvidenceFunding(
-        nextAction: {
-          'action_id': 'action-1',
-          'status': 'ready',
-          'chain_id': 56,
-          'from': '0x2222222222222222222222222222222222222222',
-          'to': '0x3333333333333333333333333333333333333333',
-          'data': '0xa9059cbb',
-          'value': '0x0',
-          'valid_until': '2030-01-01T00:00:00Z',
-          if (mode != null && scalarMode) 'gas_payment_mode': mode,
-          if (mode != null) 'gas_payment': {'mode': scalarMode ? 'app_sponsored' : mode},
+    for (final mode in [
+      'app_sponsored',
+      'user_paid_native',
+      null,
+      'unsupported',
+    ]) {
+      test(
+        'transfer action maps exact call and gas mode $mode (scalar: $scalarMode)',
+        () async {
+          final transfer = await FundingRepositoryImpl(
+            _TransferEvidenceFunding(
+              nextAction: {
+                'action_id': 'action-1',
+                'status': 'ready',
+                'chain_id': 56,
+                'from': '0x2222222222222222222222222222222222222222',
+                'to': '0x3333333333333333333333333333333333333333',
+                'data': '0xa9059cbb',
+                'value': '0x0',
+                'valid_until': '2030-01-01T00:00:00Z',
+                if (mode != null && scalarMode) 'gas_payment_mode': mode,
+                if (mode != null)
+                  'gas_payment': {'mode': scalarMode ? 'app_sponsored' : mode},
+              },
+            ),
+          ).getFundingTransfer('transfer-1');
+          final action = transfer.nextAction!;
+          expect(transfer.nextActionId, action.actionId);
+          expect(action.mode, switch (mode) {
+            'app_sponsored' => GasPaymentMode.appSponsored,
+            'user_paid_native' => GasPaymentMode.userPaidNative,
+            _ => null,
+          });
+          expect(action.chainId, 56);
+          expect(action.from, '0x2222222222222222222222222222222222222222');
+          expect(
+            action.transaction.to,
+            '0x3333333333333333333333333333333333333333',
+          );
+          expect(action.transaction.data, '0xa9059cbb');
+          expect(action.transaction.value, '0x0');
+          expect(action.validUntil, DateTime.utc(2030));
         },
-      )).getFundingTransfer('transfer-1');
-      final action = transfer.nextAction!;
-      expect(transfer.nextActionId, action.actionId);
-      expect(action.mode, switch (mode) {
-        'app_sponsored' => GasPaymentMode.appSponsored,
-        'user_paid_native' => GasPaymentMode.userPaidNative,
-        _ => null,
-      });
-      expect(action.chainId, 56);
-      expect(action.from, '0x2222222222222222222222222222222222222222');
-      expect(action.transaction.to, '0x3333333333333333333333333333333333333333');
-      expect(action.transaction.data, '0xa9059cbb');
-      expect(action.transaction.value, '0x0');
-      expect(action.validUntil, DateTime.utc(2030));
-    });
-  }
+      );
+    }
   }
 
-  test('self custody mapping retains review evidence and immutable identities', () async {
-    final service = _GasFunding();
-    final wire = (await service.createSelfCustodialWithdrawal(
-      api.SelfCustodialWithdrawalCreateRequest((b) => b
-        ..walletId = 'wallet-id'
-        ..assetId = 'eip155:56/erc20:0xasset'
-        ..chain = api.SelfCustodialWithdrawalChain.BSC
-        ..amount = '9007199254740993.123456'
-        ..destinationAddress = 'destination'),
-      idempotencyKey: 'key',
-    )).rebuild((b) => b
-      ..status = api.SelfCustodialWithdrawalStatus.manualReview
-      ..manualReviewReason = 'receipt_conflict'
-      ..failureReason = 'unresolved'
-      ..walletActionExecutionId = 'execution-id'
-      ..userOperationHash = '0xoperation'
-      ..txHash = '0xtransaction'
-      ..submittedAt = DateTime.utc(2026, 1, 2)
-      ..confirmedAt = DateTime.utc(2026, 1, 3));
-    service.selfCustodialResource = wire;
-    final result = await FundingRepositoryImpl(service).getSelfCustodialWithdrawal('withdrawal-1');
-    expect(result.isCompleted, isFalse);
-    expect(result.shouldPoll, isFalse);
-    expect(result.sourceWalletId, wire.sourceWalletId);
-    expect(result.assetId, wire.assetId);
-    expect(result.amount.value, wire.amount);
-    expect(result.manualReviewReason, 'receipt_conflict');
-    expect(result.walletActionExecutionId, 'execution-id');
-    expect(result.userOperationHash, '0xoperation');
-    expect(result.txHash, '0xtransaction');
-    expect(result.createdAt, wire.createdAt);
-    expect(result.updatedAt, wire.updatedAt);
-    expect(result.submittedAt, wire.submittedAt);
-    expect(result.confirmedAt, wire.confirmedAt);
-  });
+  test(
+    'self custody mapping retains review evidence and immutable identities',
+    () async {
+      final service = _GasFunding();
+      final wire =
+          (await service.createSelfCustodialWithdrawal(
+            api.SelfCustodialWithdrawalCreateRequest(
+              (b) => b
+                ..walletId = 'wallet-id'
+                ..assetId = 'eip155:56/erc20:0xasset'
+                ..chain = api.SelfCustodialWithdrawalChain.BSC
+                ..amount = '9007199254740993.123456'
+                ..destinationAddress = 'destination',
+            ),
+            idempotencyKey: 'key',
+          )).rebuild(
+            (b) => b
+              ..status = api.SelfCustodialWithdrawalStatus.manualReview
+              ..manualReviewReason = 'receipt_conflict'
+              ..failureReason = 'unresolved'
+              ..walletActionExecutionId = 'execution-id'
+              ..userOperationHash = '0xoperation'
+              ..txHash = '0xtransaction'
+              ..submittedAt = DateTime.utc(2026, 1, 2)
+              ..confirmedAt = DateTime.utc(2026, 1, 3),
+          );
+      service.selfCustodialResource = wire;
+      final result = await FundingRepositoryImpl(service)
+          .getSelfCustodialWithdrawal('withdrawal-1');
+      expect(result.isCompleted, isFalse);
+      expect(result.shouldPoll, isFalse);
+      expect(result.sourceWalletId, wire.sourceWalletId);
+      expect(result.assetId, wire.assetId);
+      expect(result.amount.value, wire.amount);
+      expect(result.manualReviewReason, 'receipt_conflict');
+      expect(result.walletActionExecutionId, 'execution-id');
+      expect(result.userOperationHash, '0xoperation');
+      expect(result.txHash, '0xtransaction');
+      expect(result.createdAt, wire.createdAt);
+      expect(result.updatedAt, wire.updatedAt);
+      expect(result.submittedAt, wire.submittedAt);
+      expect(result.confirmedAt, wire.confirmedAt);
+    },
+  );
 
   test('withdrawal mapping preserves exact fee, received amount and completion metadata', () async {
-    final service = _GasFunding()..withdrawalResource = api.Withdrawal((b) => b
-      ..withdrawalId = 'withdrawal-id'
-      ..asset = api.WithdrawalAssetEnum.USDC
-      ..chain = api.Chain.arbitrum
-      ..amount = '9007199254740993.123456'
-      ..receivedAmount = '9007199254740993.123455'
-      ..totalFee = '0.000001'
-      ..status = api.WithdrawalStatus.sent
-      ..txHash = '0xtransaction'
-      ..activityId = 'activity-id'
-      ..memo = 'memo'
-      ..completedAt = DateTime.utc(2026, 1, 3));
-    final result = await FundingRepositoryImpl(service).getWithdrawal('withdrawal-id');
+    final service = _GasFunding()
+      ..withdrawalResource = api.Withdrawal(
+        (b) => b
+          ..withdrawalId = 'withdrawal-id'
+          ..asset = api.WithdrawalAssetEnum.USDC
+          ..chain = api.Chain.arbitrum
+          ..amount = '9007199254740993.123456'
+          ..receivedAmount = '9007199254740993.123455'
+          ..totalFee = '0.000001'
+          ..status = api.WithdrawalStatus.sent
+          ..txHash = '0xtransaction'
+          ..activityId = 'activity-id'
+          ..memo = 'memo'
+          ..completedAt = DateTime.utc(2026, 1, 3),
+      );
+    final result = await FundingRepositoryImpl(service)
+        .getWithdrawal('withdrawal-id');
     expect(result.isCompleted, isFalse);
     expect(result.amount.value, '9007199254740993.123456');
     expect(result.receivedAmount!.value, '9007199254740993.123455');
@@ -102,41 +129,44 @@ void main() {
     expect(result.completedAt, DateTime.utc(2026, 1, 3));
   });
 
-  test('transfer mapping retains independent refund credit and recovery evidence', () async {
-    final transfer = await FundingRepositoryImpl(_TransferEvidenceFunding())
-        .getFundingTransfer('transfer-evidence');
-    expect(transfer.status.name, 'manualReview');
-    expect(transfer.isCompleted, isFalse);
-    expect(transfer.canExecuteNextAction, isFalse);
-    expect(transfer.planId, 'plan-1');
-    expect(transfer.legId, 'leg-1');
-    expect(transfer.activityId, 'activity-1');
-    expect(transfer.amount.value, '5.000000000000000001');
-    expect(transfer.amount.asset, 'USDC-PERPS');
-    expect(transfer.sourceExecutionStatus, 'confirmed');
-    expect(transfer.providerStatus, 'succeeded');
-    expect(transfer.targetCreditStatus, 'pending');
-    expect(transfer.refundStatus, 'pending');
-    expect(transfer.refund?['amount'], '0.000000000000000001');
-    expect(transfer.refund?['tx_hash'], '0xrefund');
-    expect(transfer.refund?['log_index'], 9);
-    expect(transfer.refund?['actual_fee_amount'], '0.000000000000000002');
-    expect(transfer.sourceTransaction?['tx_hash'], '0xsource');
-    expect(transfer.targetCredit?['credited_amount'], '2.000000000000000001');
-    expect(transfer.targetCredit?['evidence_reference'], 'target-event-1');
-    expect(transfer.targetCredit?['transaction_hash'], '0xtarget');
-    expect(transfer.targetCredit?['log_index'], 8);
-    expect(transfer.targetCredit?['venue_reference'], 'venue-credit-1');
-    expect(transfer.reason, 'reconciliation required');
-    expect(transfer.failureReason, 'provider conflict');
-    expect(transfer.ambiguousReason, 'credit unmatched');
-    expect(transfer.updatedAt, DateTime.utc(2026, 9, 29));
-    expect(transfer.completedAt, isNull);
-  });
+  test(
+    'transfer mapping retains independent refund credit and recovery evidence',
+    () async {
+      final transfer = await FundingRepositoryImpl(_TransferEvidenceFunding())
+          .getFundingTransfer('transfer-evidence');
+      expect(transfer.status.name, 'manualReview');
+      expect(transfer.isCompleted, isFalse);
+      expect(transfer.canExecuteNextAction, isFalse);
+      expect(transfer.planId, 'plan-1');
+      expect(transfer.legId, 'leg-1');
+      expect(transfer.activityId, 'activity-1');
+      expect(transfer.amount.value, '5.000000000000000001');
+      expect(transfer.amount.asset, 'USDC-PERPS');
+      expect(transfer.sourceExecutionStatus, 'confirmed');
+      expect(transfer.providerStatus, 'succeeded');
+      expect(transfer.targetCreditStatus, 'pending');
+      expect(transfer.refundStatus, 'pending');
+      expect(transfer.refund?['amount'], '0.000000000000000001');
+      expect(transfer.refund?['tx_hash'], '0xrefund');
+      expect(transfer.refund?['log_index'], 9);
+      expect(transfer.refund?['actual_fee_amount'], '0.000000000000000002');
+      expect(transfer.sourceTransaction?['tx_hash'], '0xsource');
+      expect(transfer.targetCredit?['credited_amount'], '2.000000000000000001');
+      expect(transfer.targetCredit?['evidence_reference'], 'target-event-1');
+      expect(transfer.targetCredit?['transaction_hash'], '0xtarget');
+      expect(transfer.targetCredit?['log_index'], 8);
+      expect(transfer.targetCredit?['venue_reference'], 'venue-credit-1');
+      expect(transfer.reason, 'reconciliation required');
+      expect(transfer.failureReason, 'provider conflict');
+      expect(transfer.ambiguousReason, 'credit unmatched');
+      expect(transfer.updatedAt, DateTime.utc(2026, 9, 29));
+      expect(transfer.completedAt, isNull);
+    },
+  );
   test('target aggregate is distinct from last credit and never creates wallet availability', () async {
-    final transfer = await FundingRepositoryImpl(_TransferEvidenceFunding(
-      targetReceivedAmount: '4.000000000000000003',
-    )).getFundingTransfer('transfer-credit-aggregate');
+    final transfer = await FundingRepositoryImpl(
+      _TransferEvidenceFunding(targetReceivedAmount: '4.000000000000000003'),
+    ).getFundingTransfer('transfer-credit-aggregate');
     expect(transfer.targetReceivedAmount!.value, '4.000000000000000003');
     expect(transfer.targetCredit?['credited_amount'], '2.000000000000000001');
     expect(transfer.targetCredit!.containsKey('available_after'), isTrue);
@@ -148,27 +178,36 @@ void main() {
         .getFundingTransfer('unknown-credit');
     expect(unknown.targetReceivedAmount, isNull);
   });
-  test('failed source retains actual debit and never implies refund or closure', () async {
-    for (final amount in ['0', '0.000000000000000001']) {
-      final transfer = await FundingRepositoryImpl(_TransferEvidenceFunding(
-        sourceStatus: 'failed', actualDebit: amount,
-      )).getFundingTransfer('failed-source');
-      expect(transfer.sourceExecutionStatus, 'failed');
-      expect(transfer.sourceTransaction?['actual_debited_amount'], amount);
-      expect(transfer.sourceTransaction?['required_confirmations'], 15);
-      expect(transfer.sourceTransaction?['debit_log_indices'], amount == '0' ? isEmpty : [7]);
-      expect(transfer.sourceTransaction?['debit_basis'], amount == '0' ? 'finalized_revert' : 'transfer_logs');
-      expect(transfer.sourceTransaction?['user_operation_hash'], 'userop-1');
-      expect(transfer.sourceTransaction?['block_number'], 123456);
-      expect(transfer.sourceTransaction?['block_hash'], '0xblock');
-      expect(transfer.sourceTransaction?['transaction_index'], 3);
-      expect(transfer.sourceTransaction?['canonical'], isTrue);
-      expect(transfer.sourceTransaction?['finality_satisfied'], isTrue);
-      expect(transfer.isCompleted, isFalse);
-      expect(transfer.refundStatus, 'pending');
-      expect(transfer.canExecuteNextAction, isFalse);
-    }
-  });
+  test(
+    'failed source retains actual debit and never implies refund or closure',
+    () async {
+      for (final amount in ['0', '0.000000000000000001']) {
+        final transfer = await FundingRepositoryImpl(
+          _TransferEvidenceFunding(sourceStatus: 'failed', actualDebit: amount),
+        ).getFundingTransfer('failed-source');
+        expect(transfer.sourceExecutionStatus, 'failed');
+        expect(transfer.sourceTransaction?['actual_debited_amount'], amount);
+        expect(transfer.sourceTransaction?['required_confirmations'], 15);
+        expect(
+          transfer.sourceTransaction?['debit_log_indices'],
+          amount == '0' ? isEmpty : [7],
+        );
+        expect(
+          transfer.sourceTransaction?['debit_basis'],
+          amount == '0' ? 'finalized_revert' : 'transfer_logs',
+        );
+        expect(transfer.sourceTransaction?['user_operation_hash'], 'userop-1');
+        expect(transfer.sourceTransaction?['block_number'], 123456);
+        expect(transfer.sourceTransaction?['block_hash'], '0xblock');
+        expect(transfer.sourceTransaction?['transaction_index'], 3);
+        expect(transfer.sourceTransaction?['canonical'], isTrue);
+        expect(transfer.sourceTransaction?['finality_satisfied'], isTrue);
+        expect(transfer.isCompleted, isFalse);
+        expect(transfer.refundStatus, 'pending');
+        expect(transfer.canExecuteNextAction, isFalse);
+      }
+    },
+  );
   test('deposit directory accepts a plain address QR payload', () async {
     final directory = await FundingRepositoryImpl(
       _DepositFunding('0x1111111111111111111111111111111111111111'),
@@ -474,23 +513,37 @@ void main() {
   );
 
   for (final environment in ['mainnet', 'testnet', null]) {
-    test('plan preserves frozen $environment scope and unlike refund asset', () async {
-      final refundAsset = <String, Object?>{
-        'asset_id': 'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
-        'namespace': 'eip155', 'network': 'BSC', 'chain_id': 56, 'token': 'USDT',
-        'token_contract': '0x55d398326f99059ff775485246999027b3197955',
-        'token_decimals': 18, 'provenance': 'binance_peg',
-      };
-      final plan = await FundingRepositoryImpl(_SessionPlanFunding(
-        environment: environment, refundAsset: refundAsset,
-      )).getFundingPlan('plan-1');
-      expect(plan.targetEnvironment, environment);
-      expect(plan.legs.single.targetEnvironment, environment);
-      expect(plan.legs.single.asset, 'USDC');
-      expect(plan.legs.single.refundAsset?['token'], 'USDT');
-      expect(plan.legs.single.refundAsset?['chain_id'], 56);
-      expect(plan.legs.single.refundAsset?['asset_id'], refundAsset['asset_id']);
-    });
+    test(
+      'plan preserves frozen $environment scope and unlike refund asset',
+      () async {
+        final refundAsset = <String, Object?>{
+          'asset_id':
+              'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
+          'namespace': 'eip155',
+          'network': 'BSC',
+          'chain_id': 56,
+          'token': 'USDT',
+          'token_contract': '0x55d398326f99059ff775485246999027b3197955',
+          'token_decimals': 18,
+          'provenance': 'binance_peg',
+        };
+        final plan = await FundingRepositoryImpl(
+          _SessionPlanFunding(
+            environment: environment,
+            refundAsset: refundAsset,
+          ),
+        ).getFundingPlan('plan-1');
+        expect(plan.targetEnvironment, environment);
+        expect(plan.legs.single.targetEnvironment, environment);
+        expect(plan.legs.single.asset, 'USDC');
+        expect(plan.legs.single.refundAsset?['token'], 'USDT');
+        expect(plan.legs.single.refundAsset?['chain_id'], 56);
+        expect(
+          plan.legs.single.refundAsset?['asset_id'],
+          refundAsset['asset_id'],
+        );
+      },
+    );
   }
 
   test(
@@ -976,7 +1029,9 @@ final class _GasFunding implements FundingService {
   api.Withdrawal? withdrawalResource;
 
   @override
-  Future<api.SelfCustodialWithdrawal> getSelfCustodialWithdrawal(String id) async => selfCustodialResource!;
+  Future<api.SelfCustodialWithdrawal> getSelfCustodialWithdrawal(
+    String id,
+  ) async => selfCustodialResource!;
 
   @override
   Future<api.Withdrawal> getWithdrawal(String id) async => withdrawalResource!;
@@ -1039,53 +1094,94 @@ final class _TransferEvidenceFunding implements FundingService {
   final String? targetReceivedAmount;
   @override
   Future<api.Transfer> getTransfer(String id) async {
-    final plan = api.standardSerializers.serializeWith(api.FundingPlan.serializer,
-        await _SessionPlanFunding().getPlan('plan-1')) as Map;
-    final source = ((plan['multi_source'] as Map)['legs'] as List).single as Map;
-    final value = api.standardSerializers.deserializeWith(api.CrossChainFundingTransfer.serializer, {
-      'transfer_id': id, 'plan_id': 'plan-1', 'leg_id': 'leg-1',
-      'activity_id': 'activity-1', 'amount': '5.000000000000000001',
-      'target_received_amount': targetReceivedAmount,
-      'status': 'manual_review', 'source_execution_status': sourceStatus,
-      'provider_status': 'succeeded', 'target_credit_status': 'pending',
-      'recovery_status': 'manual_review', 'refund_status': 'pending',
-      'rail': 'perp', 'provider': 'relay',
-      'source': source['source_position_snapshot'], 'target': plan['target_snapshot'],
-      'source_transaction': {
-        'tx_hash': '0xsource', 'observed_at': '2026-09-28T00:00:00Z',
-        'status': sourceStatus, 'required_confirmations': 15,
-        'actual_debited_amount': actualDebit,
-        'debit_basis': actualDebit == '0' ? 'finalized_revert' : 'transfer_logs',
-        'debit_log_indices': actualDebit == '0' ? <int>[] : [7],
-        'user_operation_hash': 'userop-1',
-        'block_number': 123456, 'block_hash': '0xblock', 'transaction_index': 3,
-        'canonical': true, 'finality_satisfied': true,
+    final plan = api.standardSerializers.serializeWith(
+      api.FundingPlan.serializer,
+      await _SessionPlanFunding().getPlan('plan-1'),
+    ) as Map;
+    final source =
+        ((plan['multi_source'] as Map)['legs'] as List).single as Map;
+    final value = api.standardSerializers.deserializeWith(
+      api.CrossChainFundingTransfer.serializer,
+      {
+        'transfer_id': id,
+        'plan_id': 'plan-1',
+        'leg_id': 'leg-1',
+        'activity_id': 'activity-1',
+        'amount': '5.000000000000000001',
+        'target_received_amount': targetReceivedAmount,
+        'status': 'manual_review',
+        'source_execution_status': sourceStatus,
+        'provider_status': 'succeeded',
+        'target_credit_status': 'pending',
+        'recovery_status': 'manual_review',
+        'refund_status': 'pending',
+        'rail': 'perp',
+        'provider': 'relay',
+        'source': source['source_position_snapshot'],
+        'target': plan['target_snapshot'],
+        'source_transaction': {
+          'tx_hash': '0xsource',
+          'observed_at': '2026-09-28T00:00:00Z',
+          'status': sourceStatus,
+          'required_confirmations': 15,
+          'actual_debited_amount': actualDebit,
+          'debit_basis': actualDebit == '0'
+              ? 'finalized_revert'
+              : 'transfer_logs',
+          'debit_log_indices': actualDebit == '0' ? <int>[] : [7],
+          'user_operation_hash': 'userop-1',
+          'block_number': 123456,
+          'block_hash': '0xblock',
+          'transaction_index': 3,
+          'canonical': true,
+          'finality_satisfied': true,
+        },
+        'provider_observation': {
+          'request_id': 'provider-1',
+          'status': 'succeeded',
+        },
+        'target_credit': {
+          'credited_amount': '2.000000000000000001',
+          'available_after': null,
+          'evidence_reference': 'target-event-1',
+          'transaction_hash': '0xtarget',
+          'log_index': 8,
+          'venue_reference': 'venue-credit-1',
+        },
+        'refund': {
+          'amount': '0.000000000000000001',
+          'tx_hash': '0xrefund',
+          'status': 'pending',
+          'log_index': 9,
+          'asset': {
+            'asset_id':
+                'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
+            'namespace': 'eip155',
+            'network': 'BSC',
+            'chain_id': 56,
+            'token': 'USDT',
+            'token_contract': '0x55d398326f99059ff775485246999027b3197955',
+            'token_decimals': 18,
+          },
+          'actual_fee_amount': '0.000000000000000002',
+        },
+        'failure_reason': 'provider conflict',
+        'ambiguous_reason': 'credit unmatched',
+        'manual_review_reason': 'reconciliation required',
+        'next_action': nextAction,
+        'created_at': '2026-09-28T00:00:00Z',
+        'updated_at': '2026-09-29T00:00:00Z',
+        'route_locked_at': '2026-09-28T00:00:01Z',
+        'wallet_action_released_at': '2026-09-28T00:00:02Z',
       },
-      'provider_observation': {'request_id': 'provider-1', 'status': 'succeeded'},
-      'target_credit': {
-        'credited_amount': '2.000000000000000001',
-        'available_after': null,
-        'evidence_reference': 'target-event-1', 'transaction_hash': '0xtarget',
-        'log_index': 8, 'venue_reference': 'venue-credit-1',
-      },
-      'refund': {
-        'amount': '0.000000000000000001', 'tx_hash': '0xrefund',
-        'status': 'pending', 'log_index': 9,
-        'asset': {'asset_id': 'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
-          'namespace': 'eip155', 'network': 'BSC', 'chain_id': 56, 'token': 'USDT',
-          'token_contract': '0x55d398326f99059ff775485246999027b3197955', 'token_decimals': 18},
-        'actual_fee_amount': '0.000000000000000002',
-      },
-      'failure_reason': 'provider conflict', 'ambiguous_reason': 'credit unmatched',
-      'manual_review_reason': 'reconciliation required',
-      'next_action': nextAction,
-      'created_at': '2026-09-28T00:00:00Z', 'updated_at': '2026-09-29T00:00:00Z',
-      'route_locked_at': '2026-09-28T00:00:01Z',
-      'wallet_action_released_at': '2026-09-28T00:00:02Z',
-    })!;
-    return api.Transfer((builder) => builder.oneOf = OneOfDynamic(
-      typeIndex: 0, types: const [api.CrossChainFundingTransfer], value: value,
-    ));
+    )!;
+    return api.Transfer(
+      (builder) => builder.oneOf = OneOfDynamic(
+        typeIndex: 0,
+        types: const [api.CrossChainFundingTransfer],
+        value: value,
+      ),
+    );
   }
 
   @override

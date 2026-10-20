@@ -372,7 +372,9 @@ final class OrderCommandNotifier
       : null;
 
   TradingOrder? observedOrderFor(OrderIntent intent) =>
-      _observedOrderIntentFingerprint == intent.fingerprint ? _observedOrder : null;
+      _observedOrderIntentFingerprint == intent.fingerprint
+      ? _observedOrder
+      : null;
 
   Future<ResourceResult<TradingOrder>?> submit(
     OrderIntent intent, {

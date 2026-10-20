@@ -10,28 +10,39 @@ import '../../../../helpers/funding_execution_fixture.dart';
 
 void main() {
   for (final canPayGas in [false, true, null]) {
-    test('native gas gate $canPayGas never restores a client publisher', () async {
-      final executions = RecordingFundingExecutions(
-        created: fundingExecution(),
-        createFailure: StateError('backend execution unavailable'),
-      );
-      final signer = RecordingFundingSigner(executions.events);
-      final container = ProviderContainer(overrides: [
-        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
-        walletAuthorizationSignerProvider.overrideWithValue(signer),
-      ]);
-      addTearDown(container.dispose);
-      await expectLater(
-        container.read(selfCustodialWithdrawalCommandsProvider).executeUserPaid(
-          quote: _quote,
-          prepared: _prepared(canPayGas: canPayGas),
-        ),
-        canPayGas == false ? throwsA(isA<InsufficientWithdrawalGas>()) : throwsStateError,
-      );
-      expect(executions.events, canPayGas == false ? isEmpty : ['create']);
-      expect(signer.requests, isEmpty);
-      expect(executions.hashes, isEmpty);
-    });
+    test(
+      'native gas gate $canPayGas never restores a client publisher',
+      () async {
+        final executions = RecordingFundingExecutions(
+          created: fundingExecution(),
+          createFailure: StateError('backend execution unavailable'),
+        );
+        final signer = RecordingFundingSigner(executions.events);
+        final container = ProviderContainer(
+          overrides: [
+            walletActionExecutionRepositoryProvider.overrideWithValue(
+              executions,
+            ),
+            walletAuthorizationSignerProvider.overrideWithValue(signer),
+          ],
+        );
+        addTearDown(container.dispose);
+        await expectLater(
+          container
+              .read(selfCustodialWithdrawalCommandsProvider)
+              .executeUserPaid(
+                quote: _quote,
+                prepared: _prepared(canPayGas: canPayGas),
+              ),
+          canPayGas == false
+              ? throwsA(isA<InsufficientWithdrawalGas>())
+              : throwsStateError,
+        );
+        expect(executions.events, canPayGas == false ? isEmpty : ['create']);
+        expect(signer.requests, isEmpty);
+        expect(executions.hashes, isEmpty);
+      },
+    );
   }
 }
 

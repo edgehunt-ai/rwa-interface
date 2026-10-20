@@ -6,8 +6,10 @@ void main() {
     final amount = FinancialObligationAmount.known('2500970232991173395');
     expect(amount.raw, '2500970232991173395');
     expect(amount.decimal(18), '2.500970232991173395');
-    expect(FinancialObligationAmount.known('1').decimal(18),
-        '0.000000000000000001');
+    expect(
+      FinancialObligationAmount.known('1').decimal(18),
+      '0.000000000000000001',
+    );
   });
 
   test('unknown obligation never becomes zero', () {
@@ -23,7 +25,9 @@ void main() {
       expect(() => FinancialObligationAmount.known(raw), throwsFormatException);
     }
     expect(() => FinancialObligationAmount.unknown(' '), throwsFormatException);
-    expect(() => FinancialObligationAmount.known('1').decimal(-1),
-        throwsRangeError);
+    expect(
+      () => FinancialObligationAmount.known('1').decimal(-1),
+      throwsRangeError,
+    );
   });
 }

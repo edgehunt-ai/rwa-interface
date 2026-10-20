@@ -20,76 +20,97 @@ void main() {
     ('settled', ActivityState.settled),
     ('unknown', ActivityState.unknown),
   ]) {
-    test('$economic overrides technical success without losing evidence', () async {
-      const amount = '1000000000000000000.000000000000000001';
-      const fee = '0.000000000000000001';
-      final value = api.standardSerializers.deserializeWith(
-        api.ActivityRecord.serializer,
-        {
-          'id': 'activity-original',
-          'category': 'cash',
-          'type': 'bridge',
-          'status': 'success',
-          'economic_status': economic,
-          'financial_obligation_ids': ['obligation-1', 'obligation-2'],
-          'title': 'Transfer',
-          'amount': amount,
-          'asset': 'USDT',
-          'failure_reason': 'Destination credit unresolved',
-          'related_id': 'refund-original',
-          'reference': {'type': 'transfer', 'id': 'transfer-original'},
-          'tx_hash': '0xoriginal',
-          'created_at': '2026-01-01T00:00:00.123456Z',
-          'updated_at': '2026-01-02T00:00:00.123456Z',
-          'fields': [
-            {'label': 'Refund amount', 'value': amount},
-            {'label': 'Refund fee', 'value': fee},
-            {'label': 'Refund ID', 'value': 'refund-original'},
-          ],
-        },
-      )!;
+    test(
+      '$economic overrides technical success without losing evidence',
+      () async {
+        const amount = '1000000000000000000.000000000000000001';
+        const fee = '0.000000000000000001';
+        final value = api.standardSerializers.deserializeWith(
+          api.ActivityRecord.serializer,
+          {
+            'id': 'activity-original',
+            'category': 'cash',
+            'type': 'bridge',
+            'status': 'success',
+            'economic_status': economic,
+            'financial_obligation_ids': ['obligation-1', 'obligation-2'],
+            'title': 'Transfer',
+            'amount': amount,
+            'asset': 'USDT',
+            'failure_reason': 'Destination credit unresolved',
+            'related_id': 'refund-original',
+            'reference': {'type': 'transfer', 'id': 'transfer-original'},
+            'tx_hash': '0xoriginal',
+            'created_at': '2026-01-01T00:00:00.123456Z',
+            'updated_at': '2026-01-02T00:00:00.123456Z',
+            'fields': [
+              {'label': 'Refund amount', 'value': amount},
+              {'label': 'Refund fee', 'value': fee},
+              {'label': 'Refund ID', 'value': 'refund-original'},
+            ],
+          },
+        )!;
+        final record = (await ActivityRepositoryImpl(
+          _ActivityService([value]),
+        ).list()).items.single;
+        expect(record.status, expected);
+        expect(record.status, isNot(ActivityState.success));
+        expect(record.economicStatus, economic);
+        expect(record.rawStatus, 'success');
+        expect(record.financialObligationIds, ['obligation-1', 'obligation-2']);
+        expect(
+          () => record.financialObligationIds.add('changed'),
+          throwsUnsupportedError,
+        );
+        expect(record.amount!.value, amount);
+        expect(record.amount!.asset, 'USDT');
+        expect(record.fields.map((field) => field.value), [
+          amount,
+          fee,
+          'refund-original',
+        ]);
+        expect(record.id, 'activity-original');
+        expect(record.reference!.id, 'transfer-original');
+        expect(record.relatedId, 'refund-original');
+        expect(record.txHash, '0xoriginal');
+        expect(record.failureReason, 'Destination credit unresolved');
+        expect(
+          record.createdAt.toIso8601String(),
+          '2026-01-01T00:00:00.123456Z',
+        );
+        expect(
+          record.updatedAt!.toIso8601String(),
+          '2026-01-02T00:00:00.123456Z',
+        );
+      },
+    );
+  }
+
+  test(
+    'economic states cannot silently become unfiltered technical queries',
+    () async {
+      await expectLater(
+        ActivityRepositoryImpl(_Activity())
+            .list(status: ActivityState.refunded),
+        throwsArgumentError,
+      );
+    },
+  );
+
+  test(
+    'manual review remains visible when economic status is absent',
+    () async {
+      final page = await _Activity().list();
+      final value = page.items.single.rebuild(
+        (b) => b.status = api.ActivityStatus.manualReview,
+      );
       final record = (await ActivityRepositoryImpl(
         _ActivityService([value]),
       ).list()).items.single;
-      expect(record.status, expected);
-      expect(record.status, isNot(ActivityState.success));
-      expect(record.economicStatus, economic);
-      expect(record.rawStatus, 'success');
-      expect(record.financialObligationIds, ['obligation-1', 'obligation-2']);
-      expect(() => record.financialObligationIds.add('changed'),
-          throwsUnsupportedError);
-      expect(record.amount!.value, amount);
-      expect(record.amount!.asset, 'USDT');
-      expect(record.fields.map((field) => field.value),
-          [amount, fee, 'refund-original']);
-      expect(record.id, 'activity-original');
-      expect(record.reference!.id, 'transfer-original');
-      expect(record.relatedId, 'refund-original');
-      expect(record.txHash, '0xoriginal');
-      expect(record.failureReason, 'Destination credit unresolved');
-      expect(record.createdAt.toIso8601String(), '2026-01-01T00:00:00.123456Z');
-      expect(record.updatedAt!.toIso8601String(), '2026-01-02T00:00:00.123456Z');
-    });
-  }
-
-  test('economic states cannot silently become unfiltered technical queries', () async {
-    await expectLater(
-      ActivityRepositoryImpl(_Activity()).list(status: ActivityState.refunded),
-      throwsArgumentError,
-    );
-  });
-
-  test('manual review remains visible when economic status is absent', () async {
-    final page = await _Activity().list();
-    final value = page.items.single.rebuild(
-      (b) => b.status = api.ActivityStatus.manualReview,
-    );
-    final record = (await ActivityRepositoryImpl(
-      _ActivityService([value]),
-    ).list()).items.single;
-    expect(record.status, ActivityState.manualReview);
-    expect(record.rawStatus, 'manual_review');
-  });
+      expect(record.status, ActivityState.manualReview);
+      expect(record.rawStatus, 'manual_review');
+    },
+  );
 
   test('maps activity amount with asset and resource reference', () async {
     final record = (await ActivityRepositoryImpl(

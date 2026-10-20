@@ -22,10 +22,12 @@ final class GeneratedFundingService implements FundingService {
   Future<api.FinancialObligationPage> listFinancialObligations({
     String? cursor,
     bool includeResolved = false,
-  }) => _body(() => _api.listFinancialObligations(
-    cursor: cursor,
-    includeResolved: includeResolved,
-  ));
+  }) => _body(
+    () => _api.listFinancialObligations(
+      cursor: cursor,
+      includeResolved: includeResolved,
+    ),
+  );
   @override
   // This compatibility directory is consumed only by the legacy summary path.
   Future<api.FundingCatalog> getFundingCatalog() =>

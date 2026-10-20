@@ -47,7 +47,8 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   void initState() {
     super.initState();
     _transferSubmitted = _plan.legs.any((leg) => leg.transferId != null);
-    _transferStep = _transferSubmitted ||
+    _transferStep =
+        _transferSubmitted ||
         _plan.status == FundingPlanState.failed ||
         _plan.status == FundingPlanState.manualReview;
     _pending = _transferStep && _plan.shouldPoll;
@@ -71,7 +72,10 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   }
 
   Future<void> _continue({bool refresh = false}) async {
-    if (_busy || (!refresh && (!widget.canConfirmTransfer || !_plan.isActionable))) return;
+    if (_busy ||
+        (!refresh && (!widget.canConfirmTransfer || !_plan.isActionable))) {
+      return;
+    }
     setState(() {
       _busy = true;
       if (!refresh) _pending = true;
@@ -170,14 +174,15 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   String? _recoveryMessage(BuildContext context) {
     if (_plan.isActionable || _pending) return null;
     final l10n = AppLocalizations.of(context);
-    return _plan.blocker ?? switch (_plan.status) {
-      FundingPlanState.failed => l10n.transferFailed,
-      FundingPlanState.manualReview => l10n.transferRequiresManualReview,
-      FundingPlanState.partiallyFunded => l10n.transferPartiallySettled,
-      FundingPlanState.expired => l10n.transferQuoteExpired,
-      FundingPlanState.cancelled => l10n.transferCancelled,
-      _ => l10n.transferUnresolved,
-    };
+    return _plan.blocker ??
+        switch (_plan.status) {
+          FundingPlanState.failed => l10n.transferFailed,
+          FundingPlanState.manualReview => l10n.transferRequiresManualReview,
+          FundingPlanState.partiallyFunded => l10n.transferPartiallySettled,
+          FundingPlanState.expired => l10n.transferQuoteExpired,
+          FundingPlanState.cancelled => l10n.transferCancelled,
+          _ => l10n.transferUnresolved,
+        };
   }
 
   @override
@@ -236,7 +241,9 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                           position.positionId: position.availableAmount,
                       },
                       onBack: () => setState(() => _transferStep = false),
-                      onConfirm: widget.canConfirmTransfer ? () => _continue() : null,
+                      onConfirm: widget.canConfirmTransfer
+                          ? () => _continue()
+                          : null,
                       onRetry: () => _continue(refresh: true),
                     ),
                     _ => _TransferContent(
@@ -245,7 +252,9 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                       busy: _busy,
                       error: _error ?? _recoveryMessage(context),
                       onBack: () => setState(() => _transferStep = false),
-                      onConfirm: widget.canConfirmTransfer ? () => _continue() : null,
+                      onConfirm: widget.canConfirmTransfer
+                          ? () => _continue()
+                          : null,
                       onRetry: () => _continue(refresh: true),
                     ),
                   }
@@ -900,14 +909,24 @@ class _TransferContent extends StatelessWidget {
               child: SizedBox(
                 height: 48,
                 child: FilledButton(
-                  key: plan.isActionable ? null : const Key('order-funding-check-status'),
-                  onPressed: busy ? null : plan.isActionable ? onConfirm : onRetry,
+                  key: plan.isActionable
+                      ? null
+                      : const Key('order-funding-check-status'),
+                  onPressed: busy
+                      ? null
+                      : plan.isActionable
+                      ? onConfirm
+                      : onRetry,
                   child: busy
                       ? const SizedBox.square(
                           dimension: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(plan.isActionable ? l10n.confirm : l10n.transferCheckStatus),
+                      : Text(
+                          plan.isActionable
+                              ? l10n.confirm
+                              : l10n.transferCheckStatus,
+                        ),
                 ),
               ),
             ),

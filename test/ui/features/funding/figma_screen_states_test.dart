@@ -784,17 +784,27 @@ void main() {
       accountSnapshot: () => accounts,
     );
     accounts = [
-      TradingAccount(kind: TradingAccountKind.app, chain: 'Arbitrum', balances: [
-        TokenBalance(symbol: 'USDC', chain: 'Arbitrum',
-          balance: DecimalValue('1', asset: 'USDC', unit: 'token')),
-      ]),
+      TradingAccount(
+        kind: TradingAccountKind.app,
+        chain: 'Arbitrum',
+        balances: [
+          TokenBalance(
+            symbol: 'USDC',
+            chain: 'Arbitrum',
+            balance: DecimalValue('1', asset: 'USDC', unit: 'token'),
+          ),
+        ],
+      ),
     ];
     ProviderScope.containerOf(tester.element(find.byType(WithdrawalScreen)))
         .invalidate(tradingAccountsProvider);
     await tester.pump(const Duration(seconds: 2));
     await tester.pump();
     expect(find.text('Withdrawal successful'), findsNothing);
-    expect(find.text('Withdrawal submitted. Waiting for destination confirmation.'), findsOneWidget);
+    expect(
+      find.text('Withdrawal submitted. Waiting for destination confirmation.'),
+      findsOneWidget,
+    );
   });
 
   for (final status in [
@@ -803,15 +813,25 @@ void main() {
     SelfCustodialWithdrawalState.noncanonical,
     SelfCustodialWithdrawalState.failed,
   ]) {
-    testWidgets('Spot withdrawal renders $status and stops polling', (tester) async {
+    testWidgets('Spot withdrawal renders $status and stops polling', (
+      tester,
+    ) async {
       final funding = _CountingFunding()..withdrawalStatus = status;
-      await _pumpAndSubmitSpotWithdrawal(tester, accounts: const [], funding: funding);
+      await _pumpAndSubmitSpotWithdrawal(
+        tester,
+        accounts: const [],
+        funding: funding,
+      );
       final calls = funding.selfCustodialReads;
       await tester.pump(const Duration(seconds: 10));
       await tester.pump();
       expect(funding.selfCustodialReads, calls);
-      expect(find.text('Withdrawal successful'),
-        status == SelfCustodialWithdrawalState.confirmed ? findsWidgets : findsNothing);
+      expect(
+        find.text('Withdrawal successful'),
+        status == SelfCustodialWithdrawalState.confirmed
+            ? findsWidgets
+            : findsNothing,
+      );
       expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
       expect(find.byKey(const Key('withdrawal-address-field')), findsNothing);
     });
@@ -862,14 +882,13 @@ void main() {
       }
 
       expect(
-        find.text('Withdrawal submitted. Waiting for destination confirmation.'),
+        find.text(
+          'Withdrawal submitted. Waiting for destination confirmation.',
+        ),
         findsOneWidget,
       );
       expect(find.text('Withdrawal successful'), findsNothing);
-      expect(
-        find.text('Withdrawal ID: withdrawal-1'),
-        findsOneWidget,
-      );
+      expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -943,8 +962,12 @@ Future<void> _pumpAndSubmitSpotWithdrawal(
         withdrawalAssetsProvider.overrideWith(
           (ref) async => [_withdrawableAsset],
         ),
-        fundingRepositoryProvider.overrideWithValue(funding ?? _CountingFunding()),
-        tradingAccountsProvider.overrideWith((_) async => accountSnapshot?.call() ?? accounts),
+        fundingRepositoryProvider.overrideWithValue(
+          funding ?? _CountingFunding(),
+        ),
+        tradingAccountsProvider.overrideWith(
+          (_) async => accountSnapshot?.call() ?? accounts,
+        ),
         portfolioRepositoryProvider.overrideWithValue(_WithdrawablePortfolio()),
         walletsProvider(null).overrideWith((_) async => _withdrawalWallets),
         walletActionExecutionRepositoryProvider.overrideWithValue(
@@ -1144,12 +1167,12 @@ final class _CountingFunding extends _Funding {
   ) async {
     selfCustodialReads++;
     return SelfCustodialWithdrawalSummary(
-    withdrawalId: id,
-    assetSymbol: 'USDC',
-    amount: DecimalValue('5', asset: 'USDC', unit: 'token'),
-    destinationAddress: '0x1111111111111111111111111111111111111111',
-    status: withdrawalStatus,
-  );
+      withdrawalId: id,
+      assetSymbol: 'USDC',
+      amount: DecimalValue('5', asset: 'USDC', unit: 'token'),
+      destinationAddress: '0x1111111111111111111111111111111111111111',
+      status: withdrawalStatus,
+    );
   }
 }
 

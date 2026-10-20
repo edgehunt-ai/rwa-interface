@@ -18,6 +18,7 @@ import '../../../../domain/models/wallet_action_execution.dart';
 import '../../activity/providers/activity_provider.dart';
 
 import 'funding_execution_validation.dart';
+
 final fundingCatalogProvider =
     FutureProvider.autoDispose<FundingCatalogSummary>(
       (ref) => ref.watch(fundingRepositoryProvider).getFundingCatalog(),
@@ -531,7 +532,9 @@ final class FundingTransferCommands {
     if (actionId == null || !transfer.canExecuteNextAction) return;
     final action = transfer.nextAction;
     if (action == null || action.actionId != actionId || action.mode == null) {
-      throw StateError('Transfer has no authoritative wallet action or gas mode');
+      throw StateError(
+        'Transfer has no authoritative wallet action or gas mode',
+      );
     }
     final actionKey = '${transfer.transferId}|$actionId';
 
@@ -561,7 +564,8 @@ final class FundingTransferCommands {
     required String actionKey,
   }) async {
     final executions = _ref.read(walletActionExecutionRepositoryProvider);
-    final created = _executions[actionKey] ??
+    final created =
+        _executions[actionKey] ??
         await executions.createTransferWalletActionExecution(
           transferId: transfer.transferId,
           actionId: action.actionId,
@@ -577,13 +581,18 @@ final class FundingTransferCommands {
     _validateTransferExecution(execution, transfer, action, previous: created);
     _executions[actionKey] = execution;
     if (_authorizationSubmissions.contains(execution.executionId) ||
-        !execution.awaitsAuthorization) return;
-    if (action.status != 'ready' || !action.validUntil.isAfter(DateTime.now().toUtc())) {
+        !execution.awaitsAuthorization) {
+      return;
+    }
+    if (action.status != 'ready' ||
+        !action.validUntil.isAfter(DateTime.now().toUtc())) {
       throw StateError('Transfer wallet action is no longer ready');
     }
     validateFundingAuthorization(execution);
     if (execution.authorizationExpiresAt!.isAfter(action.validUntil)) {
-      throw StateError('Authorization exceeds the frozen transfer action lifetime');
+      throw StateError(
+        'Authorization exceeds the frozen transfer action lifetime',
+      );
     }
     final signature = await _ref
         .read(walletAuthorizationSignerProvider)

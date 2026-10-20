@@ -166,7 +166,6 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     };
   }
 
-
   ActivityBusinessType? _businessType(
     api.ActivityRecordBusinessTypeEnum? value,
   ) => switch (value) {
@@ -226,8 +225,11 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     ActivityState.cancelled => api.ActivityStatus.cancelled,
     ActivityState.manualReview => api.ActivityStatus.manualReview,
     null || ActivityState.unknown => null,
-    _ => throw ArgumentError.value(value, 'status',
-        'Economic states are not technical activity status filters'),
+    _ => throw ArgumentError.value(
+      value,
+      'status',
+      'Economic states are not technical activity status filters',
+    ),
   };
 
   api.ActivityType? _type(String? value) => switch (value) {

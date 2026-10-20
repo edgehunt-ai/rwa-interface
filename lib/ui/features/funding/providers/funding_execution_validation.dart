@@ -16,7 +16,8 @@ void validateFundingExecution({
       execution.chainId != chainId ||
       execution.walletAddress.toLowerCase() != from.toLowerCase() ||
       execution.transaction.to.toLowerCase() != transaction.to.toLowerCase() ||
-      execution.transaction.data.toLowerCase() != transaction.data.toLowerCase() ||
+      execution.transaction.data.toLowerCase() !=
+          transaction.data.toLowerCase() ||
       execution.transaction.value != transaction.value ||
       transaction.value != '0x0' ||
       (previous != null &&
@@ -58,7 +59,8 @@ void validateFundingAuthorization(WalletActionExecution execution) {
   );
   if (transaction.from.toLowerCase() != execution.walletAddress.toLowerCase() ||
       transaction.to.toLowerCase() != execution.transaction.to.toLowerCase() ||
-      transaction.data.toLowerCase() != execution.transaction.data.toLowerCase() ||
+      transaction.data.toLowerCase() !=
+          execution.transaction.data.toLowerCase() ||
       transaction.value != execution.transaction.value ||
       body.length != 6 ||
       body['method'] != 'eth_sendTransaction' ||
@@ -74,8 +76,9 @@ void validateFundingAuthorization(WalletActionExecution execution) {
       rawTransaction['data'] != transaction.data ||
       rawTransaction['value'] != transaction.value ||
       rawTransaction['nonce'] != transaction.nonce ||
-      rawTransaction.keys.any((key) =>
-          !const {'from', 'to', 'data', 'value', 'nonce'}.contains(key)) ||
+      rawTransaction.keys.any(
+        (key) => !const {'from', 'to', 'data', 'value', 'nonce'}.contains(key),
+      ) ||
       (authorization.headers['privy-app-id'] ?? '').isEmpty ||
       (authorization.headers['privy-idempotency-key'] ?? '').isEmpty ||
       requestExpiry == null ||
@@ -93,7 +96,8 @@ void validateFundingAuthorization(WalletActionExecution execution) {
         execution.transaction.nonce != nonce ||
         authorizedNonce == null ||
         !RegExp(r'^0x(0|[1-9a-f][0-9a-f]*)$').hasMatch(authorizedNonce) ||
-        BigInt.parse(nonce) != BigInt.parse(authorizedNonce.substring(2), radix: 16)) {
+        BigInt.parse(nonce) !=
+            BigInt.parse(authorizedNonce.substring(2), radix: 16)) {
       throw StateError('Native execution has no exact server-owned nonce');
     }
   }
