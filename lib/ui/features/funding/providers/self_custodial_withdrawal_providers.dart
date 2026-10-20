@@ -4,7 +4,6 @@ import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/observability_providers.dart';
-import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
@@ -14,7 +13,7 @@ import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/models/wallet.dart';
 import '../../../../domain/models/wallet_action_execution.dart';
 import '../../../../domain/repositories/portfolio_repository.dart';
-import '../../../../domain/services/embedded_wallet_transaction_sender.dart';
+import 'funding_execution_validation.dart';
 import '../../account/providers/account_providers.dart';
 
 final selfCustodialWithdrawalProvider = FutureProvider.autoDispose
@@ -32,7 +31,9 @@ final class SelfCustodialWithdrawalCommands {
   SelfCustodialWithdrawalCommands(this._ref);
   final Ref _ref;
   final _guard = IdempotentCommandGuard();
-  final Map<String, _PendingWithdrawalSubmission> _pendingSubmissions = {};
+  final Map<String, WalletActionExecution> _executions = {};
+  final Map<String, GasPaymentMode> _executionModes = {};
+  final Set<String> _authorizationSubmissions = {};
 
   /// Creates the server-side intent so its frozen transaction and gas estimate
   /// can be reviewed. Never signs: the user confirms the observed fee first.
@@ -108,81 +109,14 @@ final class SelfCustodialWithdrawalCommands {
       'mode': GasPaymentMode.appSponsored.name,
       'stage': 'execute',
     },
-    command: () => _execute(quote: quote, prepared: prepared),
+    command: () => _executeRelay(
+      quote: quote,
+      prepared: prepared,
+      mode: GasPaymentMode.appSponsored,
+    ),
   );
 
-  Future<SelfCustodialWithdrawalSummary> _execute({
-    required WithdrawalQuote quote,
-    required PreparedSelfCustodialWithdrawal prepared,
-  }) => _guard.run(
-    operation: 'self-custodial-withdrawal-execute',
-    // The key reaches the server as the execution's idempotency key, so it
-    // must follow the intent: reviewing again prepares a new withdrawal, and
-    // reusing the previous key against it is a conflict.
-    fingerprint: '${quote.intent.fingerprint}|${prepared.withdrawalId}',
-    command: (key) async {
-      final fingerprint = quote.intent.fingerprint;
-      final pending = _pendingSubmissions[fingerprint];
-      if (pending != null) return _submitPending(fingerprint, pending);
-
-      final execution = await _createExecution(
-        prepared,
-        mode: GasPaymentMode.appSponsored,
-        idempotencyKey: key,
-      );
-      // Sponsorship is not wired up for this chain or account at all, so no
-      // execution was bound and the intent may still be self-broadcast.
-      if (execution == null) {
-        return _executeUserBroadcast(quote: quote, prepared: prepared);
-      }
-
-      if (!execution.awaitsAuthorization) {
-        // The server's own words for why it will not pay, so a wallet that is
-        // asked for gas anyway can be told apart from a misconfiguration.
-        _ref
-            .read(observabilityReporterProvider)
-            .recordOperation(
-              'self_custodial_withdrawal_sponsorship',
-              outcome: execution.gasPayment.decision.name,
-              context: {
-                'withdrawal_id': prepared.withdrawalId,
-                'execution_id': execution.executionId,
-                'mode': GasPaymentMode.appSponsored.name,
-              },
-            );
-        throw SponsoredGasUnavailable(
-          executionId: execution.executionId,
-          gasPayment: execution.gasPayment,
-        );
-      }
-      final authorization = execution.authorization!;
-      _validateAuthorization(
-        execution: execution,
-        authorization: authorization,
-        prepared: prepared,
-      );
-
-      final signature = await _ref
-          .read(walletAuthorizationSignerProvider)
-          .signWalletAuthorization(
-            expectedSigner: prepared.transaction.from,
-            request: authorization,
-          );
-      // A relayed signature is never replayed: a failure here surfaces instead
-      // of being retried with the same or a fresh signature.
-      await _ref
-          .read(walletActionExecutionRepositoryProvider)
-          .submitAuthorization(
-            executionId: execution.executionId,
-            signature: signature,
-            idempotencyKey: scopedIdempotencyKey('$key-authorization'),
-          );
-      return _reload(prepared.withdrawalId);
-    },
-  );
-
-  /// User-paid fallback after sponsorship was refused pre-broadcast. The user
-  /// signs and broadcasts the frozen transaction and pays gas themselves.
+  /// Explicitly confirmed user-paid gas; only the backend publishes the call.
   Future<SelfCustodialWithdrawalSummary> executeUserPaid({
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
@@ -193,119 +127,105 @@ final class SelfCustodialWithdrawalCommands {
       'mode': GasPaymentMode.userPaidNative.name,
       'stage': 'execute',
     },
-    command: () => _executeUserPaid(quote: quote, prepared: prepared),
+    command: () => _executeRelay(
+      quote: quote,
+      prepared: prepared,
+      mode: GasPaymentMode.userPaidNative,
+    ),
   );
 
-  Future<SelfCustodialWithdrawalSummary> _executeUserPaid({
+  Future<SelfCustodialWithdrawalSummary> _executeRelay({
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
+    required GasPaymentMode mode,
   }) => _guard.run(
-    operation: 'self-custodial-withdrawal-user-paid',
+    operation: 'self-custodial-withdrawal-execute',
     fingerprint: '${quote.intent.fingerprint}|${prepared.withdrawalId}',
     command: (key) async {
-      final fingerprint = quote.intent.fingerprint;
-      final pending = _pendingSubmissions[fingerprint];
-      if (pending != null) return _submitPending(fingerprint, pending);
-
-      _requireGasBalance(prepared);
-      final execution = await _createExecution(
-        prepared,
-        mode: GasPaymentMode.userPaidNative,
-        idempotencyKey: key,
-      );
-      if (execution == null) {
-        return _executeUserBroadcast(quote: quote, prepared: prepared);
+      final repository = _ref.read(walletActionExecutionRepositoryProvider);
+      final withdrawalId = prepared.withdrawalId;
+      var execution = _executions[withdrawalId];
+      if (execution != null) {
+        final current = await repository.get(execution.executionId);
+        _validateExecution(
+          current,
+          prepared,
+          execution.mode,
+          previous: execution,
+        );
+        execution = current;
+        _executions[withdrawalId] = current;
+        if (_authorizationSubmissions.contains(current.executionId)) {
+          return _reload(withdrawalId);
+        }
+        if (current.mode != mode) {
+          if (current.mode != GasPaymentMode.appSponsored ||
+              !current.requiresUserPaidFallback ||
+              !current.gasPayment.fallbackAllowed) {
+            return _reload(withdrawalId);
+          }
+          execution = null;
+        }
+      } else if (_executionModes[withdrawalId] case final previousMode?) {
+        if (previousMode != mode) {
+          throw StateError(
+            'Unresolved execution must be observed before changing gas mode',
+          );
+        }
       }
-      _validateExecution(execution, prepared);
-
-      final txHash = await _broadcast(prepared);
-      final submission = _PendingWithdrawalSubmission(
-        withdrawalId: prepared.withdrawalId,
-        txHash: txHash,
+      if (execution == null) {
+        if (mode == GasPaymentMode.userPaidNative) _requireGasBalance(prepared);
+        _executionModes[withdrawalId] = mode;
+        final created = await repository.createSelfCustodialWithdrawalExecution(
+          withdrawalId: withdrawalId,
+          mode: mode,
+          idempotencyKey: scopedIdempotencyKey('$key-${mode.name}'),
+        );
+        _validateExecution(created, prepared, mode);
+        _executions[withdrawalId] = created;
+        execution = await repository.get(created.executionId);
+        _validateExecution(execution, prepared, mode, previous: created);
+        _executions[withdrawalId] = execution;
+      }
+      if (mode == GasPaymentMode.appSponsored &&
+          execution.requiresUserPaidFallback) {
+        throw SponsoredGasUnavailable(
+          executionId: execution.executionId,
+          gasPayment: execution.gasPayment,
+        );
+      }
+      if (!execution.awaitsAuthorization) return _reload(withdrawalId);
+      validateFundingAuthorization(execution);
+      if (!prepared.transaction.validUntil.isAfter(DateTime.now().toUtc()) ||
+          execution.authorizationExpiresAt!.isAfter(
+            prepared.transaction.validUntil,
+          )) {
+        throw StateError(
+          'Authorization exceeds the frozen withdrawal lifetime',
+        );
+      }
+      final signature = await _ref
+          .read(walletAuthorizationSignerProvider)
+          .signWalletAuthorization(
+            expectedSigner: prepared.transaction.from,
+            request: execution.authorization!,
+          );
+      // A lost submission response is possible delivery, never permission to sign again.
+      _authorizationSubmissions.add(execution.executionId);
+      await repository.submitAuthorization(
         executionId: execution.executionId,
+        signature: signature,
+        idempotencyKey: scopedIdempotencyKey('$key-${mode.name}-authorization'),
       );
-      _pendingSubmissions[fingerprint] = submission;
-      return _submitPending(fingerprint, submission);
+      return _reload(withdrawalId);
     },
   );
-
-  /// The legacy direct path, used only while no execution is bound to the
-  /// intent: the server rejects it once one exists.
-  Future<SelfCustodialWithdrawalSummary> _executeUserBroadcast({
-    required WithdrawalQuote quote,
-    required PreparedSelfCustodialWithdrawal prepared,
-  }) async {
-    final fingerprint = quote.intent.fingerprint;
-    _requireGasBalance(prepared);
-    final txHash = await _broadcast(prepared);
-    final submission = _PendingWithdrawalSubmission(
-      withdrawalId: prepared.withdrawalId,
-      txHash: txHash,
-    );
-    _pendingSubmissions[fingerprint] = submission;
-    return _submitPending(fingerprint, submission);
-  }
 
   /// The wallet must be able to pay the observed gas before the user is ever
   /// asked to sign a transaction they fund themselves.
   void _requireGasBalance(PreparedSelfCustodialWithdrawal prepared) {
     final gas = prepared.gas;
     if (gas != null && !gas.canPayGas) throw InsufficientWithdrawalGas(gas);
-  }
-
-  Future<String> _broadcast(PreparedSelfCustodialWithdrawal prepared) async {
-    final authGateway = _ref.read(identityAuthGatewayProvider);
-    if (authGateway is! EmbeddedWalletTransactionSender) {
-      throw StateError('Privy transaction sender is unavailable');
-    }
-    final transactionSender = authGateway as EmbeddedWalletTransactionSender;
-    return transactionSender.sendTransaction(
-      expectedSigner: prepared.transaction.from,
-      chainId: prepared.transaction.chainId,
-      to: prepared.transaction.to,
-      data: prepared.transaction.data,
-      value: prepared.transaction.value,
-    );
-  }
-
-  Future<SelfCustodialWithdrawalSummary> _submitPending(
-    String fingerprint,
-    _PendingWithdrawalSubmission pending,
-  ) async {
-    final result = await _submit(
-      withdrawalId: pending.withdrawalId,
-      txHash: pending.txHash,
-      executionId: pending.executionId,
-    );
-    _pendingSubmissions.remove(fingerprint);
-    return result;
-  }
-
-  /// Returns null only when the server deterministically refused to bind an
-  /// execution, which leaves the legacy direct submission path usable.
-  ///
-  /// Every other failure keeps the error: an execution may exist despite it,
-  /// and the server rejects direct submission once one is bound, so
-  /// broadcasting anyway would strand a transaction it cannot accept.
-  Future<WalletActionExecution?> _createExecution(
-    PreparedSelfCustodialWithdrawal prepared, {
-    required GasPaymentMode mode,
-    required String idempotencyKey,
-  }) async {
-    try {
-      return await _ref
-          .read(walletActionExecutionRepositoryProvider)
-          .createSelfCustodialWithdrawalExecution(
-            withdrawalId: prepared.withdrawalId,
-            mode: mode,
-            idempotencyKey: idempotencyKey,
-          );
-    } on ServerFailure catch (failure) {
-      // 404: the deployment has no execution route. 422: this intent or chain
-      // is not eligible for a bound execution.
-      if (failure.statusCode == 404 || failure.statusCode == 422) return null;
-      rethrow;
-    }
   }
 
   Future<SelfCustodialWithdrawalSummary> _reload(String withdrawalId) async {
@@ -315,6 +235,7 @@ final class SelfCustodialWithdrawalCommands {
         .getSelfCustodialWithdrawal(withdrawalId);
   }
 
+  /// Reports a historical hash as evidence only; never signs or publishes.
   Future<SelfCustodialWithdrawalSummary> submit({
     required String withdrawalId,
     required String txHash,
@@ -510,49 +431,24 @@ final class SelfCustodialWithdrawalCommands {
     }
   }
 
-  /// The signature commits to the Privy request verbatim, so every field the
-  /// user reviewed is re-checked against it first. Anything that disagrees
-  /// with the frozen withdrawal fails closed before the wallet is asked.
-  void _validateAuthorization({
-    required WalletActionExecution execution,
-    required WalletAuthorizationRequest authorization,
-    required PreparedSelfCustodialWithdrawal prepared,
-  }) {
-    _validateExecution(execution, prepared);
-    final transaction = prepared.transaction;
-    final expiresAt = execution.authorizationExpiresAt;
-    final authorized = authorization.transaction;
-    if (!authorization.sponsor ||
-        authorization.referenceId != execution.executionId ||
-        authorization.caip2 != 'eip155:${transaction.chainId}' ||
-        authorized.from.toLowerCase() != transaction.from.toLowerCase() ||
-        authorized.to.toLowerCase() != transaction.to.toLowerCase() ||
-        authorized.data.toLowerCase() != transaction.data.toLowerCase() ||
-        authorized.value.toLowerCase() != '0x0' ||
-        expiresAt == null ||
-        !expiresAt.isAfter(DateTime.now().toUtc())) {
-      throw StateError('Server authorization payload failed validation');
-    }
-  }
-
   void _validateExecution(
     WalletActionExecution execution,
     PreparedSelfCustodialWithdrawal prepared,
-  ) {
-    final transaction = prepared.transaction;
-    if (execution.resourceId != prepared.withdrawalId ||
-        execution.chainId != transaction.chainId ||
-        execution.walletAddress.toLowerCase() !=
-            transaction.from.toLowerCase() ||
-        execution.transaction.to.toLowerCase() !=
-            transaction.to.toLowerCase() ||
-        execution.transaction.data.toLowerCase() !=
-            transaction.data.toLowerCase() ||
-        execution.transaction.value.toLowerCase() != '0x0' ||
-        transaction.value.toLowerCase() != '0x0') {
-      throw StateError('Server execution failed validation');
-    }
-  }
+    GasPaymentMode mode, {
+    WalletActionExecution? previous,
+  }) => validateFundingExecution(
+    execution: execution,
+    resourceId: prepared.withdrawalId,
+    mode: mode,
+    chainId: prepared.transaction.chainId,
+    from: prepared.transaction.from,
+    transaction: FrozenTransaction(
+      to: prepared.transaction.to,
+      data: prepared.transaction.data,
+      value: prepared.transaction.value,
+    ),
+    previous: previous,
+  );
 
   bool _matchesChainId(String chain, int chainId) =>
       switch (normalizeChainLabel(chain)) {
@@ -565,18 +461,3 @@ final class SelfCustodialWithdrawalCommands {
 }
 
 final _evmAddress = RegExp(r'^0x[0-9a-fA-F]{40}$');
-
-final class _PendingWithdrawalSubmission {
-  const _PendingWithdrawalSubmission({
-    required this.withdrawalId,
-    required this.txHash,
-    this.executionId,
-  });
-
-  final String withdrawalId;
-  final String txHash;
-
-  /// Null for the legacy direct submission; set once the hash belongs to a
-  /// bound user-paid execution, which the server requires it be reported to.
-  final String? executionId;
-}

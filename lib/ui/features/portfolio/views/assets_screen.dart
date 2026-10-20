@@ -179,19 +179,33 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-                  child: Text(
-                    l10n.assetsTitle,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      height: 34 / 28,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.4,
+                Stack(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                      width: double.infinity,
+                      child: Text(
+                        l10n.assetsTitle,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          height: 34 / 28,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.4,
+                        ),
+                      ),
                     ),
-                  ),
+                    PositionedDirectional(
+                      top: 21,
+                      end: 20,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            context.pushNamed(AppRoutes.fundsObligationsName),
+                        icon: const Icon(Icons.account_balance_wallet_outlined),
+                        label: Text(l10n.fundsObligationsTitle),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
                 Expanded(
                   child: portfolio.when(
                     loading: () => DesignStateFeedback(

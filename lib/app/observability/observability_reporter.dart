@@ -302,7 +302,6 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
     DecodingFailure() => 'decoding',
     CompatibilityFailure() => 'compatibility',
     UnknownFailure() => 'unknown',
-    WalletTransactionNotBroadcastFailure() => 'wallet-not-broadcast',
   };
 
   static String normalizeClassifier(String value) {

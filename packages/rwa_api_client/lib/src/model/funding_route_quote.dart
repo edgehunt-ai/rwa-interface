@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/funding_provider.dart';
 import 'package:rwa_api_client/src/model/funding_refund_policy.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_fee_breakdown.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -14,22 +15,22 @@ part 'funding_route_quote.g.dart';
 /// The only selected, normalized and immutable Provider route exposed to the client.
 ///
 /// Properties:
-/// * [quoteId]
-/// * [provider]
-/// * [inputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
-/// * [maximumInputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
-/// * [estimatedReceived] - Estimated target-asset amount before quote protection. This is denominated in the route target asset, never the source asset. For the current exact-output Relay route this equals `minimum_received`.
-/// * [minimumReceived] - Provider-guaranteed minimum target-asset amount after quote protection and the costs already represented by the route. Fee components are explanatory and must not be subtracted from this amount again. It must not be derived by subtracting unlike source and target asset amounts.
-/// * [slippageBps] - Provider-reported quote tolerance in basis points (`100` bps = `1%`), copied from the selected route without deriving it from source/output amounts. Null means the Provider did not report a tolerance; it does not mean zero slippage.
-/// * [fees]
-/// * [etaSeconds]
-/// * [quotedAt]
-/// * [expiresAt]
-/// * [quoteHash]
-/// * [refund]
+/// * [quoteId] 
+/// * [provider] 
+/// * [targetEnvironment] - Frozen target environment of this selected route; historical null must not be inferred from chain or symbol.
+/// * [inputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [maximumInputAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [estimatedReceived] - Estimated target-asset amount before quote protection. This is denominated in the route target asset, never the source asset. For the current exact-output Relay route this equals `minimum_received`. 
+/// * [minimumReceived] - Provider-guaranteed minimum target-asset amount after quote protection and the costs already represented by the route. Fee components are explanatory and must not be subtracted from this amount again. It must not be derived by subtracting unlike source and target asset amounts. 
+/// * [slippageBps] - Provider-reported quote tolerance in basis points (`100` bps = `1%`), copied from the selected route without deriving it from source/output amounts. Null means the Provider did not report a tolerance; it does not mean zero slippage. 
+/// * [fees] 
+/// * [etaSeconds] 
+/// * [quotedAt] 
+/// * [expiresAt] 
+/// * [quoteHash] 
+/// * [refund] 
 @BuiltValue()
-abstract class FundingRouteQuote
-    implements Built<FundingRouteQuote, FundingRouteQuoteBuilder> {
+abstract class FundingRouteQuote implements Built<FundingRouteQuote, FundingRouteQuoteBuilder> {
   @BuiltValueField(wireName: r'quote_id')
   String get quoteId;
 
@@ -37,23 +38,28 @@ abstract class FundingRouteQuote
   FundingProvider get provider;
   // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+  /// Frozen target environment of this selected route; historical null must not be inferred from chain or symbol.
+  @BuiltValueField(wireName: r'target_environment')
+  FundingRouteQuoteTargetEnvironmentEnum? get targetEnvironment;
+  // enum targetEnvironmentEnum {  mainnet,  testnet,  };
+
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'input_amount')
   String get inputAmount;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。
+  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'maximum_input_amount')
   String get maximumInputAmount;
 
-  /// Estimated target-asset amount before quote protection. This is denominated in the route target asset, never the source asset. For the current exact-output Relay route this equals `minimum_received`.
+  /// Estimated target-asset amount before quote protection. This is denominated in the route target asset, never the source asset. For the current exact-output Relay route this equals `minimum_received`. 
   @BuiltValueField(wireName: r'estimated_received')
   String? get estimatedReceived;
 
-  /// Provider-guaranteed minimum target-asset amount after quote protection and the costs already represented by the route. Fee components are explanatory and must not be subtracted from this amount again. It must not be derived by subtracting unlike source and target asset amounts.
+  /// Provider-guaranteed minimum target-asset amount after quote protection and the costs already represented by the route. Fee components are explanatory and must not be subtracted from this amount again. It must not be derived by subtracting unlike source and target asset amounts. 
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
-  /// Provider-reported quote tolerance in basis points (`100` bps = `1%`), copied from the selected route without deriving it from source/output amounts. Null means the Provider did not report a tolerance; it does not mean zero slippage.
+  /// Provider-reported quote tolerance in basis points (`100` bps = `1%`), copied from the selected route without deriving it from source/output amounts. Null means the Provider did not report a tolerance; it does not mean zero slippage. 
   @BuiltValueField(wireName: r'slippage_bps')
   int? get slippageBps;
 
@@ -77,19 +83,16 @@ abstract class FundingRouteQuote
 
   FundingRouteQuote._();
 
-  factory FundingRouteQuote([void updates(FundingRouteQuoteBuilder b)]) =
-      _$FundingRouteQuote;
+  factory FundingRouteQuote([void updates(FundingRouteQuoteBuilder b)]) = _$FundingRouteQuote;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRouteQuoteBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRouteQuote> get serializer =>
-      _$FundingRouteQuoteSerializer();
+  static Serializer<FundingRouteQuote> get serializer => _$FundingRouteQuoteSerializer();
 }
 
-class _$FundingRouteQuoteSerializer
-    implements PrimitiveSerializer<FundingRouteQuote> {
+class _$FundingRouteQuoteSerializer implements PrimitiveSerializer<FundingRouteQuote> {
   @override
   final Iterable<Type> types = const [FundingRouteQuote, _$FundingRouteQuote];
 
@@ -111,6 +114,13 @@ class _$FundingRouteQuoteSerializer
       object.provider,
       specifiedType: const FullType(FundingProvider),
     );
+    if (object.targetEnvironment != null) {
+      yield r'target_environment';
+      yield serializers.serialize(
+        object.targetEnvironment,
+        specifiedType: const FullType.nullable(FundingRouteQuoteTargetEnvironmentEnum),
+      );
+    }
     yield r'input_amount';
     yield serializers.serialize(
       object.inputAmount,
@@ -178,9 +188,7 @@ class _$FundingRouteQuoteSerializer
     FundingRouteQuote object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -208,6 +216,14 @@ class _$FundingRouteQuoteSerializer
             specifiedType: const FullType(FundingProvider),
           ) as FundingProvider;
           result.provider = valueDes;
+          break;
+        case r'target_environment':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(FundingRouteQuoteTargetEnvironmentEnum),
+          ) as FundingRouteQuoteTargetEnvironmentEnum?;
+          if (valueDes == null) continue;
+          result.targetEnvironment = valueDes;
           break;
         case r'input_amount':
           final valueDes = serializers.deserialize(
@@ -316,3 +332,21 @@ class _$FundingRouteQuoteSerializer
     return result.build();
   }
 }
+
+class FundingRouteQuoteTargetEnvironmentEnum extends EnumClass {
+
+  /// Frozen target environment of this selected route; historical null must not be inferred from chain or symbol.
+  @BuiltValueEnumConst(wireName: r'mainnet')
+  static const FundingRouteQuoteTargetEnvironmentEnum mainnet = _$fundingRouteQuoteTargetEnvironmentEnum_mainnet;
+  /// Frozen target environment of this selected route; historical null must not be inferred from chain or symbol.
+  @BuiltValueEnumConst(wireName: r'testnet')
+  static const FundingRouteQuoteTargetEnvironmentEnum testnet = _$fundingRouteQuoteTargetEnvironmentEnum_testnet;
+
+  static Serializer<FundingRouteQuoteTargetEnvironmentEnum> get serializer => _$fundingRouteQuoteTargetEnvironmentEnumSerializer;
+
+  const FundingRouteQuoteTargetEnvironmentEnum._(String name): super(name);
+
+  static BuiltSet<FundingRouteQuoteTargetEnvironmentEnum> get values => _$fundingRouteQuoteTargetEnvironmentEnumValues;
+  static FundingRouteQuoteTargetEnvironmentEnum valueOf(String name) => _$fundingRouteQuoteTargetEnvironmentEnumValueOf(name);
+}
+

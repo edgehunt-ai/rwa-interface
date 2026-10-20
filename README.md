@@ -41,6 +41,57 @@ the backend returns the net quote used for confirmation. Cash activity uses the
 contract's `cash_flow` source/destination assets and networks, while retaining
 server titles and a single known network for legacy records without endpoints.
 
+### Funds and holds
+
+Assets → **Funds and holds** (`/funding/obligations`) lists the authenticated
+account's unresolved obligations independently of activity, execution IDs or
+transaction hashes. Follow **Load more** for subsequent pages; the optional
+settled/refunded toggle includes historical outcomes. A failed request is shown
+as unavailable, never as an empty or financially settled account.
+
+Each record preserves its business/case references, technical and economic
+states, exact per-asset raw amounts, unknown amount/identity reasons, evidence,
+observation timestamps and responsible support team. Reserved, source-debited,
+in-transit, refund-due, refunded, credited and released amounts are separate
+buckets, not values to add together. Missing decimals do not default to zero;
+unknown quantities do not become zero. All displayed evidence and money remain
+selectable at full precision. Support references can be copied without creating
+an unaudited refund or signing another transaction.
+`source_debited` is the **net source debit**. Use the server's `outstanding`
+amount rather than subtracting receipts: a return already netted into the source
+receipt overlaps the actual refunded amount. For example, an outgoing 100 and
+same-receipt return of 98 display net debit 2, refunded 98 and outstanding 2;
+the client must not subtract 98 from 2 again.
+Source transaction `canonical` and `finality_satisfied` values describe the
+immutable `observed_at` snapshot, not fresh GET-time revalidation or consensus
+finality. A failed source can still have actual token debits; neither failure
+nor a zero-debit observation alone settles the transfer or proves a refund.
+
+Withdrawal submission/payout processing and arbitrary wallet balance changes
+are not destination payment proof. Transfers under review remain unresolved,
+including failed plans retaining a transfer ID. Economic status, when supplied
+by the API, takes precedence over technical success in activity; pending and
+ambiguous bStocks remain discoverable. These are source-code semantics, not a
+claim that any currently deployed web image contains this revision.
+
+bStocks wallet actions and self-custodial withdrawals use backend-only Privy
+authorization publication in both native and sponsored modes. New bStocks
+executions request `userPaidNative` through `privy_native` with `sponsor=false`:
+the user still pays native gas. The client reads the current execution, checks
+its immutable call and nonce, signs the server-owned authorization, and submits
+that signature. It never sends a transaction directly or falls back to another
+publisher after an uncertain response. Existing sponsored execution identities
+remain recoverable; legacy device transaction journals are read-only evidence,
+and unknown broadcast markers cannot authorize another payment.
+
+Recovery distinguishes a backend-confirmed pre-dispatch abort from an explicit
+same-nonce cancellation. Requesting cancellation or observing a timeout is not
+proof that the original payment failed or that funds are released. Exact-nonce
+cancellation requires canonical chain evidence; a reorg can revoke that proof.
+The recovery screen must preserve the original payment identity and show these
+states separately from business success. These are source-code semantics, not
+a claim of deployed web parity.
+
 ## Platform Support
 
 Market detail links use `/trade?symbol=TSLA&kind=bstock` for bStocks and
@@ -209,6 +260,10 @@ npm run api:update:branch -- feat/example
 Generation also runs formatting, static analysis, and tests. The generated
 OpenAPI version is recorded in
 `packages/rwa_api_client/.openapi-generator/VERSION`.
+
+Terminal transfer plans retain their IDs and financial evidence without restarting
+arrival polling. Use Check status to load or refresh refund and credit details;
+pending plans continue through the existing session and signature recovery flow.
 
 ## Quality and CI
 

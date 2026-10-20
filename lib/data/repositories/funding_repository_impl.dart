@@ -19,14 +19,33 @@ import '../../domain/models/order_intent.dart';
 import '../../domain/models/order_preview.dart';
 import '../../domain/models/self_custodial_withdrawal.dart';
 import '../../domain/models/funding_catalog_summary.dart';
+import '../../domain/models/wallet_action_execution.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 import '../mappers/chain_name_mapper.dart';
 import '../mappers/order_preview_request_mapper.dart';
+import '../../domain/models/financial_obligation.dart';
+import '../mappers/financial_obligation_mapper.dart';
 
 final class FundingRepositoryImpl implements FundingRepository {
   FundingRepositoryImpl(this._service);
   final FundingService _service;
+
+  @override
+  Future<DomainPage<FinancialObligation>> listFinancialObligations({
+    String? cursor,
+    bool includeResolved = false,
+  }) async {
+    final page = await _service.listFinancialObligations(
+      cursor: cursor,
+      includeResolved: includeResolved,
+    );
+    return DomainPage(
+      items: page.items.map(financialObligationFromApi).toList(growable: false),
+      nextCursor: page.nextCursor,
+      hasMore: page.hasMore,
+    );
+  }
 
   @override
   Future<DepositDirectory> getDepositDirectory() async {
@@ -216,6 +235,9 @@ final class FundingRepositoryImpl implements FundingRepository {
         version: value.version,
         canConfirmTransfer: value.canConfirmTransfer,
         expiresAt: value.expiresAt.toUtc(),
+        createdAt: value.createdAt.toUtc(),
+        updatedAt: value.updatedAt.toUtc(),
+        estimateObservedAt: value.estimateObservedAt.toUtc(),
         requiredTargetBalance: value.requiredTargetBalance,
         targetAvailableAmount: value.targetSnapshot.availableAmount,
         remainingMinimumTopUp: value.remainingMinimumTopUp,
@@ -571,6 +593,15 @@ final class FundingRepositoryImpl implements FundingRepository {
     failureReason: value.failureReason,
     confirmations: value.confirmations,
     requiredConfirmations: value.requiredConfirmations,
+    sourceWalletId: value.sourceWalletId,
+    assetId: value.assetId,
+    walletActionExecutionId: value.walletActionExecutionId,
+    userOperationHash: value.userOperationHash,
+    manualReviewReason: value.manualReviewReason,
+    createdAt: value.createdAt.toUtc(),
+    updatedAt: value.updatedAt.toUtc(),
+    submittedAt: value.submittedAt?.toUtc(),
+    confirmedAt: value.confirmedAt?.toUtc(),
   );
 
   PreparedSelfCustodialWithdrawal _preparedSelfCustodial(
@@ -678,6 +709,9 @@ final class FundingRepositoryImpl implements FundingRepository {
     txHash: wire.txHash,
     failureReason: wire.failureReason,
     createdAt: wire.createdAt?.toUtc(),
+    completedAt: wire.completedAt?.toUtc(),
+    activityId: wire.activityId,
+    memo: wire.memo,
   );
 
   FundingPlan _fundingPlan(api.FundingPlan wire) {
@@ -691,7 +725,10 @@ final class FundingRepositoryImpl implements FundingRepository {
             api.UserSelectedMultiSourcePerpFundingPlan()) {
       final plan = value as dynamic;
       final targetAsset = (plan.targetSnapshot as dynamic).asset as dynamic;
-      final targetToken = (targetAsset.token as dynamic).name as String;
+      final rawTargetToken = (targetAsset.token as dynamic).name as String;
+      final targetToken = rawTargetToken == 'USDC_PERPS'
+          ? 'USDC-PERPS'
+          : rawTargetToken;
       final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
           .map((leg) {
             final source = leg.sourcePositionSnapshot;
@@ -701,12 +738,24 @@ final class FundingRepositoryImpl implements FundingRepository {
               asset: source.asset.token,
               sourcePositionId: source.positionId,
               network: source.asset.network,
-              maximumAmount: _money(leg.route.maximumInputAmount)!,
-              outputAmount: _money(leg.outputAmount)!,
+              maximumAmount: DecimalValue(
+                leg.route.maximumInputAmount,
+                asset: source.asset.token,
+                unit: 'token',
+              ),
+              outputAmount: DecimalValue(
+                leg.outputAmount,
+                asset: targetToken,
+                unit: 'token',
+              ),
               status: switch (leg.status.name) {
                 'planned' => FundingLegState.planned,
                 'actionReleased' => FundingLegState.actionReleased,
                 'submitted' => FundingLegState.submitted,
+                'originConfirmed' => FundingLegState.originConfirmed,
+                'providerConfirmed' => FundingLegState.providerConfirmed,
+                'targetConfirmed' => FundingLegState.targetConfirmed,
+                'cancelledAsUnneeded' => FundingLegState.cancelledAsUnneeded,
                 'completed' => FundingLegState.completed,
                 'failed' => FundingLegState.failed,
                 'ambiguous' => FundingLegState.ambiguous,
@@ -714,25 +763,65 @@ final class FundingRepositoryImpl implements FundingRepository {
                 _ => FundingLegState.unknown,
               },
               etaSeconds: leg.route.etaSeconds,
-              bridgeFee: _money(leg.route.fees.bridgeFee),
-              networkFee: _money(leg.route.fees.networkFee),
+              bridgeFee: DecimalValue(
+                leg.route.fees.bridgeFee,
+                asset: leg.route.fees.feeAsset,
+                unit: 'token',
+              ),
+              networkFee: DecimalValue(
+                leg.route.fees.networkFee,
+                asset: leg.route.fees.feeAsset,
+                unit: 'token',
+              ),
+              fees: FundingSessionFees(
+                asset: leg.route.fees.feeAsset,
+                providerFee: leg.route.fees.providerFee,
+                bridgeFee: leg.route.fees.bridgeFee,
+                swapFee: leg.route.fees.swapFee,
+                networkFee: leg.route.fees.networkFee,
+                totalFee: leg.route.fees.totalFee,
+                totalCostUsd: leg.route.fees.totalCostUsd,
+              ),
               feeAsset: leg.route.fees.feeAsset,
               transferId: leg.transferId,
+              targetEnvironment: leg.route.targetEnvironment?.name,
+              refundAsset: leg.route.refund.asset == null
+                  ? null
+                  : _transferEvidence(
+                      api.standardSerializers.serializeWith(
+                        api.FundingAssetIdentity.serializer,
+                        leg.route.refund.asset,
+                      ),
+                    ),
             );
           })
           .toList(growable: false);
       return FundingPlan(
         planId: plan.planId as String,
-        tradePreviewId:
-            (plan.tradePreviewId as String?) ??
-            (plan.fundingSessionId as String?) ??
-            (throw StateError('Funding plan has no preview or session ID')),
-        shortfall: _money(plan.shortfall as String)!,
-        requiredTargetAmount: _money(plan.requiredTargetAmount as String),
-        targetAvailableAmount: _money(
-          (plan.targetSnapshot as dynamic).availableAmount as String,
+        tradePreviewId: (plan.tradePreviewId as String?) ?? '',
+        fundingSessionId: plan.fundingSessionId as String?,
+        createdAt: (plan.createdAt as DateTime).toUtc(),
+        expiresAt: (plan.expiresAt as DateTime?)?.toUtc(),
+        shortfall: DecimalValue(
+          plan.shortfall as String,
+          asset: targetToken,
+          unit: 'token',
         ),
-        targetAsset: targetToken == 'USDC_PERPS' ? 'USDC-PERPS' : targetToken,
+        requiredTargetAmount: DecimalValue(
+          plan.requiredTargetAmount as String,
+          asset: targetToken,
+          unit: 'token',
+        ),
+        targetAvailableAmount: DecimalValue(
+          (plan.targetSnapshot as dynamic).availableAmount as String,
+          asset: targetToken,
+          unit: 'token',
+        ),
+        targetAsset: targetToken,
+        targetEnvironment:
+            ((plan.targetSnapshot as dynamic).targetEnvironment as dynamic)
+                    ?.name
+                as String?,
         targetNetwork: canonicalChainName(
           (targetAsset.network as dynamic).name as String,
         ),
@@ -763,7 +852,19 @@ final class FundingRepositoryImpl implements FundingRepository {
     return FundingTransfer(
       transferId: value.transferId,
       planId: value.planId,
-      amount: _money(value.amount)!,
+      targetEnvironment: value.target.targetEnvironment?.name,
+      amount: DecimalValue(
+        value.amount,
+        asset: value.target.asset.token,
+        unit: 'token',
+      ),
+      targetReceivedAmount: value.targetReceivedAmount == null
+          ? null
+          : DecimalValue(
+              value.targetReceivedAmount!,
+              asset: value.target.asset.token,
+              unit: 'token',
+            ),
       status: switch (value.status.name) {
         'awaitingAuthorization' => FundingTransferState.awaitingAuthorization,
         'awaitingWallet' => FundingTransferState.awaitingWallet,
@@ -783,9 +884,60 @@ final class FundingRepositoryImpl implements FundingRepository {
           (action['action_id'] ?? action['actionId']) as String?,
         _ => null,
       },
+      nextAction: _transferAction(value.nextAction?.value),
       failureReason: value.failureReason,
+      legId: value.legId,
+      activityId: value.activityId,
+      sourceExecutionStatus: value.sourceExecutionStatus.name,
+      providerStatus: value.providerStatus.name,
+      targetCreditStatus: value.targetCreditStatus.name,
+      refundStatus: value.refundStatus.name,
+      recoveryStatus: value.recoveryStatus.name,
+      sourceTransaction: _transferEvidence(value.sourceTransaction?.value),
+      providerObservation: _transferEvidence(value.providerObservation?.value),
+      targetCredit: _transferEvidence(value.targetCredit?.value),
+      refund: _transferEvidence(value.refund?.value),
+      ambiguousReason: value.ambiguousReason,
+      manualReviewReason: value.manualReviewReason,
+      createdAt: value.createdAt.toUtc(),
+      updatedAt: value.updatedAt.toUtc(),
+      completedAt: value.completedAt?.toUtc(),
+      routeLockedAt: value.routeLockedAt?.toUtc(),
+      walletActionReleasedAt: value.walletActionReleasedAt?.toUtc(),
     );
   }
+
+  FundingTransferAction? _transferAction(Object? value) {
+    if (value == null) return null;
+    if (value is! Map) throw StateError('Unsupported transfer wallet action');
+    if (value['status'] != 'ready') return null;
+    final gas = value['gas_payment'];
+    final mode = value.containsKey('gas_payment_mode')
+        ? value['gas_payment_mode']
+        : gas is Map
+        ? gas['mode']
+        : null;
+    return FundingTransferAction(
+      actionId: value['action_id'] as String,
+      status: value['status'] as String,
+      mode: switch (mode) {
+        'app_sponsored' => GasPaymentMode.appSponsored,
+        'user_paid_native' => GasPaymentMode.userPaidNative,
+        _ => null,
+      },
+      chainId: value['chain_id'] as int,
+      from: value['from'] as String,
+      transaction: FrozenTransaction(
+        to: value['to'] as String,
+        data: value['data'] as String,
+        value: value['value'] as String,
+      ),
+      validUntil: DateTime.parse(value['valid_until'] as String).toUtc(),
+    );
+  }
+
+  Map<String, Object?>? _transferEvidence(Object? value) =>
+      value == null ? null : Map<String, Object?>.unmodifiable(value as Map);
 
   DecimalValue? _money(String? value) =>
       value == null ? null : DecimalValue(value, asset: 'USDC', unit: 'token');

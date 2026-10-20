@@ -43,7 +43,7 @@ final bstocksOrdersProvider = FutureProvider.autoDispose
 
 typedef BstocksOpenOrderQuery = ({String symbol, String? productId});
 
-/// Fetch every server-filtered page so the existing Open tab needs no new flow.
+/// Fetch all product pages: the server's open group omits unresolved orders.
 final bstocksOpenOrdersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, BstocksOpenOrderQuery>(
       (ref, query) async {
@@ -57,7 +57,6 @@ final bstocksOpenOrdersProvider = FutureProvider.autoDispose
             kind: MarketProductKind.bstock,
             symbol: query.symbol,
             productId: query.productId,
-            statusGroup: 'open',
             cursor: cursor,
           );
           if (!ref.mounted) throw const CancelledFailure();
@@ -68,7 +67,7 @@ final bstocksOpenOrdersProvider = FutureProvider.autoDispose
                 (query.productId == null ||
                     order.productId == null ||
                     order.productId == query.productId) &&
-                order.isOpen) {
+                !order.isTerminal) {
               orders[order.orderId] = item;
             }
           }
@@ -345,6 +344,8 @@ final class OrderCommandNotifier
   String? _requestPreviewId;
   String? _continuationOrderId;
   String? _continuationIntentFingerprint;
+  TradingOrder? _observedOrder;
+  String? _observedOrderIntentFingerprint;
   Future<ResourceResult<TradingOrder>>? _inFlight;
   IdempotentCommandGuard _cancellations = IdempotentCommandGuard();
   var _submissionGeneration = 0;
@@ -357,6 +358,8 @@ final class OrderCommandNotifier
     _requestPreviewId = null;
     _continuationOrderId = null;
     _continuationIntentFingerprint = null;
+    _observedOrder = null;
+    _observedOrderIntentFingerprint = null;
     _inFlight = null;
     _cancellations = IdempotentCommandGuard();
     _submissionGeneration = 0;
@@ -366,6 +369,11 @@ final class OrderCommandNotifier
   String? continuationOrderIdFor(OrderIntent intent) =>
       _continuationIntentFingerprint == intent.fingerprint
       ? _continuationOrderId
+      : null;
+
+  TradingOrder? observedOrderFor(OrderIntent intent) =>
+      _observedOrderIntentFingerprint == intent.fingerprint
+      ? _observedOrder
       : null;
 
   Future<ResourceResult<TradingOrder>?> submit(
@@ -400,6 +408,8 @@ final class OrderCommandNotifier
       }
     }
     final submissionGeneration = ++_submissionGeneration;
+    _observedOrder = null;
+    _observedOrderIntentFingerprint = null;
     bool isCurrent() =>
         ref.mounted &&
         ref.read(sessionGenerationProvider) == generation &&
@@ -463,6 +473,8 @@ final class OrderCommandNotifier
     try {
       final result = await request;
       if (!isCurrent()) return null;
+      _observedOrder = result.resource;
+      _observedOrderIntentFingerprint = intent.fingerprint;
       result.resource.checkBstocksExecutionFailure();
       if (approvalOnly &&
           result.resource.kind == MarketProductKind.bstock &&
@@ -630,6 +642,8 @@ final class OrderCommandNotifier
     // client keeps polling. Only skip the executor for terminal/review orders
     // or clearly unrelated legacy/app-review results.
     final order = created.resource;
+    _observedOrder = order;
+    _observedOrderIntentFingerprint = intent.fingerprint;
     order.checkBstocksExecutionFailure();
     final shouldExecuteBstocks =
         intent.kind == MarketProductKind.bstock &&

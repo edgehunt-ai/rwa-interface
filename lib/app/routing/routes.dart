@@ -23,6 +23,8 @@ abstract final class AppRoutes {
   static const withdrawalAssetSelectPath = '/funding/withdraw/spot/select';
   static const transferName = 'transfer';
   static const transferPath = '/funding/transfer';
+  static const fundsObligationsName = 'fundsObligations';
+  static const fundsObligationsPath = '/funding/obligations';
 
   static String withdrawalLocation({
     required String token,

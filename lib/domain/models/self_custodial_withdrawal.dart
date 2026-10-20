@@ -22,6 +22,15 @@ final class SelfCustodialWithdrawalSummary {
     this.failureReason,
     this.confirmations,
     this.requiredConfirmations = 0,
+    this.sourceWalletId,
+    this.assetId,
+    this.walletActionExecutionId,
+    this.userOperationHash,
+    this.manualReviewReason,
+    this.createdAt,
+    this.updatedAt,
+    this.submittedAt,
+    this.confirmedAt,
   });
   final String withdrawalId;
   final String assetSymbol;
@@ -32,4 +41,22 @@ final class SelfCustodialWithdrawalSummary {
   final String? failureReason;
   final int? confirmations;
   final int requiredConfirmations;
+  final String? sourceWalletId;
+  final String? assetId;
+  final String? walletActionExecutionId;
+  final String? userOperationHash;
+  final String? manualReviewReason;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? submittedAt;
+  final DateTime? confirmedAt;
+
+  bool get isCompleted =>
+      status == SelfCustodialWithdrawalState.confirmed &&
+      manualReviewReason == null;
+
+  bool get shouldPoll =>
+      manualReviewReason == null &&
+      (status == SelfCustodialWithdrawalState.submitted ||
+          status == SelfCustodialWithdrawalState.confirming);
 }

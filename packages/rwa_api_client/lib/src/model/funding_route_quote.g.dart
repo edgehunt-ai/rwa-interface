@@ -6,11 +6,75 @@ part of 'funding_route_quote.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const FundingRouteQuoteTargetEnvironmentEnum
+    _$fundingRouteQuoteTargetEnvironmentEnum_mainnet =
+    const FundingRouteQuoteTargetEnvironmentEnum._('mainnet');
+const FundingRouteQuoteTargetEnvironmentEnum
+    _$fundingRouteQuoteTargetEnvironmentEnum_testnet =
+    const FundingRouteQuoteTargetEnvironmentEnum._('testnet');
+
+FundingRouteQuoteTargetEnvironmentEnum
+    _$fundingRouteQuoteTargetEnvironmentEnumValueOf(String name) {
+  switch (name) {
+    case 'mainnet':
+      return _$fundingRouteQuoteTargetEnvironmentEnum_mainnet;
+    case 'testnet':
+      return _$fundingRouteQuoteTargetEnvironmentEnum_testnet;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<FundingRouteQuoteTargetEnvironmentEnum>
+    _$fundingRouteQuoteTargetEnvironmentEnumValues = BuiltSet<
+        FundingRouteQuoteTargetEnvironmentEnum>(const <FundingRouteQuoteTargetEnvironmentEnum>[
+  _$fundingRouteQuoteTargetEnvironmentEnum_mainnet,
+  _$fundingRouteQuoteTargetEnvironmentEnum_testnet,
+]);
+
+Serializer<FundingRouteQuoteTargetEnvironmentEnum>
+    _$fundingRouteQuoteTargetEnvironmentEnumSerializer =
+    _$FundingRouteQuoteTargetEnvironmentEnumSerializer();
+
+class _$FundingRouteQuoteTargetEnvironmentEnumSerializer
+    implements PrimitiveSerializer<FundingRouteQuoteTargetEnvironmentEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    FundingRouteQuoteTargetEnvironmentEnum
+  ];
+  @override
+  final String wireName = 'FundingRouteQuoteTargetEnvironmentEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          FundingRouteQuoteTargetEnvironmentEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  FundingRouteQuoteTargetEnvironmentEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      FundingRouteQuoteTargetEnvironmentEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$FundingRouteQuote extends FundingRouteQuote {
   @override
   final String quoteId;
   @override
   final FundingProvider provider;
+  @override
+  final FundingRouteQuoteTargetEnvironmentEnum? targetEnvironment;
   @override
   final String inputAmount;
   @override
@@ -41,6 +105,7 @@ class _$FundingRouteQuote extends FundingRouteQuote {
   _$FundingRouteQuote._(
       {required this.quoteId,
       required this.provider,
+      this.targetEnvironment,
       required this.inputAmount,
       required this.maximumInputAmount,
       this.estimatedReceived,
@@ -67,6 +132,7 @@ class _$FundingRouteQuote extends FundingRouteQuote {
     return other is FundingRouteQuote &&
         quoteId == other.quoteId &&
         provider == other.provider &&
+        targetEnvironment == other.targetEnvironment &&
         inputAmount == other.inputAmount &&
         maximumInputAmount == other.maximumInputAmount &&
         estimatedReceived == other.estimatedReceived &&
@@ -85,6 +151,7 @@ class _$FundingRouteQuote extends FundingRouteQuote {
     var _$hash = 0;
     _$hash = $jc(_$hash, quoteId.hashCode);
     _$hash = $jc(_$hash, provider.hashCode);
+    _$hash = $jc(_$hash, targetEnvironment.hashCode);
     _$hash = $jc(_$hash, inputAmount.hashCode);
     _$hash = $jc(_$hash, maximumInputAmount.hashCode);
     _$hash = $jc(_$hash, estimatedReceived.hashCode);
@@ -105,6 +172,7 @@ class _$FundingRouteQuote extends FundingRouteQuote {
     return (newBuiltValueToStringHelper(r'FundingRouteQuote')
           ..add('quoteId', quoteId)
           ..add('provider', provider)
+          ..add('targetEnvironment', targetEnvironment)
           ..add('inputAmount', inputAmount)
           ..add('maximumInputAmount', maximumInputAmount)
           ..add('estimatedReceived', estimatedReceived)
@@ -131,6 +199,13 @@ class FundingRouteQuoteBuilder
   FundingProvider? _provider;
   FundingProvider? get provider => _$this._provider;
   set provider(FundingProvider? provider) => _$this._provider = provider;
+
+  FundingRouteQuoteTargetEnvironmentEnum? _targetEnvironment;
+  FundingRouteQuoteTargetEnvironmentEnum? get targetEnvironment =>
+      _$this._targetEnvironment;
+  set targetEnvironment(
+          FundingRouteQuoteTargetEnvironmentEnum? targetEnvironment) =>
+      _$this._targetEnvironment = targetEnvironment;
 
   String? _inputAmount;
   String? get inputAmount => _$this._inputAmount;
@@ -190,6 +265,7 @@ class FundingRouteQuoteBuilder
     if ($v != null) {
       _quoteId = $v.quoteId;
       _provider = $v.provider;
+      _targetEnvironment = $v.targetEnvironment;
       _inputAmount = $v.inputAmount;
       _maximumInputAmount = $v.maximumInputAmount;
       _estimatedReceived = $v.estimatedReceived;
@@ -228,6 +304,7 @@ class FundingRouteQuoteBuilder
                 quoteId, r'FundingRouteQuote', 'quoteId'),
             provider: BuiltValueNullFieldError.checkNotNull(
                 provider, r'FundingRouteQuote', 'provider'),
+            targetEnvironment: targetEnvironment,
             inputAmount: BuiltValueNullFieldError.checkNotNull(
                 inputAmount, r'FundingRouteQuote', 'inputAmount'),
             maximumInputAmount: BuiltValueNullFieldError.checkNotNull(

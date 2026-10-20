@@ -6,10 +6,10 @@ import '../../domain/models/order.dart';
 /// Saves only execution identity and a submission marker. Authorization
 /// payloads and signatures are never stored. The marker prevents re-signing
 /// after process loss or an uncertain submission response.
-final class BstocksSponsoredExecutionJournal {
-  BstocksSponsoredExecutionJournal() : _preferences = null;
+final class BstocksExecutionJournal {
+  BstocksExecutionJournal() : _preferences = null;
 
-  BstocksSponsoredExecutionJournal.persistent()
+  BstocksExecutionJournal.persistent()
     : _preferences = SharedPreferences.getInstance;
 
   final Future<SharedPreferences> Function()? _preferences;

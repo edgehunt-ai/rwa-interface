@@ -13,5 +13,4 @@ String safeFailureSummary(ApiFailure failure) => switch (failure) {
   CompatibilityFailure(:final requestId) =>
     'compatibility requestId=${requestId ?? '-'}',
   UnknownFailure(:final requestId) => 'unknown requestId=${requestId ?? '-'}',
-  WalletTransactionNotBroadcastFailure() => 'wallet transaction not broadcast',
 };

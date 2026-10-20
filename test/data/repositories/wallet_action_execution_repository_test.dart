@@ -33,6 +33,83 @@ void main() {
     );
   }
 
+  test(
+    'native relay preserves user payer and decimal-to-hex nonce authorization',
+    () async {
+      final native = _nativeExecutionJson();
+      final context = harness([
+        ControlledResponse.json(
+          method: 'GET',
+          path: '/v1/wallet-action-executions/execution-1',
+          statusCode: 200,
+          body: native,
+        ),
+      ]);
+      final execution = await context.repository.get('execution-1');
+      expect(execution.executionProvider, 'privy_native');
+      expect(execution.gasPayment.platformPays, isFalse);
+      expect(execution.nativeNonce, '9007199254740993');
+      expect(execution.transaction.nonce, '9007199254740993');
+      expect(execution.authorization!.transaction.nonce, '0x20000000000001');
+      expect(execution.authorization!.sponsor, isFalse);
+      expect(
+        execution.authorization!.body,
+        native['privy_authorization_payload']['body'],
+      );
+    },
+  );
+
+  test('cancellation commands never replace original hash or submit raw transaction fields', () async {
+    final native = _nativeExecutionJson();
+    native['tx_hash'] = '0x${'ab' * 32}';
+    native['native_delivery_state'] = 'dispatching';
+    native['native_cancellation'] = {
+      'cancellation_id': 'cancel-1',
+      'nonce': '9007199254740993',
+      'to': _to,
+      'status': 'ambiguous',
+      'privy_authorization_payload': null,
+      'authorization_expires_at': null,
+      'tx_hash': '0x${'cd' * 32}',
+      'chain_observation': null,
+    };
+    final context = harness([
+      ControlledResponse.json(
+        method: 'POST',
+        path: '/v1/wallet-action-executions/execution-1/cancellation',
+        statusCode: 200,
+        body: native,
+      ),
+      ControlledResponse.json(
+        method: 'POST',
+        path:
+            '/v1/wallet-action-executions/execution-1/cancellation/submissions',
+        statusCode: 200,
+        body: native,
+      ),
+    ]);
+    await context.repository.prepareCancellation(
+      executionId: 'execution-1',
+      idempotencyKey: 'cancel-prepare',
+    );
+    final result = await context.repository.submitCancellationAuthorization(
+      executionId: 'execution-1',
+      signature: 'signed-cancellation',
+      idempotencyKey: 'cancel-submit',
+    );
+    expect(
+      jsonDecode(utf8.decode(context.adapter.requests.first.body)),
+      <String, Object?>{},
+    );
+    expect(jsonDecode(utf8.decode(context.adapter.requests.last.body)), {
+      'privy_authorization_signature': 'signed-cancellation',
+    });
+    expect(result.txHash, '0x${'ab' * 32}');
+    expect(result.nativeCancellation!.txHash, '0x${'cd' * 32}');
+    expect(result.nativeCancellation!.status, 'ambiguous');
+    expect(result.nativeCancellation!.chainObservation, isNull);
+  });
+
   test('GET restores the current execution without creating another', () async {
     final context = harness([
       ControlledResponse.json(
@@ -323,3 +400,40 @@ final _submittedExecutionJson = <String, dynamic>{
   'privy_authorization_payload': null,
   'authorization_expires_at': null,
 };
+
+Map<String, dynamic> _nativeExecutionJson() {
+  final original =
+      _sponsoredExecutionJson['privy_authorization_payload'] as Map;
+  final body = original['body'] as Map;
+  return {
+    ..._sponsoredExecutionJson,
+    'mode': 'user_paid_native',
+    'execution_provider': 'privy_native',
+    'native_nonce': '9007199254740993',
+    'native_delivery_state': 'prepared',
+    'native_cancellation': null,
+    'gas_payment': {
+      ..._sponsoredExecutionJson['gas_payment'] as Map,
+      'mode': 'user_paid_native',
+      'platform_pays': false,
+      'eip_7702_required': false,
+    },
+    'frozen_transaction': {
+      ..._sponsoredExecutionJson['frozen_transaction'] as Map,
+      'nonce': '9007199254740993',
+    },
+    'privy_authorization_payload': {
+      ...original,
+      'body': {
+        ...body,
+        'sponsor': false,
+        'params': {
+          'transaction': {
+            ...(body['params'] as Map)['transaction'] as Map,
+            'nonce': '0x20000000000001',
+          },
+        },
+      },
+    },
+  };
+}

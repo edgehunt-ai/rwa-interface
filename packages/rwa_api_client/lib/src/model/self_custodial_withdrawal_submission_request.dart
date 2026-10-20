@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'self_custodial_withdrawal_submission_request.g.dart';
 
-/// 用户通过 Privy wallet 自行签名和广播后提交的不可信定位符；除 `tx_hash` 外不接受 chain、from、to、amount、calldata、signature、authorization 或状态字段。 
+/// 历史已广播交易的不可信定位符，不授予新的客户端签名或广播权限；除 `tx_hash` 外不接受 chain、from、to、amount、calldata、signature、authorization 或状态字段。 
 ///
 /// Properties:
 /// * [txHash] 

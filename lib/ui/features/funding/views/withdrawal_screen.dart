@@ -13,6 +13,7 @@ import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/domain/models/self_custodial_withdrawal.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/adaptive/app_adaptive_dialogs.dart';
 import 'package:nobell/ui/core/feedback/empty_state.dart';
@@ -28,6 +29,8 @@ import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_p
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+
+import 'native_execution_recovery_screen.dart';
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
   const WithdrawalScreen({
@@ -53,15 +56,16 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   String? error;
   bool quoting = false;
   bool submitting = false;
-  bool waitingForBalance = false;
+  SelfCustodialWithdrawalSummary? withdrawal;
+  Timer? withdrawalPoll;
+  bool checkingWithdrawal = false;
+  int pollAttempts = 0;
   // Each visit to the review step asks the server for its own gas observation.
   int prepareAttempt = 0;
 
-  static const _balancePollInterval = Duration(seconds: 2);
-  static const _balancePollTimeout = Duration(seconds: 30);
-
   @override
   void dispose() {
+    withdrawalPoll?.cancel();
     address.dispose();
     amount.dispose();
     super.dispose();
@@ -151,24 +155,11 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     // first visible frame waiting long enough to make the tap look ignored.
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return;
-    final openingBalance = await _readWithdrawableBalance(currentQuote);
-    if (!mounted) return;
     try {
-      await ref
+      final result = await ref
           .read(selfCustodialWithdrawalCommandsProvider)
           .execute(quote: currentQuote, prepared: current);
-      final balanceUpdated = await _waitForBalanceChange(
-        currentQuote,
-        openingBalance,
-      );
-      if (mounted) {
-        ref.invalidate(portfolioSummaryProvider);
-        _completeSubmission(
-          balanceUpdated
-              ? AppLocalizations.of(context).withdrawalSucceeded
-              : AppLocalizations.of(context).balanceRefreshFailed,
-        );
-      }
+      _handleWithdrawal(result);
     } on SponsoredGasUnavailable catch (refusal) {
       // Sponsorship was refused before any broadcast. Paying gas from the
       // wallet is a separate decision, so it needs its own confirmation — and
@@ -183,7 +174,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         if (mounted) setState(() => submitting = false);
         return;
       }
-      await _submitUserPaid(currentQuote, current, openingBalance);
+      await _submitUserPaid(currentQuote, current);
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
     } on Object catch (failure) {
@@ -198,24 +189,12 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   Future<void> _submitUserPaid(
     WithdrawalQuote currentQuote,
     PreparedSelfCustodialWithdrawal current,
-    DecimalValue? openingBalance,
   ) async {
     try {
-      await ref
+      final result = await ref
           .read(selfCustodialWithdrawalCommandsProvider)
           .executeUserPaid(quote: currentQuote, prepared: current);
-      final balanceUpdated = await _waitForBalanceChange(
-        currentQuote,
-        openingBalance,
-      );
-      if (mounted) {
-        ref.invalidate(portfolioSummaryProvider);
-        _completeSubmission(
-          balanceUpdated
-              ? AppLocalizations.of(context).withdrawalSucceeded
-              : AppLocalizations.of(context).balanceRefreshFailed,
-        );
-      }
+      _handleWithdrawal(result);
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
     } on Object catch (failure) {
@@ -225,17 +204,103 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     }
   }
 
-  void _completeSubmission(String message) {
-    address.clear();
-    amount.clear();
+  void _handleWithdrawal(SelfCustodialWithdrawalSummary result) {
+    if (!mounted) return;
+    withdrawalPoll?.cancel();
+    final wasCompleted = withdrawal?.isCompleted == true;
     setState(() {
-      quote = null;
-      prepared = null;
+      withdrawal = result;
       error = null;
-      submitting = false;
-      waitingForBalance = false;
     });
-    AppToast.showSuccess(context, message);
+    if (result.isCompleted && !wasCompleted) {
+      ref.invalidate(portfolioSummaryProvider);
+      AppToast.showSuccess(
+        context,
+        AppLocalizations.of(context).withdrawalSucceeded,
+      );
+    } else if (result.shouldPoll && pollAttempts < 15) {
+      withdrawalPoll = Timer(const Duration(seconds: 2), () {
+        pollAttempts++;
+        unawaited(_refreshWithdrawal());
+      });
+    }
+  }
+
+  Future<void> _refreshWithdrawal() async {
+    final current = withdrawal;
+    if (current == null || checkingWithdrawal) return;
+    setState(() => checkingWithdrawal = true);
+    try {
+      final result = await ref.refresh(
+        selfCustodialWithdrawalProvider(current.withdrawalId).future,
+      );
+      _handleWithdrawal(result);
+    } on Object catch (failure) {
+      if (mounted) setState(() => error = _withdrawalErrorMessage(failure));
+    } finally {
+      if (mounted) setState(() => checkingWithdrawal = false);
+    }
+  }
+
+  Widget _withdrawalStatus(SelfCustodialWithdrawalSummary current) {
+    final l10n = AppLocalizations.of(context);
+    final message = current.manualReviewReason != null
+        ? l10n.hip3PendingReview
+        : switch (current.status) {
+            SelfCustodialWithdrawalState.confirmed => l10n.withdrawalSucceeded,
+            SelfCustodialWithdrawalState.submitted ||
+            SelfCustodialWithdrawalState.confirming => l10n.withdrawalSubmitted,
+            SelfCustodialWithdrawalState.failed => l10n.withdrawalFailed,
+            SelfCustodialWithdrawalState.manualReview => l10n.hip3PendingReview,
+            SelfCustodialWithdrawalState.noncanonical =>
+              l10n.withdrawalNoncanonical,
+            _ => l10n.withdrawalUnresolved,
+          };
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        AppPageHeader(title: l10n.withdrawalDetails),
+        const SizedBox(height: 24),
+        Text(message, key: const Key('withdrawal-status')),
+        SelectableText('${l10n.withdrawalIdLabel}: ${current.withdrawalId}'),
+        SelectableText('${current.amount.value} ${current.assetSymbol}'),
+        SelectableText('${l10n.to}: ${current.destinationAddress}'),
+        if (current.txHash != null)
+          SelectableText(
+            '${l10n.withdrawalTransactionLabel}: ${current.txHash}',
+          ),
+        if (current.userOperationHash != null)
+          SelectableText(current.userOperationHash!),
+        if (current.walletActionExecutionId != null)
+          SelectableText(current.walletActionExecutionId!),
+        if (current.walletActionExecutionId != null)
+          OutlinedButton(
+            key: const Key('withdrawal-native-recovery'),
+            onPressed: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => NativeExecutionRecoveryScreen(
+                  executionId: current.walletActionExecutionId!,
+                ),
+              ),
+            ),
+            child: Text(l10n.nativeRecoveryTitle),
+          ),
+        if (current.confirmations != null)
+          Text('${current.confirmations}/${current.requiredConfirmations}'),
+        if (current.confirmedAt != null)
+          Text(current.confirmedAt!.toIso8601String()),
+        if (current.manualReviewReason != null)
+          Text(current.manualReviewReason!),
+        if (current.failureReason != null) Text(current.failureReason!),
+        if (error != null) Text(error!),
+        OutlinedButton.icon(
+          key: const Key('withdrawal-refresh'),
+          onPressed: checkingWithdrawal ? null : _refreshWithdrawal,
+          icon: const Icon(Icons.refresh),
+          label: Text(l10n.hip3PendingCheck),
+        ),
+      ],
+    );
   }
 
   String _withdrawalErrorMessage(Object failure) {
@@ -251,61 +316,6 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     final message = failure.toString().trim();
     if (message.isNotEmpty && message != 'null') return message;
     return AppLocalizations.of(context).prepareWithdrawalFailed;
-  }
-
-  Future<DecimalValue?> _readWithdrawableBalance(WithdrawalQuote quote) async {
-    try {
-      final accounts = await ref.read(tradingAccountsProvider.future);
-      return _matchingBalance(accounts, quote);
-    } on Object {
-      return null;
-    }
-  }
-
-  Future<bool> _waitForBalanceChange(
-    WithdrawalQuote quote,
-    DecimalValue? openingBalance,
-  ) async {
-    if (openingBalance == null) return true;
-    if (mounted) setState(() => waitingForBalance = true);
-    final attempts =
-        _balancePollTimeout.inMilliseconds ~/
-        _balancePollInterval.inMilliseconds;
-    try {
-      for (var attempt = 0; attempt < attempts; attempt++) {
-        await Future<void>.delayed(_balancePollInterval);
-        if (!mounted) return false;
-        try {
-          final accounts = await ref.refresh(tradingAccountsProvider.future);
-          final current = _matchingBalance(accounts, quote);
-          if (current != null && current.compareTo(openingBalance) < 0) {
-            return true;
-          }
-        } on Object {
-          // A transient balance request failure should not hide a submitted withdrawal.
-        }
-      }
-      return false;
-    } finally {
-      if (mounted) setState(() => waitingForBalance = false);
-    }
-  }
-
-  DecimalValue? _matchingBalance(
-    List<TradingAccount> accounts,
-    WithdrawalQuote quote,
-  ) {
-    for (final account in accounts) {
-      for (final token in account.balances) {
-        final chain = token.chain ?? account.chain;
-        if (token.symbol.toUpperCase() ==
-                quote.intent.amount.asset?.toUpperCase() &&
-            chain?.toLowerCase() == quote.intent.chain.toLowerCase()) {
-          return token.balance;
-        }
-      }
-    }
-    return null;
   }
 
   Future<bool> _confirmUserPaidGas(SponsoredGasUnavailable refusal) async {
@@ -357,7 +367,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         .firstOrNull;
     return Scaffold(
       body: SafeArea(
-        child: quote == null
+        child: withdrawal != null
+            ? _withdrawalStatus(withdrawal!)
+            : quote == null
             ? _WithdrawalForm(
                 address: address,
                 amount: amount,
@@ -379,7 +391,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                   error = null;
                 }),
                 onSubmit: _submit,
-                submitting: submitting || waitingForBalance,
+                submitting: submitting,
               ),
       ),
     );
