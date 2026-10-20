@@ -44,6 +44,11 @@ final class PrivyConfiguration {
     return uri.origin;
   }
 
+  /// WebAuthn RP IDs are hostnames, without scheme, port, or page path.
+  /// SIWE continues to use [relyingPartyFor] for its full HTTPS origin.
+  static String passkeyRelyingPartyFor(String exportUrl) =>
+      Uri.parse(relyingPartyFor(exportUrl)).host;
+
   final String appId;
   final String clientId;
 

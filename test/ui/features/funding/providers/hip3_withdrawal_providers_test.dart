@@ -235,6 +235,47 @@ void main() {
     });
   }
 
+  test('relay freezes updated estimated economics and submits once', () async {
+    final repo = _Repository()
+      ..rail = 'relay'
+      ..changedField = 'relay_economics';
+    final container = makeContainer(repo);
+    addTearDown(container.dispose);
+    final commands = container.read(hip3WithdrawalCommandsProvider);
+    await commands.preview('51.4');
+    final prepared = await commands.prepare('51.4', rail: 'relay');
+    expect(prepared.fee, '1.19');
+    expect(prepared.minimumReceived, '50.21');
+    await commands.submit(prepared);
+    expect(repo.submitted, 1);
+    expect(repo.creationKeys, hasLength(1));
+    expect(repo.previewAmounts, ['51.4']);
+  });
+
+  for (final field in [
+    'chain',
+    'asset',
+    'amount',
+    'destination',
+    'fee',
+    'minimum',
+  ]) {
+    test('relay rejects changed $field or inconsistent economics', () async {
+      final repo = _Repository()
+        ..rail = 'relay'
+        ..changedField = field;
+      final container = makeContainer(repo);
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+      await commands.preview('51.4');
+      await expectLater(
+        commands.prepare('51.4', rail: 'relay'),
+        throwsA(isA<Hip3WithdrawalQuoteChanged>()),
+      );
+      expect(repo.submitted, 0);
+    });
+  }
+
   test('preparation reuses the frozen intent and submits it once', () async {
     final repo = _Repository();
     final container = ProviderContainer(
@@ -477,8 +518,14 @@ class _Repository implements Hip3WithdrawalRepository {
         ? '0x2222222222222222222222222222222222222222'
         : '0x1111111111111111111111111111111111111111',
     amount: changedField == 'amount' ? '52' : '51.400000',
-    fee: changedField == 'fee' ? '1.19' : '1.180000',
-    minimumReceived: changedField == 'minimum' ? '50' : '50.220000',
+    fee: changedField == 'fee' || changedField == 'relay_economics'
+        ? '1.19'
+        : '1.180000',
+    minimumReceived: changedField == 'relay_economics'
+        ? '50.21'
+        : changedField == 'minimum'
+        ? '50'
+        : '50.220000',
     status: status,
     rail: changedField == 'rail' ? 'relay' : rail,
     payoutChainId: changedField == 'chain' ? 56 : chainId,

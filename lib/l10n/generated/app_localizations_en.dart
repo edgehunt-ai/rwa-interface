@@ -1059,7 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsClearCache => 'Clear';
 
   @override
-  String get settingsTermsConditions => 'Terms & Conditions';
+  String get settingsTermsConditions => 'Terms Of Use';
 
   @override
   String get settingsLogOut => 'Log Out';
@@ -1737,13 +1737,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termsAgreement =>
-      'By using this app, you agree to the Terms & Conditions.';
+      'By using this app, you agree to the Terms & Privacy.';
 
   @override
   String get termsAgreementPrefix => 'By using this app, you agree to the ';
 
   @override
-  String get termsAgreementLink => 'Terms & Conditions';
+  String get termsAgreementLink => 'Terms';
+
+  @override
+  String get privacyAgreementLink => 'Privacy';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy Policy';
 
   @override
   String get termsAgreementSuffix => '.';
@@ -2267,6 +2273,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hip3TransferDestination => 'To your Arbitrum USDC address:';
+
+  @override
+  String get activityExplorerOpenFailed =>
+      'Unable to open the transaction explorer.';
+
+  @override
+  String get activityFrom => 'From';
 
   @override
   String get sendAmount => 'Send amount';
@@ -2860,4 +2873,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopLossShortLabel => 'SL';
+
+  @override
+  String get spotMarketDataSource =>
+      '*Spot data is sourced from Binance for reference only.';
+
+  @override
+  String get marketDataSourceBinance => 'Market data from Binance';
+
+  @override
+  String get marketDataSourceDisclaimer =>
+      'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.';
 }

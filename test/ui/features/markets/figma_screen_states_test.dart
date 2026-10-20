@@ -36,6 +36,13 @@ void main() {
     );
     expect(image.image, isA<NetworkImage>());
     expect((image.image as NetworkImage).url, logoUrl);
+    // The outline must not inset the square image inside the circular clip;
+    // that intersection would leave flat edges on solid-background logos.
+    final logoBounds = tester.getRect(
+      find.byKey(const ValueKey('market-network-logo-$logoUrl')),
+    );
+    expect(logoBounds.size, const Size(40, 40));
+    expect(logoBounds, tester.getRect(find.byType(MarketAssetMark)));
   });
 
   testWidgets('market ranking tabs remain usable at 200% text scale', (
@@ -178,6 +185,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('+2.5%'), findsOneWidget);
+    expect(
+      find.text('*Spot data is sourced from Binance for reference only.'),
+      findsNothing,
+    );
     expect(find.text(r'Vol $1.23M'), findsNothing);
 
     await tester.drag(find.text('Popular'), const Offset(-80, 0));
@@ -185,6 +196,10 @@ void main() {
     await tester.tap(find.text('Volume'));
     await tester.pumpAndSettle();
 
+    expect(
+      find.text('*Spot data is sourced from Binance for reference only.'),
+      findsOneWidget,
+    );
     expect(requestedGroups, contains('volume'));
     expect(find.text('+2.5%'), findsNothing);
     expect(find.text(r'Vol $1.23M'), findsOneWidget);

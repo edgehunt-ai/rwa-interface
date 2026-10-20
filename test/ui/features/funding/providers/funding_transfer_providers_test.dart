@@ -390,6 +390,52 @@ void main() {
     );
   });
 
+  for (final status in FundingPlanState.values.where(
+    (status) =>
+        status != FundingPlanState.executing &&
+        status != FundingPlanState.partiallyFunded,
+  )) {
+    test('inspection skips stale missing transfers for $status', () async {
+      final stale = _inspectionPlan(FundingPlanState.executing, 'missing');
+      final latest = _inspectionPlan(status, 'missing');
+      final funding = _FundingRepository()
+        ..queriedPlan = latest
+        ..missingTransfer = true;
+      final container = ProviderContainer(
+        overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      );
+      addTearDown(container.dispose);
+
+      final progress = await container
+          .read(fundingTransferCommandsProvider)
+          .inspect(stale);
+
+      expect(progress.plan, same(latest));
+      expect(progress.requiresUserAction, isFalse);
+      expect(funding.transferReads, 0);
+    });
+  }
+
+  test('inspection reads transfers from the latest plan', () async {
+    final stale = _inspectionPlan(FundingPlanState.executing, 'missing');
+    final latest = _inspectionPlan(FundingPlanState.executing, null);
+    final funding = _FundingRepository()
+      ..queriedPlan = latest
+      ..missingTransfer = true;
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+    );
+    addTearDown(container.dispose);
+
+    final progress = await container
+        .read(fundingTransferCommandsProvider)
+        .inspect(stale);
+
+    expect(progress.plan, same(latest));
+    expect(progress.requiresUserAction, isFalse);
+    expect(funding.transferReads, 0);
+  });
+
   test(
     'plan inspection exposes a released action without executing it',
     () async {
@@ -434,6 +480,27 @@ void main() {
     },
   );
 }
+
+FundingPlan _inspectionPlan(FundingPlanState status, String? transferId) =>
+    FundingPlan(
+      planId: 'plan-1',
+      tradePreviewId: 'session-1',
+      shortfall: DecimalValue('1'),
+      status: status,
+      legs: transferId == null
+          ? const []
+          : [
+              FundingLeg(
+                legId: 'leg-1',
+                walletId: 'wallet-1',
+                asset: 'USDT',
+                maximumAmount: DecimalValue('1'),
+                outputAmount: DecimalValue('1'),
+                status: FundingLegState.submitted,
+                transferId: transferId,
+              ),
+            ],
+    );
 
 final class _CatalogFailingRepository implements FundingRepository {
   int accountCalls = 0;
@@ -526,6 +593,7 @@ final class _FundingRepository implements FundingRepository {
   FundingPlan? queriedPlan;
   FundingTransfer? refreshedTransfer;
   int transferReads = 0;
+  bool missingTransfer = false;
   final plan = FundingPlan(
     planId: 'plan-1',
     tradePreviewId: 'preview-1',
@@ -635,6 +703,13 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingTransfer> getFundingTransfer(String id) async {
     transferReads++;
+    if (missingTransfer) {
+      throw const ServerFailure(
+        statusCode: 404,
+        code: 'not_found',
+        message: 'Transfer not found',
+      );
+    }
     return refreshedTransfer ??
         FundingTransfer(
           transferId: id,

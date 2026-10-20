@@ -546,7 +546,7 @@ final class PrivyIdentityAuthGateway
   Future<IdentityPrincipal> loginWithPasskey() async {
     try {
       final result = await _initializedPrivy.passkey.login(
-        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
+        relyingParty: PrivyConfiguration.passkeyRelyingPartyFor(_exportUrl),
       );
       switch (result) {
         case Success<PrivyUser>(:final value):
@@ -581,7 +581,7 @@ final class PrivyIdentityAuthGateway
   Future<PasskeyCredential> linkPasskey({String? displayName}) async {
     try {
       final result = await _initializedPrivy.passkey.link(
-        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
+        relyingParty: PrivyConfiguration.passkeyRelyingPartyFor(_exportUrl),
         displayName: displayName,
       );
       switch (result) {
@@ -814,30 +814,40 @@ final class PrivyIdentityAuthGateway
     required _PrivyProviderDiagnostic providerDiagnostic,
   }) {
     final normalized = message.toLowerCase();
+    final reason = operation.startsWith('passkey_')
+        ? _sanitizeDiagnosticMessage(
+            message.split('\n').first,
+            redactCodes: false,
+          ).trim()
+        : null;
     late final IdentityFailure failure;
     if (normalized.contains('network') || normalized.contains('timeout')) {
-      failure = const IdentityFailure(
+      failure = IdentityFailure(
         AuthenticationFailureCode.network,
         retryable: true,
+        reason: reason,
       );
     } else if (normalized.contains('failed to launch oauth browser')) {
-      failure = const IdentityFailure(
+      failure = IdentityFailure(
         AuthenticationFailureCode.browserUnavailable,
         retryable: true,
+        reason: reason,
       );
     } else if (codeOperation &&
         (normalized.contains('code') ||
             normalized.contains('otp') ||
             normalized.contains('verification') ||
             normalized.contains('invalid email'))) {
-      failure = const IdentityFailure(
+      failure = IdentityFailure(
         AuthenticationFailureCode.invalidCode,
         retryable: true,
+        reason: reason,
       );
     } else {
-      failure = const IdentityFailure(
+      failure = IdentityFailure(
         AuthenticationFailureCode.provider,
         retryable: true,
+        reason: reason,
       );
     }
     _reportFailure(
@@ -902,27 +912,34 @@ final class PrivyIdentityAuthGateway
     return normalized.length <= 64 ? normalized : normalized.substring(0, 64);
   }
 
-  static String _sanitizeDiagnosticMessage(String value) => value
-      .replaceAll(RegExp(r'\b[^\s@]+@[^\s@]+\b'), '<redacted-email>')
-      .replaceAll(
-        RegExp(r'Bearer\s+\S+', caseSensitive: false),
-        'Bearer <redacted>',
-      )
-      .replaceAll(
-        RegExp(
-          r'([?&](?:access_token|authorization|code|id_token|state|token)=)[^&#\s]+',
-          caseSensitive: false,
-        ),
-        r'$1<redacted>',
-      )
-      .replaceAll(
-        RegExp(
-          r'("(?:access_token|authorization|code|id_token|state|token)"\s*:\s*")[^"]+',
-          caseSensitive: false,
-        ),
-        r'$1<redacted>',
-      )
-      .replaceAll(RegExp(r'\b\d{4,10}\b'), '<redacted-code>');
+  static String _sanitizeDiagnosticMessage(
+    String value, {
+    bool redactCodes = true,
+  }) {
+    final sanitized = value
+        .replaceAll(RegExp(r'\b[^\s@]+@[^\s@]+\b'), '<redacted-email>')
+        .replaceAll(
+          RegExp(r'Bearer\s+\S+', caseSensitive: false),
+          'Bearer <redacted>',
+        )
+        .replaceAll(
+          RegExp(
+            r'([?&](?:access_token|authorization|code|id_token|state|token)=)[^&#\s]+',
+            caseSensitive: false,
+          ),
+          r'$1<redacted>',
+        )
+        .replaceAll(
+          RegExp(
+            r'("(?:access_token|authorization|code|id_token|state|token)"\s*:\s*")[^"]+',
+            caseSensitive: false,
+          ),
+          r'$1<redacted>',
+        );
+    return redactCodes
+        ? sanitized.replaceAll(RegExp(r'\b\d{4,10}\b'), '<redacted-code>')
+        : sanitized;
+  }
 
   static void _reportToSentry({
     required String operation,

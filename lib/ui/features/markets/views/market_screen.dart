@@ -8,6 +8,7 @@ import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/markets/market_data_source.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/feedback/empty_state.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
@@ -177,6 +178,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         );
                       },
                     ),
+                    MarketListDataSource(kind: kind, tab: selectedTab),
                   ],
                 ),
               ),

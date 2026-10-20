@@ -52,6 +52,10 @@ abstract final class AppRoutes {
   }
 
   static const settingsName = 'settings';
+  static const termsName = 'terms';
+  static const termsPath = '/terms';
+  static const privacyName = 'privacy';
+  static const privacyPath = '/privacy';
   static const settingsPath = '/settings';
   static const activityName = 'activity';
   static const activityPath = '/activity';

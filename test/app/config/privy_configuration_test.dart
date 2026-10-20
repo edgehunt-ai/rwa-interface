@@ -72,6 +72,21 @@ void main() {
       );
     });
 
+    test('passkey RP ID excludes scheme, port, path, query and fragment', () {
+      expect(
+        PrivyConfiguration.passkeyRelyingPartyFor(
+          ' https://keys.example.test:8443/export?flow=verify#ready ',
+        ),
+        'keys.example.test',
+      );
+      expect(
+        PrivyConfiguration.passkeyRelyingPartyFor(
+          'https://another.example.test/',
+        ),
+        'another.example.test',
+      );
+    });
+
     test('rejects missing or invalid export origins', () {
       for (final url in [
         '',
@@ -90,6 +105,11 @@ void main() {
               AuthenticationFailureCode.configuration,
             ),
           ),
+          reason: url,
+        );
+        expect(
+          () => PrivyConfiguration.passkeyRelyingPartyFor(url),
+          throwsA(isA<IdentityFailure>()),
           reason: url,
         );
       }

@@ -100,11 +100,13 @@ void main() {
     );
     expect(footer.padding, const EdgeInsets.fromLTRB(28, 0, 28, 28));
     final terms = tester.widget<Text>(
-      find.text('By using this app, you agree to the Terms & Conditions.'),
+      find.text('By using this app, you agree to the Terms & Privacy.'),
     );
     expect(terms.style?.color, const Color(0xFF616370));
     final termsSpan = terms.textSpan! as TextSpan;
     expect(termsSpan.children?[1].style?.fontWeight, FontWeight.w600);
+    expect(termsSpan.children?[2].style?.fontWeight, FontWeight.w400);
+    expect(termsSpan.children?[3].style?.fontWeight, FontWeight.w600);
   });
 
   for (final method in [
@@ -363,7 +365,7 @@ void main() {
     );
 
     final legalCopy = find.text(
-      'By using this app, you agree to the Terms & Conditions.',
+      'By using this app, you agree to the Terms & Privacy.',
     );
     final bottomBeforeKeyboard = tester.getBottomLeft(legalCopy).dy;
 

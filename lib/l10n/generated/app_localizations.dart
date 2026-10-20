@@ -2053,7 +2053,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTermsConditions.
   ///
   /// In en, this message translates to:
-  /// **'Terms & Conditions'**
+  /// **'Terms Of Use'**
   String get settingsTermsConditions;
 
   /// No description provided for @settingsLogOut.
@@ -3271,7 +3271,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsAgreement.
   ///
   /// In en, this message translates to:
-  /// **'By using this app, you agree to the Terms & Conditions.'**
+  /// **'By using this app, you agree to the Terms & Privacy.'**
   String get termsAgreement;
 
   /// No description provided for @termsAgreementPrefix.
@@ -3283,8 +3283,20 @@ abstract class AppLocalizations {
   /// No description provided for @termsAgreementLink.
   ///
   /// In en, this message translates to:
-  /// **'Terms & Conditions'**
+  /// **'Terms'**
   String get termsAgreementLink;
+
+  /// No description provided for @privacyAgreementLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacyAgreementLink;
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsPrivacyPolicy;
 
   /// No description provided for @termsAgreementSuffix.
   ///
@@ -4115,6 +4127,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To your Arbitrum USDC address:'**
   String get hip3TransferDestination;
+
+  /// No description provided for @activityExplorerOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open the transaction explorer.'**
+  String get activityExplorerOpenFailed;
+
+  /// No description provided for @activityFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get activityFrom;
 
   /// No description provided for @sendAmount.
   ///
@@ -5094,6 +5118,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'SL'**
   String get stopLossShortLabel;
+
+  /// No description provided for @spotMarketDataSource.
+  ///
+  /// In en, this message translates to:
+  /// **'*Spot data is sourced from Binance for reference only.'**
+  String get spotMarketDataSource;
+
+  /// No description provided for @marketDataSourceBinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Market data from Binance'**
+  String get marketDataSourceBinance;
+
+  /// No description provided for @marketDataSourceDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.'**
+  String get marketDataSourceDisclaimer;
 }
 
 class _AppLocalizationsDelegate

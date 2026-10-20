@@ -1,8 +1,9 @@
 # Passkey 配置
 
 `PRIVY_EXPORT_URL` 是唯一的域名来源：私钥导出打开完整 URL，原生 Passkey
-登录、绑定及钱包 SIWE 使用其 HTTPS origin，iOS 的 `webcredentials` 使用其
-hostname。URL 可以带页面路径、查询参数或 fragment，这些内容不会传入 RP。
+登录、绑定使用其 hostname（RP ID 不含协议、端口或路径），钱包 SIWE 使用其
+HTTPS origin，iOS 的 `webcredentials` 使用其 hostname。URL 可以带页面路径、
+查询参数或 fragment，这些内容不会传入 RP。
 代码没有默认域名，也不再读取 `PRIVY_RELYING_PARTY`。
 
 ## App 构建
