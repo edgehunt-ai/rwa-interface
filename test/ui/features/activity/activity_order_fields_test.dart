@@ -265,6 +265,7 @@ void main() {
   for (final category in [ActivityCategory.cash, ActivityCategory.orders]) {
     for (final url in <String?>[
       'https://arbiscan.io/tx/0x1234567890abcdef',
+      'http://arbiscan.io/tx/0x1234567890abcdef',
       'https://arbiscan.io/tx/failed',
       'https://arbiscan.io/tx/sdk-error',
       null,

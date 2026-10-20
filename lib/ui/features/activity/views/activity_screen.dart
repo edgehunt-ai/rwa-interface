@@ -1182,7 +1182,7 @@ class _DetailRow extends StatelessWidget {
         isTransaction &&
         explorerUri != null &&
         explorerUri.host.isNotEmpty &&
-        (explorerUri.scheme == 'https' || explorerUri.scheme == 'http');
+        explorerUri.scheme == 'https';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,

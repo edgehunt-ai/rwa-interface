@@ -288,6 +288,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
         _withdrawalPreview = preview;
+        final withdrawal = _withdrawal;
+        if (withdrawal != null &&
+            !withdrawal.isPending &&
+            withdrawal.status != 'awaiting_signature') {
+          _withdrawal = null;
+        }
         _withdrawalPreviewing = false;
         _error = hip3WithdrawalBlockerMessage(
           preview,

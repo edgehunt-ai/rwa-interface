@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
@@ -50,11 +52,19 @@ class _RwaRichTooltipState extends State<RwaRichTooltip> {
       ancestor: overlayBox,
     );
     _showBelow = widget.autoFlipVertically && targetTop.dy < 280;
+    final tooltipWidth = widget.constrainToViewport
+        ? math.min(240.0, math.max(0.0, overlayBox.size.width - 24))
+        : 240.0;
     final anchorX =
         targetTop.dx + targetBox.size.width * (widget.alignToCenter ? .5 : 1);
-    final tooltipLeft = anchorX - (widget.alignToCenter ? 120 : 240);
+    final tooltipLeft =
+        anchorX - tooltipWidth * (widget.alignToCenter ? .5 : 1);
     final horizontalOffset = widget.constrainToViewport
-        ? tooltipLeft.clamp(12.0, overlayBox.size.width - 252) - tooltipLeft
+        ? tooltipLeft.clamp(
+                12.0,
+                math.max(12.0, overlayBox.size.width - tooltipWidth - 12),
+              ) -
+              tooltipLeft
         : 0.0;
     final entry = OverlayEntry(
       builder: (context) => _RwaTooltipOverlay(
@@ -65,6 +75,7 @@ class _RwaRichTooltipState extends State<RwaRichTooltip> {
         tooltipKey: widget.tooltipKey,
         showBelow: _showBelow,
         horizontalOffset: horizontalOffset,
+        width: tooltipWidth,
         onDismiss: _removeTooltip,
       ),
     );
@@ -99,6 +110,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
     required this.tooltipKey,
     required this.showBelow,
     required this.horizontalOffset,
+    required this.width,
     required this.onDismiss,
   });
 
@@ -109,6 +121,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
   final Key? tooltipKey;
   final bool showBelow;
   final double horizontalOffset;
+  final double width;
   final VoidCallback onDismiss;
 
   @override
@@ -137,7 +150,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: SizedBox(
-              width: 240,
+              width: width,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: alignToCenter
@@ -153,7 +166,7 @@ class _RwaTooltipOverlay extends StatelessWidget {
                     ),
                   Container(
                     key: tooltipKey,
-                    width: 240,
+                    width: width,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: colors.surface,

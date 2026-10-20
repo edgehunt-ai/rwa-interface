@@ -28,6 +28,62 @@ import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
 import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 
 void main() {
+  testWidgets('fresh preview replaces terminal withdrawal amounts and fees', (
+    tester,
+  ) async {
+    final withdrawals = _FakeHip3Withdrawals()..submittedStatus = 'failed';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+          hip3TransferBalanceProvider.overrideWith((_) async => '100'),
+          transferOptionsProvider.overrideWith((_) async => _capacityOptions()),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('hip3-transfer-amount')),
+      '51.4',
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Transfer failed.'), findsOneWidget);
+    withdrawals.previewFee = '1.2';
+    withdrawals.previewReceived = '50.2';
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(withdrawals.previewAmounts.length, greaterThan(1));
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-receive-amount-value')),
+          )
+          .value,
+      '50.2',
+    );
+    expect(find.text('1.2 USDC'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-transfer-amount')))
+          .controller!
+          .text,
+      '51.4',
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('matches the transfer design structure and interactions', (
     tester,
   ) async {
@@ -2047,6 +2103,9 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   Completer<void>? submitGate;
   Completer<void>? previewGate;
   String createdFee = '1.18';
+  String previewFee = '1.18';
+  String previewReceived = '50.22';
+  String submittedStatus = 'submitted';
   String rail = 'float';
   bool accepted = false;
   int getCalls = 0;
@@ -2062,8 +2121,8 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     await previewGate?.future;
     return Hip3WithdrawalPreview(
       amount: amount,
-      fee: '1.18',
-      minimumReceived: '50.22',
+      fee: previewFee,
+      minimumReceived: previewReceived,
       rail: rail,
       destinationAddress: destination,
       chainId: '42161',
@@ -2138,7 +2197,7 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     amount: prepared.amount,
     fee: prepared.fee,
     minimumReceived: prepared.minimumReceived,
-    status: 'submitted',
+    status: submittedStatus,
     failureReason: failureReason,
     rail: prepared.rail,
     expiresAt: prepared.expiresAt,
