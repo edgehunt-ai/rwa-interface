@@ -97,12 +97,14 @@ final class AuthorizedTransaction {
     required this.to,
     required this.data,
     required this.value,
+    this.nonce,
   });
 
   final String from;
   final String to;
   final String data;
   final String value;
+  final String? nonce;
 }
 
 /// One server-owned execution of a frozen business action.
@@ -120,6 +122,11 @@ final class WalletActionExecution {
     this.authorizationExpiresAt,
     this.txHash,
     this.failureReason,
+    this.executionProvider,
+    this.nativeNonce,
+    this.nativeDeliveryState,
+    this.nativeCancellation,
+    this.chainObservation,
   });
 
   final String executionId;
@@ -130,8 +137,13 @@ final class WalletActionExecution {
   final WalletActionExecutionState status;
   final GasPaymentQuote gasPayment;
   final FrozenTransaction transaction;
+  final String? executionProvider;
+  final String? nativeNonce;
+  final String? nativeDeliveryState;
+  final NativeCancellation? nativeCancellation;
+  final WalletChainObservation? chainObservation;
 
-  /// Non-null only while an app-sponsored execution awaits the user signature.
+  /// Present only while the backend publisher awaits the user signature.
   final WalletAuthorizationRequest? authorization;
   final DateTime? authorizationExpiresAt;
   final String? txHash;
@@ -152,11 +164,64 @@ final class FrozenTransaction {
     required this.to,
     required this.data,
     required this.value,
+    this.nonce,
   });
 
   final String to;
   final String data;
   final String value;
+  final String? nonce;
+}
+
+/// Cancellation is separate from the original transaction, never business success.
+final class NativeCancellation {
+  const NativeCancellation({
+    required this.cancellationId,
+    required this.nonce,
+    required this.to,
+    required this.status,
+    this.authorization,
+    this.authorizationExpiresAt,
+    this.txHash,
+    this.chainObservation,
+  });
+
+  final String cancellationId;
+  final String nonce;
+  final String to;
+  final String status;
+  final WalletAuthorizationRequest? authorization;
+  final DateTime? authorizationExpiresAt;
+  final String? txHash;
+  final WalletChainObservation? chainObservation;
+}
+
+final class WalletChainObservation {
+  const WalletChainObservation({
+    required this.txHash,
+    required this.sender,
+    required this.recipient,
+    required this.payloadHash,
+    required this.value,
+    required this.receiptSuccess,
+    required this.canonical,
+    required this.blockNumber,
+    required this.blockHash,
+    required this.confirmations,
+    required this.observedAt,
+  });
+
+  final String txHash;
+  final String sender;
+  final String recipient;
+  final String payloadHash;
+  final String value;
+  final bool receiptSuccess;
+  final bool canonical;
+  final int blockNumber;
+  final String blockHash;
+  final int confirmations;
+  final DateTime observedAt;
 }
 
 /// Sponsorship was refused before any broadcast. The user may still pay gas

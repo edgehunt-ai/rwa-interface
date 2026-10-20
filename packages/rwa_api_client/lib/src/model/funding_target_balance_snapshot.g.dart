@@ -6,6 +6,69 @@ part of 'funding_target_balance_snapshot.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const FundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet =
+    const FundingTargetBalanceSnapshotTargetEnvironmentEnum._('mainnet');
+const FundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet =
+    const FundingTargetBalanceSnapshotTargetEnvironmentEnum._('testnet');
+
+FundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$fundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(String name) {
+  switch (name) {
+    case 'mainnet':
+      return _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
+    case 'testnet':
+      return _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<FundingTargetBalanceSnapshotTargetEnvironmentEnum>
+    _$fundingTargetBalanceSnapshotTargetEnvironmentEnumValues = BuiltSet<
+        FundingTargetBalanceSnapshotTargetEnvironmentEnum>(const <FundingTargetBalanceSnapshotTargetEnvironmentEnum>[
+  _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet,
+  _$fundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet,
+]);
+
+Serializer<FundingTargetBalanceSnapshotTargetEnvironmentEnum>
+    _$fundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer =
+    _$FundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer();
+
+class _$FundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer
+    implements
+        PrimitiveSerializer<FundingTargetBalanceSnapshotTargetEnvironmentEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    FundingTargetBalanceSnapshotTargetEnvironmentEnum
+  ];
+  @override
+  final String wireName = 'FundingTargetBalanceSnapshotTargetEnvironmentEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          FundingTargetBalanceSnapshotTargetEnvironmentEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  FundingTargetBalanceSnapshotTargetEnvironmentEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      FundingTargetBalanceSnapshotTargetEnvironmentEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
   @override
   final AccountKind account;
@@ -13,6 +76,8 @@ class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
   final String accountRef;
   @override
   final FundingAssetIdentity asset;
+  @override
+  final FundingTargetBalanceSnapshotTargetEnvironmentEnum? targetEnvironment;
   @override
   final String availableAmount;
   @override
@@ -30,6 +95,7 @@ class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
       {required this.account,
       required this.accountRef,
       required this.asset,
+      this.targetEnvironment,
       required this.availableAmount,
       required this.source_,
       required this.observedAt,
@@ -51,6 +117,7 @@ class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
         account == other.account &&
         accountRef == other.accountRef &&
         asset == other.asset &&
+        targetEnvironment == other.targetEnvironment &&
         availableAmount == other.availableAmount &&
         source_ == other.source_ &&
         observedAt == other.observedAt &&
@@ -63,6 +130,7 @@ class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
     _$hash = $jc(_$hash, account.hashCode);
     _$hash = $jc(_$hash, accountRef.hashCode);
     _$hash = $jc(_$hash, asset.hashCode);
+    _$hash = $jc(_$hash, targetEnvironment.hashCode);
     _$hash = $jc(_$hash, availableAmount.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
@@ -77,6 +145,7 @@ class _$FundingTargetBalanceSnapshot extends FundingTargetBalanceSnapshot {
           ..add('account', account)
           ..add('accountRef', accountRef)
           ..add('asset', asset)
+          ..add('targetEnvironment', targetEnvironment)
           ..add('availableAmount', availableAmount)
           ..add('source_', source_)
           ..add('observedAt', observedAt)
@@ -103,6 +172,14 @@ class FundingTargetBalanceSnapshotBuilder
   FundingAssetIdentityBuilder get asset =>
       _$this._asset ??= FundingAssetIdentityBuilder();
   set asset(FundingAssetIdentityBuilder? asset) => _$this._asset = asset;
+
+  FundingTargetBalanceSnapshotTargetEnvironmentEnum? _targetEnvironment;
+  FundingTargetBalanceSnapshotTargetEnvironmentEnum? get targetEnvironment =>
+      _$this._targetEnvironment;
+  set targetEnvironment(
+          FundingTargetBalanceSnapshotTargetEnvironmentEnum?
+              targetEnvironment) =>
+      _$this._targetEnvironment = targetEnvironment;
 
   String? _availableAmount;
   String? get availableAmount => _$this._availableAmount;
@@ -131,6 +208,7 @@ class FundingTargetBalanceSnapshotBuilder
       _account = $v.account;
       _accountRef = $v.accountRef;
       _asset = $v.asset.toBuilder();
+      _targetEnvironment = $v.targetEnvironment;
       _availableAmount = $v.availableAmount;
       _source_ = $v.source_;
       _observedAt = $v.observedAt;
@@ -163,6 +241,7 @@ class FundingTargetBalanceSnapshotBuilder
             accountRef: BuiltValueNullFieldError.checkNotNull(
                 accountRef, r'FundingTargetBalanceSnapshot', 'accountRef'),
             asset: asset.build(),
+            targetEnvironment: targetEnvironment,
             availableAmount: BuiltValueNullFieldError.checkNotNull(
                 availableAmount,
                 r'FundingTargetBalanceSnapshot',

@@ -679,9 +679,14 @@ class _ActivityRow extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final statusColor = switch (record.status) {
-      ActivityState.success => semantic.success,
+      ActivityState.success || ActivityState.settled || ActivityState.credited =>
+        semantic.success,
       ActivityState.failed => semantic.loss,
-      ActivityState.pending => semantic.warning,
+      ActivityState.pending || ActivityState.refundPending ||
+      ActivityState.partiallySettled ||
+      ActivityState.partiallyRefunded || ActivityState.reserved ||
+      ActivityState.sourceDebited || ActivityState.inTransit ||
+      ActivityState.manualReview => semantic.warning,
       _ => colors.secondaryText,
     };
     return _ExpandableActivityRow(
@@ -805,7 +810,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            if (!isFunding) ...[
+                            if (!isFunding || record.economicStatus != null) ...[
                               Flexible(
                                 child: Text(
                                   _statusLabel(context, record.status),
@@ -1045,6 +1050,9 @@ class _ActivityDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final fields = [...record.fields];
+    if (record.economicStatus != null) {
+      fields.removeWhere((field) => field.label.trim().toLowerCase() == 'status');
+    }
     if (record.category == ActivityCategory.orders &&
         _orderTypeConveysDirection(record, AppLocalizations.of(context))) {
       fields.removeWhere((field) => field.label.trim().toLowerCase() == 'side');
@@ -1068,6 +1076,30 @@ class _ActivityDetails extends StatelessWidget {
         ),
       );
     }
+    for (final field in [
+      if (record.rawStatus case final status?)
+        ActivityField(
+          label: AppLocalizations.of(context).fundsTechnicalStatus,
+          value: status,
+        ),
+      if (record.economicStatus case final status?)
+        ActivityField(
+          label: AppLocalizations.of(context).fundsEconomicStatus,
+          value: status,
+        ),
+      ActivityField(label: 'Activity ID', value: record.id),
+      if (record.reference case final reference?)
+        ActivityField(label: '${reference.type} ID', value: reference.id),
+      if (record.relatedId case final id?)
+        ActivityField(label: 'Related ID', value: id),
+      if (record.failureReason case final reason?)
+        ActivityField(label: 'Reason', value: reason),
+      ActivityField(label: 'Created at', value: record.createdAt.toIso8601String()),
+      if (record.updatedAt case final timestamp?)
+        ActivityField(label: 'Updated at', value: timestamp.toIso8601String()),
+    ]) {
+      if (!_hasField(fields, field.label)) fields.add(field);
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -1077,6 +1109,23 @@ class _ActivityDetails extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: _DetailRow(field: field, colors: colors),
             ),
+          for (final id in record.financialObligationIds)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _DetailRow(
+                field: ActivityField(
+                  label: AppLocalizations.of(context).fundsObligationId,
+                  value: id,
+                ),
+                colors: colors,
+              ),
+            ),
+          if (record.financialObligationIds.isNotEmpty)
+            TextButton(
+              key: ValueKey('activity-obligations-${record.id}'),
+              onPressed: () => context.pushNamed(AppRoutes.fundsObligationsName),
+              child: Text(AppLocalizations.of(context).fundsObligationsTitle),
+            ),
         ],
       ),
     );
@@ -1084,7 +1133,7 @@ class _ActivityDetails extends StatelessWidget {
 }
 
 String _formatActivityAmount(DecimalValue amount, String? asset) {
-  final numeric = TokenAmountFormatter.formatValue(amount);
+  final numeric = amount.value;
   final symbol = asset ?? amount.asset;
   return symbol == null || symbol.trim().isEmpty
       ? numeric
@@ -1097,7 +1146,10 @@ class _DetailRow extends StatelessWidget {
   final AppRwaColors colors;
   @override
   Widget build(BuildContext context) {
-    final isAddress = field.value.startsWith('0x') || field.value.length > 24;
+    final normalizedLabel = field.label.trim().toLowerCase();
+    final isAddress = field.value.startsWith('0x') ||
+        normalizedLabel.endsWith(' id') ||
+        normalizedLabel.endsWith(' hash');
     final l10n = AppLocalizations.of(context);
     final displayValue = _detailValue(field, l10n);
     final label = _detailLabel(field.label, l10n);
@@ -1149,6 +1201,11 @@ String _detailLabel(String label, AppLocalizations l10n) =>
       'order amount' => l10n.activityOrderAmount,
       'filled' => l10n.filled,
       'fee' => l10n.activityFee,
+      'activity id' => l10n.activityId,
+      'related id' => l10n.activityRelatedId,
+      'reason' => l10n.activityReason,
+      'created at' => l10n.activityCreatedAt,
+      'updated at' => l10n.activityUpdatedAt,
       _ => label,
     };
 
@@ -1163,14 +1220,7 @@ String _detailValue(ActivityField field, AppLocalizations l10n) {
       _ => field.value,
     };
   }
-  final isAmount =
-      label == 'amount' || label == 'send amount' || label == 'receive amount';
-  if (!isAmount) return field.value;
-  try {
-    return TokenAmountFormatter.formatValue(DecimalValue(field.value));
-  } on FormatException {
-    return field.value;
-  }
+  return field.value;
 }
 
 class _CompactCopyValue extends StatelessWidget {
@@ -1421,6 +1471,18 @@ String _statusLabel(BuildContext context, ActivityState status) {
   return switch (status) {
     ActivityState.pending => l10n.activityInProgress,
     ActivityState.success => l10n.activityCompleted,
+    ActivityState.refundPending => l10n.activityRefundPending,
+    ActivityState.refunded => l10n.activityRefunded,
+    ActivityState.credited => l10n.activityCredited,
+    ActivityState.reserved => l10n.fundsReserved,
+    ActivityState.sourceDebited => l10n.activitySourceDebited,
+    ActivityState.inTransit => l10n.fundsInTransit,
+    ActivityState.partiallySettled => l10n.transferPartiallySettled,
+    ActivityState.partiallyRefunded => l10n.fundsPartiallyRefunded,
+    ActivityState.compensated => l10n.fundsCompensated,
+    ActivityState.released => l10n.fundsReleased,
+    ActivityState.settled => l10n.activitySettled,
+    ActivityState.manualReview => l10n.activityManualReview,
     ActivityState.failed => l10n.activityFailed,
     ActivityState.cancelled => l10n.activityCancelled,
     ActivityState.unknown => l10n.activityUnknown,

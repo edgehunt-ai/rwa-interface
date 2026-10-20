@@ -203,6 +203,8 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
   @override
   final GasPaymentQuote? gasPayment;
   @override
+  final GasPaymentMode? gasPaymentMode;
+  @override
   final String tokenContract;
   @override
   final String spender;
@@ -226,6 +228,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
       required this.validUntil,
       required this.status,
       this.gasPayment,
+      this.gasPaymentMode,
       required this.tokenContract,
       required this.spender,
       required this.approvalAmount})
@@ -255,6 +258,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
         validUntil == other.validUntil &&
         status == other.status &&
         gasPayment == other.gasPayment &&
+        gasPaymentMode == other.gasPaymentMode &&
         tokenContract == other.tokenContract &&
         spender == other.spender &&
         approvalAmount == other.approvalAmount;
@@ -275,6 +279,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
     _$hash = $jc(_$hash, validUntil.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, gasPayment.hashCode);
+    _$hash = $jc(_$hash, gasPaymentMode.hashCode);
     _$hash = $jc(_$hash, tokenContract.hashCode);
     _$hash = $jc(_$hash, spender.hashCode);
     _$hash = $jc(_$hash, approvalAmount.hashCode);
@@ -297,6 +302,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
           ..add('validUntil', validUntil)
           ..add('status', status)
           ..add('gasPayment', gasPayment)
+          ..add('gasPaymentMode', gasPaymentMode)
           ..add('tokenContract', tokenContract)
           ..add('spender', spender)
           ..add('approvalAmount', approvalAmount))
@@ -359,6 +365,11 @@ class Erc20ApprovalActionBuilder
   set gasPayment(GasPaymentQuoteBuilder? gasPayment) =>
       _$this._gasPayment = gasPayment;
 
+  GasPaymentMode? _gasPaymentMode;
+  GasPaymentMode? get gasPaymentMode => _$this._gasPaymentMode;
+  set gasPaymentMode(GasPaymentMode? gasPaymentMode) =>
+      _$this._gasPaymentMode = gasPaymentMode;
+
   String? _tokenContract;
   String? get tokenContract => _$this._tokenContract;
   set tokenContract(String? tokenContract) =>
@@ -392,6 +403,7 @@ class Erc20ApprovalActionBuilder
       _validUntil = $v.validUntil;
       _status = $v.status;
       _gasPayment = $v.gasPayment?.toBuilder();
+      _gasPaymentMode = $v.gasPaymentMode;
       _tokenContract = $v.tokenContract;
       _spender = $v.spender;
       _approvalAmount = $v.approvalAmount;
@@ -441,6 +453,7 @@ class Erc20ApprovalActionBuilder
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'Erc20ApprovalAction', 'status'),
             gasPayment: _gasPayment?.build(),
+            gasPaymentMode: gasPaymentMode,
             tokenContract: BuiltValueNullFieldError.checkNotNull(
                 tokenContract, r'Erc20ApprovalAction', 'tokenContract'),
             spender: BuiltValueNullFieldError.checkNotNull(

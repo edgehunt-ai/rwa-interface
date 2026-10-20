@@ -227,5 +227,12 @@ final class Hip3WithdrawalRepositoryImpl implements Hip3WithdrawalRepository {
     nonceMappingPayloadHash: value.nonceMapping?.payloadHash,
     payoutChainId: value.payoutChainId,
     payoutAsset: value.payoutAsset,
+    relayRequestId: value.relayRequestId,
+    observedLedgerTime: value.observedLedgerTime,
+    payoutTxHash: value.payoutTxHash,
+    createdAt: value.createdAt.toUtc(),
+    updatedAt: value.updatedAt.toUtc(),
+    submittedAt: value.submittedAt?.toUtc(),
+    confirmedAt: value.confirmedAt?.toUtc(),
   );
 }

@@ -8,11 +8,180 @@ import 'package:nobell/domain/models/funding_catalog_summary.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
 import 'package:nobell/domain/models/funding_session.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
+import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 
+import '../../../../helpers/funding_execution_fixture.dart';
+
 void main() {
+  for (final mode in GasPaymentMode.values) {
+    test('$mode transfer follows server action and fresh execution authority', () async {
+      final funding = _FundingRepository(nextAction: _action(mode));
+      final executions = RecordingFundingExecutions(
+        created: fundingExecution(mode: mode, resourceId: 'transfer-1'),
+      );
+      final signer = RecordingFundingSigner(executions.events);
+      final container = ProviderContainer(overrides: [
+        fundingRepositoryProvider.overrideWithValue(funding),
+        walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+        walletAuthorizationSignerProvider.overrideWithValue(signer),
+      ]);
+      addTearDown(container.dispose);
+      final commands = container.read(fundingTransferCommandsProvider);
+      final authorization = await commands.authorize(funding.plan);
+      await commands.create(plan: funding.plan, authorization: authorization);
+      expect(executions.modes, [mode]);
+      expect(executions.events, ['create', 'get', 'sign', 'submit']);
+      expect(signer.requests.single.sponsor, mode == GasPaymentMode.appSponsored);
+      expect(signer.signers, [fundingSigner]);
+      expect(executions.hashes, isEmpty);
+    });
+  }
+
+  test('missing or unsupported action mode never creates an execution', () async {
+    final funding = _FundingRepository(nextAction: _action(null));
+    final executions = RecordingFundingExecutions(created: fundingExecution(resourceId: 'transfer-1'));
+    final container = ProviderContainer(overrides: [
+      fundingRepositoryProvider.overrideWithValue(funding),
+      walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+      walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+    ]);
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+    final authorization = await commands.authorize(funding.plan);
+    await expectLater(commands.create(plan: funding.plan, authorization: authorization), throwsStateError);
+    expect(executions.events, isEmpty);
+  });
+
+  test('selected mode cannot drift between create and fresh GET', () async {
+    final funding = _FundingRepository(nextAction: _action(GasPaymentMode.userPaidNative));
+    final executions = RecordingFundingExecutions(
+      created: fundingExecution(resourceId: 'transfer-1'),
+      current: fundingExecution(resourceId: 'transfer-1', mode: GasPaymentMode.appSponsored),
+    );
+    final signer = RecordingFundingSigner(executions.events);
+    final container = ProviderContainer(overrides: [
+      fundingRepositoryProvider.overrideWithValue(funding),
+      walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+      walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+      walletAuthorizationSignerProvider.overrideWithValue(signer),
+    ]);
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+    final authorization = await commands.authorize(funding.plan);
+    await expectLater(commands.create(plan: funding.plan, authorization: authorization), throwsStateError);
+    expect(executions.modes, [GasPaymentMode.userPaidNative]);
+    expect(signer.requests, isEmpty);
+  });
+
+  for (final status in [WalletActionExecutionState.submitting,
+      WalletActionExecutionState.ambiguous, WalletActionExecutionState.manualReview]) {
+    test('transfer observes fresh $status instead of signing stale create', () async {
+      final funding = _FundingRepository(nextAction: _action(GasPaymentMode.userPaidNative));
+      final executions = RecordingFundingExecutions(
+        created: fundingExecution(resourceId: 'transfer-1'),
+        current: fundingExecution(resourceId: 'transfer-1', status: status, includeAuthorization: false),
+      );
+      final signer = RecordingFundingSigner(executions.events);
+      final container = ProviderContainer(overrides: [
+        fundingRepositoryProvider.overrideWithValue(funding),
+        walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+        walletAuthorizationSignerProvider.overrideWithValue(signer),
+      ]);
+      addTearDown(container.dispose);
+      final commands = container.read(fundingTransferCommandsProvider);
+      await commands.create(plan: funding.plan, authorization: await commands.authorize(funding.plan));
+      expect(executions.events, ['create', 'get']);
+      expect(signer.requests, isEmpty);
+    });
+  }
+
+  test('transfer lost authorization response only observes on retry', () async {
+    final funding = _FundingRepository(nextAction: _action(GasPaymentMode.userPaidNative));
+    final executions = RecordingFundingExecutions(
+      created: fundingExecution(resourceId: 'transfer-1'),
+      submitFailure: const NetworkFailure(),
+    );
+    final signer = RecordingFundingSigner(executions.events);
+    final container = ProviderContainer(overrides: [
+      fundingRepositoryProvider.overrideWithValue(funding),
+      walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+      walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+      walletAuthorizationSignerProvider.overrideWithValue(signer),
+    ]);
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+    final authorization = await commands.authorize(funding.plan);
+    await expectLater(commands.create(plan: funding.plan, authorization: authorization),
+        throwsA(isA<NetworkFailure>()));
+    await commands.create(plan: funding.plan, authorization: authorization);
+    expect(executions.events, ['create', 'get', 'sign', 'submit', 'get']);
+    expect(signer.requests, hasLength(1));
+    expect(executions.signatures, hasLength(1));
+  });
+
+  for (final mismatch in ['resource', 'mode', 'raw call', 'nonce']) {
+    test('transfer rejects $mismatch drift before signing', () async {
+      final funding = _FundingRepository(nextAction: _action(GasPaymentMode.userPaidNative));
+      final executions = RecordingFundingExecutions(created: fundingExecution(
+        resourceId: mismatch == 'resource' ? 'other-transfer' : 'transfer-1',
+        mode: mismatch == 'mode' ? GasPaymentMode.appSponsored : GasPaymentMode.userPaidNative,
+        rawTo: mismatch == 'raw call' ? '0x9999999999999999999999999999999999999999' : null,
+        authorizedNonce: mismatch == 'nonce' ? '0xb' : '0xa',
+      ));
+      final signer = RecordingFundingSigner(executions.events);
+      final container = ProviderContainer(overrides: [
+        fundingRepositoryProvider.overrideWithValue(funding),
+        walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+        walletActionExecutionRepositoryProvider.overrideWithValue(executions),
+        walletAuthorizationSignerProvider.overrideWithValue(signer),
+      ]);
+      addTearDown(container.dispose);
+      final commands = container.read(fundingTransferCommandsProvider);
+      final authorization = await commands.authorize(funding.plan);
+      await expectLater(commands.create(plan: funding.plan, authorization: authorization), throwsStateError);
+      expect(signer.requests, isEmpty);
+      expect(executions.signatures, isEmpty);
+    });
+  }
+
+  for (final status in [FundingTransferState.failed, FundingTransferState.manualReview,
+      FundingTransferState.refundPending, FundingTransferState.refunded]) {
+    test('$status never executes a stale wallet action', () async {
+      final funding = _FundingRepository(transferStatus: status, nextActionId: 'stale-action');
+      final container = ProviderContainer(overrides: [
+        fundingRepositoryProvider.overrideWithValue(funding),
+        walletsRepositoryProvider.overrideWithValue(_WalletsRepository()),
+        walletActionExecutionRepositoryProvider.overrideWithValue(_UnexpectedTransferExecution()),
+      ]);
+      addTearDown(container.dispose);
+      final commands = container.read(fundingTransferCommandsProvider);
+      final authorization = await commands.authorize(funding.plan);
+      final transfer = await commands.create(plan: funding.plan, authorization: authorization);
+      expect(transfer.status, status);
+      expect(transfer.isCompleted, isFalse);
+    });
+  }
+
+  test('manual review quote cannot create or update an executable plan', () async {
+    final funding = _FundingRepository(createdStatus: 'manualReview');
+    final container = ProviderContainer(overrides: [
+      fundingRepositoryProvider.overrideWithValue(funding),
+    ]);
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+    final quote = await commands.quoteTransfer(destination: 'hip3_margin',
+        amount: '10', allocations: const {'position-1': '10'});
+    expect(quote.requiresReview, isTrue);
+    expect(funding.selectionVersions, isEmpty);
+    await expectLater(commands.planForSession(quote), throwsStateError);
+    expect(funding.sessionPlanId, isNull);
+  });
   test(
     'transfer options remain usable when the legacy catalog fails',
     () async {
@@ -314,6 +483,16 @@ void main() {
   });
 }
 
+FundingTransferAction _action(GasPaymentMode? mode) => FundingTransferAction(
+  actionId: 'action-1',
+  status: 'ready',
+  mode: mode,
+  chainId: 56,
+  from: fundingSigner,
+  transaction: const FrozenTransaction(to: fundingTarget, data: fundingData, value: '0x0'),
+  validUntil: DateTime.utc(2030),
+);
+
 final class _CatalogFailingRepository implements FundingRepository {
   int accountCalls = 0;
   int catalogCalls = 0;
@@ -380,6 +559,9 @@ final class _FundingRepository implements FundingRepository {
     this.refreshedStatus = 'readyToConfirm',
     this.refreshedCanConfirmTransfer = true,
     this.refreshedAllocations = const {},
+    this.transferStatus = FundingTransferState.awaitingWallet,
+    this.nextActionId,
+    this.nextAction,
   });
 
   String? createdPlanFor;
@@ -397,6 +579,9 @@ final class _FundingRepository implements FundingRepository {
   final String refreshedStatus;
   final bool refreshedCanConfirmTransfer;
   final Map<String, String> refreshedAllocations;
+  final FundingTransferState transferStatus;
+  final String? nextActionId;
+  final FundingTransferAction? nextAction;
   int transferSessionCalls = 0;
   int sessionRefreshes = 0;
   bool failSessionRefresh = false;
@@ -520,7 +705,9 @@ final class _FundingRepository implements FundingRepository {
       transferId: 'transfer-1',
       planId: 'plan-1',
       amount: DecimalValue('12', asset: 'USDT', unit: 'token'),
-      status: FundingTransferState.awaitingWallet,
+      status: transferStatus,
+      nextActionId: nextAction?.actionId ?? nextActionId,
+      nextAction: nextAction,
     );
   }
 
@@ -545,4 +732,9 @@ final class _WalletsRepository implements WalletsRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _UnexpectedTransferExecution implements WalletActionExecutionRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('Unexpected wallet execution');
 }

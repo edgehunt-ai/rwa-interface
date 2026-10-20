@@ -8,6 +8,7 @@ import 'package:rwa_api_client/src/model/activity_record_reference.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/activity_record_explorer.dart';
+import 'package:rwa_api_client/src/model/financial_economic_status.dart';
 import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
@@ -21,6 +22,8 @@ part 'activity_record.g.dart';
 /// ActivityRecord
 ///
 /// Properties:
+/// * [economicStatus] - Authoritative economic projection for financial records only; omission means unavailable, not success. Existing status remains unchanged and cannot prove a credit or refund.
+/// * [financialObligationIds] - Stable obligation IDs available through /v1/funding/obligations; absence is not proof that no unresolved funds exist. Activity status remains a technical/history label.
 /// * [businessType] - HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
 /// * [id] 
 /// * [category] 
@@ -46,6 +49,15 @@ part 'activity_record.g.dart';
 /// * [asset] - Unit for amount, for example USDC or NVDAB.
 @BuiltValue()
 abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBuilder> {
+  /// Authoritative economic projection for financial records only; omission means unavailable, not success. Existing status remains unchanged and cannot prove a credit or refund.
+  @BuiltValueField(wireName: r'economic_status')
+  FinancialEconomicStatus? get economicStatus;
+  // enum economicStatusEnum {  reserved,  source_debited,  in_transit,  refund_pending,  partially_settled,  partially_refunded,  credited,  refunded,  compensated,  released,  settled,  unknown,  };
+
+  /// Stable obligation IDs available through /v1/funding/obligations; absence is not proof that no unresolved funds exist. Activity status remains a technical/history label.
+  @BuiltValueField(wireName: r'financial_obligation_ids')
+  BuiltList<String>? get financialObligationIds;
+
   /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
   @BuiltValueField(wireName: r'business_type')
   ActivityRecordBusinessTypeEnum? get businessType;
@@ -155,6 +167,20 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
     ActivityRecord object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.economicStatus != null) {
+      yield r'economic_status';
+      yield serializers.serialize(
+        object.economicStatus,
+        specifiedType: const FullType(FinancialEconomicStatus),
+      );
+    }
+    if (object.financialObligationIds != null) {
+      yield r'financial_obligation_ids';
+      yield serializers.serialize(
+        object.financialObligationIds,
+        specifiedType: const FullType(BuiltList, [FullType(String)]),
+      );
+    }
     if (object.businessType != null) {
       yield r'business_type';
       yield serializers.serialize(
@@ -313,6 +339,22 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'economic_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(FinancialEconomicStatus),
+          ) as FinancialEconomicStatus?;
+          if (valueDes == null) continue;
+          result.economicStatus = valueDes;
+          break;
+        case r'financial_obligation_ids':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>?;
+          if (valueDes == null) continue;
+          result.financialObligationIds.replace(valueDes);
+          break;
         case r'business_type':
           final valueDes = serializers.deserialize(
             value,

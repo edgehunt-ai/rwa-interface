@@ -2702,4 +2702,243 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stopLossShortLabel => '止损';
+
+  @override
+  String get activityRefundPending => '退款处理中';
+
+  @override
+  String get activityRefunded => '已退款';
+
+  @override
+  String get activityCredited => '已入账';
+
+  @override
+  String get activityPartial => '部分完成';
+
+  @override
+  String get activitySettled => '已结算';
+
+  @override
+  String get activityManualReview => '人工审核';
+
+  @override
+  String get orderAwaitingConfirmation => '等待确认';
+
+  @override
+  String get orderAmbiguous => '结果待确认';
+
+  @override
+  String get orderPartiallyFilled => '部分成交';
+
+  @override
+  String get fundsObligationsTitle => '资金与占用';
+
+  @override
+  String get fundsObligationsDescription =>
+      '查看预留、在途和未决资金，包括没有交易哈希的记录。请以服务器报告的未决金额为准：退款可能已计入源端回执的净扣款，各项金额可能重叠，请勿再次减去退款来计算剩余义务。';
+
+  @override
+  String get fundsObligationsEmpty => '未报告未决资金';
+
+  @override
+  String get fundsObligationsUnavailable => '资金与占用加载失败，这不代表资金已经结清。';
+
+  @override
+  String get fundsShowResolved => '包含已结算和已退款';
+
+  @override
+  String get fundsLoadMore => '加载更多';
+
+  @override
+  String get fundsUnknownAmount => '金额未知';
+
+  @override
+  String get fundsTechnicalStatus => '技术状态';
+
+  @override
+  String get fundsEconomicStatus => '资金状态';
+
+  @override
+  String get fundsEvidence => '证据';
+
+  @override
+  String get fundsResponsibility => '恢复与支持';
+
+  @override
+  String get fundsAllowedActions => '允许的下一步操作';
+
+  @override
+  String get fundsNoUserAction => '当前没有已授权的用户资金操作，请保留参考编号以便联系客服。';
+
+  @override
+  String get fundsRefresh => '刷新证据';
+
+  @override
+  String get fundsCopyReference => '复制支持参考编号';
+
+  @override
+  String get fundsCreatedAt => '创建时间';
+
+  @override
+  String get fundsUpdatedAt => '更新时间';
+
+  @override
+  String get fundsLastObservedAt => '最近核查';
+
+  @override
+  String get fundsNextObservationAt => '下次核查';
+
+  @override
+  String get fundsRawAmount => '原始整数金额';
+
+  @override
+  String get fundsReserved => '预留';
+
+  @override
+  String get fundsSpent => '源端净扣款';
+
+  @override
+  String get fundsInTransit => '在途';
+
+  @override
+  String get fundsReceived => '已收到';
+
+  @override
+  String get fundsRefundPending => '待退款';
+
+  @override
+  String get fundsRefunded => '已退款';
+
+  @override
+  String get fundsFees => '实际费用';
+
+  @override
+  String get fundsReleased => '已解除预留';
+
+  @override
+  String get fundsUnresolved => '未决';
+
+  @override
+  String get fundsTokenDecimals => '代币精度';
+
+  @override
+  String get transferRefundPending => '待退款';
+
+  @override
+  String get transferRefunded => '已退款';
+
+  @override
+  String get transferPartiallySettled => '部分结算';
+
+  @override
+  String get transferCredited => '已入账至目标账户';
+
+  @override
+  String get transferSourceConfirmed => '源端交易已确认';
+
+  @override
+  String get transferSettlementPending => '待结算';
+
+  @override
+  String get transferUnresolved => '转账未决';
+
+  @override
+  String get transferCheckStatus => '查看状态';
+
+  @override
+  String get withdrawalSubmitted => '提现已提交，等待收款端确认。';
+
+  @override
+  String get withdrawalUnresolved => '提现结果未决，请先查看进展，再创建新的请求。';
+
+  @override
+  String get withdrawalFailed => '提现失败，请先查看详情再重试。';
+
+  @override
+  String get withdrawalRefundPending => '待退款';
+
+  @override
+  String get withdrawalRefunded => '已退款';
+
+  @override
+  String get withdrawalCredited => '已入账';
+
+  @override
+  String get withdrawalPartial => '部分完成';
+
+  @override
+  String get withdrawalRecovering => '恢复处理中';
+
+  @override
+  String get withdrawalNoncanonical => '交易已不在规范链上，需要复核。';
+
+  @override
+  String get withdrawalIdLabel => '提现编号';
+
+  @override
+  String get withdrawalTransactionLabel => '交易';
+
+  @override
+  String get withdrawalRefundAmountLabel => '退款金额';
+
+  @override
+  String get activityId => '活动 ID';
+
+  @override
+  String get activityRelatedId => '关联 ID';
+
+  @override
+  String get activityReason => '原因';
+
+  @override
+  String get activityCreatedAt => '创建时间';
+
+  @override
+  String get activityUpdatedAt => '更新时间';
+
+  @override
+  String get fundsCompensated => '已赔付';
+
+  @override
+  String get fundsPartiallyRefunded => '部分退款';
+
+  @override
+  String get fundsDetailsShown => '资源详情与证据已显示在上方';
+
+  @override
+  String get fundsObservationUnknown => '未提供，请联系负责的支持团队';
+
+  @override
+  String get fundsAge => '已等待天数';
+
+  @override
+  String get fundsUnknownAsset => '资产身份未知';
+
+  @override
+  String get fundsObligationId => '资金义务 ID';
+
+  @override
+  String get activitySourceDebited => '源端净扣款';
+
+  @override
+  String get nativeRecoveryTitle => '原生交易执行证据与取消';
+
+  @override
+  String get nativeRecoveryNotice =>
+      '仅后端投递交易，原生币 Gas 仍由您支付。中止或取消请求不代表退款或业务成功；只有服务端核验的精确证据允许解除资金占用。';
+
+  @override
+  String get nativeRecoveryPrepare => '中止或准备相同 nonce 的取消交易';
+
+  @override
+  String get nativeRecoveryAuthorize => '授权取消并支付原生币 Gas';
+
+  @override
+  String get nativeRecoveryOriginal => '原始执行证据';
+
+  @override
+  String get nativeRecoveryCancellation => '独立取消证据';
+
+  @override
+  String get nativeRecoveryUnavailable => '恢复请求暂不可用。请刷新权威证据，不要另外发送交易。';
 }

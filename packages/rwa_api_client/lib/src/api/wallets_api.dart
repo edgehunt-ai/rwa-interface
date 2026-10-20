@@ -8,9 +8,11 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
+import 'package:built_value/json_object.dart';
 import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
+import 'package:rwa_api_client/src/model/wallet_action_authorization_submission_request.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization.dart';
@@ -301,8 +303,219 @@ class WalletsApi {
     );
   }
 
+  /// Abort undispatched native execution or prepare exact-nonce cancellation
+  /// Explicit user command. For an undispatched server-owned native request, atomically revokes delivery authority and returns native_delivery_state&#x3D;voided. If delivery may have occurred, prepares a zero-value empty-data cancellation to a server-admitted code-free target at the exact original owner/chain/nonce. Never releases holds from timeout, request acceptance or a cancellation hash alone. Historical user_wallet cannot acquire cancellation authority. The response retains the original execution and exposes separate native_cancellation facts. 
+  ///
+  /// Parameters:
+  /// * [executionId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [body] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WalletActionExecution] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WalletActionExecution>> prepareWalletActionCancellation({ 
+    required String executionId,
+    required String idempotencyKey,
+    required JsonObject body,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/wallet-action-executions/{execution_id}/cancellation'.replaceAll('{' r'execution_id' '}', encodeQueryParameter(_serializers, executionId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = body;
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WalletActionExecution? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WalletActionExecution),
+      ) as WalletActionExecution;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WalletActionExecution>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Authorize the server-owned exact-nonce native cancellation
+  /// Signs only native_cancellation.privy_authorization_payload, never the original call. The backend is the sole publisher; gas remains user-paid. Lost responses are recovered by GET, not a new signature or alternate send. Original transaction and cancellation evidence remain separate; only exact canonical finality establishes nonce consumption and a reorg retracts it. 
+  ///
+  /// Parameters:
+  /// * [executionId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [walletActionAuthorizationSubmissionRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WalletActionExecution] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WalletActionExecution>> submitWalletActionCancellation({ 
+    required String executionId,
+    required String idempotencyKey,
+    required WalletActionAuthorizationSubmissionRequest walletActionAuthorizationSubmissionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/wallet-action-executions/{execution_id}/cancellation/submissions'.replaceAll('{' r'execution_id' '}', encodeQueryParameter(_serializers, executionId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(WalletActionAuthorizationSubmissionRequest);
+      _bodyData = _serializers.serialize(walletActionAuthorizationSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WalletActionExecution? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WalletActionExecution),
+      ) as WalletActionExecution;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WalletActionExecution>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 提交钱包动作执行授权或交易定位符
-  /// &#x60;app_sponsored&#x60; 执行只接受 Privy SDK 针对服务端返回的结构化 authorization payload 生成的授权签名；&#x60;user_paid_native&#x60; 执行只接受 &#x60;tx_hash&#x60;，且该值仅是不可信定位符， 服务端仍须按 frozen transaction 独立核验 receipt。  app_sponsored 提交必须先以 compare-and-set 持久化 &#x60;submitting&#x60;，再在本请求内同步 relay 到 Privy，且绝不持久化、记录或回显授权签名。Privy accepted 后持久化 transaction id 和/或 user operation hash；Provider polling 只对已有该标识的执行进行。 bStocks 新执行使用 user_paid_native / user_wallet，用户自行广播并支付 BNB； 无需先尝试代付，服务端根据提交的 tx_hash 独立核验交易、receipt 和 canonicality。 已有 app_sponsored bStocks 执行仍通过本端点提交其授权签名并继续跟踪。  Privy 已接受请求或 timeout/5xx/崩溃导致状态不明后，执行模式与 payload 均被冻结： 不得切换模式、重新签名或自动重播。只有确定发生在广播前的拒绝才可进入 user-paid fallback；转账与自托管提现仍须满足原有回退运行时门禁。该限制不是 bStocks 主路径 user-paid 执行的前置条件；状态不明必须进入 &#x60;ambiguous&#x60; 或 &#x60;manual_review&#x60;。 
+  /// Both app_sponsored/privy and user_paid_native/privy_native accept only the Privy SDK authorization signature over the exact server-owned request. Native gas remains user-paid: sponsor&#x3D;false, with nonce and delivery identity persisted before dispatch. A client never broadcasts or replaces a transaction. Historical user_wallet accepts tx_hash as evidence only. The server durably enters submitting before relay and never persists/logs/echoes signatures. Provider acceptance records transaction identity for observation, not economic success.  Privy 已接受请求或 timeout/5xx/崩溃导致状态不明后，执行模式与 payload 均被冻结： 不得切换模式、重新签名或自动重播。已有代付执行只有确定广播前拒绝后才可显式选择 user-paid fallback；准入的原生主路径不要求先尝试代付。状态不明必须进入 ambiguous 或 manual_review，不能改走客户端广播。 
   ///
   /// Parameters:
   /// * [executionId] 

@@ -9,10 +9,15 @@ import '../models/funding_session.dart';
 import '../models/self_custodial_withdrawal.dart';
 import '../models/funding_catalog_summary.dart';
 import '../models/order_intent.dart';
+import '../models/financial_obligation.dart';
 
 abstract interface class FundingRepository {
   Future<DepositDirectory> getDepositDirectory();
   Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount();
+  Future<DomainPage<FinancialObligation>> listFinancialObligations({
+    String? cursor,
+    bool includeResolved = false,
+  });
   Future<FundingSessionSummary> getFundingSession(String id);
   Future<FundingSessionSummary> createFundingSession({
     required OrderIntent intent,

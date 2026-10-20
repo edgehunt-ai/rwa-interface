@@ -830,7 +830,7 @@ class OrdersApi {
   }
 
   /// 创建订单钱包动作执行
-  /// 服务端按独立 order_id 与 action_id 校验账户和父子归属，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 不通过本端点。 动作必须仍 awaiting_signature、未过期且未被替代；未知广播禁止另起执行。 bStocks approval、IOC 市价交易、GTC 下单与取消的新执行按请求 mode 二选一： app_sponsored 使用 Privy 代付，由平台承担 Gas，仍受 TEE、链开关、预算、限额及熔断约束； user_paid_native 使用用户 BSC 钱包的原生 BNB，无需先尝试代付或启用回退门禁。 已有执行处于 pending 或未知广播结果时禁止改选另一模式另起交付； 明确广播前拒绝的代付执行可被服务端匹配的 user-paid fallback 关联。 app_sponsored 提交 privy_authorization_signature，由服务端 relay； user_paid_native 按 frozen_transaction 自行签名广播，在 execution submissions 端点仅提交 tx_hash。 tx_hash 仅是不可信定位符，服务端独立核验交易及 receipt，不以客户端提交视为成功。 
+  /// 服务端按独立 order_id 与 action_id 校验账户和父子归属，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 不通过本端点。 动作必须仍 awaiting_signature、未过期且未被替代；未知广播禁止另起执行。 bStocks approval、IOC 市价交易、GTC 下单与取消的新执行按请求 mode 二选一： app_sponsored 使用 Privy 代付，由平台承担 Gas，仍受 TEE、链开关、预算、限额及熔断约束； user_paid_native 使用用户 BSC 钱包的原生 BNB，无需先尝试代付或启用回退门禁。 已有执行处于 pending 或未知广播结果时禁止改选另一模式另起交付； 明确广播前拒绝的代付执行可被服务端匹配的 user-paid fallback 关联。 两种模式均签署 privy_authorization_signature 并由服务端唯一 relay；user_paid_native 使用 privy_native、sponsor&#x3D;false 和服务端预留 nonce，Gas 仍由用户承担。 历史 user_wallet 仅允许提交已有 tx_hash 作为只读核验证据，不允许新的客户端广播。 
   ///
   /// Parameters:
   /// * [orderId] 

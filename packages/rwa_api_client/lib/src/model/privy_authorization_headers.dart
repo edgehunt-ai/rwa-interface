@@ -13,7 +13,7 @@ part 'privy_authorization_headers.g.dart';
 /// Properties:
 /// * [privyAppId] 
 /// * [privyIdempotencyKey] 
-/// * [privyRequestExpiry] - Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`. 
+/// * [privyRequestExpiry] - Unix timestamp in milliseconds, no later than 60 seconds after issuance. Original-call authorization also cannot exceed business valid_until. Exact-nonce cancellation is a separate recovery request with its own bounded expiry, even after the original expires. 
 @BuiltValue()
 abstract class PrivyAuthorizationHeaders implements Built<PrivyAuthorizationHeaders, PrivyAuthorizationHeadersBuilder> {
   @BuiltValueField(wireName: r'privy-app-id')
@@ -22,7 +22,7 @@ abstract class PrivyAuthorizationHeaders implements Built<PrivyAuthorizationHead
   @BuiltValueField(wireName: r'privy-idempotency-key')
   String get privyIdempotencyKey;
 
-  /// Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`. 
+  /// Unix timestamp in milliseconds, no later than 60 seconds after issuance. Original-call authorization also cannot exceed business valid_until. Exact-nonce cancellation is a separate recovery request with its own bounded expiry, even after the original expires. 
   @BuiltValueField(wireName: r'privy-request-expiry')
   String get privyRequestExpiry;
 

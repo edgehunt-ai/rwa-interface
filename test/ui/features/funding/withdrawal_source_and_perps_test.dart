@@ -306,21 +306,16 @@ void main() {
     repository.resourceStatus = 'completed';
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
-    expect(find.text('Withdrawal successful'), findsOneWidget);
     expect(
-      find.byKey(const Key('perps-withdrawal-amount-field')),
-      findsOneWidget,
+      tester.widget<Text>(find.byKey(const Key('perps-withdrawal-status'))).data,
+      'Withdrawal successful',
     );
-    expect(
-      tester
-          .widget<TextField>(
-            find.byKey(const Key('perps-withdrawal-amount-field')),
-          )
-          .controller
-          ?.text,
-      isEmpty,
-    );
-    expect(find.text('Review withdrawal'), findsOneWidget);
+    expect(find.text('Withdrawal successful'), findsNWidgets(2));
+    expect(find.byKey(const Key('perps-withdrawal-amount-field')), findsNothing);
+    expect(find.byWidgetPredicate((widget) =>
+        widget is SelectableText && widget.data == '51.4 USDC'), findsOneWidget);
+    expect(find.textContaining('Withdrawal ID:'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Review withdrawal'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -561,7 +556,7 @@ void main() {
       expect(repository.createdAmounts, ['1', '1']);
       expect(find.text('Withdrawal successful'), findsNothing);
       expect(
-        find.text('Transfer submitted. Waiting for funds to arrive.'),
+        find.text('Withdrawal submitted. Waiting for destination confirmation.'),
         findsOneWidget,
       );
       expect(tester.widget<FilledButton>(submitButton).onPressed, isNull);
@@ -579,7 +574,7 @@ void main() {
       await tester.tap(find.byKey(const Key('perps-withdrawal-refresh')));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Withdrawal successful'), findsOneWidget);
+      expect(find.text('Withdrawal successful'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
   );
@@ -643,6 +638,59 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  for (final (status, label, polling) in [
+    ('submitted', 'Withdrawal submitted. Waiting for destination confirmation.', true),
+    ('payout', 'Withdrawal submitted. Waiting for destination confirmation.', true),
+    ('manual_review', 'Needs manual review.', false),
+    ('partial', 'Partially completed', false),
+    ('refund_pending', 'Refund pending', true),
+    ('refunded', 'Refunded', false),
+    ('credited', 'Credited', false),
+    ('recovering', 'Recovery in progress', true),
+    ('unresolved', 'Withdrawal unresolved.', false),
+    ('failed', 'Withdrawal failed.', false),
+  ]) {
+    testWidgets('Perps $status preserves the request without payout success', (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      final repository = _TestHip3WithdrawalRepository()..resourceStatus = status;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          hip3WithdrawalRepositoryProvider.overrideWithValue(repository),
+          hip3TransferBalanceProvider.overrideWith((_) async => '100'),
+          tradingAccountsProvider.overrideWith((_) async => _perpsAccounts),
+          walletsProvider(null).overrideWith((_) async => _currentWallets),
+        ],
+        child: buildTestApp(const PerpsWithdrawalScreen()),
+      ));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('perps-withdrawal-amount-field')), '10');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      final review = find.byKey(const Key('perps-withdrawal-review-button'));
+      await tester.ensureVisible(review);
+      await tester.tap(review);
+      await tester.pumpAndSettle();
+      final submit = find.byKey(const Key('perps-withdrawal-submit-button'));
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pump();
+      await tester.pump();
+      final statusText = find.byKey(const Key('perps-withdrawal-status'));
+      await tester.ensureVisible(statusText);
+      expect(tester.widget<Text>(statusText).data, startsWith(label));
+      expect(find.text('Withdrawal successful'), findsNothing);
+      expect(find.text('Withdrawal ID: withdrawal-1'), findsOneWidget);
+      await tester.ensureVisible(submit);
+      expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+      final calls = repository.getCalls;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump();
+      expect(repository.getCalls, polling ? greaterThan(calls) : calls);
+      expect(repository.createdAmounts, ['10']);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 }
 
 Future<void> _pumpSourceEntry(WidgetTester tester, GoRouter router) async {

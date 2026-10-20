@@ -2860,4 +2860,254 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopLossShortLabel => 'SL';
+
+  @override
+  String get activityRefundPending => 'Refund pending';
+
+  @override
+  String get activityRefunded => 'Refunded';
+
+  @override
+  String get activityCredited => 'Credited';
+
+  @override
+  String get activityPartial => 'Partial';
+
+  @override
+  String get activitySettled => 'Settled';
+
+  @override
+  String get activityManualReview => 'Manual review';
+
+  @override
+  String get orderAwaitingConfirmation => 'Awaiting confirmation';
+
+  @override
+  String get orderAmbiguous => 'Outcome uncertain';
+
+  @override
+  String get orderPartiallyFilled => 'Partially filled';
+
+  @override
+  String get fundsObligationsTitle => 'Funds and holds';
+
+  @override
+  String get fundsObligationsDescription =>
+      'Reserved, in-transit and unresolved funds, including records without a transaction hash. Use the server-reported unresolved amount: refunds already included in the net debit on the source receipt may overlap. Do not subtract refunds again to recompute the remainder.';
+
+  @override
+  String get fundsObligationsEmpty => 'No unresolved funds reported';
+
+  @override
+  String get fundsObligationsUnavailable =>
+      'Funds and holds could not be loaded. This does not mean your funds are settled.';
+
+  @override
+  String get fundsShowResolved => 'Include settled and refunded';
+
+  @override
+  String get fundsLoadMore => 'Load more';
+
+  @override
+  String get fundsUnknownAmount => 'Unknown amount';
+
+  @override
+  String get fundsTechnicalStatus => 'Technical status';
+
+  @override
+  String get fundsEconomicStatus => 'Economic status';
+
+  @override
+  String get fundsEvidence => 'Evidence';
+
+  @override
+  String get fundsResponsibility => 'Recovery and support';
+
+  @override
+  String get fundsAllowedActions => 'Allowed next actions';
+
+  @override
+  String get fundsNoUserAction =>
+      'No user financial action is currently authorized. Keep the reference for support.';
+
+  @override
+  String get fundsRefresh => 'Refresh evidence';
+
+  @override
+  String get fundsCopyReference => 'Copy support reference';
+
+  @override
+  String get fundsCreatedAt => 'Created';
+
+  @override
+  String get fundsUpdatedAt => 'Updated';
+
+  @override
+  String get fundsLastObservedAt => 'Last observed';
+
+  @override
+  String get fundsNextObservationAt => 'Next observation';
+
+  @override
+  String get fundsRawAmount => 'Raw amount';
+
+  @override
+  String get fundsReserved => 'Reserved';
+
+  @override
+  String get fundsSpent => 'Net source debit';
+
+  @override
+  String get fundsInTransit => 'In transit';
+
+  @override
+  String get fundsReceived => 'Received';
+
+  @override
+  String get fundsRefundPending => 'Refund pending';
+
+  @override
+  String get fundsRefunded => 'Refunded';
+
+  @override
+  String get fundsFees => 'Actual fees';
+
+  @override
+  String get fundsReleased => 'Released reservation';
+
+  @override
+  String get fundsUnresolved => 'Unresolved';
+
+  @override
+  String get fundsTokenDecimals => 'Token decimals';
+
+  @override
+  String get transferRefundPending => 'Refund pending';
+
+  @override
+  String get transferRefunded => 'Refunded';
+
+  @override
+  String get transferPartiallySettled => 'Partially settled';
+
+  @override
+  String get transferCredited => 'Credited to destination';
+
+  @override
+  String get transferSourceConfirmed => 'Source transaction confirmed';
+
+  @override
+  String get transferSettlementPending => 'Settlement pending';
+
+  @override
+  String get transferUnresolved => 'Transfer unresolved';
+
+  @override
+  String get transferCheckStatus => 'Check status';
+
+  @override
+  String get withdrawalSubmitted =>
+      'Withdrawal submitted. Waiting for destination confirmation.';
+
+  @override
+  String get withdrawalUnresolved =>
+      'Withdrawal unresolved. Check progress before creating another request.';
+
+  @override
+  String get withdrawalFailed =>
+      'Withdrawal failed. Review the details before trying again.';
+
+  @override
+  String get withdrawalRefundPending => 'Refund pending';
+
+  @override
+  String get withdrawalRefunded => 'Refunded';
+
+  @override
+  String get withdrawalCredited => 'Credited';
+
+  @override
+  String get withdrawalPartial => 'Partially completed';
+
+  @override
+  String get withdrawalRecovering => 'Recovery in progress';
+
+  @override
+  String get withdrawalNoncanonical =>
+      'Transaction is no longer canonical. Needs review.';
+
+  @override
+  String get withdrawalIdLabel => 'Withdrawal ID';
+
+  @override
+  String get withdrawalTransactionLabel => 'Transaction';
+
+  @override
+  String get withdrawalRefundAmountLabel => 'Refund amount';
+
+  @override
+  String get activityId => 'Activity ID';
+
+  @override
+  String get activityRelatedId => 'Related ID';
+
+  @override
+  String get activityReason => 'Reason';
+
+  @override
+  String get activityCreatedAt => 'Created at';
+
+  @override
+  String get activityUpdatedAt => 'Updated at';
+
+  @override
+  String get fundsCompensated => 'Compensated';
+
+  @override
+  String get fundsPartiallyRefunded => 'Partially refunded';
+
+  @override
+  String get fundsDetailsShown => 'Resource details and evidence shown above';
+
+  @override
+  String get fundsObservationUnknown =>
+      'Not supplied; consult the responsible support team';
+
+  @override
+  String get fundsAge => 'Age (days)';
+
+  @override
+  String get fundsUnknownAsset => 'Unknown asset';
+
+  @override
+  String get fundsObligationId => 'Obligation ID';
+
+  @override
+  String get activitySourceDebited => 'Net source debit';
+
+  @override
+  String get nativeRecoveryTitle =>
+      'Native execution evidence and cancellation';
+
+  @override
+  String get nativeRecoveryNotice =>
+      'The backend is the only publisher. You still pay native gas. An abort or cancellation request is not a refund or business success; funds remain unresolved until exact server-verified evidence permits release.';
+
+  @override
+  String get nativeRecoveryPrepare =>
+      'Abort or prepare exact-nonce cancellation';
+
+  @override
+  String get nativeRecoveryAuthorize =>
+      'Authorize cancellation and pay native gas';
+
+  @override
+  String get nativeRecoveryOriginal => 'Original execution evidence';
+
+  @override
+  String get nativeRecoveryCancellation => 'Separate cancellation evidence';
+
+  @override
+  String get nativeRecoveryUnavailable =>
+      'Recovery request unavailable. Refresh authoritative evidence; do not send another transaction.';
 }

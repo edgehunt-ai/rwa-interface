@@ -17,6 +17,8 @@ import 'package:rwa_api_client/src/model/deposit.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction.dart';
 import 'package:rwa_api_client/src/model/deposit_observation_page.dart';
 import 'package:rwa_api_client/src/model/deposit_page.dart';
+import 'package:rwa_api_client/src/model/financial_obligation.dart';
+import 'package:rwa_api_client/src/model/financial_obligation_page.dart';
 import 'package:rwa_api_client/src/model/funding_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_plan_request.dart';
@@ -45,6 +47,7 @@ import 'package:rwa_api_client/src/model/withdrawal_quote.dart';
 import 'package:rwa_api_client/src/model/withdrawal_quote_request.dart';
 
 class FundingApi {
+
   final Dio _dio;
 
   final Serializers _serializers;
@@ -52,11 +55,11 @@ class FundingApi {
   const FundingApi(this._dio, this._serializers);
 
   /// 获取旧版入金指引响应（兼容窗口）
-  /// Deprecated read adapter for clients pinned to v1.0.0. It must not create a Deposit Intent, Operation, Outbox, Activity or durable deposit row. The returned &#x60;deposit_id&#x60; is an ephemeral instruction handle only; it does not appear in history and is not retrievable until an actual independently verified on-chain deposit exists. New clients use &#x60;GET /v1/deposit-instructions&#x60;.
+  /// Deprecated read adapter for clients pinned to v1.0.0. It must not create a Deposit Intent, Operation, Outbox, Activity or durable deposit row. The returned &#x60;deposit_id&#x60; is an ephemeral instruction handle only; it does not appear in history and is not retrievable until an actual independently verified on-chain deposit exists. New clients use &#x60;GET /v1/deposit-instructions&#x60;. 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [createDepositIntentRequest]
+  /// * [createDepositIntentRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -67,7 +70,7 @@ class FundingApi {
   /// Returns a [Future] containing a [Response] with a [LegacyDeposit] as data
   /// Throws [DioException] if API call or serialization fails
   @Deprecated('This operation has been deprecated')
-  Future<Response<LegacyDeposit>> createDeposit({
+  Future<Response<LegacyDeposit>> createDeposit({ 
     required String idempotencyKey,
     required CreateDepositIntentRequest createDepositIntentRequest,
     CancelToken? cancelToken,
@@ -102,11 +105,11 @@ class FundingApi {
 
     try {
       const _type = FullType(CreateDepositIntentRequest);
-      _bodyData = _serializers.serialize(createDepositIntentRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(createDepositIntentRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -129,12 +132,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(LegacyDeposit),
-            ) as LegacyDeposit;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(LegacyDeposit),
+      ) as LegacyDeposit;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -158,11 +160,11 @@ class FundingApi {
   }
 
   /// 创建资金准备计划
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [fundingPlanRequest]
+  /// * [fundingPlanRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -172,7 +174,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingPlan] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<FundingPlan>> createFundingPlan({
+  Future<Response<FundingPlan>> createFundingPlan({ 
     required String idempotencyKey,
     required FundingPlanRequest fundingPlanRequest,
     CancelToken? cancelToken,
@@ -207,11 +209,11 @@ class FundingApi {
 
     try {
       const _type = FullType(FundingPlanRequest);
-      _bodyData =
-          _serializers.serialize(fundingPlanRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(fundingPlanRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -234,12 +236,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingPlan),
-            ) as FundingPlan;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingPlan),
+      ) as FundingPlan;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -263,11 +264,11 @@ class FundingApi {
   }
 
   /// 创建可恢复的资金准备会话
-  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 bStocks 买单支持市价和限价 GTC/IOC（限价省略 time_in_force 默认 GTC）； 市价按 amount，限价按 quantity × limit_price 向上取整到目标结算 token 最小单位计算基础所需余额。 slippage_percent 不放大限价挂单预算；会话安全缓冲单独处理。卖单不走买入补资，返回422 funding_not_required。 HIP3 草稿保留本单 protection，创建阶段只校验静态触发形状；实时触发方向、交易精度和执行资格须在补资后重新预览。 名义金额当前为12..500 USDC（含边界），所需资金包含账户实际taker费，不仅是名义金额除以杠杆。
+  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 bStocks 买单支持市价和限价 GTC/IOC（限价省略 time_in_force 默认 GTC）； 市价按 amount，限价按 quantity × limit_price 向上取整到目标结算 token 最小单位计算基础所需余额。 slippage_percent 不放大限价挂单预算；会话安全缓冲单独处理。卖单不走买入补资，返回422 funding_not_required。 HIP3 草稿保留本单 protection，创建阶段只校验静态触发形状；实时触发方向、交易精度和执行资格须在补资后重新预览。 名义金额当前为12..500 USDC（含边界），所需资金包含账户实际taker费，不仅是名义金额除以杠杆。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [fundingSessionCreateRequest]
+  /// * [fundingSessionCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -277,7 +278,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingSession] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<FundingSession>> createFundingSession({
+  Future<Response<FundingSession>> createFundingSession({ 
     required String idempotencyKey,
     required FundingSessionCreateRequest fundingSessionCreateRequest,
     CancelToken? cancelToken,
@@ -312,11 +313,11 @@ class FundingApi {
 
     try {
       const _type = FullType(FundingSessionCreateRequest);
-      _bodyData = _serializers.serialize(fundingSessionCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(fundingSessionCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -339,12 +340,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingSession),
-            ) as FundingSession;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -372,7 +372,7 @@ class FundingApi {
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [hip3WithdrawalCreateRequest]
+  /// * [hip3WithdrawalCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -382,7 +382,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Hip3Withdrawal>> createHip3Withdrawal({
+  Future<Response<Hip3Withdrawal>> createHip3Withdrawal({ 
     required String idempotencyKey,
     required Hip3WithdrawalCreateRequest hip3WithdrawalCreateRequest,
     CancelToken? cancelToken,
@@ -417,11 +417,11 @@ class FundingApi {
 
     try {
       const _type = FullType(Hip3WithdrawalCreateRequest);
-      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -444,12 +444,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Hip3Withdrawal),
-            ) as Hip3Withdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -473,11 +472,11 @@ class FundingApi {
   }
 
   /// 创建自托管提现审计意图
-  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  用户自付路径可签名并广播冻结交易，再调用 submission 上报哈希。若选择代付，先通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建受运行时门禁控制的 app_sponsored execution，并签署其准确的 privy_authorization_payload。已经绑定execution的意图 不得同时走直接上报路径；execution中的user-paid回退仍要求广播前明确拒绝及显式门禁。 创建/直接上报接口不替用户approve、sign或broadcast，不接收任意calldata。  bStocks支持当前manifest和support catalog共同准入的BSC 56/97基础token，asset_id可来自 PortfolioAsset.bstocks.withdrawal_asset_id。先检查真实RPC余额、已知GTC占用及已提交提现； 必须有Gas估算配置。此预检查不锁币，链上余额并发变化仍可能导致交易失败。 bStocks必须有精确Transfer事件证据并达到冻结的required_confirmations才确认；无事件的 token进入manual_review，不沿用TUSDT的无事件例外。当前源码的MockERC20会发Transfer； 实际确认仍以部署的token和规范链证据为准。幂等重放保留原交易及期限，不重复创建。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。
+  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  新执行通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建， 用户签署精确的 privy_authorization_payload，由后端唯一投递。原生模式 sponsor&#x3D;false， 用户仍付 Gas；代付仍受运行时门禁控制。历史 tx_hash 仅作核验证据，不能作为新的投递入口。 execution 的 user-paid 回退仍要求广播前明确拒绝及显式门禁，失败或超时不允许直接广播。 创建/直接上报接口不替用户approve、sign或broadcast，不接收任意calldata。  bStocks支持当前manifest和support catalog共同准入的BSC 56/97基础token，asset_id可来自 PortfolioAsset.bstocks.withdrawal_asset_id。先检查真实RPC余额、已知GTC占用及已提交提现； 必须有Gas估算配置。此预检查不锁币，链上余额并发变化仍可能导致交易失败。 bStocks必须有精确Transfer事件证据并达到冻结的required_confirmations才确认；无事件的 token进入manual_review，不沿用TUSDT的无事件例外。当前源码的MockERC20会发Transfer； 实际确认仍以部署的token和规范链证据为准。幂等重放保留原交易及期限，不重复创建。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [selfCustodialWithdrawalCreateRequest]
+  /// * [selfCustodialWithdrawalCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -487,10 +486,9 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SelfCustodialWithdrawal>> createSelfCustodialWithdrawal({
+  Future<Response<SelfCustodialWithdrawal>> createSelfCustodialWithdrawal({ 
     required String idempotencyKey,
-    required SelfCustodialWithdrawalCreateRequest
-        selfCustodialWithdrawalCreateRequest,
+    required SelfCustodialWithdrawalCreateRequest selfCustodialWithdrawalCreateRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -523,11 +521,11 @@ class FundingApi {
 
     try {
       const _type = FullType(SelfCustodialWithdrawalCreateRequest);
-      _bodyData = _serializers.serialize(selfCustodialWithdrawalCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(selfCustodialWithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -550,12 +548,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(SelfCustodialWithdrawal),
-            ) as SelfCustodialWithdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -579,12 +576,12 @@ class FundingApi {
   }
 
   /// 创建自托管提现钱包动作执行
-  /// 为已创建且仍在 &#x60;awaiting_submission&#x60; 的提现 intent 创建统一 &#x60;WalletActionExecution&#x60;。 服务端从冻结的提现交易解析精确 &#x60;chain/from/to/data/value&#x60; 与业务绑定，客户端只能选择 gas 支付模式，不得提交或覆盖任何交易、Provider 或绑定字段。  &#x60;app_sponsored&#x60; 模式下服务端评估统一 Gas 赞助策略；eligible 时返回 &#x60;privy_authorization_payload&#x60; 等待客户端签名，随后由 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 同步 relay 到 Privy， 平台代付 Gas，用户无需持有原生币。&#x60;user_paid_native&#x60; 只允许在该 intent 的 app-sponsored execution 已确定为广播前拒绝（&#x60;user_gas_confirmation_required&#x60;）后创建， 作为用户自付 gas 的回落路径；此时用户仍按冻结交易自行签名广播并提交 &#x60;tx_hash&#x60;。  intent 过期、已提交、已绑定活跃 execution 或提现 chain 未启用赞助时 fail-closed。
+  /// 为已创建且仍在 &#x60;awaiting_submission&#x60; 的提现 intent 创建统一 &#x60;WalletActionExecution&#x60;。 服务端从冻结的提现交易解析精确 &#x60;chain/from/to/data/value&#x60; 与业务绑定，客户端只能选择 gas 支付模式，不得提交或覆盖任何交易、Provider 或绑定字段。  &#x60;app_sponsored&#x60; 模式下服务端评估统一 Gas 赞助策略；eligible 时返回 &#x60;privy_authorization_payload&#x60; 等待客户端签名，随后由 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 同步 relay 到 Privy， 平台代付 Gas，用户无需持有原生币。准入的 &#x60;user_paid_native&#x60; 主路径无需先尝试代付； 若已有代付执行，必须确定为广播前拒绝后才能显式选择原生回退。 原生模式签署 sponsor&#x3D;false 的 Privy 授权，后端唯一广播，Gas仍由用户支付。  intent 过期、已提交、已绑定活跃 execution 或所选支付模式未获准入时 fail-closed。 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [walletActionExecutionCreateRequest]
+  /// * [walletActionExecutionCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -594,12 +591,10 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [WalletActionExecution] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WalletActionExecution>>
-      createSelfCustodialWithdrawalExecution({
+  Future<Response<WalletActionExecution>> createSelfCustodialWithdrawalExecution({ 
     required String withdrawalId,
     required String idempotencyKey,
-    required WalletActionExecutionCreateRequest
-        walletActionExecutionCreateRequest,
+    required WalletActionExecutionCreateRequest walletActionExecutionCreateRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -607,12 +602,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/executions'
-        .replaceAll(
-            '{' r'withdrawal_id' '}',
-            encodeQueryParameter(
-                    _serializers, withdrawalId, const FullType(String))
-                .toString());
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/executions'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -637,11 +627,11 @@ class FundingApi {
 
     try {
       const _type = FullType(WalletActionExecutionCreateRequest);
-      _bodyData = _serializers.serialize(walletActionExecutionCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(walletActionExecutionCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -664,12 +654,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(WalletActionExecution),
-            ) as WalletActionExecution;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WalletActionExecution),
+      ) as WalletActionExecution;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -693,11 +682,11 @@ class FundingApi {
   }
 
   /// 按资金计划创建划转
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [transferRequest]
+  /// * [transferRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -707,7 +696,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Transfer] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Transfer>> createTransfer({
+  Future<Response<Transfer>> createTransfer({ 
     required String idempotencyKey,
     required TransferRequest transferRequest,
     CancelToken? cancelToken,
@@ -743,9 +732,10 @@ class FundingApi {
     try {
       const _type = FullType(TransferRequest);
       _bodyData = _serializers.serialize(transferRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -768,12 +758,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Transfer),
-            ) as Transfer;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Transfer),
+      ) as Transfer;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -797,13 +786,13 @@ class FundingApi {
   }
 
   /// 报告已广播的钱包动作交易哈希（兼容窗口）
-  /// Deprecated compatibility operation for clients pinned to the pre-sponsorship contract. &#x60;tx_hash&#x60; is an untrusted locator only. The server resolves the frozen transfer action and independently verifies chain, sender, recipient, calldata, value, receipt and logs. This operation never signs, broadcasts, switches Provider or confirms success by itself.
+  /// Deprecated compatibility operation for clients pinned to the pre-sponsorship contract. &#x60;tx_hash&#x60; is an untrusted locator only. The server resolves the frozen transfer action and independently verifies chain, sender, recipient, calldata, value, receipt and logs. This operation never signs, broadcasts, switches Provider or confirms success by itself. 
   ///
   /// Parameters:
-  /// * [transferId]
-  /// * [actionId]
+  /// * [transferId] 
+  /// * [actionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [transferActionSubmissionRequest]
+  /// * [transferActionSubmissionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -814,7 +803,7 @@ class FundingApi {
   /// Returns a [Future] containing a [Response] with a [TransferActionSubmission] as data
   /// Throws [DioException] if API call or serialization fails
   @Deprecated('This operation has been deprecated')
-  Future<Response<TransferActionSubmission>> createTransferActionSubmission({
+  Future<Response<TransferActionSubmission>> createTransferActionSubmission({ 
     required String transferId,
     required String actionId,
     required String idempotencyKey,
@@ -826,16 +815,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/transfers/{transfer_id}/actions/{action_id}/submissions'
-        .replaceAll(
-            '{' r'transfer_id' '}',
-            encodeQueryParameter(
-                    _serializers, transferId, const FullType(String))
-                .toString())
-        .replaceAll(
-            '{' r'action_id' '}',
-            encodeQueryParameter(_serializers, actionId, const FullType(String))
-                .toString());
+    final _path = r'/v1/transfers/{transfer_id}/actions/{action_id}/submissions'.replaceAll('{' r'transfer_id' '}', encodeQueryParameter(_serializers, transferId, const FullType(String)).toString()).replaceAll('{' r'action_id' '}', encodeQueryParameter(_serializers, actionId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -860,11 +840,11 @@ class FundingApi {
 
     try {
       const _type = FullType(TransferActionSubmissionRequest);
-      _bodyData = _serializers.serialize(transferActionSubmissionRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(transferActionSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -887,12 +867,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(TransferActionSubmission),
-            ) as TransferActionSubmission;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(TransferActionSubmission),
+      ) as TransferActionSubmission;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -916,12 +895,12 @@ class FundingApi {
   }
 
   /// 为需要恢复的划转创建 Claim
-  /// 仅保留给既有非跨链恢复流程。新的跨链 Funding Transfer 通过 Transfer 上的 &#x60;refund_status&#x60; 与只追加 refund observation 自动对账，不允许调用本端点创建 Claim， 也不会因此获得自动签名、广播或退款执行能力。
+  /// 仅保留给既有非跨链恢复流程。新的跨链 Funding Transfer 通过 Transfer 上的 &#x60;refund_status&#x60; 与只追加 refund observation 自动对账，不允许调用本端点创建 Claim， 也不会因此获得自动签名、广播或退款执行能力。 
   ///
   /// Parameters:
-  /// * [transferId]
+  /// * [transferId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [transferClaimRequest]
+  /// * [transferClaimRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -931,7 +910,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Claim] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Claim>> createTransferClaim({
+  Future<Response<Claim>> createTransferClaim({ 
     required String transferId,
     required String idempotencyKey,
     required TransferClaimRequest transferClaimRequest,
@@ -942,10 +921,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/transfers/{transfer_id}/claims'.replaceAll(
-        '{' r'transfer_id' '}',
-        encodeQueryParameter(_serializers, transferId, const FullType(String))
-            .toString());
+    final _path = r'/v1/transfers/{transfer_id}/claims'.replaceAll('{' r'transfer_id' '}', encodeQueryParameter(_serializers, transferId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -970,11 +946,11 @@ class FundingApi {
 
     try {
       const _type = FullType(TransferClaimRequest);
-      _bodyData =
-          _serializers.serialize(transferClaimRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(transferClaimRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -997,12 +973,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Claim),
-            ) as Claim;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Claim),
+      ) as Claim;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1026,13 +1001,13 @@ class FundingApi {
   }
 
   /// 创建资金划转钱包动作执行
-  /// 服务端按 &#x60;transfer_id&#x60; 与 &#x60;action_id&#x60; 解析当前已释放的 frozen action。客户端只能选择 gas 支付模式，不得提交或覆盖 chain、to、data、value、payload hash、Provider、route 或业务资源绑定。
+  /// 服务端按 &#x60;transfer_id&#x60; 与 &#x60;action_id&#x60; 解析当前已释放的 frozen action。客户端只能选择 gas 支付模式，不得提交或覆盖 chain、to、data、value、payload hash、Provider、route 或业务资源绑定。 
   ///
   /// Parameters:
-  /// * [transferId]
-  /// * [actionId]
+  /// * [transferId] 
+  /// * [actionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [walletActionExecutionCreateRequest]
+  /// * [walletActionExecutionCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1042,12 +1017,11 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [WalletActionExecution] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WalletActionExecution>> createTransferWalletActionExecution({
+  Future<Response<WalletActionExecution>> createTransferWalletActionExecution({ 
     required String transferId,
     required String actionId,
     required String idempotencyKey,
-    required WalletActionExecutionCreateRequest
-        walletActionExecutionCreateRequest,
+    required WalletActionExecutionCreateRequest walletActionExecutionCreateRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1055,16 +1029,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/transfers/{transfer_id}/actions/{action_id}/executions'
-        .replaceAll(
-            '{' r'transfer_id' '}',
-            encodeQueryParameter(
-                    _serializers, transferId, const FullType(String))
-                .toString())
-        .replaceAll(
-            '{' r'action_id' '}',
-            encodeQueryParameter(_serializers, actionId, const FullType(String))
-                .toString());
+    final _path = r'/v1/transfers/{transfer_id}/actions/{action_id}/executions'.replaceAll('{' r'transfer_id' '}', encodeQueryParameter(_serializers, transferId, const FullType(String)).toString()).replaceAll('{' r'action_id' '}', encodeQueryParameter(_serializers, actionId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -1089,11 +1054,11 @@ class FundingApi {
 
     try {
       const _type = FullType(WalletActionExecutionCreateRequest);
-      _bodyData = _serializers.serialize(walletActionExecutionCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(walletActionExecutionCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -1116,12 +1081,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(WalletActionExecution),
-            ) as WalletActionExecution;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WalletActionExecution),
+      ) as WalletActionExecution;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1145,11 +1109,11 @@ class FundingApi {
   }
 
   /// 创建提现
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [createWithdrawalRequest]
+  /// * [createWithdrawalRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1159,7 +1123,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Withdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Withdrawal>> createWithdrawal({
+  Future<Response<Withdrawal>> createWithdrawal({ 
     required String idempotencyKey,
     required CreateWithdrawalRequest createWithdrawalRequest,
     CancelToken? cancelToken,
@@ -1194,11 +1158,11 @@ class FundingApi {
 
     try {
       const _type = FullType(CreateWithdrawalRequest);
-      _bodyData =
-          _serializers.serialize(createWithdrawalRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(createWithdrawalRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -1221,12 +1185,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Withdrawal),
-            ) as Withdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Withdrawal),
+      ) as Withdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1250,11 +1213,11 @@ class FundingApi {
   }
 
   /// 创建提现报价
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [withdrawalQuoteRequest]
+  /// * [withdrawalQuoteRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1264,7 +1227,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [WithdrawalQuote] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WithdrawalQuote>> createWithdrawalQuote({
+  Future<Response<WithdrawalQuote>> createWithdrawalQuote({ 
     required String idempotencyKey,
     required WithdrawalQuoteRequest withdrawalQuoteRequest,
     CancelToken? cancelToken,
@@ -1299,11 +1262,11 @@ class FundingApi {
 
     try {
       const _type = FullType(WithdrawalQuoteRequest);
-      _bodyData =
-          _serializers.serialize(withdrawalQuoteRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(withdrawalQuoteRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -1326,12 +1289,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(WithdrawalQuote),
-            ) as WithdrawalQuote;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WithdrawalQuote),
+      ) as WithdrawalQuote;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1355,10 +1317,10 @@ class FundingApi {
   }
 
   /// 入金详情与权威状态
-  /// 仅返回当前账号已经完成链上独立核验的正式入金。内部候选、观察和旧 Deposit Intent 对公共 API 等同不存在并返回 404。
+  /// 仅返回当前账号已经完成链上独立核验的正式入金。内部候选、观察和旧 Deposit Intent 对公共 API 等同不存在并返回 404。 
   ///
   /// Parameters:
-  /// * [depositId]
+  /// * [depositId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1368,7 +1330,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Deposit] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Deposit>> getDeposit({
+  Future<Response<Deposit>> getDeposit({ 
     required String depositId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1377,10 +1339,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/deposits/{deposit_id}'.replaceAll(
-        '{' r'deposit_id' '}',
-        encodeQueryParameter(_serializers, depositId, const FullType(String))
-            .toString());
+    final _path = r'/v1/deposits/{deposit_id}'.replaceAll('{' r'deposit_id' '}', encodeQueryParameter(_serializers, depositId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -1411,12 +1370,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Deposit),
-            ) as Deposit;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Deposit),
+      ) as Deposit;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1440,7 +1398,7 @@ class FundingApi {
   }
 
   /// 获取多链稳定币只读入金目录
-  /// 无参数调用返回当前账号已验证 Embedded EVM Wallet，以及 Ethereum、Arbitrum、Base、BSC 上 USDC/USDT 的八个精确链币组合。不可用组合仍返回 identity 和 blocker，但 响应项中不得出现 &#x60;qr_payload&#x60;；只有 available 变体携带非空 QR，避免形成可操作的错误入金指引。  兼容窗口内，旧客户端仍可同时传入完整 &#x60;chain&#x60; 和 &#x60;token&#x60;，并接收旧版单项 &#x60;DepositInstruction&#x60;；不得只传其中一个参数。两项 query 参数将在下一个 major 版本移除。 该请求不得创建 Deposit Intent、Operation、Outbox 或 Activity；重复请求没有业务副作用。
+  /// 无参数调用返回当前账号已验证 Embedded EVM Wallet，以及 Ethereum、Arbitrum、Base、BSC 上 USDC/USDT 的八个精确链币组合。不可用组合仍返回 identity 和 blocker，但 响应项中不得出现 &#x60;qr_payload&#x60;；只有 available 变体携带非空 QR，避免形成可操作的错误入金指引。  兼容窗口内，旧客户端仍可同时传入完整 &#x60;chain&#x60; 和 &#x60;token&#x60;，并接收旧版单项 &#x60;DepositInstruction&#x60;；不得只传其中一个参数。两项 query 参数将在下一个 major 版本移除。 该请求不得创建 Deposit Intent、Operation、Outbox 或 Activity；重复请求没有业务副作用。 
   ///
   /// Parameters:
   /// * [chain] - Deprecated legacy selector; must be supplied together with `token`.
@@ -1454,7 +1412,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [DepositInstruction] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DepositInstruction>> getDepositInstruction({
+  Future<Response<DepositInstruction>> getDepositInstruction({ 
     @Deprecated('chain is deprecated') String? chain,
     @Deprecated('token is deprecated') String? token,
     CancelToken? cancelToken,
@@ -1484,12 +1442,8 @@ class FundingApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (chain != null)
-        r'chain':
-            encodeQueryParameter(_serializers, chain, const FullType(String)),
-      if (token != null)
-        r'token':
-            encodeQueryParameter(_serializers, token, const FullType(String)),
+      if (chain != null) r'chain': encodeQueryParameter(_serializers, chain, const FullType(String)),
+      if (token != null) r'token': encodeQueryParameter(_serializers, token, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -1505,12 +1459,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(DepositInstruction),
-            ) as DepositInstruction;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(DepositInstruction),
+      ) as DepositInstruction;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1533,8 +1486,89 @@ class FundingApi {
     );
   }
 
+  /// Read a financial obligation including settled history
+  /// Account-scoped read-only lookup with the same stable identity after an obligation leaves the default unresolved list. Unknown or foreign-account identities return 404.
+  ///
+  /// Parameters:
+  /// * [obligationId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FinancialObligation] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FinancialObligation>> getFinancialObligation({ 
+    required String obligationId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/obligations/{obligation_id}'.replaceAll('{' r'obligation_id' '}', encodeQueryParameter(_serializers, obligationId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FinancialObligation? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FinancialObligation),
+      ) as FinancialObligation;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FinancialObligation>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 资金网络与结算资产目录
-  /// Deprecated compatibility adapter. New clients use &#x60;GET /v1/deposit-instructions&#x60; for the account-specific eight-rail deposit directory and funding-plan responses for server-selected target/provider routes. This path remains available only during the v1 compatibility window.
+  /// Deprecated compatibility adapter. New clients use &#x60;GET /v1/deposit-instructions&#x60; for the account-specific eight-rail deposit directory and funding-plan responses for server-selected target/provider routes. This path remains available only during the v1 compatibility window. 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1547,7 +1581,7 @@ class FundingApi {
   /// Returns a [Future] containing a [Response] with a [FundingCatalog] as data
   /// Throws [DioException] if API call or serialization fails
   @Deprecated('This operation has been deprecated')
-  Future<Response<FundingCatalog>> getFundingCatalog({
+  Future<Response<FundingCatalog>> getFundingCatalog({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1586,12 +1620,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingCatalog),
-            ) as FundingCatalog;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingCatalog),
+      ) as FundingCatalog;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1615,10 +1648,10 @@ class FundingApi {
   }
 
   /// 资金准备计划详情与权威状态
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [planId]
+  /// * [planId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1628,7 +1661,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingPlan] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<FundingPlan>> getFundingPlan({
+  Future<Response<FundingPlan>> getFundingPlan({ 
     required String planId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1637,10 +1670,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/funding/plans/{plan_id}'.replaceAll(
-        '{' r'plan_id' '}',
-        encodeQueryParameter(_serializers, planId, const FullType(String))
-            .toString());
+    final _path = r'/v1/funding/plans/{plan_id}'.replaceAll('{' r'plan_id' '}', encodeQueryParameter(_serializers, planId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -1671,12 +1701,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingPlan),
-            ) as FundingPlan;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingPlan),
+      ) as FundingPlan;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1703,7 +1732,7 @@ class FundingApi {
   /// 恢复会话并重新读取当前目标余额和统一资金账户；不得复用过期余额或 Provider Quote。
   ///
   /// Parameters:
-  /// * [fundingSessionId]
+  /// * [fundingSessionId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1713,7 +1742,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingSession] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<FundingSession>> getFundingSession({
+  Future<Response<FundingSession>> getFundingSession({ 
     required String fundingSessionId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1722,11 +1751,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/funding/sessions/{funding_session_id}'.replaceAll(
-        '{' r'funding_session_id' '}',
-        encodeQueryParameter(
-                _serializers, fundingSessionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/funding/sessions/{funding_session_id}'.replaceAll('{' r'funding_session_id' '}', encodeQueryParameter(_serializers, fundingSessionId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -1757,12 +1782,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingSession),
-            ) as FundingSession;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1786,10 +1810,10 @@ class FundingApi {
   }
 
   /// 获取 HIP-3 提现状态
-  /// 返回提现的当前权威状态。&#x60;submitted&#x60; 之后由 worker 轮询 venue non-funding ledger； 观测到匹配的 &#x60;withdraw&#x60; delta 后置为 &#x60;completed&#x60;。
+  /// 返回提现的当前权威状态。&#x60;submitted&#x60; 之后由 worker 轮询 venue non-funding ledger； 观测到匹配的 &#x60;withdraw&#x60; delta 后置为 &#x60;completed&#x60;。 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1799,7 +1823,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Hip3Withdrawal>> getHip3Withdrawal({
+  Future<Response<Hip3Withdrawal>> getHip3Withdrawal({ 
     required String withdrawalId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1808,10 +1832,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}'.replaceAll(
-        '{' r'withdrawal_id' '}',
-        encodeQueryParameter(_serializers, withdrawalId, const FullType(String))
-            .toString());
+    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -1842,12 +1863,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Hip3Withdrawal),
-            ) as Hip3Withdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1871,10 +1891,10 @@ class FundingApi {
   }
 
   /// 获取自托管提现审计状态
-  /// 返回服务端对用户自行通过 Privy wallet 签名并广播的交易所做的只读核验状态。 服务端不会 approve、sign、broadcast 或替用户执行提现；提交哈希也不构成成功证据。
+  /// 返回原始交易和后端执行的只读核验状态。原生Gas仍由用户支付，交易由后端唯一投递。 已提交授权或哈希不构成成功证据；历史客户端广播记录仍仅作核验。 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1884,7 +1904,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SelfCustodialWithdrawal>> getSelfCustodialWithdrawal({
+  Future<Response<SelfCustodialWithdrawal>> getSelfCustodialWithdrawal({ 
     required String withdrawalId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1893,10 +1913,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}'.replaceAll(
-        '{' r'withdrawal_id' '}',
-        encodeQueryParameter(_serializers, withdrawalId, const FullType(String))
-            .toString());
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -1927,12 +1944,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(SelfCustodialWithdrawal),
-            ) as SelfCustodialWithdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1956,10 +1972,10 @@ class FundingApi {
   }
 
   /// 划转详情与权威状态
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [transferId]
+  /// * [transferId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1969,7 +1985,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Transfer] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Transfer>> getTransfer({
+  Future<Response<Transfer>> getTransfer({ 
     required String transferId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1978,10 +1994,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/transfers/{transfer_id}'.replaceAll(
-        '{' r'transfer_id' '}',
-        encodeQueryParameter(_serializers, transferId, const FullType(String))
-            .toString());
+    final _path = r'/v1/transfers/{transfer_id}'.replaceAll('{' r'transfer_id' '}', encodeQueryParameter(_serializers, transferId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -2012,12 +2025,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Transfer),
-            ) as Transfer;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Transfer),
+      ) as Transfer;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2041,7 +2053,7 @@ class FundingApi {
   }
 
   /// 获取非托管统一资金账户
-  /// 聚合当前账号 Embedded EVM Wallet 中受支持稳定币的余额、预留、在途和可用于补资的价值。 本接口是只读视图；读取不得创建资金计划、预留、划转、钱包动作或 Activity。
+  /// 聚合当前账号 Embedded EVM Wallet 中受支持稳定币的余额、预留、在途和可用于补资的价值。 本接口是只读视图；读取不得创建资金计划、预留、划转、钱包动作或 Activity。 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2053,7 +2065,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [UnifiedFundingAccount] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UnifiedFundingAccount>> getUnifiedFundingAccount({
+  Future<Response<UnifiedFundingAccount>> getUnifiedFundingAccount({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2092,12 +2104,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(UnifiedFundingAccount),
-            ) as UnifiedFundingAccount;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(UnifiedFundingAccount),
+      ) as UnifiedFundingAccount;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2121,10 +2132,10 @@ class FundingApi {
   }
 
   /// 提现详情与权威状态
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2134,7 +2145,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Withdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Withdrawal>> getWithdrawal({
+  Future<Response<Withdrawal>> getWithdrawal({ 
     required String withdrawalId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2143,10 +2154,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/withdrawals/{withdrawal_id}'.replaceAll(
-        '{' r'withdrawal_id' '}',
-        encodeQueryParameter(_serializers, withdrawalId, const FullType(String))
-            .toString());
+    final _path = r'/v1/withdrawals/{withdrawal_id}'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -2177,12 +2185,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Withdrawal),
-            ) as Withdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Withdrawal),
+      ) as Withdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2206,11 +2213,11 @@ class FundingApi {
   }
 
   /// 获取脱敏入金观察进度
-  /// 返回当前账户可公开给客户端的脱敏链上观察摘要，用于显示 detected、confirming、 confirmed 或 manual_review 进度。响应不包含 Provider 名称、Webhook payload、RPC 原始响应、内部证据 ID 或其他 raw evidence。  &#x60;detected&#x60;、&#x60;confirming&#x60; 与 &#x60;manual_review&#x60; 都是未确认资金，不得计入余额、可交易金额、 Portfolio summary/history/allocation 或 Activity。&#x60;confirmed&#x60; 只表示链上观察达到 canonical 确认门槛；只有服务端另行创建并入账正式 Deposit 后，资金才可进入这些读模型。
+  /// 返回当前账户可公开给客户端的脱敏链上观察摘要，用于显示 detected、confirming、 confirmed 或 manual_review 进度。响应不包含 Provider 名称、Webhook payload、RPC 原始响应、内部证据 ID 或其他 raw evidence。  &#x60;detected&#x60;、&#x60;confirming&#x60; 与 &#x60;manual_review&#x60; 都是未确认资金，不得计入余额、可交易金额、 Portfolio summary/history/allocation 或 Activity。&#x60;confirmed&#x60; 只表示链上观察达到 canonical 确认门槛；只有服务端另行创建并入账正式 Deposit 后，资金才可进入这些读模型。 
   ///
   /// Parameters:
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit]
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2220,7 +2227,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [DepositObservationPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DepositObservationPage>> listDepositObservations({
+  Future<Response<DepositObservationPage>> listDepositObservations({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -2250,12 +2257,8 @@ class FundingApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (cursor != null)
-        r'cursor':
-            encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null)
-        r'limit':
-            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -2271,12 +2274,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(DepositObservationPage),
-            ) as DepositObservationPage;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(DepositObservationPage),
+      ) as DepositObservationPage;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2300,11 +2302,11 @@ class FundingApi {
   }
 
   /// 入金记录列表
-  /// 仅返回当前账号已经由链上 receipt、精确 ERC-20 Transfer、canonical block 和确认数 独立核验的正式入金记录。Webhook、补账候选、观察中状态和旧 Deposit Intent 不属于本列表。
+  /// 仅返回当前账号已经由链上 receipt、精确 ERC-20 Transfer、canonical block 和确认数 独立核验的正式入金记录。Webhook、补账候选、观察中状态和旧 Deposit Intent 不属于本列表。 
   ///
   /// Parameters:
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit]
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2314,7 +2316,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [DepositPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DepositPage>> listDeposits({
+  Future<Response<DepositPage>> listDeposits({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -2344,12 +2346,8 @@ class FundingApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (cursor != null)
-        r'cursor':
-            encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null)
-        r'limit':
-            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -2365,12 +2363,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(DepositPage),
-            ) as DepositPage;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(DepositPage),
+      ) as DepositPage;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2393,12 +2390,104 @@ class FundingApi {
     );
   }
 
-  /// 提现列表
+  /// List the current account&#39;s financial obligations
+  /// Read-only enumeration of unresolved reservations, in-transit funds, credits, refunds and fee reconciliation, including records with no execution, transaction hash or Activity. By default every unresolved business obligation is eligible, including reviewed or closed support cases whose money remains unresolved. include_resolved also returns financially settled history. Neither case closure nor technical success proves economic settlement. Cursor is opaque and bound to the account, include_resolved filter and stable ordering; clients must preserve filters on subsequent pages. A failed source read returns an error, never an empty complete collection. Reading never signs, pays, releases or creates Activity. 
   ///
+  /// Parameters:
+  /// * [includeResolved] 
+  /// * [cursor] - 上一页返回的 `next_cursor`
+  /// * [limit] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FinancialObligationPage] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FinancialObligationPage>> listFinancialObligations({ 
+    bool? includeResolved = false,
+    String? cursor,
+    int? limit = 20,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/obligations';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (includeResolved != null) r'include_resolved': encodeQueryParameter(_serializers, includeResolved, const FullType(bool)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FinancialObligationPage? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FinancialObligationPage),
+      ) as FinancialObligationPage;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FinancialObligationPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 提现列表
+  /// 
   ///
   /// Parameters:
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit]
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2408,7 +2497,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [WithdrawalPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WithdrawalPage>> listWithdrawals({
+  Future<Response<WithdrawalPage>> listWithdrawals({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -2438,12 +2527,8 @@ class FundingApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (cursor != null)
-        r'cursor':
-            encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null)
-        r'limit':
-            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -2459,12 +2544,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(WithdrawalPage),
-            ) as WithdrawalPage;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WithdrawalPage),
+      ) as WithdrawalPage;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2491,7 +2575,7 @@ class FundingApi {
   /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 显式 payout_chain_id&#x3D;42161 时，所有通道请求 amount 均为 HL USDC 总扣减额（exact input）。 未传 payout_chain_id 时保留旧语义：bridge2/float 为总扣减额，relay 为 BSC USDT 期望到账额（exact output）。 所有通道响应 amount 为实际 HL USDC 总扣减额，minimum_received 为扣费后目标资产到账额。 风险按实际 HL 总扣减额计算，不能按 relay 请求金额或净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为 amount 与 minimum_received 的 USDC 差额；Relay exact-input 含报价费用及滑点保留，是保守最大扣减而非已收费用。fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。
   ///
   /// Parameters:
-  /// * [hip3WithdrawalCreateRequest]
+  /// * [hip3WithdrawalCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2501,7 +2585,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Hip3WithdrawalPreview] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Hip3WithdrawalPreview>> previewHip3Withdrawal({
+  Future<Response<Hip3WithdrawalPreview>> previewHip3Withdrawal({ 
     required Hip3WithdrawalCreateRequest hip3WithdrawalCreateRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2534,11 +2618,11 @@ class FundingApi {
 
     try {
       const _type = FullType(Hip3WithdrawalCreateRequest);
-      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -2561,12 +2645,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Hip3WithdrawalPreview),
-            ) as Hip3WithdrawalPreview;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3WithdrawalPreview),
+      ) as Hip3WithdrawalPreview;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2590,12 +2673,12 @@ class FundingApi {
   }
 
   /// 提交 HIP-3 提现签名
-  /// 提交 owner 对冻结通道 action 的 EIP-712 签名。服务端先校验 payload_hash 与冻结 action 一致、恢复地址等于 owner，再将 bridge2 的 withdraw3 或 float/relay 的 sendAsset 提交到 Hyperliquid /exchange； venue 接受后状态进入 submitted 并由 worker 观测到账。relay 还需 nonce_mapping_signature。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。venue 明确拒绝已签名 action 时同样返回 409：官方桥 出金额度受限时返回 &#x60;venue_withdrawal_allowance_exceeded&#x60; （user_action&#x3D;&#x60;reduce_amount_or_retry_later&#x60;，降低金额或等待额度窗口恢复后可重新发起）， 其他 venue 拒绝返回 &#x60;venue_rejected&#x60;（user_action&#x3D;&#x60;create_new_intent&#x60;）。
+  /// 提交 owner 对冻结通道 action 的 EIP-712 签名。服务端先校验 payload_hash 与冻结 action 一致、恢复地址等于 owner，再将 bridge2 的 withdraw3 或 float/relay 的 sendAsset 提交到 Hyperliquid /exchange； venue 接受后状态进入 submitted 并由 worker 观测到账。relay 还需 nonce_mapping_signature。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。venue 明确拒绝已签名 action 时同样返回 409：官方桥 出金额度受限时返回 &#x60;venue_withdrawal_allowance_exceeded&#x60; （user_action&#x3D;&#x60;reduce_amount_or_retry_later&#x60;，降低金额或等待额度窗口恢复后可重新发起）， 其他 venue 拒绝返回 &#x60;venue_rejected&#x60;（user_action&#x3D;&#x60;create_new_intent&#x60;）。 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [hip3WithdrawalSubmissionRequest]
+  /// * [hip3WithdrawalSubmissionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2605,7 +2688,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Hip3Withdrawal>> submitHip3Withdrawal({
+  Future<Response<Hip3Withdrawal>> submitHip3Withdrawal({ 
     required String withdrawalId,
     required String idempotencyKey,
     required Hip3WithdrawalSubmissionRequest hip3WithdrawalSubmissionRequest,
@@ -2616,10 +2699,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}/submission'.replaceAll(
-        '{' r'withdrawal_id' '}',
-        encodeQueryParameter(_serializers, withdrawalId, const FullType(String))
-            .toString());
+    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}/submission'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -2644,11 +2724,11 @@ class FundingApi {
 
     try {
       const _type = FullType(Hip3WithdrawalSubmissionRequest);
-      _bodyData = _serializers.serialize(hip3WithdrawalSubmissionRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(hip3WithdrawalSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -2671,12 +2751,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Hip3Withdrawal),
-            ) as Hip3Withdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2700,12 +2779,12 @@ class FundingApi {
   }
 
   /// 提交自托管提现交易哈希
-  /// 用户在 Privy wallet 中自行签名并广播后，只提交 &#x60;tx_hash&#x60; 作为不可信链上定位符。 服务端不会 approve、sign、broadcast 或重播交易，必须独立核验 chain、from wallet、 token、recipient、amount、receipt、确认数与 canonicality 后再推进状态。哈希不存在、 不匹配或观察结果冲突时不得假定成功，进入 failed、noncanonical 或 manual_review。  已绑定 &#x60;wallet_action_execution_id&#x60; 的 intent 不得走本端点：&#x60;app_sponsored&#x60; 执行通过 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 提交授权签名， user-paid 回落执行在同一端点提交 &#x60;tx_hash&#x60;。
+  /// 历史已广播记录仅提交 &#x60;tx_hash&#x60; 作为不可信链上定位符；本端点不授予新的广播权限。 新交易统一通过 execution 后端投递。历史记录必须独立核验 chain、from wallet、 token、recipient、amount、receipt、确认数与 canonicality 后再推进状态。哈希不存在、 不匹配或观察结果冲突时不得假定成功，进入 failed、noncanonical 或 manual_review。  已绑定 &#x60;wallet_action_execution_id&#x60; 的 intent 不得走本端点：&#x60;app_sponsored&#x60; 执行通过 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 提交授权签名， user-paid 原生执行也在同一端点提交授权，由后端唯一广播；历史 tx_hash 仅用于核验证据。 
   ///
   /// Parameters:
-  /// * [withdrawalId]
+  /// * [withdrawalId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [selfCustodialWithdrawalSubmissionRequest]
+  /// * [selfCustodialWithdrawalSubmissionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2715,11 +2794,10 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SelfCustodialWithdrawal>> submitSelfCustodialWithdrawal({
+  Future<Response<SelfCustodialWithdrawal>> submitSelfCustodialWithdrawal({ 
     required String withdrawalId,
     required String idempotencyKey,
-    required SelfCustodialWithdrawalSubmissionRequest
-        selfCustodialWithdrawalSubmissionRequest,
+    required SelfCustodialWithdrawalSubmissionRequest selfCustodialWithdrawalSubmissionRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2727,12 +2805,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/submission'
-        .replaceAll(
-            '{' r'withdrawal_id' '}',
-            encodeQueryParameter(
-                    _serializers, withdrawalId, const FullType(String))
-                .toString());
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/submission'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -2757,12 +2830,11 @@ class FundingApi {
 
     try {
       const _type = FullType(SelfCustodialWithdrawalSubmissionRequest);
-      _bodyData = _serializers.serialize(
-          selfCustodialWithdrawalSubmissionRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(selfCustodialWithdrawalSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -2785,12 +2857,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(SelfCustodialWithdrawal),
-            ) as SelfCustodialWithdrawal;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2814,12 +2885,12 @@ class FundingApi {
   }
 
   /// 更新用户选择的补资来源与金额
-  /// 保存用户编辑后的来源金额并重新计算预计目标到账。20% 缓冲只用于推荐和默认值； 高于或低于推荐值均不得单独导致拒绝。低于最低缺口可以保存，但不能确认 Transfer。 每次成功保存递增 session 的 version；创建计划须等待保存完成，并使用保存响应中的 version 作为 selection_version。保存选择时提交过旧的 version 返回 409，顶层 code&#x3D;conflict， details.blockers[].code&#x3D;funding_session_version_conflict，user_action&#x3D;refresh_funding_session。
+  /// 保存用户编辑后的来源金额并重新计算预计目标到账。20% 缓冲只用于推荐和默认值； 高于或低于推荐值均不得单独导致拒绝。低于最低缺口可以保存，但不能确认 Transfer。 每次成功保存递增 session 的 version；创建计划须等待保存完成，并使用保存响应中的 version 作为 selection_version。保存选择时提交过旧的 version 返回 409，顶层 code&#x3D;conflict， details.blockers[].code&#x3D;funding_session_version_conflict，user_action&#x3D;refresh_funding_session。 
   ///
   /// Parameters:
-  /// * [fundingSessionId]
+  /// * [fundingSessionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [fundingSessionSelectionRequest]
+  /// * [fundingSessionSelectionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2829,7 +2900,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingSession] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<FundingSession>> updateFundingSessionSelection({
+  Future<Response<FundingSession>> updateFundingSessionSelection({ 
     required String fundingSessionId,
     required String idempotencyKey,
     required FundingSessionSelectionRequest fundingSessionSelectionRequest,
@@ -2840,12 +2911,7 @@ class FundingApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/funding/sessions/{funding_session_id}/selection'
-        .replaceAll(
-            '{' r'funding_session_id' '}',
-            encodeQueryParameter(
-                    _serializers, fundingSessionId, const FullType(String))
-                .toString());
+    final _path = r'/v1/funding/sessions/{funding_session_id}/selection'.replaceAll('{' r'funding_session_id' '}', encodeQueryParameter(_serializers, fundingSessionId, const FullType(String)).toString());
     final _options = Options(
       method: r'PUT',
       headers: <String, dynamic>{
@@ -2870,11 +2936,11 @@ class FundingApi {
 
     try {
       const _type = FullType(FundingSessionSelectionRequest);
-      _bodyData = _serializers.serialize(fundingSessionSelectionRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(fundingSessionSelectionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -2897,12 +2963,11 @@ class FundingApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(FundingSession),
-            ) as FundingSession;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2924,4 +2989,5 @@ class FundingApi {
       extra: _response.extra,
     );
   }
+
 }

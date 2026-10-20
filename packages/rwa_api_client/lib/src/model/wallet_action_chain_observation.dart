@@ -17,7 +17,7 @@ part 'wallet_action_chain_observation.g.dart';
 /// * [recipient] 
 /// * [payloadHash] 
 /// * [value] 
-/// * [receiptSuccess] 
+/// * [receiptSuccess] - Exact receipt result. A reverted cancellation can still consume the original nonce after canonical finality; this is not original business success.
 /// * [canonical] 
 /// * [blockNumber] 
 /// * [blockHash] 
@@ -41,6 +41,7 @@ abstract class WalletActionChainObservation implements Built<WalletActionChainOb
   WalletActionChainObservationValueEnum get value;
   // enum valueEnum {  0x0,  };
 
+  /// Exact receipt result. A reverted cancellation can still consume the original nonce after canonical finality; this is not original business success.
   @BuiltValueField(wireName: r'receipt_success')
   bool get receiptSuccess;
 

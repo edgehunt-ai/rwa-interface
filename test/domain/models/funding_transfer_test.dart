@@ -1,8 +1,59 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/models/funding_session.dart';
 
 void main() {
+  for (final state in [FundingPlanState.failed, FundingPlanState.manualReview,
+      FundingPlanState.cancelled, FundingPlanState.expired]) {
+    test('$state retaining transfer identity never waits for arrival', () {
+      final plan = FundingPlan(
+        planId: 'plan-1', tradePreviewId: 'preview-1',
+        shortfall: DecimalValue('5'), status: state,
+        legs: [_leg(status: FundingLegState.submitted, transferId: 'transfer-1')],
+      );
+      expect(plan.shouldPoll, isFalse);
+      expect(plan.isActionable, isFalse);
+      expect(plan.legs.single.transferId, 'transfer-1');
+    });
+  }
+
+  test('partial funding without an active leg remains partial, not in transit', () {
+    final plan = FundingPlan(
+      planId: 'partial-plan', tradePreviewId: 'preview-1',
+      shortfall: DecimalValue('0.000000000000000001'),
+      status: FundingPlanState.partiallyFunded,
+      legs: [_leg(status: FundingLegState.completed, transferId: 'settled-leg')],
+    );
+    expect(plan.shouldPoll, isFalse);
+    expect(plan.status, FundingPlanState.partiallyFunded);
+    expect(plan.shortfall.value, '0.000000000000000001');
+  });
+
+  for (final state in FundingTransferState.values) {
+    test('$state does not confuse source acceptance with settlement', () {
+      final transfer = FundingTransfer(
+        transferId: 'transfer-1', planId: 'plan-1', amount: DecimalValue('5'),
+        status: state, nextActionId: 'action-1', providerStatus: 'succeeded',
+      );
+      expect(transfer.isCompleted, state == FundingTransferState.completed);
+      expect(transfer.canExecuteNextAction, [
+        FundingTransferState.awaitingAuthorization,
+        FundingTransferState.awaitingWallet,
+        FundingTransferState.originConfirmed,
+        FundingTransferState.filling,
+      ].contains(state));
+    });
+  }
+
+  test('manual review overrides a stale confirmation capability', () {
+    final session = FundingSessionSummary(
+      sessionId: 'session-1', status: 'manualReview', version: 2,
+      canConfirmTransfer: true, expiresAt: DateTime.utc(2027),
+    );
+    expect(session.requiresReview, isTrue);
+    expect(session.canSubmit, isFalse);
+  });
   group('FundingPlan.isExecuting', () {
     test('recognizes executing and partially funded plans', () {
       expect(_plan(FundingPlanState.executing).isExecuting, isTrue);
