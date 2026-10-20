@@ -25,6 +25,7 @@ import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
+import 'package:nobell/ui/features/activity/providers/activity_provider.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart';
@@ -64,11 +65,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   bool _withdrawalPolling = false;
   Hip3Withdrawal? _withdrawal;
   FundingPlan? _activePlan;
+  String? _activePlanSessionId;
   bool _planPolling = false;
+  int _planGeneration = 0;
   int _quoteSequence = 0;
   String? _error;
   String? _statusMessage;
   bool _transferPending = false;
+  bool _resumeRequired = false;
+  bool _planActionRequired = false;
   bool _completionToastShown = false;
   bool _sendFromSpot = true;
   bool _selectingToken = false;
@@ -152,16 +157,21 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
+    _planGeneration++;
     setState(() {
       _selectedPositionId = position.positionId;
       _selectingToken = false;
       _tokenQuery = '';
       _tokenNetworkFilter = null;
       _quote = null;
+      _activePlan = null;
+      _activePlanSessionId = null;
       _quoting = false;
       _error = null;
       _statusMessage = null;
       _transferPending = false;
+      _resumeRequired = false;
+      _planActionRequired = false;
       _completionToastShown = false;
     });
     _scheduleQuote();
@@ -172,24 +182,33 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
+    _planGeneration++;
     if (!_sendFromSpot) return;
     final allocations = _allocations;
     if (allocations.isEmpty) {
       setState(() {
         _quote = null;
+        _activePlan = null;
+        _activePlanSessionId = null;
         _quoting = false;
         _statusMessage = null;
         _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
         _completionToastShown = false;
       });
       return;
     }
     setState(() {
       _quote = null;
+      _activePlan = null;
+      _activePlanSessionId = null;
       _quoting = true;
       _error = null;
       _statusMessage = null;
       _transferPending = false;
+      _resumeRequired = false;
+      _planActionRequired = false;
       _completionToastShown = false;
     });
     _quoteDebounce = Timer(const Duration(milliseconds: 500), _requestQuote);
@@ -200,12 +219,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
+    _planGeneration++;
     _withdrawalPreviewDebounce?.cancel();
     _withdrawalPreviewRefresh?.cancel();
     _withdrawalPreviewSequence++;
     setState(() {
       _sendFromSpot = !_sendFromSpot;
       _quote = null;
+      _activePlan = null;
+      _activePlanSessionId = null;
       _quoting = false;
       _error = null;
       _statusMessage = null;
@@ -365,7 +387,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _scheduleQuoteRefresh(FundingSessionSummary quote, int sequence) {
     _quoteRefresh?.cancel();
-    if (quote.status == 'funded' ||
+    if (_activePlan != null ||
+        _planRefresh != null ||
+        quote.status == 'funded' ||
+        quote.status == 'manualReview' ||
         quote.status == 'expired' ||
         quote.status == 'cancelled') {
       return;
@@ -379,6 +404,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   Future<void> _refreshQuote(String sessionId, int sequence) async {
     if (!mounted ||
         sequence != _quoteSequence ||
+        _activePlan != null ||
+        _planRefresh != null ||
         (!_transferPending && _allocations.isEmpty) ||
         _submitting) {
       return;
@@ -412,7 +439,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       await _submitHip3Withdrawal();
       return;
     }
-    if (_submitting || _transferPending) return;
+    if (_submitting) return;
+    if (_planActionRequired) {
+      await _continueActivePlan();
+      return;
+    }
+    if (_transferPending) return;
     final l10n = AppLocalizations.of(context);
     final allocations = _allocations;
     if (allocations.isEmpty) {
@@ -428,11 +460,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       setState(() => _applySessionStatus(currentQuote));
       return;
     }
-    if (currentQuote.status == 'transferring') {
-      setState(() => _applySessionStatus(currentQuote));
-      return;
-    }
-    if (!currentQuote.canConfirmTransfer) {
+    if (!_resumeRequired &&
+        (!currentQuote.canConfirmTransfer ||
+            !_sessionIsEditable(currentQuote.status))) {
       setState(() => _error = l10n.transferQuoteNotReady);
       return;
     }
@@ -449,14 +479,19 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || submitSequence != _quoteSequence) return;
       setState(() => _applyQuote(quote));
       if (quote.status == 'funded') return;
-      if (quote.status == 'transferring') {
+      if (quote.status == 'manualReview' ||
+          quote.status == 'expired' ||
+          quote.status == 'cancelled') {
         return;
       }
-      if (_allocations.isEmpty || !quote.canConfirmTransfer) {
+      if (_allocations.isEmpty ||
+          (quote.status != 'transferring' &&
+              (!quote.canConfirmTransfer ||
+                  !_sessionIsEditable(quote.status)))) {
         throw StateError(l10n.transferQuoteChanged);
       }
       final plan = await commands.planForSession(quote);
-      await _advancePlan(plan);
+      await _advancePlan(plan, sessionId: quote.sessionId);
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -471,12 +506,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         };
         _statusMessage = null;
         _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
       });
     } finally {
       if (mounted) {
         setState(() => _submitting = false);
         final latestQuote = _quote;
-        if (latestQuote != null && submitSequence == _quoteSequence) {
+        if (latestQuote != null &&
+            submitSequence == _quoteSequence &&
+            _activePlan == null &&
+            _error == null) {
           _scheduleQuoteRefresh(latestQuote, submitSequence);
         }
       }
@@ -663,7 +703,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
   }
 
-  Future<void> _advancePlan(FundingPlan plan) async {
+  Future<void> _advancePlan(FundingPlan plan, {String? sessionId}) async {
+    final generation = ++_planGeneration;
     final commands = ref.read(fundingTransferCommandsProvider);
     var current = plan;
     if (current.status == FundingPlanState.alreadyFunded) {
@@ -675,25 +716,70 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       await commands.create(plan: current, authorization: authorization);
       current = await commands.refresh(current.planId);
     }
-    if (!mounted) return;
+    if (!mounted || generation != _planGeneration) return;
     if (current.status == FundingPlanState.alreadyFunded) {
       _completeTransfer();
       return;
     }
-    final pending =
-        current.isExecuting ||
-        current.isActionable ||
-        current.legs.any((leg) => leg.transferId != null);
+    final pending = _isPlanPending(current);
     setState(() {
-      _activePlan = current;
+      _activePlan = pending ? current : null;
+      _activePlanSessionId = pending ? sessionId ?? _activePlanSessionId : null;
       _transferPending = pending;
+      _resumeRequired = false;
+      _planActionRequired = false;
       _statusMessage = pending
           ? AppLocalizations.of(context).transferWaitingArrival
           : null;
       if (!pending) _error = _planFailureMessage(current);
     });
-    if (pending) _startPlanPolling();
+    if (pending) {
+      _startPlanPolling();
+    } else {
+      _stopPlanPolling();
+      commands.forgetTransferDraft(_quote?.sessionId ?? '');
+    }
   }
+
+  Future<void> _continueActivePlan() async {
+    final plan = _activePlan;
+    if (_submitting || !_planActionRequired || plan == null) return;
+    final generation = ++_planGeneration;
+    setState(() {
+      _submitting = true;
+      _planActionRequired = false;
+      _error = null;
+    });
+    try {
+      final refreshed = await ref
+          .read(fundingTransferCommandsProvider)
+          .reconcile(plan);
+      if (!mounted || generation != _planGeneration) return;
+      await _advancePlan(refreshed);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _planActionRequired = true;
+        _error = errorMessage(
+          error,
+          fallback: AppLocalizations.of(context).transferStartFailed,
+        );
+      });
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  bool _isPlanPending(FundingPlan plan) => switch (plan.status) {
+    FundingPlanState.executing || FundingPlanState.partiallyFunded => true,
+    FundingPlanState.ready => plan.isActionable,
+    _ => false,
+  };
+
+  bool _sessionIsEditable(String status) =>
+      status == 'editing' ||
+      status == 'readyToConfirm' ||
+      status == 'ready_to_confirm';
 
   void _startPlanPolling() {
     if (_planRefresh != null || !_transferPending) return;
@@ -707,30 +793,48 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   Future<void> _pollPlan() async {
     final plan = _activePlan;
-    if (!mounted || !_transferPending || _planPolling || plan == null) return;
+    if (!mounted ||
+        !_transferPending ||
+        _submitting ||
+        _planPolling ||
+        plan == null) {
+      return;
+    }
+    final generation = _planGeneration;
     _planPolling = true;
     try {
-      final refreshed = await ref
+      final progress = await ref
           .read(fundingTransferCommandsProvider)
-          .reconcile(plan);
-      if (!mounted) return;
+          .inspect(plan);
+      if (!mounted || generation != _planGeneration) return;
+      final refreshed = progress.plan;
       if (refreshed.status == FundingPlanState.alreadyFunded) {
         _completeTransfer();
         return;
       }
-      final pending =
-          refreshed.isExecuting ||
-          refreshed.isActionable ||
-          refreshed.legs.any((leg) => leg.transferId != null);
+      final pending = _isPlanPending(refreshed);
       setState(() {
-        _activePlan = refreshed;
+        _activePlan = pending ? refreshed : null;
         _transferPending = pending;
-        if (!pending) {
+        _planActionRequired = pending && progress.requiresUserAction;
+        if (pending) {
+          _statusMessage = progress.requiresUserAction
+              ? AppLocalizations.of(context).authorizationRequired
+              : AppLocalizations.of(context).transferWaitingArrival;
+        } else {
+          _resumeRequired = false;
           _statusMessage = null;
           _error = _planFailureMessage(refreshed);
         }
       });
-      if (!pending) _stopPlanPolling();
+      if (!pending) {
+        _planGeneration++;
+        _activePlanSessionId = null;
+        ref
+            .read(fundingTransferCommandsProvider)
+            .forgetTransferDraft(_quote?.sessionId ?? '');
+        _stopPlanPolling();
+      }
     } on Object catch (error) {
       if (mounted && error is! ApiFailure) {
         setState(() => _error = error.toString());
@@ -765,9 +869,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _completionToastShown = true;
     _stopPlanPolling();
     _withdrawalRefresh?.cancel();
+    ref
+        .read(fundingTransferCommandsProvider)
+        .forgetTransferDraft(_quote?.sessionId ?? '');
     ref.invalidate(hip3TransferBalanceProvider);
     ref.invalidate(transferFundingAccountProvider);
     ref.invalidate(transferOptionsProvider);
+    ref.invalidate(activityProvider);
     AppToast.showSuccess(
       context,
       AppLocalizations.of(context).transferCompleted,
@@ -775,22 +883,58 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     Navigator.of(context).maybePop();
   }
 
+  void _viewActivityLater() {
+    ref.invalidate(activityProvider);
+    context.goNamed(AppRoutes.activityName);
+  }
+
   void _applySessionStatus(FundingSessionSummary session) {
     switch (session.status) {
       case 'transferring':
-        _transferPending = true;
-        _statusMessage = AppLocalizations.of(context).transferInProgress;
-        _error = null;
+        final planKnown =
+            _activePlan != null && _activePlanSessionId == session.sessionId;
+        _transferPending = planKnown;
+        _resumeRequired = !planKnown;
+        if (!planKnown) {
+          _planActionRequired = false;
+          _statusMessage = AppLocalizations.of(context).transferInProgress;
+          _error = null;
+        }
       case 'funded':
         _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
         _statusMessage = null;
         _error = null;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _completeTransfer(),
         );
+      case 'manualReview':
+        _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
+        _statusMessage = null;
+        _error = AppLocalizations.of(context).transferRequiresManualReview;
+        ref
+            .read(fundingTransferCommandsProvider)
+            .forgetTransferDraft(session.sessionId);
+      case 'expired':
+        _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
+        _statusMessage = null;
+        _error = AppLocalizations.of(context).transferQuoteExpired;
+      case 'cancelled':
+        _transferPending = false;
+        _resumeRequired = false;
+        _planActionRequired = false;
+        _statusMessage = null;
+        _error = AppLocalizations.of(context).transferCancelled;
       default:
         if (!_submitting) {
           _transferPending = false;
+          _resumeRequired = false;
+          _planActionRequired = false;
           _statusMessage = null;
         }
     }
@@ -841,16 +985,22 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final l10n = AppLocalizations.of(context);
     final send = _sendFromSpot ? l10n.spot : l10n.perps;
     final receive = _sendFromSpot ? l10n.perps : l10n.spot;
+    final quote = _quote;
     final canSubmit =
         !_submitting &&
-        !_transferPending &&
         (_sendFromSpot
-            ? !_quoting &&
-                  _allocations.isNotEmpty &&
-                  _quote?.canConfirmTransfer == true &&
-                  _quote?.status != 'transferring' &&
-                  _quote?.status != 'funded'
-            : _withdrawalAmount.text.trim().isNotEmpty &&
+            ? (_planActionRequired &&
+                      _transferPending &&
+                      _activePlan != null) ||
+                  _resumeRequired ||
+                  (!_transferPending &&
+                      !_quoting &&
+                      _allocations.isNotEmpty &&
+                      quote?.canConfirmTransfer == true &&
+                      quote != null &&
+                      _sessionIsEditable(quote.status))
+            : !_transferPending &&
+                  _withdrawalAmount.text.trim().isNotEmpty &&
                   !_withdrawalPreviewing &&
                   _withdrawalPreview?.canProceed == true &&
                   _withdrawalPreview?.isRiskExpired == false &&
@@ -1054,8 +1204,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton(
                           key: const Key('transfer-close-view-later'),
-                          onPressed: () =>
-                              context.goNamed(AppRoutes.activityName),
+                          onPressed: _viewActivityLater,
                           child: Text(l10n.closeViewLater),
                         ),
                       ],
@@ -1081,7 +1230,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                   ),
                                 )
                               : Text(
-                                  _transferPending
+                                  _transferPending && !_planActionRequired
                                       ? l10n.transferInProgress
                                       : l10n.signAndTransfer,
                                 ),
