@@ -59,6 +59,11 @@ void main() {
       final reads = funding.planReads;
       await tester.pump(const Duration(seconds: 12));
       expect(funding.planReads, reads);
+      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+      await tester.enterText(find.byType(TextField), '21');
+      await tester.pump(const Duration(milliseconds: 501));
+      expect(funding.amounts, ['20']);
+      expect(funding.planCalls, 1);
       await tester.ensureVisible(
         find.byKey(const Key('transfer-plan-refresh')),
       );
@@ -114,6 +119,71 @@ void main() {
     });
   }
 
+  testWidgets('check status loads exact target credit evidence without retry', (
+    tester,
+  ) async {
+    final funding = _RecoveryTransferRepository()
+      ..planStatus = FundingPlanState.manualReview
+      ..planTransferId = 'transfer-credit-1'
+      ..credited = true;
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    expect(funding.transferReads, 0);
+    await tester.ensureVisible(find.byKey(const Key('transfer-plan-refresh')));
+    await tester.tap(find.byKey(const Key('transfer-plan-refresh')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('transfer-credit-1'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is SelectableText &&
+            widget.data!.contains('0.500000000000000001'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('venue_reference: credit-proof-1'), findsOneWidget);
+    expect(find.text('account_ref: target-account-1'), findsOneWidget);
+    expect(funding.planCalls, 1);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('check status resumes an existing plan without a replacement', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..planStatus = FundingPlanState.failed
+      ..planTransferId = 'transfer-recovery-1';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    funding
+      ..planStatus = FundingPlanState.executing
+      ..nextActionId = 'released-action';
+    await tester.ensureVisible(find.byKey(const Key('transfer-plan-refresh')));
+    await tester.tap(find.byKey(const Key('transfer-plan-refresh')));
+    await tester.pump();
+    await tester.pump();
+    expect(funding.planCalls, 1);
+    expect(funding.transferReads, greaterThan(0));
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
+  });
+
   testWidgets('manual review session preserves recovery without a new plan', (
     tester,
   ) async {
@@ -131,6 +201,63 @@ void main() {
     expect(funding.refreshCalls, 0);
     expect(funding.planCalls, 0);
   });
+
+  testWidgets('fresh preview replaces terminal withdrawal amounts and fees', (
+    tester,
+  ) async {
+    final withdrawals = _FakeHip3Withdrawals()..submittedStatus = 'failed';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+          hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+          hip3TransferBalanceProvider.overrideWith((_) async => '100'),
+          transferOptionsProvider.overrideWith((_) async => _capacityOptions()),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('hip3-transfer-amount')),
+      '51.4',
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Transfer failed.'), findsOneWidget);
+    withdrawals.previewFee = '1.2';
+    withdrawals.previewReceived = '50.2';
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(withdrawals.previewAmounts.length, greaterThan(1));
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-receive-amount-value')),
+          )
+          .value,
+      '50.2',
+    );
+    expect(find.text('1.2 USDC'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-transfer-amount')))
+          .controller!
+          .text,
+      '51.4',
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('matches the transfer design structure and interactions', (
     tester,
   ) async {
@@ -400,6 +527,7 @@ void main() {
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,
     );
+    withdrawals.submitFailure = StateError('Signature rejected by wallet');
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
@@ -416,13 +544,34 @@ void main() {
     );
     expect(find.text('1.18 USDC'), findsNWidgets(2));
     expect(find.text('0 USDC'), findsOneWidget);
-    expect(find.text('总费用: 1.18 USDC'), findsOneWidget);
-    expect(find.text('接收数量: 50.22 USDC'), findsOneWidget);
-    expect(find.text(withdrawals.destination), findsOneWidget);
-    await tester.tap(find.text('取消'));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    expect(withdrawals.submissions, 1);
+    withdrawals.submitFailure = null;
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-transfer-amount')))
+          .enabled,
+      isTrue,
+    );
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    expect(withdrawals.submissions, 0);
+    expect(withdrawals.previewAmounts.length, greaterThan(1));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    withdrawals.previewFailure = StateError('Quote temporarily unavailable');
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    expect(find.text('Quote temporarily unavailable'), findsNothing);
+    withdrawals.previewFailure = null;
+    await tester.enterText(
+      find.byKey(const Key('hip3-transfer-amount')),
+      '51.40',
+    );
+    await tester.pump();
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
@@ -440,25 +589,37 @@ void main() {
     await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Signature rejected by wallet'), findsOneWidget);
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(withdrawals.createdAmounts, ['51.4']);
-    await tester.tap(find.widgetWithText(FilledButton, '签名并转账').last);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 250));
-    expect(withdrawals.submissions, 1);
-    expect(find.text('转账处理中…'), findsOneWidget);
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(withdrawals.submissions, 2);
+    expect(find.text('Signature rejected by wallet'), findsNothing);
+    expect(find.text('转账处理中…'), findsNothing);
+    _expectPendingTransfer(tester);
+    final previewsAfterSubmission = withdrawals.previewAmounts.length;
+    final amountField = tester.widget<TextField>(
+      find.byKey(const Key('hip3-transfer-amount')),
+    );
+    expect(amountField.enabled, isFalse);
+    // Even a queued input callback must not clear the submitted withdrawal.
+    amountField.onChanged!('51.4');
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     withdrawals.failureReason =
         'relay_intent_failed_or_refunded_requires_manual_review';
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
+    _expectPendingTransfer(tester);
+    expect(withdrawals.previewAmounts.length, previewsAfterSubmission);
     expect(find.textContaining('人工'), findsOneWidget);
     final checks = withdrawals.getCalls;
     await tester.pump(const Duration(seconds: 10));
     expect(withdrawals.getCalls, greaterThan(checks));
-    expect(withdrawals.submissions, 1);
+    expect(withdrawals.submissions, 2);
+    expect(withdrawals.previewAmounts.length, previewsAfterSubmission);
+    _expectPendingTransfer(tester);
     expect(find.byKey(const Key('transfer-withdrawal-refresh')), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -466,6 +627,92 @@ void main() {
     );
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final scenario in ['unchanged', 'changed float', 'changed relay']) {
+    final changedQuote = scenario == 'changed float';
+    testWidgets(
+      'withdrawal keeps loading through prepare and signing ($scenario)',
+      (tester) async {
+        final withdrawals = _FakeHip3Withdrawals()
+          ..prepareGate = Completer<void>()
+          ..submitGate = Completer<void>();
+        if (scenario == 'changed relay') withdrawals.rail = 'relay';
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              deploymentEnvironmentProvider.overrideWith(_mainnetEnvironment),
+              hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+              hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
+              transferOptionsProvider.overrideWith(
+                (ref) async => _capacityOptions(),
+              ),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const TransferScreen(),
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const Key('hip3-transfer-amount')),
+          '51.4',
+        );
+        await tester.pump(const Duration(milliseconds: 600));
+        if (scenario != 'unchanged') withdrawals.createdFee = '1.19';
+        await tester.tap(find.byType(FilledButton));
+        await tester.pump();
+        _expectPendingTransfer(tester);
+        final previews = withdrawals.previewAmounts.length;
+        await tester.pump(const Duration(seconds: 5));
+        expect(withdrawals.previewAmounts.length, previews);
+        _expectPendingTransfer(tester);
+        if (changedQuote) withdrawals.previewGate = Completer<void>();
+        withdrawals.prepareGate!.complete();
+        await tester.pump();
+        _expectPendingTransfer(tester);
+        await tester.pump(const Duration(seconds: 5));
+        _expectPendingTransfer(tester);
+        if (changedQuote) {
+          expect(withdrawals.submissions, 0);
+          withdrawals.previewGate!.complete();
+          await tester.pump();
+          final context = tester.element(find.byType(TransferScreen));
+          expect(
+            find.text(AppLocalizations.of(context).transferQuoteChanged),
+            findsOneWidget,
+          );
+          expect(find.byType(CircularProgressIndicator), findsNothing);
+        } else {
+          expect(withdrawals.previewAmounts.length, previews);
+          expect(withdrawals.submissions, 1);
+          if (scenario == 'changed relay') {
+            expect(find.text('1.19 USDC'), findsOneWidget);
+            expect(
+              tester
+                  .widget<AnimatedNumberText>(
+                    find.byKey(const Key('transfer-receive-amount-value')),
+                  )
+                  .value,
+              '50.21',
+            );
+          }
+          withdrawals.submitGate!.complete();
+          await tester.pump();
+          _expectPendingTransfer(tester);
+          await tester.pump(const Duration(seconds: 6));
+          _expectPendingTransfer(tester);
+          expect(withdrawals.previewAmounts.length, previews);
+          expect(withdrawals.getCalls, greaterThan(1));
+        }
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
 
   testWidgets('quotes only the token selected from the picker', (tester) async {
     final funding = _RefreshingTransferQuoteRepository();
@@ -690,6 +937,7 @@ void main() {
           findsOneWidget,
         );
         for (final key in const [
+          Key('transfer-position-impact-skeleton'),
           Key('transfer-quote-eta-skeleton'),
           Key('transfer-quote-bridge-fee-skeleton'),
           Key('transfer-quote-network-fee-skeleton'),
@@ -716,6 +964,14 @@ void main() {
         );
         expect(
           find.byKey(const Key('transfer-quote-eta-skeleton')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('transfer-position-impact-skeleton')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('hip3-cross-liquidation-impacts')),
           findsNothing,
         );
         expect(find.text('~2min'), findsOneWidget);
@@ -791,6 +1047,7 @@ void main() {
     expect(find.text('Network fee'), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
     for (final key in const [
+      Key('transfer-position-impact-skeleton'),
       Key('transfer-receive-amount-skeleton'),
       Key('transfer-quote-eta-skeleton'),
       Key('transfer-quote-minimum-received-skeleton'),
@@ -844,6 +1101,30 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('1 Cross position will be affected'), findsOneWidget);
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsNothing,
+    );
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump();
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('hip3-cross-liquidation-impacts')),
+      findsNothing,
+    );
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    expect(
+      find.byKey(const Key('transfer-position-impact-skeleton')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('hip3-cross-liquidation-impacts')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('minimum received stays visible without an estimated amount', (
@@ -1259,7 +1540,7 @@ void main() {
     });
   }
 
-  for (final change in ['reduced', 'ineligible', 'missing', 'failed']) {
+  for (final change in ['reduced', 'ineligible', 'missing']) {
     testWidgets('quote refresh clears stale capacity when $change', (
       tester,
     ) async {
@@ -1292,6 +1573,101 @@ void main() {
       if (change == 'reduced') {
         expect(find.text('Available: 5'), findsOneWidget);
       }
+    });
+  }
+
+  testWidgets(
+    'failed automatic refresh keeps quote and retries until recovered',
+    (tester) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      funding.failRefresh = true;
+      for (var attempt = 1; attempt <= 2; attempt++) {
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pump();
+        expect(funding.refreshCalls, attempt);
+        expect(find.byKey(const Key('transfer-error')), findsOneWidget);
+        expect(
+          tester
+              .widget<AnimatedNumberText>(
+                find.byKey(const Key('transfer-receive-amount-value')),
+              )
+              .value,
+          '19.5',
+        );
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+          isNotNull,
+        );
+      }
+      funding.failRefresh = false;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+      expect(funding.refreshCalls, 3);
+      expect(find.byKey(const Key('transfer-error')), findsNothing);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '20',
+      );
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      _expectPendingTransfer(tester);
+    },
+  );
+
+  for (final stage in ['refresh', 'plan']) {
+    testWidgets('submit $stage failure preserves quote and resumes refresh', (
+      tester,
+    ) async {
+      final funding = _CapacityTransferRepository();
+      await _pumpCapacityTransfer(tester, funding);
+      await tester.enterText(find.byType(TextField), '20');
+      await tester.pump(const Duration(milliseconds: 501));
+      await tester.pump();
+      funding.failRefresh = stage == 'refresh';
+      funding.failPlan = stage == 'plan';
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byKey(const Key('transfer-error')), findsOneWidget);
+      if (stage == 'plan') {
+        expect(
+          find.text(
+            'The refreshed quote no longer covers the required top-up.',
+          ),
+          findsOneWidget,
+        );
+      }
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '20',
+      );
+      expect(
+        tester
+            .widget<AnimatedNumberText>(
+              find.byKey(const Key('transfer-receive-amount-value')),
+            )
+            .value,
+        '19.5',
+      );
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNotNull,
+      );
+      funding.failRefresh = false;
+      funding.failPlan = false;
+      final refreshes = funding.refreshCalls;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+      expect(funding.refreshCalls, refreshes + 1);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      await tester.pump();
+      _expectPendingTransfer(tester);
     });
   }
 
@@ -1338,7 +1714,7 @@ void main() {
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
 
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(funding.refreshCalls, 2);
     expect(funding.planCalls, 1);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
@@ -1346,6 +1722,32 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     expect(funding.refreshCalls, sessionRefreshes);
     expect(funding.planReads, greaterThan(1));
+  });
+
+  testWidgets('polling shows terminal failure despite a missing old transfer', (
+    tester,
+  ) async {
+    final funding = _CapacityTransferRepository()
+      ..planTransferId = 'old-transfer';
+    await _pumpCapacityTransfer(tester, funding);
+    await tester.enterText(find.byType(TextField), '20');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    funding.planStatus = FundingPlanState.failed;
+    funding.missingTransfer = true;
+    final transferReads = funding.transferReads;
+
+    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump();
+
+    expect(find.text('Transfer failed.'), findsOneWidget);
+    expect(funding.transferReads, transferReads);
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    final planReads = funding.planReads;
+    await tester.pump(const Duration(seconds: 6));
+    expect(funding.planReads, planReads);
   });
 
   testWidgets('failed plan with a transfer id is terminal', (tester) async {
@@ -1407,8 +1809,8 @@ void main() {
 
     expect(funding.planCalls, 1);
     expect(funding.transferReads, 1);
-    expect(find.text('Authorization required'), findsOneWidget);
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.text('Authorization required'), findsNothing);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,
@@ -1460,7 +1862,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 2100));
     await tester.pump();
-    expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
     expect(funding.planReads, greaterThan(0));
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     expect(
@@ -1540,6 +1942,7 @@ final class _CapacityTransferRepository implements FundingRepository {
   bool eligible = true;
   bool missing = false;
   bool failRefresh = false;
+  bool failPlan = false;
   String status = 'ready_to_confirm';
   FundingPlanState planStatus = FundingPlanState.executing;
   String? planTransferId;
@@ -1549,6 +1952,7 @@ final class _CapacityTransferRepository implements FundingRepository {
   int planCalls = 0;
   int planReads = 0;
   int transferReads = 0;
+  bool missingTransfer = false;
 
   FundingSessionSummary get _session => FundingSessionSummary(
     sessionId: 'capacity-session',
@@ -1609,6 +2013,11 @@ final class _CapacityTransferRepository implements FundingRepository {
     required String idempotencyKey,
   }) async {
     planCalls++;
+    if (failPlan) {
+      throw const UnknownFailure(
+        userAction: 'The refreshed quote no longer covers the required top-up.',
+      );
+    }
     return _plan;
   }
 
@@ -1621,6 +2030,13 @@ final class _CapacityTransferRepository implements FundingRepository {
   @override
   Future<FundingTransfer> getFundingTransfer(String id) async {
     transferReads++;
+    if (missingTransfer) {
+      throw const ServerFailure(
+        statusCode: 404,
+        code: 'not_found',
+        message: 'Transfer not found',
+      );
+    }
     return FundingTransfer(
       transferId: id,
       planId: 'capacity-plan',
@@ -1636,6 +2052,7 @@ final class _CapacityTransferRepository implements FundingRepository {
 
 final class _RecoveryTransferRepository extends _CapacityTransferRepository {
   FundingTransferState transferStatus = FundingTransferState.failed;
+  bool credited = false;
 
   @override
   Future<FundingTransfer> getFundingTransfer(String id) async {
@@ -1645,6 +2062,15 @@ final class _RecoveryTransferRepository extends _CapacityTransferRepository {
       planId: 'capacity-plan',
       amount: DecimalValue('19.5', asset: 'USDC'),
       status: transferStatus,
+      targetReceivedAmount: credited
+          ? DecimalValue('0.500000000000000001', asset: 'USDC')
+          : null,
+      targetCredit: credited
+          ? const {
+              'venue_reference': 'credit-proof-1',
+              'account_ref': 'target-account-1',
+            }
+          : null,
       refundStatus: transferStatus == FundingTransferState.refunded
           ? 'confirmed'
           : 'pending',
@@ -1877,6 +2303,17 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   final createdAmounts = <String>[];
   final createdRails = <String>[];
   int submissions = 0;
+  Object? submitFailure;
+  Object? previewFailure;
+  Completer<void>? prepareGate;
+  Completer<void>? submitGate;
+  Completer<void>? previewGate;
+  String createdFee = '1.18';
+  String previewFee = '1.18';
+  String previewReceived = '50.22';
+  String submittedStatus = 'submitted';
+  String rail = 'float';
+  bool accepted = false;
   int getCalls = 0;
   String? failureReason;
 
@@ -1886,11 +2323,13 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     required int payoutChainId,
   }) async {
     previewAmounts.add(amount);
+    if (previewFailure case final failure?) throw failure;
+    await previewGate?.future;
     return Hip3WithdrawalPreview(
       amount: amount,
-      fee: '1.18',
-      minimumReceived: '50.22',
-      rail: 'float',
+      fee: previewFee,
+      minimumReceived: previewReceived,
+      rail: rail,
       destinationAddress: destination,
       chainId: '42161',
       maximumTransferable: '100',
@@ -1906,6 +2345,7 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
       ],
       crossLiquidationImpacts: const [],
       riskStatus: 'available',
+      riskValidUntil: DateTime.now().toUtc().add(const Duration(seconds: 2)),
     );
   }
 
@@ -1914,10 +2354,10 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     ownerAddress: destination,
     destinationAddress: destination,
     amount: '51.4',
-    fee: '1.18',
-    minimumReceived: '50.22',
+    fee: createdFee,
+    minimumReceived: createdFee == '1.19' ? '50.21' : '50.22',
     status: 'awaiting_signature',
-    rail: 'float',
+    rail: rail,
     payoutChainId: 42161,
     payoutAsset: 'USDC',
     expiresAt: DateTime.now().add(const Duration(minutes: 5)),
@@ -1934,13 +2374,14 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   }) async {
     createdAmounts.add(amount);
     createdRails.add(rail);
+    await prepareGate?.future;
     return prepared;
   }
 
   @override
   Future<Hip3Withdrawal> get(String id) async {
     getCalls++;
-    return submissions == 0 ? prepared : _submitted(prepared);
+    return accepted ? _submitted(prepared) : prepared;
   }
 
   @override
@@ -1949,6 +2390,9 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     required String idempotencyKey,
   }) async {
     submissions++;
+    await submitGate?.future;
+    if (submitFailure case final failure?) throw failure;
+    accepted = true;
     return _submitted(prepared);
   }
 
@@ -1959,7 +2403,7 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
     amount: prepared.amount,
     fee: prepared.fee,
     minimumReceived: prepared.minimumReceived,
-    status: 'submitted',
+    status: submittedStatus,
     failureReason: failureReason,
     rail: prepared.rail,
     expiresAt: prepared.expiresAt,
@@ -2012,3 +2456,17 @@ Future<DeploymentEnvironment> _mainnetEnvironment(Ref ref) async =>
       hip3Environment: 'mainnet',
       bstocksConfigured: false,
     );
+
+void _expectPendingTransfer(WidgetTester tester) {
+  final button = find.byType(FilledButton);
+  expect(tester.widget<FilledButton>(button).onPressed, isNull);
+  expect(
+    find.descendant(
+      of: button,
+      matching: find.byType(CircularProgressIndicator),
+    ),
+    findsOneWidget,
+  );
+  expect(find.text('Transfer in progress...'), findsNothing);
+  expect(find.byKey(const Key('transfer-close-view-later')), findsNothing);
+}

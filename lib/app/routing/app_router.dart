@@ -15,6 +15,7 @@ import 'package:nobell/ui/features/not_found/views/not_found_screen.dart';
 import 'package:nobell/ui/features/portfolio/views/assets_screen.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/account/views/settings_screen.dart';
+import 'package:nobell/ui/features/legal/views/legal_document_screen.dart';
 import 'package:nobell/ui/features/activity/views/activity_screen.dart';
 import 'package:nobell/domain/models/activity_record.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
@@ -29,6 +30,18 @@ abstract final class AppRouter {
       initialLocation: initialLocation,
       observers: [SentryNavigatorObserver()],
       routes: [
+        GoRoute(
+          name: AppRoutes.termsName,
+          path: AppRoutes.termsPath,
+          builder: (context, state) =>
+              const LegalDocumentScreen(document: LegalDocument.terms),
+        ),
+        GoRoute(
+          name: AppRoutes.privacyName,
+          path: AppRoutes.privacyPath,
+          builder: (context, state) =>
+              const LegalDocumentScreen(document: LegalDocument.privacy),
+        ),
         GoRoute(
           name: AppRoutes.homeName,
           path: AppRoutes.homePath,

@@ -14,7 +14,9 @@ import 'package:nobell/ui/features/activity/views/activity_screen.dart';
 import '../../helpers/test_app.dart';
 
 void main() {
-  testWidgets('list detail action opens a stable record route', (tester) async {
+  testWidgets('list expands inline without a duplicate detail action', (
+    tester,
+  ) async {
     final record = ActivityRecord(
       id: 'order/123',
       category: ActivityCategory.orders,
@@ -41,16 +43,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('TSLA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(ValueKey('activity-detail-link-${record.id}')));
-    await tester.pumpAndSettle();
-    expect(find.byType(ActivityDetailScreen), findsOneWidget);
     expect(
-      router.routeInformationProvider.value.uri.toString(),
-      AppRoutes.activityDetailLocation(record.id),
+      find.byKey(ValueKey('activity-detail-link-${record.id}')),
+      findsNothing,
     );
-    await tester.tap(find.byType(BackButton));
+    expect(find.text('Status'), findsNWidgets(2));
+    expect(find.byType(ActivityDetailScreen), findsNothing);
+    expect(router.routeInformationProvider.value.uri.path, '/activity');
+    await tester.tap(find.text('TSLA'));
     await tester.pumpAndSettle();
-    expect(find.byType(ActivityScreen), findsOneWidget);
+    expect(find.text('Status'), findsOneWidget);
   });
 
   testWidgets('failed detail requests can be retried', (tester) async {

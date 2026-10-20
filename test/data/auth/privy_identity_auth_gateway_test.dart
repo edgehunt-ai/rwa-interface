@@ -160,7 +160,7 @@ void main() {
     );
   });
 
-  test('Passkey login and binding use the export site origin', () async {
+  test('Passkey login and binding use a hostname RP ID', () async {
     final user = _FakeUser(
       id: 'did:privy:passkey',
       token: 'passkey-token',
@@ -181,10 +181,60 @@ void main() {
     await gateway.initialize(configuration);
 
     expect((await gateway.loginWithPasskey()).id, 'did:privy:passkey');
-    expect(passkey.loginRelyingParty, 'https://keys.example.test');
+    expect(passkey.loginRelyingParty, 'keys.example.test');
     expect(await gateway.getAccessToken(), 'passkey-token');
     expect((await gateway.linkPasskey()).id, 'credential-1');
-    expect(passkey.linkRelyingParty, 'https://keys.example.test');
+    expect(passkey.linkRelyingParty, 'keys.example.test');
+  });
+
+  test('Passkey SDK failure retains the reason and status code', () async {
+    final passkey = _FakePasskey(
+      failure: const PrivyException('[50152] RP ID cannot be validated.'),
+    );
+    final gateway = PrivyIdentityAuthGateway(
+      exportUrl: exportUrl,
+      createPrivy: (_) =>
+          _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
+    );
+    await gateway.initialize(configuration);
+
+    for (final operation in [gateway.loginWithPasskey, gateway.linkPasskey]) {
+      await expectLater(
+        operation(),
+        throwsA(
+          isA<IdentityFailure>().having(
+            (failure) => failure.reason,
+            'reason',
+            '[50152] RP ID cannot be validated.',
+          ),
+        ),
+      );
+    }
+  });
+
+  test('Passkey failure redacts credentials and omits the stack trace', () async {
+    final passkey = _FakePasskey(
+      failure: const PrivyException(
+        'RP ID cannot be validated. Bearer secret-token for user@example.com\n'
+        'at internal.registration(stack trace)',
+      ),
+    );
+    final gateway = PrivyIdentityAuthGateway(
+      exportUrl: exportUrl,
+      createPrivy: (_) =>
+          _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
+    );
+    await gateway.initialize(configuration);
+    await expectLater(
+      gateway.linkPasskey(),
+      throwsA(
+        isA<IdentityFailure>().having(
+          (failure) => failure.reason,
+          'safe reason',
+          'RP ID cannot be validated. Bearer <redacted> for <redacted-email>',
+        ),
+      ),
+    );
   });
 
   test('missing export URL fails before a Passkey SDK call', () async {
@@ -645,17 +695,18 @@ final class _FakeOAuth implements LoginWithOAuth {
 }
 
 final class _FakePasskey implements LoginWithPasskey {
-  _FakePasskey({PrivyUser? user})
+  _FakePasskey({PrivyUser? user, this.failure})
     : user = user ?? _FakeUser(id: 'user', token: 'token');
 
   final PrivyUser user;
+  final PrivyException? failure;
   String? loginRelyingParty;
   String? linkRelyingParty;
 
   @override
   Future<Result<PrivyUser>> login({required String relyingParty}) async {
     loginRelyingParty = relyingParty;
-    return Success(user);
+    return failure == null ? Success(user) : Failure(failure!);
   }
 
   @override
@@ -664,7 +715,7 @@ final class _FakePasskey implements LoginWithPasskey {
     String? displayName,
   }) async {
     linkRelyingParty = relyingParty;
-    return Success(user);
+    return failure == null ? Success(user) : Failure(failure!);
   }
 
   @override

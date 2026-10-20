@@ -8,6 +8,7 @@ import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/data/services/cache_storage_service.dart';
 import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/account_deletion.dart';
 import 'package:nobell/domain/repositories/account_repository.dart';
 import 'package:nobell/domain/models/user_account.dart';
@@ -33,7 +34,8 @@ void main() {
     expect(find.text('RWA user'), findsOneWidget);
     expect(find.text('Passkey'), findsOneWidget);
     expect(find.text('Export Private Key'), findsOneWidget);
-    expect(find.text('Terms & Conditions'), findsOneWidget);
+    expect(find.text('Terms Of Use'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
     final avatar = tester.widget<Image>(
       find.byKey(const Key('settings-account-avatar')),
     );
@@ -109,6 +111,34 @@ void main() {
     expect(find.text('Not set up'), findsOneWidget);
   });
 
+  testWidgets('passkey setup shows the SDK reason and allows retry', (
+    tester,
+  ) async {
+    final identity = FakeIdentityAuthGateway()
+      ..passkeyFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+        reason: '[50152] RP ID cannot be validated.',
+      );
+    await tester.pumpWidget(_settingsApp(identity, _SessionRepository()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Passkey'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Set Up'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('[50152] RP ID cannot be validated.'), findsOneWidget);
+    expect(find.text('Passkey setup failed. Please try again.'), findsNothing);
+    expect(find.text('Set Up Passkey'), findsOneWidget);
+
+    identity.passkeyFailure = null;
+    await tester.tap(find.widgetWithText(FilledButton, 'Set Up'));
+    await tester.pumpAndSettle();
+    expect(identity.linkPasskeyCalls, 2);
+    expect(find.text('Enabled'), findsOneWidget);
+  });
+
   testWidgets('language sheet maps zh-CN and shows the selected control', (
     tester,
   ) async {
@@ -168,7 +198,9 @@ void main() {
     expect(find.text('0 B'), findsOneWidget);
   });
 
-  testWidgets('logout routes from settings to home', (tester) async {
+  testWidgets('settings opens both legal pages, returns, and logs out', (
+    tester,
+  ) async {
     final identity = FakeIdentityAuthGateway();
     final session = _SessionRepository();
     final router = AppRouter.create(initialLocation: '/settings');
@@ -200,6 +232,19 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -400));
     await tester.pumpAndSettle();
+    for (final entry in [
+      ('Terms Of Use', 'Term of Use'),
+      ('Privacy Policy', 'Privacy Policy'),
+    ]) {
+      await tester.ensureVisible(find.text(entry.$1));
+      await tester.tap(find.text(entry.$1));
+      await tester.pumpAndSettle();
+      expect(find.text(entry.$2), findsOneWidget);
+      await tester.tap(find.byKey(const Key('legal-back')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    }
+    await tester.ensureVisible(find.text('Log Out'));
     await tester.tap(find.text('Log Out'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Log Out'));

@@ -73,7 +73,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   int _planGeneration = 0;
   int _quoteSequence = 0;
   String? _error;
-  String? _statusMessage;
+  String? _withdrawalSubmissionError;
   bool _transferPending = false;
   bool _resumeRequired = false;
   bool _planActionRequired = false;
@@ -89,9 +89,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   bool get _operationLocked =>
       _transferPending ||
       _activePlan != null ||
-      _recoveryPlan != null ||
+      (_recoveryPlan != null && _isPlanPending(_recoveryPlan!)) ||
       _quote?.requiresReview == true ||
-      (_withdrawal != null && _withdrawal!.status != 'awaiting_signature');
+      _withdrawal?.isPending == true;
 
   Map<String, String> get _allocations {
     final options = ref.read(transferOptionsProvider);
@@ -150,7 +150,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _openTokenSelector() {
-    if (_positions.length <= 1 || _submitting || _operationLocked) return;
+    if (_positions.length <= 1 ||
+        _submitting ||
+        _operationLocked ||
+        _recoveryPlan != null) {
+      return;
+    }
     setState(() => _selectingToken = true);
   }
 
@@ -163,7 +168,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _selectToken(FundingSourcePosition position) {
-    if (_submitting || _operationLocked) return;
+    if (_submitting || _operationLocked || _recoveryPlan != null) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -178,7 +183,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = false;
       _error = null;
-      _statusMessage = null;
       _transferPending = false;
       _resumeRequired = false;
       _planActionRequired = false;
@@ -188,7 +192,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _scheduleQuote() {
-    if (_submitting || _operationLocked) return;
+    if (_submitting || _operationLocked || _recoveryPlan != null) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -201,7 +205,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _activePlan = null;
         _activePlanSessionId = null;
         _quoting = false;
-        _statusMessage = null;
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
@@ -215,7 +218,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = true;
       _error = null;
-      _statusMessage = null;
       _transferPending = false;
       _resumeRequired = false;
       _planActionRequired = false;
@@ -225,7 +227,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _swapAccounts() {
-    if (_submitting || _operationLocked) return;
+    if (_submitting || _operationLocked || _recoveryPlan != null) return;
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
@@ -240,7 +242,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _activePlanSessionId = null;
       _quoting = false;
       _error = null;
-      _statusMessage = null;
       _withdrawal = null;
       _withdrawalPreview = null;
       _withdrawalPreviewing = false;
@@ -262,6 +263,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   void _scheduleHip3Preview() {
+    if (_sendFromSpot || _submitting || _transferPending) return;
     _withdrawalPreviewDebounce?.cancel();
     _withdrawalPreviewRefresh?.cancel();
     final sequence = ++_withdrawalPreviewSequence;
@@ -293,6 +295,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     String amount, {
     bool forceRefresh = false,
   }) async {
+    if (_submitting || _transferPending) return;
     try {
       final preview = await ref
           .read(hip3WithdrawalCommandsProvider)
@@ -300,6 +303,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
         _withdrawalPreview = preview;
+        final withdrawal = _withdrawal;
+        if (withdrawal != null &&
+            !withdrawal.isPending &&
+            withdrawal.status != 'awaiting_signature') {
+          _withdrawal = null;
+        }
         _withdrawalPreviewing = false;
         _error = hip3WithdrawalBlockerMessage(
           preview,
@@ -340,6 +349,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           sequence != _withdrawalPreviewSequence ||
           _sendFromSpot ||
           _submitting ||
+          _transferPending ||
           _withdrawalAmount.text.trim() != amount) {
         return;
       }
@@ -349,7 +359,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _requestQuote() async {
-    if (!_sendFromSpot || _submitting || _operationLocked) return;
+    if (!_sendFromSpot ||
+        _submitting ||
+        _operationLocked ||
+        _recoveryPlan != null) {
+      return;
+    }
     final allocations = _allocations;
     if (allocations.isEmpty) return;
     final amount = allocations.values.single;
@@ -401,6 +416,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteRefresh?.cancel();
     if (_activePlan != null ||
         _planRefresh != null ||
+        (_recoveryPlan != null && !_isPlanPending(_recoveryPlan!)) ||
         quote.status == 'funded' ||
         quote.status == 'manualReview' ||
         quote.status == 'expired' ||
@@ -427,22 +443,23 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           .read(fundingTransferCommandsProvider)
           .refreshTransferQuote(sessionId);
       if (!mounted || sequence != _quoteSequence) return;
-      setState(() => _applyQuote(quote));
+      setState(() {
+        _error = null;
+        _applyQuote(quote);
+      });
       if (_quote != null) _scheduleQuoteRefresh(quote, sequence);
     } catch (error) {
       if (!mounted || sequence != _quoteSequence) return;
       final current = _quote;
-      if (_operationLocked && current != null) {
-        _scheduleQuoteRefresh(current, sequence);
-      } else {
+      if (!_transferPending) {
         setState(() {
-          _quote = null;
           _error = errorMessage(
             error,
             fallback: AppLocalizations.of(context).transferQuoteChanged,
           );
         });
       }
+      if (current != null) _scheduleQuoteRefresh(current, sequence);
     }
   }
 
@@ -457,6 +474,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
     if (_transferPending) return;
+    if (_recoveryPlan case final plan?) {
+      if (!_isPlanPending(plan)) return;
+      setState(() {
+        _activePlan = plan;
+        _activePlanSessionId = _quote?.sessionId;
+        _transferPending = true;
+        _planActionRequired = true;
+      });
+      await _continueActivePlan();
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     final allocations = _allocations;
     if (allocations.isEmpty) {
@@ -481,7 +509,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     setState(() {
       _submitting = true;
       _error = null;
-      _statusMessage = null;
     });
     _quoteRefresh?.cancel();
     final submitSequence = ++_quoteSequence;
@@ -507,7 +534,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        if (!_operationLocked) _quote = null;
         _error = switch (error) {
           ApiFailure failure => apiFailureMessage(
             failure,
@@ -516,7 +542,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           StateError stateError => stateError.message.toString(),
           _ => errorMessage(error, fallback: l10n.transferStartFailed),
         };
-        _statusMessage = null;
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
@@ -527,8 +552,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         final latestQuote = _quote;
         if (latestQuote != null &&
             submitSequence == _quoteSequence &&
-            _activePlan == null &&
-            _error == null) {
+            _activePlan == null) {
           _scheduleQuoteRefresh(latestQuote, submitSequence);
         }
       }
@@ -536,9 +560,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> _submitHip3Withdrawal() async {
-    if (_withdrawal != null && _withdrawal!.status != 'awaiting_signature') {
-      return;
-    }
+    if (_submitting || _transferPending) return;
+    setState(() => _withdrawalSubmissionError = null);
     final l10n = AppLocalizations.of(context);
     final amount = _withdrawalAmount.text.trim();
     try {
@@ -550,13 +573,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       setState(() => _error = l10n.transferEnterPositiveAmount);
       return;
     }
+    _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewRefresh?.cancel();
+    ++_withdrawalPreviewSequence;
     setState(() {
       _submitting = true;
+      _withdrawalPreviewing = false;
       _error = null;
     });
     try {
       final commands = ref.read(hip3WithdrawalCommandsProvider);
-      final preview = _withdrawalPreview;
+      var preview = _withdrawalPreview;
       if (preview == null ||
           !_sameWithdrawalAmount(preview.amount, amount) ||
           !preview.canProceed) {
@@ -570,8 +597,22 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           _withdrawalPreview = refreshed;
           _error = hip3WithdrawalBlockerMessage(refreshed, l10n);
         });
-        _scheduleHip3PreviewRefresh(refreshed, sequence, amount);
-        return;
+        if (!refreshed.canProceed || refreshed.isRiskExpired) {
+          throw StateError(_error ?? l10n.transferWaitForQuote);
+        }
+        if (preview.rail != refreshed.rail ||
+            preview.chainId != refreshed.chainId ||
+            preview.destinationAddress.toLowerCase() !=
+                refreshed.destinationAddress.toLowerCase() ||
+            (preview.rail != 'relay' &&
+                (!_sameWithdrawalAmount(preview.fee, refreshed.fee) ||
+                    !_sameWithdrawalAmount(
+                      preview.minimumReceived,
+                      refreshed.minimumReceived,
+                    )))) {
+          throw StateError(l10n.transferQuoteChanged);
+        }
+        preview = refreshed;
       }
       final prepared = await commands.prepare(
         amount,
@@ -584,40 +625,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         return;
       }
       setState(() => _withdrawal = prepared);
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.signAndTransfer),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${l10n.sendAmount}: ${TokenAmountFormatter.formatText(prepared.amount)} USDC',
-              ),
-              Text(
-                '${prepared.rail == 'relay' ? l10n.estimatedFee : l10n.totalFee}: ${TokenAmountFormatter.formatText(prepared.fee)} USDC',
-              ),
-              Text(
-                '${l10n.receiveAmount}: ${TokenAmountFormatter.formatText(prepared.minimumReceived)} USDC',
-              ),
-              Text(l10n.hip3TransferDestination),
-              SelectableText(prepared.destinationAddress),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.signAndTransfer),
-            ),
-          ],
-        ),
-      );
-      if (!mounted || confirmed != true) return;
       try {
         final submitted = await commands.submit(prepared);
         if (!mounted) return;
@@ -637,11 +644,32 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         rethrow;
       }
     } on Hip3WithdrawalQuoteChanged {
-      if (mounted) _scheduleHip3Preview();
+      // Refresh while this attempt still owns the loading state. Never sign
+      // different transfer terms without another explicit user submission.
+      try {
+        final refreshed = await ref
+            .read(hip3WithdrawalCommandsProvider)
+            .preview(amount, forceRefresh: true);
+        if (!mounted) return;
+        setState(() {
+          _withdrawalPreview = refreshed;
+          _withdrawalSubmissionError =
+              hip3WithdrawalBlockerMessage(refreshed, l10n) ??
+              l10n.transferQuoteChanged;
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _withdrawalSubmissionError = errorMessage(
+            error,
+            fallback: l10n.transferQuoteChanged,
+          );
+        });
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = switch (error) {
+        _withdrawalSubmissionError = switch (error) {
           ApiFailure failure => apiFailureMessage(
             failure,
             fallback: l10n.transferStartFailed,
@@ -666,7 +694,18 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         };
       });
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) {
+        setState(() => _submitting = false);
+        if (!_transferPending && !_completionToastShown) {
+          if (_withdrawalPreview case final preview?) {
+            _scheduleHip3PreviewRefresh(
+              preview,
+              _withdrawalPreviewSequence,
+              amount,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -678,22 +717,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
     setState(() {
       _withdrawal = withdrawal;
-      _transferPending = withdrawal.shouldPoll;
-      final l10n = AppLocalizations.of(context);
-      _statusMessage = withdrawal.requiresManualReview
-          ? null
-          : switch (withdrawal.status) {
-              'submitting' || 'submitted' => l10n.withdrawalSubmitted,
-              'payout' => l10n.transferSettlementPending,
-              'refund_pending' => l10n.withdrawalRefundPending,
-              'refunded' => l10n.withdrawalRefunded,
-              'credited' => l10n.withdrawalCredited,
-              'partial' || 'partially_completed' => l10n.withdrawalPartial,
-              'recovering' => l10n.withdrawalRecovering,
-              'failed' || 'expired' => null,
-              _ => l10n.withdrawalUnresolved,
-            };
-      _error = withdrawal.requiresManualReview
+      _transferPending = withdrawal.isPending;
+      _withdrawalSubmissionError = withdrawal.requiresManualReview
           ? AppLocalizations.of(context).hip3PendingReview
           : withdrawal.status == 'failed' || withdrawal.status == 'expired'
           ? errorMessage(
@@ -759,9 +784,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _transferPending = pending;
       _resumeRequired = false;
       _planActionRequired = false;
-      _statusMessage = pending
-          ? AppLocalizations.of(context).transferWaitingArrival
-          : null;
       if (!pending) _error = _planFailureMessage(current);
     });
     if (pending) {
@@ -801,11 +823,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     }
   }
 
-  bool _isPlanPending(FundingPlan plan) => switch (plan.status) {
-    FundingPlanState.executing || FundingPlanState.partiallyFunded => true,
-    FundingPlanState.ready => plan.isActionable,
-    _ => false,
-  };
+  bool _isPlanPending(FundingPlan plan) => plan.shouldPoll;
 
   bool _sessionIsEditable(String status) =>
       status == 'editing' ||
@@ -849,13 +867,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _activePlan = pending ? refreshed : null;
         _transferPending = pending;
         _planActionRequired = pending && progress.requiresUserAction;
-        if (pending) {
-          _statusMessage = progress.requiresUserAction
-              ? AppLocalizations.of(context).authorizationRequired
-              : AppLocalizations.of(context).transferWaitingArrival;
-        } else {
+        if (!pending) {
           _resumeRequired = false;
-          _statusMessage = null;
           _error = _planFailureMessage(refreshed);
         }
       });
@@ -894,10 +907,23 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           ref.invalidate(fundingTransferProvider(id));
         }
       }
+      final pending = _isPlanPending(refreshed);
+      _planGeneration++;
       setState(() {
         _recoveryPlan = refreshed;
         _showTransferEvidence = true;
+        _activePlan = pending ? refreshed : null;
+        _activePlanSessionId = pending ? _quote?.sessionId : null;
+        _transferPending = pending;
+        _resumeRequired = false;
+        _planActionRequired = pending && refreshed.isActionable;
+        _error = pending ? null : _planFailureMessage(refreshed);
       });
+      if (pending) {
+        _startPlanPolling();
+      } else {
+        _stopPlanPolling();
+      }
     } catch (error) {
       if (mounted) {
         setState(
@@ -953,11 +979,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     Navigator.of(context).maybePop();
   }
 
-  void _viewActivityLater() {
-    ref.invalidate(activityProvider);
-    context.goNamed(AppRoutes.activityName);
-  }
-
   void _applySessionStatus(FundingSessionSummary session) {
     switch (session.status) {
       case 'transferring':
@@ -967,14 +988,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _resumeRequired = !planKnown;
         if (!planKnown) {
           _planActionRequired = false;
-          _statusMessage = AppLocalizations.of(context).transferInProgress;
           _error = null;
         }
       case 'funded':
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = null;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _completeTransfer(),
@@ -984,7 +1003,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferRequiresManualReview;
         ref
             .read(fundingTransferCommandsProvider)
@@ -993,20 +1011,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferQuoteExpired;
       case 'cancelled':
         _transferPending = false;
         _resumeRequired = false;
         _planActionRequired = false;
-        _statusMessage = null;
         _error = AppLocalizations.of(context).transferCancelled;
       default:
         if (!_submitting) {
           _transferPending = false;
           _resumeRequired = false;
           _planActionRequired = false;
-          _statusMessage = null;
         }
     }
   }
@@ -1055,16 +1070,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         : ref.watch(hip3TransferBalanceProvider);
     final l10n = AppLocalizations.of(context);
     final send = _sendFromSpot ? l10n.spot : l10n.perps;
+    final visibleError = _sendFromSpot
+        ? _error
+        : _withdrawalSubmissionError ?? _error;
     final receive = _sendFromSpot ? l10n.perps : l10n.spot;
     final quote = _quote;
     final canSubmit =
         !_submitting &&
-        (_recoveryPlan == null || _recoveryPlan!.shouldPoll) &&
-        (_sendFromSpot ||
-            _withdrawal == null ||
-            _withdrawal!.status == 'awaiting_signature') &&
+        (_recoveryPlan == null || _isPlanPending(_recoveryPlan!)) &&
         (_sendFromSpot
-            ? (_planActionRequired &&
+            ? (_recoveryPlan != null && _activePlan == null) ||
+                  (_planActionRequired &&
                       _transferPending &&
                       _activePlan != null) ||
                   _resumeRequired ||
@@ -1214,7 +1230,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           quote: _quote,
                           loading: _quoting || options.isLoading,
                         ),
-                        if (_quote?.crossLiquidationImpacts.isNotEmpty ==
+                        if (_quoting || options.isLoading) ...[
+                          const SizedBox(height: 12),
+                          const Hip3CrossLiquidationImpactsSkeleton(
+                            key: Key('transfer-position-impact-skeleton'),
+                          ),
+                        ] else if (_quote?.crossLiquidationImpacts.isNotEmpty ==
                             true) ...[
                           const SizedBox(height: 12),
                           Hip3CrossLiquidationImpactsCard(
@@ -1226,7 +1247,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _SectionLabel(l10n.sendAmount),
                         _Hip3SendAmountCard(
                           controller: _withdrawalAmount,
-                          enabled: !_submitting && !_operationLocked,
+                          enabled: !_submitting && !_transferPending,
                           balance: hip3Balance?.value,
                           balanceLoading: hip3Balance?.isLoading ?? true,
                           onChanged: _scheduleHip3Preview,
@@ -1243,8 +1264,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           asset: 'USDC',
                           network: 'Arbitrum',
                           value:
-                              _withdrawalPreview?.minimumReceived ??
                               _withdrawal?.minimumReceived ??
+                              _withdrawalPreview?.minimumReceived ??
                               '',
                           loading: _withdrawalPreviewing,
                         ),
@@ -1254,7 +1275,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           withdrawal: _withdrawal,
                           loading: _withdrawalPreviewing,
                         ),
-                        if (_withdrawalPreview
+                        if (_withdrawalPreviewing) ...[
+                          const SizedBox(height: 12),
+                          const Hip3CrossLiquidationImpactsSkeleton(
+                            key: Key('transfer-position-impact-skeleton'),
+                          ),
+                        ] else if (_withdrawalPreview
                                 ?.crossLiquidationImpacts
                                 .isNotEmpty ==
                             true) ...[
@@ -1296,23 +1322,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           icon: const Icon(Icons.refresh),
                           label: Text(l10n.transferCheckStatus),
                         ),
-                      if (_statusMessage case final message?) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          message,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                      if (_transferPending) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton(
-                          key: const Key('transfer-close-view-later'),
-                          onPressed: _viewActivityLater,
-                          child: Text(l10n.closeViewLater),
-                        ),
-                      ],
                       const Spacer(),
-                      if (_error case final error?) ...[
+                      if (visibleError case final error?) ...[
                         const SizedBox(height: 28),
                         InlineErrorNotice(
                           key: const Key('transfer-error'),
@@ -1325,18 +1336,16 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         height: 48,
                         child: FilledButton(
                           onPressed: canSubmit ? _submit : null,
-                          child: _submitting
+                          child:
+                              _submitting ||
+                                  (_transferPending && !_planActionRequired)
                               ? const SizedBox.square(
                                   dimension: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : Text(
-                                  _transferPending && !_planActionRequired
-                                      ? l10n.transferInProgress
-                                      : l10n.signAndTransfer,
-                                ),
+                              : Text(l10n.signAndTransfer),
                         ),
                       ),
                     ],
@@ -1391,7 +1400,7 @@ class _FundingTransferStatus extends ConsumerWidget {
                   FundingTransferState.unknown => l10n.transferUnresolved,
                   _ => l10n.transferSettlementPending,
                 }),
-                Text(
+                SelectableText(
                   '${l10n.transferAmount}: ${transfer.amount.value} ${transfer.amount.asset ?? ''}',
                 ),
                 if (transfer.targetEnvironment != null)
@@ -1401,7 +1410,7 @@ class _FundingTransferStatus extends ConsumerWidget {
                 if (transfer.reason case final reason?) Text(reason),
                 if (transfer.refundStatus case final status?
                     when status != 'notApplicable')
-                  Text(
+                  SelectableText(
                     '${status == 'confirmed'
                         ? l10n.transferRefunded
                         : status == 'pending'
@@ -1409,7 +1418,7 @@ class _FundingTransferStatus extends ConsumerWidget {
                         : l10n.transferUnresolved}: ${transfer.refund?['amount'] ?? '-'}',
                   ),
                 if (transfer.targetReceivedAmount case final amount?)
-                  Text(
+                  SelectableText(
                     '${l10n.transferCredited}: ${amount.value} ${amount.asset ?? ''}',
                   ),
                 for (final evidence in [
@@ -2043,17 +2052,17 @@ class _PositionIcon extends StatelessWidget {
 class _Hip3SendAmountCard extends StatelessWidget {
   const _Hip3SendAmountCard({
     required this.controller,
+    required this.enabled,
     required this.balance,
     required this.balanceLoading,
     required this.onChanged,
-    required this.enabled,
   });
 
   final TextEditingController controller;
+  final bool enabled;
   final String? balance;
   final bool balanceLoading;
   final VoidCallback onChanged;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -2110,8 +2119,8 @@ class _Hip3SendAmountCard extends StatelessWidget {
             height: 32,
             child: TextField(
               key: const Key('hip3-transfer-amount'),
-              controller: controller,
               enabled: enabled,
+              controller: controller,
               onChanged: (_) => onChanged(),
               textAlign: TextAlign.right,
               keyboardType: const TextInputType.numberWithOptions(
@@ -2147,7 +2156,7 @@ class _Hip3FeeSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final feeValue = preview?.fee ?? withdrawal?.fee;
+    final feeValue = withdrawal?.fee ?? preview?.fee;
     final fee = feeValue == null
         ? '-'
         : '${TokenAmountFormatter.formatText(feeValue)} USDC';

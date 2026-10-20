@@ -1022,7 +1022,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsClearCache => '清除';
 
   @override
-  String get settingsTermsConditions => '条款与条件';
+  String get settingsTermsConditions => '使用条款';
 
   @override
   String get settingsLogOut => '退出登录';
@@ -1665,13 +1665,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginOrSignUp => '登录或注册';
 
   @override
-  String get termsAgreement => '使用本应用即表示你同意条款与条件。';
+  String get termsAgreement => '使用本应用即表示你同意使用条款与隐私政策。';
 
   @override
   String get termsAgreementPrefix => '使用本应用即表示你同意';
 
   @override
-  String get termsAgreementLink => '条款与条件';
+  String get termsAgreementLink => '使用条款';
+
+  @override
+  String get privacyAgreementLink => '隐私政策';
+
+  @override
+  String get settingsPrivacyPolicy => '隐私政策';
 
   @override
   String get termsAgreementSuffix => '。';
@@ -2152,6 +2158,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hip3TransferDestination => '转至您的 Arbitrum USDC 地址：';
+
+  @override
+  String get activityExplorerOpenFailed => '无法打开交易浏览器。';
+
+  @override
+  String get activityFrom => '从';
 
   @override
   String get sendAmount => '转出数量';
@@ -2941,4 +2953,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nativeRecoveryUnavailable => '恢复请求暂不可用。请刷新权威证据，不要另外发送交易。';
+
+  @override
+  String get spotMarketDataSource => '*现货数据来源于 Binance，仅供参考。';
+
+  @override
+  String get marketDataSourceBinance => '市场数据来源于 Binance';
+
+  @override
+  String get marketDataSourceDisclaimer =>
+      '价格、图表及相关市场数据来源于 Binance，仅供参考，可能与本平台的实际交易情况有所不同。';
 }

@@ -4,6 +4,7 @@ import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/widgets/liquidation_risk_summary.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 
 /// HIP-3 adapter for the reusable liquidation risk summary component.
 class Hip3CrossLiquidationImpactsCard extends StatelessWidget {
@@ -35,4 +36,22 @@ class Hip3CrossLiquidationImpactsCard extends StatelessWidget {
     final side = impact.side == TradingSide.long ? l10n.long : l10n.short;
     return '$side ${impact.productId.split(':').last}';
   }
+}
+
+class Hip3CrossLiquidationImpactsSkeleton extends StatelessWidget {
+  const Hip3CrossLiquidationImpactsSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+    height: 20,
+    child: Row(
+      children: [
+        SkeletonBlock(width: 148, height: 12, radius: 4),
+        Spacer(),
+        SkeletonBlock(width: 54, height: 20, radius: 10),
+        SizedBox(width: 6),
+        SkeletonBlock(width: 14, height: 14, radius: 4),
+      ],
+    ),
+  );
 }

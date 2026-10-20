@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,6 +13,7 @@ import '../../../../domain/auth/authentication.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../legal/views/legal_document_screen.dart';
 import '../providers/authentication_provider.dart';
 
 /// Pushes the login screen on top of the current page. On success it pops
@@ -61,8 +63,13 @@ class PrivyLoginScreen extends ConsumerStatefulWidget {
 class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
+  late final _termsTap = TapGestureRecognizer()
+    ..onTap = () => pushLegalDocument(context, LegalDocument.terms);
+  late final _privacyTap = TapGestureRecognizer()
+    ..onTap = () => pushLegalDocument(context, LegalDocument.privacy);
   bool _emailFlow = false;
   bool _showEmailFormatError = false;
+  bool _finishingLogin = false;
   String? _recentMethod;
   String? _scheduledEmailSync;
 
@@ -78,6 +85,8 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
 
   @override
   void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
     _emailController.dispose();
     _codeController.dispose();
     super.dispose();
@@ -180,13 +189,21 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     ref.listen<AuthenticationState>(authenticationProvider, (previous, next) {
       if (next is! AuthenticationAuthenticated ||
           next.setupStatus != AuthenticationSetupStatus.ready ||
-          !mounted) {
+          !mounted ||
+          _finishingLogin) {
         return;
       }
+      _finishingLogin = true;
       if (widget.returnToHomeOnSuccess) {
         context.goNamed(AppRoutes.homeName);
       } else {
-        Navigator.of(context).maybePop();
+        final navigator = Navigator.of(context);
+        final loginRoute = ModalRoute.of(context);
+        if (loginRoute != null) {
+          // Legal documents can cover this route while authentication finishes.
+          navigator.popUntil((route) => route == loginRoute);
+        }
+        if (navigator.canPop()) navigator.pop();
       }
     });
     final state = widget.authentication;
@@ -486,6 +503,20 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                               TextSpan(text: l10n.termsAgreementPrefix),
                               TextSpan(
                                 text: l10n.termsAgreementLink,
+                                recognizer: _termsTap,
+                                mouseCursor: SystemMouseCursors.click,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: ' & ',
+                                style: TextStyle(fontWeight: FontWeight.w400),
+                              ),
+                              TextSpan(
+                                text: l10n.privacyAgreementLink,
+                                recognizer: _privacyTap,
+                                mouseCursor: SystemMouseCursors.click,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                 ),

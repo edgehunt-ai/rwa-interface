@@ -178,8 +178,22 @@ final class Hip3WithdrawalCommands {
       prepared.destinationAddress.toLowerCase() ==
           quote.destinationAddress.toLowerCase() &&
       _sameAmount(prepared.amount, quote.amount) &&
-      _sameAmount(prepared.fee, quote.fee) &&
-      _sameAmount(prepared.minimumReceived, quote.minimumReceived);
+      (quote.rail == 'relay'
+          // Relay quotes are estimates; create freezes the solver economics.
+          // The user authorizes the same exact USDC input and payout target.
+          ? _validRelayEconomics(prepared)
+          : _sameAmount(prepared.fee, quote.fee) &&
+                _sameAmount(prepared.minimumReceived, quote.minimumReceived));
+
+  bool _validRelayEconomics(Hip3Withdrawal prepared) {
+    final amount = DecimalValue(prepared.amount);
+    final fee = DecimalValue(prepared.fee);
+    final received = DecimalValue(prepared.minimumReceived);
+    final zero = DecimalValue('0');
+    return fee.compareTo(zero) >= 0 &&
+        received.compareTo(zero) > 0 &&
+        fee.plus(received).compareTo(amount) == 0;
+  }
 
   String _expectedPayoutAsset(Hip3WithdrawalPreview quote, int chainId) {
     final asset = quote.payoutAsset ?? 'USDC';

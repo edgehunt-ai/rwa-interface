@@ -444,6 +444,7 @@ void main() {
     final viewMore = find.byKey(const Key('home-markets-view-more'));
     expect(viewMore, findsOneWidget);
     await tester.ensureVisible(viewMore);
+    await tester.pumpAndSettle();
     await tester.tap(viewMore);
     await tester.pumpAndSettle();
 

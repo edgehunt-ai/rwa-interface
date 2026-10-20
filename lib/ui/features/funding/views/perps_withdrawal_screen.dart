@@ -110,23 +110,30 @@ class _PerpsWithdrawalScreenState extends ConsumerState<PerpsWithdrawalScreen> {
     } on Object catch (failure) {
       if (!mounted || sequence != _previewSequence) return;
       setState(() {
-        _previewInputAmount = null;
         _previewing = false;
         _error = _failureMessage(failure);
       });
+      final current = _preview;
+      if (current != null && _sameAmount(_previewInputAmount, amount)) {
+        _schedulePreviewRefresh(current, sequence, amount, retry: true);
+      }
     }
   }
 
   void _schedulePreviewRefresh(
     Hip3WithdrawalPreview preview,
     int sequence,
-    String amount,
-  ) {
+    String amount, {
+    bool retry = false,
+  }) {
     _previewRefresh?.cancel();
     final validUntil = preview.riskValidUntil;
-    if (validUntil == null) return;
-    final remaining = validUntil.difference(DateTime.now().toUtc());
-    final delay = remaining > Duration.zero
+    if (validUntil == null && !retry) return;
+    final remaining =
+        validUntil?.difference(DateTime.now().toUtc()) ?? Duration.zero;
+    final delay = retry
+        ? const Duration(seconds: 5)
+        : remaining > Duration.zero
         ? remaining
         : const Duration(seconds: 1);
     _previewRefresh = Timer(delay, () {
@@ -617,7 +624,9 @@ class _PerpsWithdrawalFormState extends State<_PerpsWithdrawalForm> {
                 ),
                 if (widget.previewing) ...[
                   const SizedBox(height: 12),
-                  const _PositionImpactSkeleton(),
+                  const Hip3CrossLiquidationImpactsSkeleton(
+                    key: Key('perps-withdrawal-position-impact-skeleton'),
+                  ),
                 ] else if (widget.preview?.crossLiquidationImpacts.isNotEmpty ==
                     true) ...[
                   const SizedBox(height: 12),
@@ -830,7 +839,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           child: FilledButton(
             key: const Key('perps-withdrawal-submit-button'),
             onPressed: submitting || current != null ? null : onSubmit,
-            child: submitting
+            child: submitting || pending
                 ? const SizedBox.square(
                     key: Key('perps-withdrawal-submit-progress'),
                     dimension: 20,
@@ -982,25 +991,6 @@ class _PreviewDetailRow extends StatelessWidget {
       else
         Flexible(child: Text(value, textAlign: TextAlign.right)),
     ],
-  );
-}
-
-class _PositionImpactSkeleton extends StatelessWidget {
-  const _PositionImpactSkeleton();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(
-    key: Key('perps-withdrawal-position-impact-skeleton'),
-    height: 20,
-    child: Row(
-      children: [
-        SkeletonBlock(width: 148, height: 12, radius: 4),
-        Spacer(),
-        SkeletonBlock(width: 54, height: 20, radius: 10),
-        SizedBox(width: 6),
-        SkeletonBlock(width: 14, height: 14, radius: 4),
-      ],
-    ),
   );
 }
 

@@ -449,8 +449,14 @@ final class FundingTransferCommands {
   }
 
   Future<FundingPlanProgress> inspect(FundingPlan plan) async {
+    // A stale transfer may no longer be readable after the plan has ended.
+    // Always observe the authoritative plan before inspecting its transfers.
+    final refreshed = await refresh(plan.planId);
+    if (!refreshed.isExecuting && !refreshed.isActionable) {
+      return FundingPlanProgress(plan: refreshed, requiresUserAction: false);
+    }
     var requiresUserAction = false;
-    for (final leg in plan.legs) {
+    for (final leg in refreshed.legs) {
       final transferId = leg.transferId;
       if (transferId == null) continue;
       final transfer = await _run(
@@ -465,7 +471,6 @@ final class FundingTransferCommands {
         requiresUserAction = true;
       }
     }
-    final refreshed = await refresh(plan.planId);
     return FundingPlanProgress(
       plan: refreshed,
       requiresUserAction: requiresUserAction || refreshed.isActionable,
