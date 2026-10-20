@@ -75,7 +75,7 @@ void main() {
   );
 
   test(
-    'transfer quote reuses one session and advances selection versions',
+    'transfer quote refreshes one session before advancing selection versions',
     () async {
       final funding = _FundingRepository();
       final container = ProviderContainer(
@@ -96,9 +96,60 @@ void main() {
       );
 
       expect(funding.transferSessionCalls, 1);
-      expect(funding.selectionVersions, [3, 4]);
+      expect(funding.sessionRefreshes, 1);
+      expect(funding.selectionVersions, [3, 7]);
     },
   );
+
+  test(
+    'same amount returns transferring session without editing selection',
+    () async {
+      final funding = _FundingRepository(refreshedStatus: 'transferring');
+      final container = ProviderContainer(
+        overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      );
+      addTearDown(container.dispose);
+      final commands = container.read(fundingTransferCommandsProvider);
+
+      await commands.quoteTransfer(
+        destination: 'hip3_margin',
+        amount: '10',
+        allocations: const {'position-1': '10'},
+      );
+      final quote = await commands.quoteTransfer(
+        destination: 'hip3_margin',
+        amount: '10',
+        allocations: const {'position-1': '10'},
+      );
+
+      expect(quote.status, 'transferring');
+      expect(funding.sessionRefreshes, 1);
+      expect(funding.selectionVersions, [3]);
+    },
+  );
+
+  test('same amount starts a new session after terminal draft', () async {
+    final funding = _FundingRepository(refreshedStatus: 'expired');
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+    );
+    addTearDown(container.dispose);
+    final commands = container.read(fundingTransferCommandsProvider);
+
+    await commands.quoteTransfer(
+      destination: 'hip3_margin',
+      amount: '10',
+      allocations: const {'position-1': '10'},
+    );
+    await commands.quoteTransfer(
+      destination: 'hip3_margin',
+      amount: '10',
+      allocations: const {'position-1': '10'},
+    );
+
+    expect(funding.transferSessionCalls, 2);
+    expect(funding.selectionVersions, [3, 3]);
+  });
 
   test(
     'transfer quote creates a new session only when target amount changes',
@@ -225,6 +276,32 @@ void main() {
     expect(quote.version, 8);
   });
 
+  test(
+    'version conflict does not edit a session that started transferring',
+    () async {
+      final funding = _FundingRepository(
+        conflictOnFirstSelection: true,
+        refreshedStatus: 'transferring',
+      );
+      final container = ProviderContainer(
+        overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      );
+      addTearDown(container.dispose);
+
+      final quote = await container
+          .read(fundingTransferCommandsProvider)
+          .quoteTransfer(
+            destination: 'hip3_margin',
+            amount: '10',
+            allocations: const {'position-1': '10'},
+          );
+
+      expect(quote.status, 'transferring');
+      expect(funding.selectionVersions, [3]);
+      expect(funding.sessionRefreshes, 1);
+    },
+  );
+
   test('failed quote refresh cannot reuse a stale transfer draft', () async {
     final funding = _FundingRepository(
       createdAllocations: const {'position-1': '10'},
@@ -312,6 +389,50 @@ void main() {
       throwsA(isA<NetworkFailure>()),
     );
   });
+
+  test(
+    'plan inspection exposes a released action without executing it',
+    () async {
+      final inspectedPlan = FundingPlan(
+        planId: 'plan-1',
+        tradePreviewId: 'session-1',
+        shortfall: DecimalValue('1'),
+        status: FundingPlanState.executing,
+        legs: [
+          FundingLeg(
+            legId: 'leg-1',
+            walletId: 'wallet-1',
+            asset: 'USDT',
+            maximumAmount: DecimalValue('1'),
+            outputAmount: DecimalValue('0.9'),
+            status: FundingLegState.submitted,
+            transferId: 'transfer-1',
+          ),
+        ],
+      );
+      final funding = _FundingRepository()
+        ..queriedPlan = inspectedPlan
+        ..refreshedTransfer = FundingTransfer(
+          transferId: 'transfer-1',
+          planId: 'plan-1',
+          amount: DecimalValue('1'),
+          status: FundingTransferState.awaitingWallet,
+          nextActionId: 'origin-action',
+        );
+      final container = ProviderContainer(
+        overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      );
+      addTearDown(container.dispose);
+
+      final progress = await container
+          .read(fundingTransferCommandsProvider)
+          .inspect(inspectedPlan);
+
+      expect(progress.plan, same(inspectedPlan));
+      expect(progress.requiresUserAction, isTrue);
+      expect(funding.transferReads, 1);
+    },
+  );
 }
 
 final class _CatalogFailingRepository implements FundingRepository {
@@ -402,6 +523,9 @@ final class _FundingRepository implements FundingRepository {
   bool failSessionRefresh = false;
   final List<int> selectionVersions = [];
   final List<String> planKeys = [];
+  FundingPlan? queriedPlan;
+  FundingTransfer? refreshedTransfer;
+  int transferReads = 0;
   final plan = FundingPlan(
     planId: 'plan-1',
     tradePreviewId: 'preview-1',
@@ -505,7 +629,19 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingPlan> getFundingPlan(String id) async {
     if (failPlanQuery) throw const NetworkFailure(retryable: false);
-    return plan;
+    return queriedPlan ?? plan;
+  }
+
+  @override
+  Future<FundingTransfer> getFundingTransfer(String id) async {
+    transferReads++;
+    return refreshedTransfer ??
+        FundingTransfer(
+          transferId: id,
+          planId: 'plan-1',
+          amount: DecimalValue('1'),
+          status: FundingTransferState.filling,
+        );
   }
 
   @override

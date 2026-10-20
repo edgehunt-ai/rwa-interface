@@ -15,6 +15,7 @@ import '../../../../domain/models/funding_session.dart';
 import '../../../../domain/models/funding_catalog_summary.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/wallet_action_execution.dart';
+import '../../activity/providers/activity_provider.dart';
 
 final fundingCatalogProvider =
     FutureProvider.autoDispose<FundingCatalogSummary>(
@@ -66,6 +67,16 @@ final class OrderFundingRequirement {
 
   final FundingPlan plan;
   final bool canConfirmTransfer;
+}
+
+final class FundingPlanProgress {
+  const FundingPlanProgress({
+    required this.plan,
+    required this.requiresUserAction,
+  });
+
+  final FundingPlan plan;
+  final bool requiresUserAction;
 }
 
 final fundingSessionProvider = FutureProvider.autoDispose
@@ -210,30 +221,29 @@ final class FundingTransferCommands {
     if (existing == null ||
         _transferDraftDestination != destination ||
         _transferDraftAmount != amount) {
-      final generation = _transferDraftGeneration++;
+      session = await _createTransferDraft(
+        destination: destination,
+        amount: amount,
+      );
+    } else {
       session = await _run(
-        operation: 'transfer_funding_session',
-        successContext: (session) => {
-          'funding_session_id': session.sessionId,
-          'status': session.status,
-        },
-        command: () => _commands.run(
-          operation: 'transfer-funding-session',
-          fingerprint: '$destination|$amount|$generation',
-          command: (key) => _ref
-              .read(fundingRepositoryProvider)
-              .createTransferFundingSession(
-                destination: destination,
-                amount: amount,
-                idempotencyKey: key,
-              ),
-        ),
+        operation: 'funding_session_refresh',
+        context: {'funding_session_id': existing.sessionId},
+        successContext: (session) => {'status': session.status},
+        command: () => _ref
+            .read(fundingRepositoryProvider)
+            .getFundingSession(existing.sessionId),
       );
       _rememberTransferDraft(session, destination: destination, amount: amount);
-    } else {
-      session = existing;
+      if (_startsFreshTransferSession(session.status)) {
+        _forgetTransferDraft(session.sessionId);
+        session = await _createTransferDraft(
+          destination: destination,
+          amount: amount,
+        );
+      }
     }
-    if (session.status == 'funded') return session;
+    if (!_selectionIsMutable(session.status)) return session;
     if (session.canConfirmTransfer &&
         _sameAllocations(session.allocations, allocations)) {
       return session;
@@ -247,7 +257,7 @@ final class FundingTransferCommands {
           .read(fundingRepositoryProvider)
           .getFundingSession(session.sessionId);
       _rememberTransferDraft(session, destination: destination, amount: amount);
-      if (session.status == 'funded') return session;
+      if (!_selectionIsMutable(session.status)) return session;
       if (session.canConfirmTransfer &&
           _sameAllocations(session.allocations, allocations)) {
         return session;
@@ -255,6 +265,41 @@ final class FundingTransferCommands {
       return _selectTransferSources(session, allocations);
     }
   });
+
+  Future<FundingSessionSummary> _createTransferDraft({
+    required String destination,
+    required String amount,
+  }) async {
+    final generation = _transferDraftGeneration++;
+    final session = await _run(
+      operation: 'transfer_funding_session',
+      successContext: (session) => {
+        'funding_session_id': session.sessionId,
+        'status': session.status,
+      },
+      command: () => _commands.run(
+        operation: 'transfer-funding-session',
+        fingerprint: '$destination|$amount|$generation',
+        command: (key) => _ref
+            .read(fundingRepositoryProvider)
+            .createTransferFundingSession(
+              destination: destination,
+              amount: amount,
+              idempotencyKey: key,
+            ),
+      ),
+    );
+    _rememberTransferDraft(session, destination: destination, amount: amount);
+    return session;
+  }
+
+  bool _selectionIsMutable(String status) =>
+      status == 'editing' ||
+      status == 'readyToConfirm' ||
+      status == 'ready_to_confirm';
+
+  bool _startsFreshTransferSession(String status) =>
+      status == 'funded' || status == 'expired' || status == 'cancelled';
 
   bool _sameAllocations(
     Map<String, String> current,
@@ -319,6 +364,17 @@ final class FundingTransferCommands {
     _transferDraftAmount = amount;
   }
 
+  void forgetTransferDraft(String sessionId) {
+    _forgetTransferDraft(sessionId);
+  }
+
+  void _forgetTransferDraft(String sessionId) {
+    if (_transferDraft?.sessionId != sessionId) return;
+    _transferDraft = null;
+    _transferDraftDestination = null;
+    _transferDraftAmount = null;
+  }
+
   Future<T> _serializeQuote<T>(Future<T> Function() operation) async {
     final previous = _quoteTail;
     final release = Completer<void>();
@@ -380,6 +436,30 @@ final class FundingTransferCommands {
     return refreshed;
   }
 
+  Future<FundingPlanProgress> inspect(FundingPlan plan) async {
+    var requiresUserAction = false;
+    for (final leg in plan.legs) {
+      final transferId = leg.transferId;
+      if (transferId == null) continue;
+      final transfer = await _run(
+        operation: 'funding_transfer_refresh',
+        context: {'plan_id': plan.planId, 'transfer_id': transferId},
+        command: () =>
+            _ref.read(fundingRepositoryProvider).getFundingTransfer(transferId),
+      );
+      final actionId = transfer.nextActionId;
+      if (actionId != null &&
+          !_submittedTransferActions.contains('$transferId|$actionId')) {
+        requiresUserAction = true;
+      }
+    }
+    final refreshed = await refresh(plan.planId);
+    return FundingPlanProgress(
+      plan: refreshed,
+      requiresUserAction: requiresUserAction || refreshed.isActionable,
+    );
+  }
+
   Future<WalletAuthorization> authorize(FundingPlan plan) {
     final leg = plan.nextActionableLeg;
     if (!plan.isActionable || leg == null) {
@@ -427,6 +507,7 @@ final class FundingTransferCommands {
       ),
     );
     _ref.invalidate(fundingTransferProvider(result.transferId));
+    _ref.invalidate(activityProvider);
     await _executeNextAction(result);
     return result;
   }
