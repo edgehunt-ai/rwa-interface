@@ -27,7 +27,9 @@ final class PrivyConfiguration {
   ///
   /// Keep one public origin setting for both the export page and passkeys.
   /// Paths, query parameters, and fragments are removed because the relying
-  /// party is an origin, not a page URL.
+  /// party is an origin, not a page URL. Privy's native SDK expects this HTTPS
+  /// origin and obtains the hostname RP ID from its server response.
+  /// See https://docs.privy.io/authentication/user-authentication/login-methods/passkey
   static String get relyingParty => relyingPartyFor(privateKeyExportUrl);
 
   static String relyingPartyFor(String exportUrl) {
@@ -43,11 +45,6 @@ final class PrivyConfiguration {
     }
     return uri.origin;
   }
-
-  /// WebAuthn RP IDs are hostnames, without scheme, port, or page path.
-  /// SIWE continues to use [relyingPartyFor] for its full HTTPS origin.
-  static String passkeyRelyingPartyFor(String exportUrl) =>
-      Uri.parse(relyingPartyFor(exportUrl)).host;
 
   final String appId;
   final String clientId;

@@ -135,6 +135,7 @@ abstract final class AppRouter {
               ),
               symbol: symbol,
               initialKind: kind,
+              showPositions: state.uri.queryParameters['tab'] == 'position',
             );
           },
         ),

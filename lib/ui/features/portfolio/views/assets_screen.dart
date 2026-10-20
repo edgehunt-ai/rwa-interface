@@ -2566,10 +2566,22 @@ class _PerpsBalances extends ConsumerWidget {
         allocationValue.perps ??
         _legacyAllocationAccount(allocationValue, false);
     final breakdown = perps?.perpsBreakdown;
-    final positions = holdingGroups
-        .expand((group) => group.positions)
-        .where((position) => position.kind == MarketProductKind.perp)
-        .toList(growable: false);
+    // Cursor pages can overlap, especially when refreshed independently.
+    // A position is identified by its ID, not its display symbol or venue.
+    final positionsById = <String, Position>{};
+    for (final group in holdingGroups) {
+      for (final position in group.positions) {
+        if (position.kind != MarketProductKind.perp) continue;
+        final previous = positionsById[position.positionId];
+        if (previous == null ||
+            (position.updatedAt != null &&
+                (previous.updatedAt == null ||
+                    position.updatedAt!.isAfter(previous.updatedAt!)))) {
+          positionsById[position.positionId] = position;
+        }
+      }
+    }
+    final positions = positionsById.values;
     final crossPositions =
         positions
             .where(
@@ -2596,6 +2608,19 @@ class _PerpsBalances extends ConsumerWidget {
     openOrders.sort(
       (left, right) => _compareUsdDescending(left.orderValue, right.orderValue),
     );
+    // These rows navigate to a product's position, rather than an individual
+    // order. Multiple open orders for that product share one entry point.
+    final seenOrderProducts = <(MarketProductKind, String)>{};
+    final openOrderProducts = openOrders
+        .where(
+          (order) => seenOrderProducts.add((
+            order.kind,
+            order.productId == null || order.productId!.isEmpty
+                ? order.orderId
+                : order.productId!,
+          )),
+        )
+        .toList(growable: false);
     final crossAmount = breakdown?.crossMarginPool;
     final crossQuantity = breakdown?.crossMarginPoolQuantity;
     final isolatedAmount = breakdown?.isolatedMargin;
@@ -2670,7 +2695,7 @@ class _PerpsBalances extends ConsumerWidget {
               amount: openOrderAmount?.valueUsd,
               quantity: _marginQuantity(openOrderAmount),
               children: [
-                for (final order in openOrders)
+                for (final order in openOrderProducts)
                   _PerpsPositionDetail(
                     symbol: order.symbol,
                     kind: order.kind,
@@ -2729,7 +2754,13 @@ void _openPerpsProduct(
   required String symbol,
   required MarketProductKind kind,
 }) {
-  context.push(AppRoutes.tradeLocation(symbol: symbol, kind: kind.name));
+  context.push(
+    AppRoutes.tradeLocation(
+      symbol: symbol,
+      kind: kind.name,
+      showPositions: true,
+    ),
+  );
 }
 
 class _PerpsMarginGroup extends StatefulWidget {

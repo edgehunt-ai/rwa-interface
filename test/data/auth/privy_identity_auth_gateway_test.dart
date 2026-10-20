@@ -416,32 +416,35 @@ void main() {
     );
   });
 
-  test('Passkey login and binding use a hostname RP ID', () async {
-    final user = _FakeUser(
-      id: 'did:privy:passkey',
-      token: 'passkey-token',
-      accounts: [
-        PasskeyAccount(
-          credentialId: 'credential-1',
-          enrolledInMfa: false,
-          verifiedAt: 0,
-        ),
-      ],
-    );
-    final passkey = _FakePasskey(user: user);
-    final gateway = PrivyIdentityAuthGateway(
-      exportUrl: exportUrl,
-      createPrivy: (_) =>
-          _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
-    );
-    await gateway.initialize(configuration);
+  test(
+    'Passkey login and binding use the HTTPS origin required by Privy',
+    () async {
+      final user = _FakeUser(
+        id: 'did:privy:passkey',
+        token: 'passkey-token',
+        accounts: [
+          PasskeyAccount(
+            credentialId: 'credential-1',
+            enrolledInMfa: false,
+            verifiedAt: 0,
+          ),
+        ],
+      );
+      final passkey = _FakePasskey(user: user);
+      final gateway = PrivyIdentityAuthGateway(
+        exportUrl: 'https://keys.example.test:8443/export?source=app#ready',
+        createPrivy: (_) =>
+            _FakePrivy(authState: const Unauthenticated(), passkey: passkey),
+      );
+      await gateway.initialize(configuration);
 
-    expect((await gateway.loginWithPasskey()).id, 'did:privy:passkey');
-    expect(passkey.loginRelyingParty, 'keys.example.test');
-    expect(await gateway.getAccessToken(), 'passkey-token');
-    expect((await gateway.linkPasskey()).id, 'credential-1');
-    expect(passkey.linkRelyingParty, 'keys.example.test');
-  });
+      expect((await gateway.loginWithPasskey()).id, 'did:privy:passkey');
+      expect(passkey.loginRelyingParty, 'https://keys.example.test:8443');
+      expect(await gateway.getAccessToken(), 'passkey-token');
+      expect((await gateway.linkPasskey()).id, 'credential-1');
+      expect(passkey.linkRelyingParty, 'https://keys.example.test:8443');
+    },
+  );
 
   test('Passkey SDK failure retains the reason and status code', () async {
     final passkey = _FakePasskey(

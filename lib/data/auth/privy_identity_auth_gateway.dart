@@ -546,7 +546,7 @@ final class PrivyIdentityAuthGateway
   Future<IdentityPrincipal> loginWithPasskey() async {
     try {
       final result = await _initializedPrivy.passkey.login(
-        relyingParty: PrivyConfiguration.passkeyRelyingPartyFor(_exportUrl),
+        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
       );
       switch (result) {
         case Success<PrivyUser>(:final value):
@@ -581,7 +581,7 @@ final class PrivyIdentityAuthGateway
   Future<PasskeyCredential> linkPasskey({String? displayName}) async {
     try {
       final result = await _initializedPrivy.passkey.link(
-        relyingParty: PrivyConfiguration.passkeyRelyingPartyFor(_exportUrl),
+        relyingParty: PrivyConfiguration.relyingPartyFor(_exportUrl),
         displayName: displayName,
       );
       switch (result) {

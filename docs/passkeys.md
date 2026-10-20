@@ -1,9 +1,11 @@
 # Passkey 配置
 
 `PRIVY_EXPORT_URL` 是唯一的域名来源：私钥导出打开完整 URL，原生 Passkey
-登录、绑定使用其 hostname（RP ID 不含协议、端口或路径），钱包 SIWE 使用其
-HTTPS origin，iOS 的 `webcredentials` 使用其 hostname。URL 可以带页面路径、
-查询参数或 fragment，这些内容不会传入 RP。
+登录、绑定及钱包 SIWE 使用其 HTTPS origin（如 `https://example.com`），
+iOS 的 `webcredentials` 使用其 hostname。Privy 的 `relyingParty` 参数要求
+HTTPS origin；WebAuthn 凭证中的 hostname RP ID 由 SDK/服务端处理，不应把
+SDK 参数改成裸域名。URL 可以带页面路径、查询参数或 fragment，这些内容
+不会传入 RP。
 代码没有默认域名，也不再读取 `PRIVY_RELYING_PARTY`。
 
 ## App 构建
@@ -29,6 +31,14 @@ Actions 部署要求导出 URL 和现有 Android 发布 Secret；iOS 关联文�
 也支持 `IOS_BUNDLE_ID`、`ANDROID_PACKAGE_NAME` 覆盖。不要新增或提交证书私钥。
 Android 应使用实际安装包的签名；Google Play 分发时使用 App Signing 证书，
 本地调试需要包含对应调试证书指纹。
+关联声明同时包含 Privy Android 设置指南要求的
+`delegate_permission/common.handle_all_urls` 和凭证共享使用的
+`delegate_permission/common.get_login_creds`。
+
+参考官方文档：[Passkey 参数](https://docs.privy.io/authentication/user-authentication/login-methods/passkey)、
+[Android 设置](https://docs.privy.io/basics/android/advanced/setup-passkeys)。
+修改生成器后需重新部署导出站点，确认线上关联 JSON 包含这两个 relation。
+App 的 origin 参数修复也需重新构建安装；仅修改站点无法修正已发布的 APK。
 
 设置 `APPLE_TEAM_ID` 后才生成 `/.well-known/apple-app-site-association`；部署任务会
 从 Android keystore 自动生成 `/.well-known/assetlinks.json`。未配置 Apple Team ID

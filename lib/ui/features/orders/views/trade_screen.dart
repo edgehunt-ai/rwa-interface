@@ -88,10 +88,12 @@ class TradeScreen extends ConsumerStatefulWidget {
     super.key,
     required this.symbol,
     this.initialKind = MarketProductKind.bstock,
+    this.showPositions = false,
   }) : assert(symbol != '');
 
   final String symbol;
   final MarketProductKind initialKind;
+  final bool showPositions;
 
   @override
   ConsumerState<TradeScreen> createState() => _TradeScreenState();
@@ -123,6 +125,21 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     super.initState();
     productKind = widget.initialKind;
     symbol = widget.symbol.trim().toUpperCase();
+    if (widget.showPositions) {
+      detailTab = 'Position';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final detailsContext = _detailsKey.currentContext;
+        if (detailsContext != null) {
+          Scrollable.ensureVisible(
+            detailsContext,
+            alignment: 0,
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
   }
 
   @override
