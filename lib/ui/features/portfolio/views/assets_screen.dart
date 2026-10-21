@@ -1866,9 +1866,7 @@ class _SpotBalances extends ConsumerWidget {
         .where((position) => position.kind == MarketProductKind.bstock)
         .toList(growable: false);
     final bstockBalanceSymbols = allPositions
-        .map(
-          (position) => '${_underlyingSymbol(position.symbol)}B'.toUpperCase(),
-        )
+        .map((position) => _underlyingSymbol(position.symbol.toUpperCase()))
         .toSet();
     final allBalances = accountItems
         .where(
@@ -1884,7 +1882,7 @@ class _SpotBalances extends ConsumerWidget {
             (balance) =>
                 (account.kind != TradingAccountKind.bstocks ||
                     !bstockBalanceSymbols.contains(
-                      balance.symbol.toUpperCase(),
+                      _underlyingSymbol(balance.symbol.toUpperCase()),
                     )) &&
                 networkKind(balance.chain ?? account.chain) !=
                     NetworkKind.hyperliquid,

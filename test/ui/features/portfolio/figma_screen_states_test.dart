@@ -1165,35 +1165,40 @@ void main() {
     );
   });
 
-  testWidgets('Assets does not repeat bStock wallet tokens as cash', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          portfolioRepositoryProvider.overrideWithValue(
-            const _BstockHoldingsPortfolio(includeWalletBalances: true),
-          ),
-        ],
-        child: _assetsApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+  for (final walletSymbol in ['NVDAB', 'NVDA', 'nvda']) {
+    testWidgets('Assets does not repeat $walletSymbol wallet tokens as cash', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioRepositoryProvider.overrideWithValue(
+              _BstockHoldingsPortfolio(
+                includeWalletBalances: true,
+                walletSymbol: walletSymbol,
+              ),
+            ),
+          ],
+          child: _assetsApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('NVDAB'), findsOneWidget);
-    await _scrollAssetsUntilVisible(tester, find.text('USDC'));
-    expect(find.text('USDC'), findsOneWidget);
-    expect(find.text(r'$552.00'), findsOneWidget);
+      expect(find.text('NVDAB'), findsOneWidget);
+      await _scrollAssetsUntilVisible(tester, find.text('USDC'));
+      expect(find.text('USDC'), findsOneWidget);
+      expect(find.text(r'$552.00'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('spot-product-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cash').last);
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('spot-product-filter')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cash').last);
+      await tester.pumpAndSettle();
 
-    expect(find.text('NVDAB'), findsNothing);
-    expect(find.text('USDC'), findsOneWidget);
-    expect(find.text(r'$2.00'), findsNWidgets(2));
-  });
+      expect(find.text('NVDAB'), findsNothing);
+      expect(find.text('USDC'), findsOneWidget);
+      expect(find.text(r'$2.00'), findsNWidgets(2));
+    });
+  }
 
   testWidgets('Assets normalizes Spot networks and excludes Hyperliquid', (
     tester,
@@ -1999,12 +2004,14 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
   const _BstockHoldingsPortfolio({
     this.includeReturn = true,
     this.includeWalletBalances = false,
+    this.walletSymbol = 'NVDAB',
     this.quantity = '3.0154',
     this.kind = MarketProductKind.bstock,
   });
 
   final bool includeReturn;
   final bool includeWalletBalances;
+  final String walletSymbol;
   final String quantity;
   final MarketProductKind kind;
 
@@ -2021,7 +2028,7 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
             kind: TradingAccountKind.bstocks,
             balances: [
               TokenBalance(
-                symbol: 'NVDAB',
+                symbol: walletSymbol,
                 chain: 'BNB Smart Chain',
                 balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
                 valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
