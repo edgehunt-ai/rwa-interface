@@ -8,6 +8,11 @@ SDK 参数改成裸域名。URL 可以带页面路径、查询参数或 fragment
 不会传入 RP。
 代码没有默认域名，也不再读取 `PRIVY_RELYING_PARTY`。
 
+当前私钥导出地址为 `https://rwa-interface.vercel.app/export-private-key`，与 Flutter Web
+主站独立部署。导出站点的 Vercel 路由支持 `/export-private-key`，静态脚本及
+`/.well-known` 关联文件仍从域名根路径加载。仅添加页面路径不会改变 Passkey
+使用的 origin 或 hostname；已安装 App 需重新构建安装后才会使用新地址。
+
 ## App 构建
 
 在 `.env` 或 GitHub Actions Variables 设置 `PRIVY_EXPORT_URL`。运行
