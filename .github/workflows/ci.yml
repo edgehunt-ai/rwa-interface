@@ -37,3 +37,5 @@ jobs:
           dart format --output=none --set-exit-if-changed lib test
           && dart analyze --fatal-infos
           && flutter test
+      - name: Validate App Review mode
+        run: flutter test --dart-define=APP_REVIEW_ENABLED=true test/app_review

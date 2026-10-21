@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app_review/app_review.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/observability_providers.dart';
@@ -121,6 +122,17 @@ final class SelfCustodialWithdrawalCommands {
     // reusing the previous key against it is a conflict.
     fingerprint: '${quote.intent.fingerprint}|${prepared.withdrawalId}',
     command: (key) async {
+      if (AppReviewConfiguration.buildEnabled &&
+          _ref.read(appReviewModeProvider)) {
+        final repository = _ref.read(fundingRepositoryProvider);
+        if (repository is AppReviewFundingRepository) {
+          return repository.submitSelfCustodialWithdrawal(
+            id: prepared.withdrawalId,
+            txHash: '',
+            idempotencyKey: key,
+          );
+        }
+      }
       final fingerprint = quote.intent.fingerprint;
       final pending = _pendingSubmissions[fingerprint];
       if (pending != null) return _submitPending(fingerprint, pending);
@@ -203,6 +215,17 @@ final class SelfCustodialWithdrawalCommands {
     operation: 'self-custodial-withdrawal-user-paid',
     fingerprint: '${quote.intent.fingerprint}|${prepared.withdrawalId}',
     command: (key) async {
+      if (AppReviewConfiguration.buildEnabled &&
+          _ref.read(appReviewModeProvider)) {
+        final repository = _ref.read(fundingRepositoryProvider);
+        if (repository is AppReviewFundingRepository) {
+          return repository.submitSelfCustodialWithdrawal(
+            id: prepared.withdrawalId,
+            txHash: '',
+            idempotencyKey: key,
+          );
+        }
+      }
       final fingerprint = quote.intent.fingerprint;
       final pending = _pendingSubmissions[fingerprint];
       if (pending != null) return _submitPending(fingerprint, pending);
@@ -461,6 +484,21 @@ final class SelfCustodialWithdrawalCommands {
               normalizeChainLabel(wallet.chain) == normalizeChainLabel(chain),
         )
         .toList(growable: false);
+    // Review holdings on BSC use a ledger-only wallet identity. It is exposed
+    // by the simulated portfolio but is intentionally not registered with the
+    // live wallet service, so provide the matching local descriptor here.
+    if (matches.isEmpty &&
+        AppReviewConfiguration.buildEnabled &&
+        _ref.read(appReviewModeProvider) &&
+        normalizeChainLabel(chain) == 'bsc') {
+      return Wallet(
+        walletId: 'review-bstocks-wallet',
+        address: '0x0000000000000000000000000000000000000001',
+        chain: 'bsc',
+        status: WalletState.active,
+        createdAt: DateTime.now().toUtc(),
+      );
+    }
     if (matches.length != 1) {
       throw StateError('No unique active withdrawal wallet is available');
     }

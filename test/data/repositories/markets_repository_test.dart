@@ -61,6 +61,7 @@ void main() {
       expect(page.items.last.logoText, 'NO');
       expect(detail.logoUrl, 'https://cdn.example.com/detail.png');
       expect(detail.logoText, 'DT');
+      expect(detail.isFavorite, isTrue);
     },
   );
 
@@ -217,6 +218,7 @@ final class _Markets implements MarketsService {
               },
             )
           : null
+      ..isFavorite = true
       ..quote.update((quote) => quote.price = financial)
       ..assetInfo.update(
         (info) => info

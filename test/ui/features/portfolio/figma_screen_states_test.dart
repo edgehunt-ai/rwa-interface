@@ -611,6 +611,57 @@ void main() {
     });
   }
 
+  testWidgets('review Perps displays margin balances instead of unavailable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 1258);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = AppReviewStore();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            AppReviewPortfolioRepository(store),
+          ),
+          perpsOpenOrdersProvider(null).overrideWith(
+            (_) async => DomainPage(
+              items: store.orders.values
+                  .where(
+                    (order) =>
+                        order.kind == MarketProductKind.perp &&
+                        !order.isTerminal,
+                  )
+                  .map((order) => ResourceResult(resource: order))
+                  .toList(),
+            ),
+          ),
+        ],
+        child: _assetsApp(locale: const Locale('zh')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(find.byType(AssetsScreen)));
+    await tester.tap(find.text(l10n.perps).last);
+    await tester.pumpAndSettle();
+    final header = find.byKey(Key('perps-margin-header-${l10n.crossMargin}'));
+    expect(
+      find.descendant(of: header, matching: find.text(r'$4,900.00')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: header, matching: find.text('4,900 USDC')),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.unavailable), findsNothing);
+    await tester.tap(header);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.maxWithdraw), findsOneWidget);
+    expect(find.text(r'$2,400.00'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final available in [true, false]) {
     for (final complete in [true, false]) {
       testWidgets(
@@ -1114,35 +1165,40 @@ void main() {
     );
   });
 
-  testWidgets('Assets does not repeat bStock wallet tokens as cash', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          portfolioRepositoryProvider.overrideWithValue(
-            const _BstockHoldingsPortfolio(includeWalletBalances: true),
-          ),
-        ],
-        child: _assetsApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+  for (final walletSymbol in ['NVDAB', 'NVDA', 'nvda']) {
+    testWidgets('Assets does not repeat $walletSymbol wallet tokens as cash', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioRepositoryProvider.overrideWithValue(
+              _BstockHoldingsPortfolio(
+                includeWalletBalances: true,
+                walletSymbol: walletSymbol,
+              ),
+            ),
+          ],
+          child: _assetsApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('NVDAB'), findsOneWidget);
-    await _scrollAssetsUntilVisible(tester, find.text('USDC'));
-    expect(find.text('USDC'), findsOneWidget);
-    expect(find.text(r'$552.00'), findsOneWidget);
+      expect(find.text('NVDAB'), findsOneWidget);
+      await _scrollAssetsUntilVisible(tester, find.text('USDC'));
+      expect(find.text('USDC'), findsOneWidget);
+      expect(find.text(r'$552.00'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('spot-product-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cash').last);
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('spot-product-filter')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cash').last);
+      await tester.pumpAndSettle();
 
-    expect(find.text('NVDAB'), findsNothing);
-    expect(find.text('USDC'), findsOneWidget);
-    expect(find.text(r'$2.00'), findsNWidgets(2));
-  });
+      expect(find.text('NVDAB'), findsNothing);
+      expect(find.text('USDC'), findsOneWidget);
+      expect(find.text(r'$2.00'), findsNWidgets(2));
+    });
+  }
 
   testWidgets('Assets normalizes Spot networks and excludes Hyperliquid', (
     tester,
@@ -1948,12 +2004,14 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
   const _BstockHoldingsPortfolio({
     this.includeReturn = true,
     this.includeWalletBalances = false,
+    this.walletSymbol = 'NVDAB',
     this.quantity = '3.0154',
     this.kind = MarketProductKind.bstock,
   });
 
   final bool includeReturn;
   final bool includeWalletBalances;
+  final String walletSymbol;
   final String quantity;
   final MarketProductKind kind;
 
@@ -1970,7 +2028,7 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
             kind: TradingAccountKind.bstocks,
             balances: [
               TokenBalance(
-                symbol: 'NVDAB',
+                symbol: walletSymbol,
                 chain: 'BNB Smart Chain',
                 balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
                 valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),

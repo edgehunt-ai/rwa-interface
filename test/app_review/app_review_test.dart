@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app_review/app_review.dart';
 import 'package:nobell/data/api/api_environment.dart';
-import 'package:nobell/data/repositories/funding_repository_impl.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/bstocks_support.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
@@ -59,7 +58,7 @@ void main() {
   });
 
   test(
-    'review mode replaces supported repositories while funding uses the API',
+    'review mode simulates commands while retaining live read delegates',
     () async {
       final container = ProviderContainer(
         overrides: [
@@ -81,7 +80,7 @@ void main() {
       );
       expect(
         container.read(fundingRepositoryProvider),
-        isA<FundingRepositoryImpl>(),
+        isA<AppReviewFundingRepository>(),
       );
       expect(
         container.read(realtimeRepositoryProvider),
@@ -90,15 +89,25 @@ void main() {
       final orders = container.read(ordersRepositoryProvider);
       expect(orders, isA<AppReviewOrdersRepository>());
 
+      final store = container.read(appReviewStoreProvider);
+      final intent = OrderIntent(
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock,
+        side: TradingSide.buy,
+        type: TradingOrderType.market,
+        amount: DecimalValue('100.00', asset: 'USD', unit: 'fiat'),
+      );
+      store.previews['test-quote'] = OrderPreview(
+        previewId: 'test-quote',
+        intent: intent,
+        orderValue: intent.amount!,
+        estimatedPrice: DecimalValue('100'),
+        estimatedQuantity: DecimalValue('1'),
+      );
       final result = await orders.create(
-        OrderIntent(
-          symbol: 'NVDA',
-          kind: MarketProductKind.bstock,
-          side: TradingSide.buy,
-          type: TradingOrderType.market,
-          amount: DecimalValue('100.00', asset: 'USD', unit: 'fiat'),
-        ),
+        intent,
         idempotencyKey: 'test-review-order',
+        previewId: 'test-quote',
       );
       expect(result.resource.orderId, startsWith('review-order-'));
       expect(result.resource.status.name, 'filled');

@@ -967,5 +967,8 @@
   "stopLossShortLabel": "SL",
   "spotMarketDataSource": "*Spot data is sourced from Binance for reference only.",
   "marketDataSourceBinance": "Market data from Binance",
-  "marketDataSourceDisclaimer": "Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform."
+  "marketDataSourceDisclaimer": "Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.",
+  "reviewAddDemoFunds": "Add 1,000 {token} demo funds",
+  "@reviewAddDemoFunds": {"placeholders": {"token": {}}},
+  "reviewDemoFundsAdded": "1,000 USDC added to your demo balance"
 }

@@ -245,7 +245,7 @@ jobs:
           retention-days: 7
 
   ios-release:
-    name: iOS Unsigned Release App
+    name: iOS Unsigned Release IPA
     needs:
       - detect-release
     if: needs.detect-release.outputs.should_build == 'true'
@@ -319,22 +319,27 @@ jobs:
         env:
           SENTRY_RELEASE: nobell@${{ needs.detect-release.outputs.version }}
         run: dart run sentry_dart_plugin
-      - name: Package unsigned iOS app
-        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/nobell-ios-unsigned.zip
+      - name: Package unsigned iOS IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/ios/ipa/Payload
+          ditto build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
+          ditto -c -k --norsrc --keepParent build/ios/ipa/Payload build/ios/nobell-ios-unsigned.ipa
       - name: Record iOS artifact size
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "## iOS artifact size"
-            du -h build/ios/nobell-ios-unsigned.zip
+            du -h build/ios/nobell-ios-unsigned.ipa
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: nobell-ios-unsigned
           path: |
-            build/ios/nobell-ios-unsigned.zip
+            build/ios/nobell-ios-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
 
@@ -398,7 +403,7 @@ jobs:
           gh release create "$TAG" \
             release-assets/nobell-android-arm64-v8a.apk \
             release-assets/nobell-android-x86_64.apk \
-            release-assets/nobell-ios-unsigned.zip \
+            release-assets/nobell-ios-unsigned.ipa \
             --title "$TAG" \
             --notes-file release-notes.md \
             --target "${{ env.TARGET_SHA }}" \

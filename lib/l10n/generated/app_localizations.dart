@@ -5136,6 +5136,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.'**
   String get marketDataSourceDisclaimer;
+
+  /// No description provided for @reviewAddDemoFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 1,000 {token} demo funds'**
+  String reviewAddDemoFunds(Object token);
+
+  /// No description provided for @reviewDemoFundsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'1,000 USDC added to your demo balance'**
+  String get reviewDemoFundsAdded;
 }
 
 class _AppLocalizationsDelegate

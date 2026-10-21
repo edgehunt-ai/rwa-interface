@@ -116,6 +116,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
           ? (value.hip3Market?.tradable ?? false)
           : true,
       productId: value.hip3Market?.productId,
+      isFavorite: value.isFavorite ?? false,
       change24hPercent: _decimal(value.quote.change24hPercent, unit: 'percent'),
     );
   }

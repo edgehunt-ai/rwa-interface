@@ -2724,4 +2724,12 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get marketDataSourceDisclaimer =>
       '价格、图表及相关市场数据来源于 Binance，仅供参考，可能与本平台的实际交易情况有所不同。';
+
+  @override
+  String reviewAddDemoFunds(Object token) {
+    return '添加 1,000 $token 模拟资金';
+  }
+
+  @override
+  String get reviewDemoFundsAdded => '已添加 1,000 USDC 至模拟余额';
 }

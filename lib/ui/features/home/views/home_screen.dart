@@ -70,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                       storedTab: ref.read(marketRankingTabProvider).value,
                     ),
                   ),
-                  productType: null,
+                  productType: ref.read(marketProductTypeProvider).value,
                 )).future,
               ),
             ];
@@ -498,12 +498,12 @@ class _MarketPreview extends ConsumerStatefulWidget {
 }
 
 class _MarketPreviewState extends ConsumerState<_MarketPreview> {
-  MarketProductKind? kind;
   bool _favoritesSelectedByUser = false;
   bool _popularFallbackScheduled = false;
 
   @override
   Widget build(BuildContext context) {
+    final kind = ref.watch(marketProductTypeProvider).value;
     final authenticated =
         ref.watch(authenticationProvider) is AuthenticationAuthenticated;
     final selectedTab = effectiveMarketRankingTab(
@@ -525,7 +525,9 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
       children: [
         MarketProductFilter(
           value: kind,
-          onChanged: (value) => setState(() => kind = value),
+          onChanged: (value) async {
+            await ref.read(marketProductTypeProvider.notifier).select(value);
+          },
         ),
         const SizedBox(height: 12),
         MarketRankingTabs(
