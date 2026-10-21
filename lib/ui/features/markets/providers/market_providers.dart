@@ -80,11 +80,9 @@ final class MarketProductTypeNotifier
   }
 
   Future<void> select(MarketProductKind? kind) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_marketProductTypeKey, kind?.name ?? 'all');
     state = AsyncData(kind);
-    await (await SharedPreferences.getInstance()).setString(
-      _marketProductTypeKey,
-      kind?.name ?? 'all',
-    );
   }
 }
 

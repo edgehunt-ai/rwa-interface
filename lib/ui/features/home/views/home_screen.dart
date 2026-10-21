@@ -525,9 +525,9 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
       children: [
         MarketProductFilter(
           value: kind,
-          onChanged: (value) => unawaited(
-            ref.read(marketProductTypeProvider.notifier).select(value),
-          ),
+          onChanged: (value) async {
+            await ref.read(marketProductTypeProvider.notifier).select(value);
+          },
         ),
         const SizedBox(height: 12),
         MarketRankingTabs(

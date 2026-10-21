@@ -159,13 +159,11 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     const SizedBox(height: 16),
                     MarketProductFilter(
                       value: kind,
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         _resetScroll();
-                        unawaited(
-                          ref
-                              .read(marketProductTypeProvider.notifier)
-                              .select(value),
-                        );
+                        await ref
+                            .read(marketProductTypeProvider.notifier)
+                            .select(value);
                       },
                     ),
                     const SizedBox(height: 12),
