@@ -54,6 +54,32 @@ void main() {
     );
   });
 
+  for (final kind in <MarketProductKind?>[null, ...MarketProductKind.values]) {
+    test('product filter persists and restores $kind', () async {
+      SharedPreferences.setMockInitialValues({'market_product_type': 'perp'});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      await container.read(marketProductTypeProvider.future);
+      await container.read(marketProductTypeProvider.notifier).select(kind);
+      expect(container.read(marketProductTypeProvider).value, kind);
+      final restored = ProviderContainer();
+      addTearDown(restored.dispose);
+      expect(await restored.read(marketProductTypeProvider.future), kind);
+    });
+  }
+
+  test('missing or invalid product filter defaults to all', () async {
+    for (final values in <Map<String, Object>>[
+      {},
+      {'market_product_type': 'invalid'},
+    ]) {
+      SharedPreferences.setMockInitialValues(values);
+      final container = ProviderContainer();
+      expect(await container.read(marketProductTypeProvider.future), isNull);
+      container.dispose();
+    }
+  });
+
   test('isolates complete query parameters', () async {
     final repository = _MarketsRepository();
     final container = ProviderContainer(

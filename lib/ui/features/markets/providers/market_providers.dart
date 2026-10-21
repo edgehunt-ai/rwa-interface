@@ -60,6 +60,34 @@ final class MarketRankingTabNotifier extends AsyncNotifier<String?> {
   }
 }
 
+const _marketProductTypeKey = 'market_product_type';
+
+final marketProductTypeProvider =
+    AsyncNotifierProvider<MarketProductTypeNotifier, MarketProductKind?>(
+      MarketProductTypeNotifier.new,
+    );
+
+final class MarketProductTypeNotifier
+    extends AsyncNotifier<MarketProductKind?> {
+  @override
+  Future<MarketProductKind?> build() async {
+    final stored = (await SharedPreferences.getInstance()).getString(
+      _marketProductTypeKey,
+    );
+    return MarketProductKind.values
+        .where((kind) => kind.name == stored)
+        .firstOrNull;
+  }
+
+  Future<void> select(MarketProductKind? kind) async {
+    state = AsyncData(kind);
+    await (await SharedPreferences.getInstance()).setString(
+      _marketProductTypeKey,
+      kind?.name ?? 'all',
+    );
+  }
+}
+
 String effectiveMarketRankingTab({
   required bool authenticated,
   required String? storedTab,

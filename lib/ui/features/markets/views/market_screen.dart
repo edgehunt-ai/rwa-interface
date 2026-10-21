@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/auth/authentication.dart';
-import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/markets/market_data_source.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
@@ -27,7 +26,6 @@ class MarketScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
-  MarketProductKind? kind;
   late final ScrollController _scrollController;
   MarketProductFeedQuery? _activeFeedQuery;
 
@@ -78,6 +76,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final kind = ref.watch(marketProductTypeProvider).value;
     final authenticated =
         ref.watch(authenticationProvider) is AuthenticationAuthenticated;
     final selectedTab = effectiveMarketRankingTab(
@@ -162,7 +161,11 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       value: kind,
                       onChanged: (value) {
                         _resetScroll();
-                        setState(() => kind = value);
+                        unawaited(
+                          ref
+                              .read(marketProductTypeProvider.notifier)
+                              .select(value),
+                        );
                       },
                     ),
                     const SizedBox(height: 12),
