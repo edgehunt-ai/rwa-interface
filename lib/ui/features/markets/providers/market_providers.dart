@@ -356,6 +356,7 @@ final class FavoritesCommand extends AsyncNotifier<void> {
 
   void _invalidate(MarketProductRef product) {
     ref.invalidate(marketProductProvider(product));
+    ref.invalidate(marketProductLookupProvider);
     ref.invalidate(marketProductsProvider);
   }
 }

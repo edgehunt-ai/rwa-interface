@@ -903,6 +903,49 @@ void main() {
     },
   );
 
+  for (final kind in MarketProductKind.values) {
+    testWidgets(
+      'Trade reads saved favorite from detail without stock catalog ($kind)',
+      (tester) async {
+        final repository = _FavoriteMarketsRepository(isFavorite: false);
+        final product = MarketProductRef(symbol: 'SPCX', kind: kind);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              marketsRepositoryProvider.overrideWithValue(repository),
+              marketStocksProvider.overrideWith(
+                (ref) async => const DomainPage<Stock>(items: []),
+              ),
+              marketProductProvider(product).overrideWith(
+                (ref) async => MarketProduct(
+                  symbol: product.symbol,
+                  name: product.symbol,
+                  kind: kind,
+                  price: DecimalValue('160.69'),
+                  settlementAsset: 'USDC',
+                  network: 'hyperliquid',
+                  tradable: true,
+                  isFavorite: true,
+                ),
+              ),
+            ],
+            child: buildTestApp(
+              TradeScreen(symbol: product.symbol, initialKind: kind),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byTooltip('Remove favorite'), findsOneWidget);
+        expect(find.byTooltip('Add favorite'), findsNothing);
+        await tester.tap(find.byTooltip('Remove favorite'));
+        await tester.pumpAndSettle();
+        expect(repository.removed, [product]);
+        expect(repository.added, isEmpty);
+        expect(find.byTooltip('Add favorite'), findsOneWidget);
+      },
+    );
+  }
+
   testWidgets('Trade updates the favorite icon after a successful request', (
     tester,
   ) async {

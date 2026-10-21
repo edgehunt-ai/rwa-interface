@@ -2884,4 +2884,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get marketDataSourceDisclaimer =>
       'Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.';
+
+  @override
+  String reviewAddDemoFunds(Object token) {
+    return 'Add 1,000 $token demo funds';
+  }
+
+  @override
+  String get reviewDemoFundsAdded => '1,000 USDC added to your demo balance';
 }

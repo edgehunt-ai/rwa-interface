@@ -382,7 +382,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         productDetailState.value?.tradable ?? activeProduct?.tradable ?? true;
     final isFavorite = _favoriteOverrideRef == productRef
         ? _favoriteOverride!
-        : activeProduct?.isFavorite ?? false;
+        : productDetailState.value?.isFavorite ??
+              activeProduct?.isFavorite ??
+              false;
     // Keep-alive: `favoritesCommandProvider` is autoDispose. Without a watch
     // here it can be disposed mid-flight while add()/remove() is awaiting its
     // network call, which throws when the notifier tries to write `state`

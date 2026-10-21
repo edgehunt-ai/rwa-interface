@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../app_review/repositories.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/deposit.dart';
 import '../../../../domain/models/deposit_observation.dart';
@@ -18,7 +19,16 @@ final depositDirectoryProvider = FutureProvider.autoDispose<DepositDirectory>((
   ref,
 ) {
   ref.watch(sessionGenerationProvider);
-  return ref.watch(fundingRepositoryProvider).getDepositDirectory();
+  // Simulated balance mutations rebuild the financial repository. Deposit
+  // addresses depend on the live wallet directory, not that ledger revision.
+  final repository = ref.watch(
+    fundingRepositoryProvider.select(
+      (repository) => repository is AppReviewFundingRepository
+          ? repository.readDelegate ?? repository
+          : repository,
+    ),
+  );
+  return repository.getDepositDirectory();
 });
 final unifiedFundingAccountProvider =
     FutureProvider.autoDispose<UnifiedFundingAccountSummary>((ref) {

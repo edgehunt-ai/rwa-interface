@@ -611,6 +611,57 @@ void main() {
     });
   }
 
+  testWidgets('review Perps displays margin balances instead of unavailable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 1258);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = AppReviewStore();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            AppReviewPortfolioRepository(store),
+          ),
+          perpsOpenOrdersProvider(null).overrideWith(
+            (_) async => DomainPage(
+              items: store.orders.values
+                  .where(
+                    (order) =>
+                        order.kind == MarketProductKind.perp &&
+                        !order.isTerminal,
+                  )
+                  .map((order) => ResourceResult(resource: order))
+                  .toList(),
+            ),
+          ),
+        ],
+        child: _assetsApp(locale: const Locale('zh')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(find.byType(AssetsScreen)));
+    await tester.tap(find.text(l10n.perps).last);
+    await tester.pumpAndSettle();
+    final header = find.byKey(Key('perps-margin-header-${l10n.crossMargin}'));
+    expect(
+      find.descendant(of: header, matching: find.text(r'$4,900.00')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: header, matching: find.text('4,900 USDC')),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.unavailable), findsNothing);
+    await tester.tap(header);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.maxWithdraw), findsOneWidget);
+    expect(find.text(r'$2,400.00'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final available in [true, false]) {
     for (final complete in [true, false]) {
       testWidgets(

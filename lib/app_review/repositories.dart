@@ -1,3 +1,17 @@
+import '../domain/repositories/bstocks_order_execution_repository.dart';
+import '../domain/repositories/hip3_account_abstraction_repository.dart';
+import '../domain/repositories/hip3_opening_repository.dart';
+import '../domain/repositories/hip3_withdrawal_repository.dart';
+import '../domain/models/hip3_step_confirmation.dart';
+import '../domain/models/hip3_opening_protection.dart';
+import '../domain/models/hip3_account_abstraction.dart';
+import '../domain/models/hip3_opening_context.dart';
+import '../domain/models/hip3_withdrawal_preview.dart';
+import '../domain/models/hip3_withdrawal.dart';
+import '../domain/models/portfolio_asset.dart';
+
+import 'dart:async';
+
 import '../domain/models/activity_record.dart';
 import '../domain/models/account_deletion.dart';
 import '../domain/models/decimal_value.dart';
@@ -42,31 +56,8 @@ import '../domain/repositories/realtime_repository.dart';
 import '../domain/repositories/trade_intent_repository.dart';
 import '../domain/repositories/wallets_repository.dart';
 
-/// Shared, process-local state for the App Store review experience.
-/// No method in this file performs network, wallet, payment, or chain I/O.
-final class AppReviewStore {
-  AppReviewStore()
-    : settings = const UserPreferences(
-        language: 'en',
-        pushEnabled: true,
-        notifyOrderFilled: true,
-        notifyOrderFailed: true,
-        notifyLiquidationWarning: true,
-      ) {
-    orders.addAll(_initialOpenOrders());
-  }
-
-  UserPreferences settings;
-  final orders = <String, TradingOrder>{};
-  final deposits = <String, Deposit>{};
-  final withdrawals = <String, Withdrawal>{};
-  final fundingPlans = <String, FundingPlan>{};
-  final fundingTransfers = <String, FundingTransfer>{};
-  final tradeIntents = <String, TradeIntent>{};
-  int sequence = 0;
-
-  String id(String prefix) => 'review-$prefix-${++sequence}';
-}
+part 'ledger.dart';
+part 'financial_repositories.dart';
 
 DecimalValue _usd(String value) =>
     DecimalValue(value, asset: 'USD', unit: 'fiat');
@@ -186,48 +177,52 @@ final class AppReviewAccountRepository implements AccountRepository {
       notifyLiquidationWarning:
           patch.notifyLiquidationWarning ?? current.notifyLiquidationWarning,
     );
+    store.changed();
     return store.settings;
   }
 
   @override
   Future<DomainPage<RegisteredDevice>> listDevices({String? cursor}) async =>
-      DomainPage(
-        items: [
-          RegisteredDevice(
-            deviceId: 'app-review-device',
-            platform: 'ios',
-            appVersion: '1.0.0',
-            pushProvider: 'apns',
-            pushTokenRegistered: true,
-            lastSeenAt: _now,
-            createdAt: DateTime.utc(2026, 1, 15),
-          ),
-        ],
-      );
+      DomainPage(items: store.devices.values.toList());
 
   @override
   Future<RegisteredDevice> registerDevice(
     DeviceRegistration registration,
-  ) async => RegisteredDevice(
-    deviceId: registration.deviceId,
-    platform: registration.platform,
-    appVersion: registration.appVersion,
-    pushProvider: registration.pushProvider,
-    pushTokenRegistered: true,
-    lastSeenAt: _now,
-    createdAt: _now,
-  );
+  ) async {
+    store.requireActive();
+    final device = RegisteredDevice(
+      deviceId: registration.deviceId,
+      platform: registration.platform,
+      appVersion: registration.appVersion,
+      pushProvider: registration.pushProvider,
+      pushTokenRegistered: true,
+      lastSeenAt: _now,
+      createdAt: _now,
+    );
+    store.devices[device.deviceId] = device;
+    store.changed();
+    return device;
+  }
 
   @override
-  Future<void> deleteDevice(String deviceId) async {}
+  Future<void> deleteDevice(String deviceId) async {
+    store.requireActive();
+    store.devices.remove(deviceId);
+    store.changed();
+  }
 
   @override
   Future<AccountDeletion> requestAccountDeletion({
     required String idempotencyKey,
-  }) async => _reviewDeletion();
+  }) async => store.once(
+    'account-deletion:$idempotencyKey',
+    () => store.deletion ??= _reviewDeletion(),
+  );
 
   @override
-  Future<AccountDeletion> getAccountDeletion() async => _reviewDeletion();
+  Future<AccountDeletion> getAccountDeletion() async =>
+      store.deletion ??
+      (throw StateError('No account deletion has been requested'));
 
   AccountDeletion _reviewDeletion() => AccountDeletion(
     requestId: store.id('account-deletion'),
@@ -242,7 +237,12 @@ final class AppReviewPortfolioRepository
     implements
         PortfolioRepository,
         PortfolioHistoryRepository,
-        PortfolioAllocationRepository {
+        PortfolioAllocationRepository,
+        PortfolioAssetsRepository {
+  AppReviewPortfolioRepository([AppReviewStore? store, this.markets])
+    : store = store ?? AppReviewStore();
+  final AppReviewStore store;
+  final MarketsRepository? markets;
   static final positions = <Position>[
     Position(
       positionId: 'review-position-nvda',
@@ -280,7 +280,7 @@ final class AppReviewPortfolioRepository
       kind: MarketProductKind.perp,
       side: PositionSide.long,
       quantity: _token('6', 'NVDA'),
-      valueUsd: _usd('7500.00'),
+      valueUsd: _usd('2830.00'),
       entryPrice: _usd('1195.00'),
       markPrice: _usd('1250.00'),
       unrealizedPnl: _usd('330.00'),
@@ -302,7 +302,7 @@ final class AppReviewPortfolioRepository
       kind: MarketProductKind.perp,
       side: PositionSide.short,
       quantity: _token('15', 'TSLA'),
-      valueUsd: _usd('3750.00'),
+      valueUsd: _usd('1220.00'),
       entryPrice: _usd('258.00'),
       markPrice: _usd('250.00'),
       unrealizedPnl: _usd('120.00'),
@@ -318,73 +318,93 @@ final class AppReviewPortfolioRepository
     ),
   ];
 
-  static List<TradingAccount> get accounts => [
-    TradingAccount(
-      kind: TradingAccountKind.app,
-      label: 'Review Portfolio',
-      address: '0x0000000000000000000000000000000000000001',
-      chain: 'Arbitrum',
-      totalValueUsd: _usd('25000.00'),
-      availableUsd: _usd('4375.00'),
-      marginUsedUsd: _usd('0.00'),
-      balances: [
-        TokenBalance(
-          symbol: 'USDC',
-          balance: _token('4375.00', 'USDC'),
-          valueUsd: _usd('4375.00'),
-          decimals: 6,
-          chain: 'Arbitrum',
-        ),
+  List<TradingAccount> get accounts => store.accounts;
+
+  @override
+  Future<Portfolio> getSummary() async {
+    await store.refreshMarkets(markets);
+    return Portfolio(
+      totalValueUsd: _money(store.total),
+      availableToTradeUsd: _money(
+        store.availableSpotCash + store.availablePerps,
+      ),
+      todayPnl: _money(store.realizedPnl + store.unrealizedPnl),
+      todayPnlPercent: DecimalValue(
+        _number((store.realizedPnl + store.unrealizedPnl) / 31000 * 100),
+        unit: 'percent',
+      ),
+      marginInUseUsd: _money(store.margin),
+      stocksValueUsd: _money(store.stocksValue),
+      updatedAt: _now,
+      accounts: accounts,
+      holdings: _holdings,
+    );
+  }
+
+  @override
+  Future<PortfolioRailAllocation> getRailAllocation() async {
+    await store.refreshMarkets(markets);
+    final values = {
+      'cash': store.spotCash,
+      'bstock': store.stocksValue,
+      'perp': store.perpsEquity,
+    };
+    PortfolioAccountAllocation allocation(
+      double value, {
+      PortfolioPerpsAllocationBreakdown? breakdown,
+    }) => PortfolioAccountAllocation(
+      valueUsd: _money(value),
+      percent: DecimalValue(
+        _number(store.total == 0 ? 0 : value / store.total * 100),
+        unit: 'percent',
+      ),
+      perpsBreakdown: breakdown,
+    );
+    return PortfolioRailAllocation(
+      items: [
+        for (final entry in values.entries)
+          PortfolioRailAllocationItem(
+            rail: entry.key,
+            valueUsd: _money(entry.value),
+            percent:
+                allocation(entry.value).percent ??
+                DecimalValue('0', unit: 'percent'),
+          ),
       ],
-    ),
-    TradingAccount(
-      kind: TradingAccountKind.hip3,
-      label: 'HIP3 Perps',
-      address: '0x0000000000000000000000000000000000000001',
-      chain: 'Arbitrum',
-      totalValueUsd: _usd('6000.00'),
-      availableUsd: _usd('2400.00'),
-      marginUsedUsd: _usd('3600.00'),
-      balances: const [],
-    ),
-  ];
+      valuedTotalUsd: _money(store.total),
+      unvaluedAssetCount: 0,
+      spot: allocation(store.spotCash + store.stocksValue),
+      perps: allocation(store.perpsEquity, breakdown: store.perpsBreakdown),
+    );
+  }
 
   @override
-  Future<Portfolio> getSummary() async => Portfolio(
-    totalValueUsd: _usd('31000.00'),
-    availableToTradeUsd: _usd('6775.00'),
-    todayPnl: _usd('774.80'),
-    todayPnlPercent: DecimalValue('2.56', unit: 'percent'),
-    marginInUseUsd: _usd('3600.00'),
-    stocksValueUsd: _usd('20625.00'),
-    updatedAt: _now,
-    accounts: accounts,
-    holdings: _holdings,
-  );
-
-  @override
-  Future<PortfolioRailAllocation> getRailAllocation() async =>
-      PortfolioRailAllocation(
-        items: [
-          PortfolioRailAllocationItem(
-            rail: 'cash',
-            valueUsd: _usd('4375.00'),
-            percent: DecimalValue('14.1129', unit: 'percent'),
-          ),
-          PortfolioRailAllocationItem(
-            rail: 'bstock',
-            valueUsd: _usd('20625.00'),
-            percent: DecimalValue('66.5323', unit: 'percent'),
-          ),
-          PortfolioRailAllocationItem(
-            rail: 'perp',
-            valueUsd: _usd('6000.00'),
-            percent: DecimalValue('19.3548', unit: 'percent'),
-          ),
-        ],
-        valuedTotalUsd: _usd('31000.00'),
-        unvaluedAssetCount: 0,
-      );
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+    String? account,
+  }) async {
+    await store.refreshMarkets(markets);
+    return [
+      if (productId == null && account != 'perps') ...store.cashAssets,
+      if (account != 'perps')
+        ...store.stockAssets.where(
+          (asset) => productId == null || asset.productId == productId,
+        ),
+      if (account != 'spot' && productId == null)
+        PortfolioAsset(
+          assetId: 'review-hip3-usdc',
+          network: 'hyperliquid',
+          symbol: 'USDC',
+          decimals: 6,
+          balance: _token(_number(store.perpsEquity), 'USDC'),
+          valueUsd: _money(store.perpsEquity),
+          availableQuantity: _token(_number(store.availablePerps), 'USDC'),
+          availabilityStatus: 'complete',
+          freshness: 'fresh',
+        ),
+    ];
+  }
 
   @override
   Future<PortfolioHistory> getHistory(PortfolioHistoryRange range) async {
@@ -412,13 +432,15 @@ final class AppReviewPortfolioRepository
         values.length,
         (index) => PortfolioHistoryPoint(
           timestamp: start.add(step * index),
-          totalValueUsd: _usd(values[index]),
+          totalValueUsd: index == values.length - 1
+              ? _money(store.total)
+              : _usd(values[index]),
         ),
       ),
     );
   }
 
-  static List<HoldingGroup> get _holdings => positions
+  List<HoldingGroup> get _holdings => store.positions.values
       .map(
         (position) => HoldingGroup(
           symbol: position.symbol,
@@ -429,31 +451,54 @@ final class AppReviewPortfolioRepository
       .toList(growable: false);
 
   @override
-  Future<List<TradingAccount>> listAccounts() async => accounts;
+  Future<List<TradingAccount>> listAccounts() async {
+    await store.refreshMarkets(markets);
+    return accounts;
+  }
 
   @override
-  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
-      DomainPage(items: _holdings);
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async {
+    await store.refreshMarkets(markets);
+    return DomainPage(items: _holdings);
+  }
 }
 
 final class AppReviewWalletsRepository implements WalletsRepository {
-  AppReviewWalletsRepository(this.store);
+  AppReviewWalletsRepository(this.store, {required this.readDelegate});
   final AppReviewStore store;
+  final WalletsRepository readDelegate;
 
   Wallet get _wallet => Wallet(
     walletId: 'review-wallet',
-    address: '0x0000000000000000000000000000000000000001',
-    chain: 'ethereum',
+    address: _reviewAddress,
+    chain: 'arbitrum',
     status: WalletState.active,
     createdAt: DateTime.utc(2026, 1, 15),
   );
 
+  // Simulated portfolio assets reference this ledger wallet. The live deposit
+  // directory resolves the real wallet independently after syncWallet below.
   @override
-  Future<DomainPage<Wallet>> listWallets({String? cursor}) async =>
-      DomainPage(items: [_wallet]);
+  Future<DomainPage<Wallet>> listWallets({String? cursor}) async => DomainPage(
+    items: [
+      _wallet,
+      for (final chain in {...store.cashAssets.map((a) => a.normalizedNetwork)})
+        if (chain != 'arbitrum')
+          Wallet(
+            walletId: store.reviewWalletId(chain),
+            address: _reviewAddress,
+            chain: chain,
+            status: WalletState.active,
+            createdAt: _wallet.createdAt,
+          ),
+    ],
+  );
 
+  // Wallet provisioning/registration does not move funds. Keep real identity
+  // in sync so the live deposit directory can resolve the verified wallet.
   @override
-  Future<Wallet> syncWallet({required String idempotencyKey}) async => _wallet;
+  Future<Wallet> syncWallet({required String idempotencyKey}) async =>
+      readDelegate.syncWallet(idempotencyKey: idempotencyKey);
 
   WalletAuthorization _authorization(String walletId) => WalletAuthorization(
     authorizationId: store.id('authorization'),
@@ -493,6 +538,7 @@ final class AppReviewActivityRepository implements ActivityRepository {
     String? cursor,
   }) async {
     final records = <ActivityRecord>[
+      ...store.activities.reversed,
       ActivityRecord(
         id: 'review-activity-order',
         category: ActivityCategory.orders,
@@ -520,7 +566,11 @@ final class AppReviewActivityRepository implements ActivityRepository {
           id: 'activity-${order.orderId}',
           category: ActivityCategory.orders,
           type: order.conditional == null ? order.type.name : 'tpsl',
-          status: ActivityState.success,
+          status: order.status == TradingOrderStatus.cancelled
+              ? ActivityState.cancelled
+              : !order.isTerminal
+              ? ActivityState.pending
+              : ActivityState.success,
           title: '${order.side.name} ${order.symbol}',
           amount: order.orderValue,
           context: 'App Review simulated order',
@@ -547,46 +597,10 @@ final class AppReviewActivityRepository implements ActivityRepository {
 }
 
 final class AppReviewPositionsRepository implements PositionsRepository {
-  final _protectionActions = <String, Hip3ActionSummary>{};
-  @override
-  Future<Hip3ActionSummary> hip3Action(String actionId) async =>
-      _protectionActions[actionId]!;
-  @override
-  Future<Hip3ActionSummary> manageTpSl(
-    Position position, {
-    required List<Hip3ProtectionChange> changes,
-    required String idempotencyKey,
-    bool confirmBeforeSigning = true,
-  }) async {
-    final result = Hip3ActionSummary(
-      actionId: 'review-$idempotencyKey',
-      productId: position.productId!,
-      operation: 'manageTpsl',
-      status: 'succeeded',
-      effectsApplied: true,
-      canResumePositionAction: false,
-      positionId: position.positionId,
-      protectionOrders: [
-        for (var i = 0; i < changes.length; i++)
-          Hip3ProtectionOrderResult(
-            stepId: 'review-protection',
-            changeIndex: i,
-            orderId: changes[i].orderId ?? 'review-order-$i',
-            protection:
-                changes[i].protection ??
-                position.protectionOrders
-                    .firstWhere((order) => order.orderId == changes[i].orderId)
-                    .protection,
-            status: 'confirmed',
-            isCancellation:
-                changes[i].operation == ProtectionChangeOperation.cancel,
-          ),
-      ],
-    );
-    _protectionActions[result.actionId] = result;
-    return result;
-  }
-
+  AppReviewPositionsRepository([AppReviewStore? store, this.markets])
+    : store = store ?? AppReviewStore();
+  final AppReviewStore store;
+  final MarketsRepository? markets;
   @override
   Future<int> sizeDecimals(String productId) async => 4;
 
@@ -598,10 +612,14 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     String? limitPrice,
     required String idempotencyKey,
   }) async {
-    // Review-only simulation: no API request, action creation or signing.
+    // Use the latest real market observation for the simulated close.
+    await store.refreshMarkets(markets);
+    position = store.position(position.positionId);
     requireWithinPosition(quantity, position.quantity.value);
     final mark =
-        position.markPrice ?? position.entryPrice ?? DecimalValue('180.11');
+        position.markPrice ??
+        position.entryPrice ??
+        (throw StateError('Market price unavailable. Please refresh.'));
     final entry = position.entryPrice ?? mark;
     final price = type == TradingOrderType.limit
         ? DecimalValue(limitPrice ?? '')
@@ -609,7 +627,12 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     requirePositiveDecimal(price.value);
     final size = double.parse(quantity);
     final notional = size * double.parse(price.value);
-    final fee = notional * 0.00045;
+    final fee =
+        notional *
+        _value(
+          store.contexts[position.productId]?.takerFeeRate ??
+              DecimalValue('0.00045'),
+        );
     final pnl =
         size *
             (double.parse(price.value) - double.parse(entry.value)) *
@@ -620,7 +643,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
       positionId: position.positionId,
       productId: position.productId!,
       positionVersion: position.positionVersion ?? 'review',
-      environment: 'testnet',
+      environment: store.contexts[position.productId]?.environment ?? 'mainnet',
       side: position.side == PositionSide.long
           ? PositionSide.short
           : PositionSide.long,
@@ -640,40 +663,68 @@ final class AppReviewPositionsRepository implements PositionsRepository {
   }
 
   @override
-  Future<PositionLeverageContext> leverageContext(String productId) async =>
-      PositionLeverageContext(
-        productId: productId,
-        maximum: DecimalValue('50'),
-        current: DecimalValue('5'),
-        marginMode: PositionMarginMode.cross,
-        validUntil: _now.add(const Duration(hours: 1)),
-        canChange: true,
-      );
+  Future<Hip3ActionSummary> hip3Action(String actionId) async =>
+      store.actions[actionId] ??
+      (throw StateError('Simulated action not found'));
+
+  @override
+  Future<Hip3ActionSummary> manageTpSl(
+    Position position, {
+    required List<Hip3ProtectionChange> changes,
+    required String idempotencyKey,
+    bool confirmBeforeSigning = true,
+  }) async => store.once(
+    'protection:$idempotencyKey',
+    () => store.changeProtection(position.positionId, changes),
+  );
+
+  @override
+  Future<PositionLeverageContext> leverageContext(String productId) async {
+    final position = store.positions.values
+        .where((p) => p.productId == productId)
+        .firstOrNull;
+    return PositionLeverageContext(
+      productId: productId,
+      maximum: DecimalValue('50'),
+      current: position?.leverage ?? DecimalValue('3'),
+      marginMode: position?.marginMode ?? PositionMarginMode.cross,
+      validUntil: _now.add(const Duration(hours: 1)),
+      canChange: true,
+    );
+  }
 
   @override
   Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({
     String? cursor,
   }) async => const DomainPage(items: []);
-
   @override
-  Future<void> resumeHip3Action(String actionId) async {}
+  Future<void> resumeHip3Action(String actionId) async {
+    await hip3Action(actionId);
+  }
 
   @override
   Future<DomainPage<Position>> list({
     String? symbol,
     MarketProductKind? kind,
     String? cursor,
-  }) async => DomainPage(
-    items: AppReviewPortfolioRepository.positions
-        .where((item) => symbol == null || item.symbol == symbol)
-        .where((item) => kind == null || item.kind == kind)
-        .toList(growable: false),
-  );
+  }) async {
+    await store.refreshMarkets(markets);
+    return DomainPage(
+      items: store.positions.values
+          .where(
+            (p) =>
+                (symbol == null || p.symbol == symbol) &&
+                (kind == null || p.kind == kind),
+          )
+          .toList(),
+    );
+  }
 
   @override
-  Future<Position> get(String positionId) async => AppReviewPortfolioRepository
-      .positions
-      .firstWhere((item) => item.positionId == positionId);
+  Future<Position> get(String positionId) async {
+    await store.refreshMarkets(markets);
+    return store.position(positionId);
+  }
 
   @override
   Future<Position> updateTpSl(
@@ -686,15 +737,55 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     ProtectionClearScope? clearScope,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
-  }) async => position;
+  }) async {
+    final current = store.position(position.positionId);
+    final changes = <Hip3ProtectionChange>[
+      for (final order in current.protectionOrders)
+        if ((takeProfit != null && order.protection.role == 'takeProfit') ||
+            (stopLoss != null && order.protection.role == 'stopLoss') ||
+            clearScope == ProtectionClearScope.both ||
+            (clearScope == ProtectionClearScope.takeProfit &&
+                order.protection.role == 'takeProfit') ||
+            (clearScope == ProtectionClearScope.stopLoss &&
+                order.protection.role == 'stopLoss'))
+          Hip3ProtectionChange.cancel(order.orderId),
+      if (takeProfit != null)
+        Hip3ProtectionChange.create(
+          Hip3ProtectionParameters(
+            role: 'takeProfit',
+            triggerPrice: _usd(takeProfit),
+            limitPrice: takeLimit == null ? null : _usd(takeLimit),
+            quantity: quantity == null
+                ? null
+                : _token(quantity, current.symbol),
+          ),
+        ),
+      if (stopLoss != null)
+        Hip3ProtectionChange.create(
+          Hip3ProtectionParameters(
+            role: 'stopLoss',
+            triggerPrice: _usd(stopLoss),
+            limitPrice: stopLimit == null ? null : _usd(stopLimit),
+            quantity: quantity == null
+                ? null
+                : _token(quantity, current.symbol),
+          ),
+        ),
+    ];
+    await manageTpSl(current, changes: changes, idempotencyKey: idempotencyKey);
+    return store.position(position.positionId);
+  }
 
   @override
   Future<Position> clearTpSl(
     String positionId, {
     ProtectionClearScope scope = ProtectionClearScope.both,
     required String idempotencyKey,
-  }) => get(positionId);
-
+  }) => updateTpSl(
+    store.position(positionId),
+    clearScope: scope,
+    idempotencyKey: idempotencyKey,
+  );
   @override
   Future<Position> updateLeverage(
     Position position, {
@@ -702,8 +793,10 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     PositionMarginMode? marginMode,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
-  }) async => position;
-
+  }) async => store.once(
+    'leverage:$idempotencyKey',
+    () => store.changeLeverage(position.positionId, leverage, marginMode),
+  );
   @override
   Future<TradingOrder> close(
     String positionId, {
@@ -715,24 +808,30 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
-  }) async {
-    final position = await get(positionId);
-    return TradingOrder(
-      orderId: 'review-close-$positionId',
-      symbol: position.symbol,
-      kind: position.kind,
-      side: position.kind == MarketProductKind.bstock
-          ? TradingSide.sell
-          : TradingSide.short,
-      type: TradingOrderType.market,
-      status: TradingOrderStatus.filled,
-      quantity: position.quantity,
-      filledQuantity: position.quantity,
-      orderValue: position.valueUsd,
-      createdAt: _now,
-      updatedAt: _now,
+  }) async => store.once('close:$idempotencyKey', () {
+    final position = store.position(positionId);
+    final size =
+        quantity ??
+        (percent == null
+            ? position.quantity.value
+            : percentageQuantity(position.quantity.value, percent));
+    requireWithinPosition(size, position.quantity.value);
+    if (preview != null &&
+        (preview.isExpired ||
+            preview.positionId != positionId ||
+            preview.quantity.value != size ||
+            preview.type != type)) {
+      throw StateError('Close quote changed. Please refresh.');
+    }
+    return store.closePosition(
+      position,
+      double.parse(size),
+      type: type,
+      limitPrice: limitPrice,
+      executionPrice: preview == null ? null : _value(preview.estimatedPrice),
+      fee: preview == null ? null : _value(preview.estimatedFee),
     );
-  }
+  });
 }
 
 final class AppReviewOrdersRepository implements OrdersRepository {
@@ -745,7 +844,6 @@ final class AppReviewOrdersRepository implements OrdersRepository {
   final AppReviewStore store;
   final OrdersRepository previewDelegate;
   final MarketsRepository marketsDelegate;
-  final Map<MarketProductRef, Future<MarketProduct>> _products = {};
 
   @override
   Future<OrderPreview> preview(
@@ -753,13 +851,14 @@ final class AppReviewOrdersRepository implements OrdersRepository {
     required String idempotencyKey,
   }) async {
     OrderPreview? preview;
+    Object? quoteError;
     try {
       preview = await previewDelegate.preview(
         intent,
         idempotencyKey: idempotencyKey,
       );
-    } on Object {
-      // Review mode can still proceed when the read-only quote is unavailable.
+    } on Object catch (error) {
+      quoteError = error;
     }
 
     final needsProduct =
@@ -768,23 +867,52 @@ final class AppReviewOrdersRepository implements OrdersRepository {
         preview.marketPrice == null ||
         preview.estimatedPrice == null ||
         preview.estimatedQuantity == null;
-    if (!needsProduct) return preview;
+    if (!needsProduct) {
+      final result = _completePreview(
+        preview,
+        preview.estimatedPrice ?? preview.marketPrice!,
+      );
+      store.previews[result.previewId] = result;
+      return result;
+    }
 
     try {
       final productRef = MarketProductRef(
         symbol: intent.symbol,
         kind: intent.kind,
       );
-      final product = await _products.putIfAbsent(
-        productRef,
-        () => marketsDelegate.getProduct(productRef),
+      final product = await marketsDelegate.getProduct(productRef);
+      store.products['${intent.kind.name}:${intent.symbol}'] = product;
+      if (product.productId == null &&
+          intent.kind == MarketProductKind.bstock) {
+        try {
+          final snapshot = await marketsDelegate.getSnapshot(productRef);
+          if (snapshot.productId != null) {
+            store.productIds['${intent.kind.name}:${intent.symbol}'] =
+                snapshot.productId!;
+          }
+        } on Object {
+          /* An existing holding can still supply its known identity. */
+        }
+      }
+      final result = _completePreview(
+        preview ?? _fallbackPreview(intent, product.price),
+        preview?.estimatedPrice ?? product.price,
       );
-      return _completePreview(
-        preview ?? _fallbackPreview(intent),
-        product.price,
-      );
+      store.previews[result.previewId] = result;
+      return result;
     } on Object {
-      return preview ?? _fallbackPreview(intent);
+      if (preview == null) {
+        throw quoteError ?? StateError('Market quote unavailable');
+      }
+      final result = _completePreview(
+        preview,
+        preview.estimatedPrice ??
+            preview.marketPrice ??
+            (throw quoteError ?? StateError('Market quote unavailable')),
+      );
+      store.previews[result.previewId] = result;
+      return result;
     }
   }
 
@@ -819,6 +947,73 @@ final class AppReviewOrdersRepository implements OrdersRepository {
       ),
       _ => null,
     };
+    final perps = intent.kind == MarketProductKind.perp;
+    final productId =
+        preview.hip3Execution?.productId ??
+        store.products['${intent.kind.name}:${intent.symbol}']?.productId ??
+        store.positions.values
+            .where((p) => p.kind == intent.kind && p.symbol == intent.symbol)
+            .firstOrNull
+            ?.productId;
+    final leverage =
+        intent.leverage ??
+        DecimalValue('${store.openingLeverages[productId] ?? 3}');
+    final executionQuantity = quantity ?? _token('0', intent.symbol);
+    final requiredMargin = perps
+        ? _token(_number(_value(orderValue) / _value(leverage)), 'USDC')
+        : null;
+    final protection = intent.openingProtection;
+    final execution = !perps || productId == null
+        ? null
+        : Hip3PreviewExecution(
+            contextId: preview.hip3Execution?.contextId ?? 'review-$productId',
+            productId: productId,
+            environment:
+                preview.hip3Execution?.environment ??
+                store.contexts[productId]?.environment ??
+                'mainnet',
+            quantity: executionQuantity,
+            type: intent.type,
+            timeInForce: intent.type == TradingOrderType.limit ? 'Gtc' : 'Ioc',
+            limitPrice: intent.limitPrice ?? price,
+            leverage: leverage,
+            marginMode:
+                intent.marginMode ??
+                store.openingModes[productId] ??
+                TradingMarginMode.cross,
+            reduceOnly: intent.reduceOnly,
+            notional: orderValue,
+            marginRequired: requiredMargin!,
+            availableMargin: _token(_number(store.availablePerps), 'USDC'),
+            estimatedFee: preview.fee ?? _money(_value(orderValue) * 0.00045),
+            slippagePercent: intent.slippage ?? DecimalValue('0.5'),
+            liquidationPrice: preview.hip3Execution?.liquidationPrice,
+            liquidationPriceUnavailableReason:
+                preview.hip3Execution?.liquidationPriceUnavailableReason,
+            openingProtection: protection == null
+                ? null
+                : Hip3OpeningProtectionConfirmation(
+                    quantity: executionQuantity,
+                    legs: [
+                      if (protection.takeProfit != null)
+                        Hip3ConfirmedProtectionLeg(
+                          takeProfit: true,
+                          market: protection.takeProfit!.limitPrice == null,
+                          triggerPrice: protection.takeProfit!.triggerPrice,
+                          executionPrice:
+                              protection.takeProfit!.limitPrice ?? price,
+                        ),
+                      if (protection.stopLoss != null)
+                        Hip3ConfirmedProtectionLeg(
+                          takeProfit: false,
+                          market: protection.stopLoss!.limitPrice == null,
+                          triggerPrice: protection.stopLoss!.triggerPrice,
+                          executionPrice:
+                              protection.stopLoss!.limitPrice ?? price,
+                        ),
+                    ],
+                  ),
+          );
     return OrderPreview(
       previewId: preview.previewId,
       intent: intent,
@@ -828,18 +1023,26 @@ final class AppReviewOrdersRepository implements OrdersRepository {
       estimatedQuantity: quantity,
       estimatedReceive: calculatedReceive ?? preview.estimatedReceive,
       fee: preview.fee,
-      marginRequired: preview.marginRequired,
+      marginRequired: requiredMargin ?? preview.marginRequired,
       liquidationPrice: preview.liquidationPrice,
       settlementAsset: preview.settlementAsset,
       priceUpdated: preview.priceUpdated,
-      expiresAt: preview.expiresAt,
+      expiresAt: preview.expiresAt ?? _now.add(const Duration(minutes: 1)),
+      hip3Execution: execution,
+      feeRate: preview.feeRate,
+      feeNote: preview.feeNote,
+      settlementChain: preview.settlementChain,
+      details: preview.details,
+      executionReady: true,
+      approvalRequired: false,
     );
   }
 
-  OrderPreview _fallbackPreview(OrderIntent intent) {
-    final price = intent.limitPrice ?? _usd('250.00');
-    final quantity = intent.quantity ?? _token('1', intent.symbol);
-    final value = intent.amount ?? _usd('250.00');
+  OrderPreview _fallbackPreview(OrderIntent intent, DecimalValue price) {
+    final quantity =
+        intent.quantity ??
+        _token(_number(_value(intent.amount) / _value(price)), intent.symbol);
+    final value = intent.amount ?? _money(_value(quantity) * _value(price));
     return OrderPreview(
       previewId: store.id('preview'),
       intent: intent,
@@ -888,26 +1091,23 @@ final class AppReviewOrdersRepository implements OrdersRepository {
     required String idempotencyKey,
     String? previewId,
   }) async {
-    final price = intent.limitPrice ?? _usd('250.00');
-    final quantity = intent.quantity ?? _token('1', intent.symbol);
-    final order = TradingOrder(
-      orderId: store.id('order'),
-      symbol: intent.symbol,
-      kind: intent.kind,
-      side: intent.side,
-      type: intent.type,
-      status: TradingOrderStatus.filled,
-      quantity: quantity,
-      filledQuantity: quantity,
-      limitPrice: intent.limitPrice,
-      averageFillPrice: price,
-      orderValue: intent.amount ?? _usd('250.00'),
-      fee: _usd('0.25'),
-      createdAt: _now,
-      updatedAt: _now,
+    final existing = store.results['order:$idempotencyKey'];
+    if (existing != null) return existing as ResourceResult<TradingOrder>;
+    final quote = previewId == null
+        ? await preview(intent, idempotencyKey: 'quote-$idempotencyKey')
+        : store.previews[previewId];
+    if (quote == null || quote.intent.fingerprint != intent.fingerprint) {
+      throw StateError(
+        'Order quote does not match the request. Please refresh.',
+      );
+    }
+    if (quote.isExpired) {
+      throw StateError('Order quote expired. Please refresh.');
+    }
+    return store.once(
+      'order:$idempotencyKey',
+      () => ResourceResult(resource: store.createOrder(intent, quote)),
     );
-    store.orders[order.orderId] = order;
-    return ResourceResult(resource: order);
   }
 
   @override
@@ -923,10 +1123,10 @@ final class AppReviewOrdersRepository implements OrdersRepository {
         .where((order) => symbol == null || order.symbol == symbol)
         .where((order) => productId == null || order.productId == productId)
         .where(
-          (order) =>
-              statusGroup != 'open' ||
-              order.status == TradingOrderStatus.open ||
-              order.status == TradingOrderStatus.partiallyFilled,
+          (order) => statusGroup == 'open'
+              ? !order.isTerminal
+              : (statusGroup != 'history' && statusGroup != 'closed') ||
+                    order.isTerminal,
         )
         .map((order) => ResourceResult(resource: order))
         .toList(growable: false),
@@ -941,315 +1141,13 @@ final class AppReviewOrdersRepository implements OrdersRepository {
     String orderId, {
     required String idempotencyKey,
   }) async {
-    final current = store.orders[orderId]!;
-    final cancelled = TradingOrder(
-      orderId: current.orderId,
-      productId: current.productId,
-      conditional: current.conditional,
-      clientOrderId: current.clientOrderId,
-      symbol: current.symbol,
-      kind: current.kind,
-      side: current.side,
-      type: current.type,
-      status: TradingOrderStatus.cancelled,
-      quantity: current.quantity,
-      filledQuantity: current.filledQuantity,
-      limitPrice: current.limitPrice,
-      averageFillPrice: current.averageFillPrice,
-      orderValue: current.orderValue,
-      fee: current.fee,
-      positionId: current.positionId,
-      txHash: current.txHash,
-      failureReason: current.failureReason,
-      createdAt: current.createdAt,
-      updatedAt: _now,
-    );
-    store.orders[orderId] = cancelled;
-    return ResourceResult(resource: cancelled);
-  }
-}
-
-final class AppReviewFundingRepository implements FundingRepository {
-  AppReviewFundingRepository(this.store);
-  final AppReviewStore store;
-
-  @override
-  Future<DepositDirectory> getDepositDirectory() async => DepositDirectory(
-    walletAddress: '0x0000000000000000000000000000000000000001',
-    instructions: [
-      DepositInstruction(
-        chain: 'Arbitrum',
-        token: 'USDC',
-        tokenContract: '0x0000000000000000000000000000000000000000',
-        tokenDecimals: 6,
-        address: '0x0000000000000000000000000000000000000001',
-        qrPayload: '0x0000000000000000000000000000000000000001',
-        minimumAmount: _token('1.00', 'USDC'),
-        confirmationsRequired: 1,
-        estimatedArrivalSeconds: 5,
-        warning: 'App Review simulation. Do not send real assets.',
+    return ResourceResult(
+      resource: store.once(
+        'cancel:$idempotencyKey',
+        () => store.cancelOrder(orderId),
       ),
-    ],
-    updatedAt: _now,
-  );
-
-  @override
-  Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount() async =>
-      UnifiedFundingAccountSummary(
-        totalUsd: _usd('25000.00'),
-        availableToFundUsd: _usd('4375.00'),
-        reservedUsd: _usd('0.00'),
-        inTransitUsd: _usd('0.00'),
-        dataStatus: 'simulated',
-        calculatedAt: _now,
-      );
-
-  @override
-  Future<FundingSessionSummary> getFundingSession(String id) async =>
-      FundingSessionSummary(
-        sessionId: id,
-        status: 'active',
-        version: 1,
-        canConfirmTransfer: true,
-        expiresAt: _now.add(const Duration(hours: 24)),
-      );
-
-  @override
-  Future<FundingSessionSummary> createFundingSession({
-    required OrderIntent intent,
-    required String idempotencyKey,
-  }) async => FundingSessionSummary(
-    sessionId: 'review-session-${intent.fingerprint.hashCode}',
-    status: 'funded',
-    version: 1,
-    canConfirmTransfer: true,
-    expiresAt: _now.add(const Duration(hours: 24)),
-  );
-
-  @override
-  Future<FundingSessionSummary> createTransferFundingSession({
-    required String destination,
-    required String amount,
-    required String idempotencyKey,
-  }) async => FundingSessionSummary(
-    sessionId: 'review-transfer-session-${amount.hashCode}',
-    status: 'readyToConfirm',
-    version: 1,
-    canConfirmTransfer: true,
-    expiresAt: _now.add(const Duration(hours: 24)),
-  );
-
-  @override
-  Future<FundingSessionSummary> updateFundingSessionSelection({
-    required String fundingSessionId,
-    required int version,
-    required Map<String, String> allocations,
-    String? amount,
-    required String idempotencyKey,
-  }) async => FundingSessionSummary(
-    sessionId: fundingSessionId,
-    status: 'readyToConfirm',
-    version: version + 1,
-    canConfirmTransfer: true,
-    expiresAt: _now.add(const Duration(hours: 24)),
-  );
-
-  @override
-  Future<FundingCatalogSummary> getFundingCatalog() async =>
-      FundingCatalogSummary(
-        catalogVersion: 'review',
-        depositRailCount: 1,
-        updatedAt: _now,
-      );
-
-  @override
-  Future<FundingPlan> createFundingPlan({
-    required String tradePreviewId,
-    required String idempotencyKey,
-  }) async {
-    final id = store.id('funding-plan');
-    final plan = FundingPlan(
-      planId: id,
-      tradePreviewId: tradePreviewId,
-      shortfall: _token('100.00', 'USDC'),
-      status: FundingPlanState.ready,
-      sourceWalletId: 'review-wallet',
-      sourceAsset: 'USDC',
-      sourceMaximum: _token('100.00', 'USDC'),
-      legs: [
-        FundingLeg(
-          legId: '$id-leg-1',
-          walletId: 'review-wallet',
-          asset: 'USDC',
-          maximumAmount: _token('100.00', 'USDC'),
-          outputAmount: _token('100.00', 'USDC'),
-          status: FundingLegState.actionReleased,
-        ),
-      ],
     );
-    store.fundingPlans[id] = plan;
-    return plan;
   }
-
-  @override
-  Future<FundingPlan> createFundingSessionPlan({
-    required String fundingSessionId,
-    required int selectionVersion,
-    required String idempotencyKey,
-  }) => createFundingPlan(
-    tradePreviewId: fundingSessionId,
-    idempotencyKey: idempotencyKey,
-  );
-
-  @override
-  Future<FundingPlan> getFundingPlan(String id) async =>
-      store.fundingPlans[id]!;
-
-  @override
-  Future<FundingTransfer> createFundingTransfer({
-    required String planId,
-    required String legId,
-    required String authorizationId,
-    required String idempotencyKey,
-  }) async {
-    final transfer = FundingTransfer(
-      transferId: store.id('funding-transfer'),
-      planId: planId,
-      amount: _token('100.00', 'USDC'),
-      status: FundingTransferState.completed,
-    );
-    store.fundingTransfers[transfer.transferId] = transfer;
-    final plan = store.fundingPlans[planId];
-    if (plan != null) {
-      store.fundingPlans[planId] = FundingPlan(
-        planId: plan.planId,
-        tradePreviewId: plan.tradePreviewId,
-        shortfall: plan.shortfall,
-        status: FundingPlanState.alreadyFunded,
-        sourceWalletId: plan.sourceWalletId,
-        sourceAsset: plan.sourceAsset,
-        sourceMaximum: plan.sourceMaximum,
-        blocker: plan.blocker,
-        legs: plan.legs
-            .map(
-              (leg) => FundingLeg(
-                legId: leg.legId,
-                walletId: leg.walletId,
-                asset: leg.asset,
-                maximumAmount: leg.maximumAmount,
-                outputAmount: leg.outputAmount,
-                status: leg.legId == legId
-                    ? FundingLegState.completed
-                    : leg.status,
-                transferId: leg.legId == legId
-                    ? transfer.transferId
-                    : leg.transferId,
-              ),
-            )
-            .toList(growable: false),
-      );
-    }
-    return transfer;
-  }
-
-  @override
-  Future<FundingTransfer> getFundingTransfer(String id) async =>
-      store.fundingTransfers[id]!;
-
-  @override
-  Future<ResourceResult<Deposit>> getDeposit(String id) async =>
-      ResourceResult(resource: store.deposits[id]!);
-
-  @override
-  Future<DomainPage<ResourceResult<Deposit>>> listDeposits({
-    String? cursor,
-  }) async => DomainPage(
-    items: store.deposits.values
-        .map((item) => ResourceResult(resource: item))
-        .toList(growable: false),
-  );
-
-  @override
-  Future<WithdrawalQuote> quoteWithdrawal(
-    WithdrawalIntent intent, {
-    required String idempotencyKey,
-  }) async => WithdrawalQuote(
-    quoteId: store.id('withdrawal-quote'),
-    intent: intent,
-    totalFee: _token('0.10', intent.amount.asset ?? 'USDC'),
-    estimatedReceive: intent.amount,
-    sufficient: true,
-  );
-
-  @override
-  Future<Withdrawal> createWithdrawal(
-    WithdrawalIntent intent, {
-    required String quoteId,
-    required String authorizationId,
-    required String idempotencyKey,
-  }) async {
-    final withdrawal = Withdrawal(
-      withdrawalId: store.id('withdrawal'),
-      chain: intent.chain,
-      amount: intent.amount,
-      receivedAmount: intent.amount,
-      totalFee: _token('0.10', intent.amount.asset ?? 'USDC'),
-      address: intent.address,
-      status: WithdrawalState.completed,
-      createdAt: _now,
-    );
-    store.withdrawals[withdrawal.withdrawalId] = withdrawal;
-    return withdrawal;
-  }
-
-  @override
-  Future<DomainPage<DepositObservation>> listDepositObservations({
-    String? cursor,
-  }) async => const DomainPage(items: <DepositObservation>[]);
-
-  @override
-  Future<Withdrawal> getWithdrawal(String id) async => store.withdrawals[id]!;
-
-  @override
-  Future<DomainPage<Withdrawal>> listWithdrawals({String? cursor}) async =>
-      DomainPage(items: store.withdrawals.values.toList(growable: false));
-
-  @override
-  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
-    String id,
-  ) async => SelfCustodialWithdrawalSummary(
-    withdrawalId: id,
-    assetSymbol: 'USDC',
-    amount: _token('0', 'USDC'),
-    destinationAddress: '',
-    status: SelfCustodialWithdrawalState.awaitingSubmission,
-  );
-
-  @override
-  Future<PreparedSelfCustodialWithdrawal> createSelfCustodialWithdrawal({
-    required String walletId,
-    required String assetId,
-    required String chain,
-    required String amount,
-    required String destinationAddress,
-    required String idempotencyKey,
-  }) async => throw StateError(
-    'Self-custodial withdrawals are unavailable in app review',
-  );
-
-  @override
-  Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
-    required String id,
-    required String txHash,
-    required String idempotencyKey,
-  }) async => SelfCustodialWithdrawalSummary(
-    withdrawalId: id,
-    assetSymbol: 'USDC',
-    amount: _token('0', 'USDC'),
-    destinationAddress: '',
-    status: SelfCustodialWithdrawalState.submitted,
-    txHash: txHash,
-  );
 }
 
 final class AppReviewTradeIntentRepository implements TradeIntentRepository {
@@ -1260,24 +1158,32 @@ final class AppReviewTradeIntentRepository implements TradeIntentRepository {
   Future<TradeIntent> create(
     TradeIntentCreateInput input, {
     required String idempotencyKey,
-  }) async {
+  }) async => store.once('trade-intent:$idempotencyKey', () {
+    store.requireActive();
+    final preview =
+        store.previews[input.previewId] ??
+        (throw StateError('Trade quote not found. Please refresh.'));
+    if (preview.isExpired) {
+      throw StateError('Trade quote expired. Please refresh.');
+    }
+    final order = store.createOrder(preview.intent, preview);
     final id = store.id('trade-intent');
     final intent = TradeIntent(
       tradeIntentId: id,
       previewId: input.previewId,
       authorizationId: input.authorizationId,
-      productId: 'app-review-product',
+      productId: order.productId!,
       status: 'order_created',
       nextAction: 'complete',
       executionPolicy: input.executionPolicy,
-      orderId: store.id('order'),
+      orderId: order.orderId,
       createdAt: _now,
       updatedAt: _now,
       expiresAt: input.executionPolicy.executeBefore,
     );
     store.tradeIntents[id] = intent;
     return intent;
-  }
+  });
 
   @override
   Future<TradeIntent?> getCurrent() async =>
@@ -1310,7 +1216,8 @@ final class AppReviewHip3OrderExecutionRepository
 
   @override
   Future<Hip3ActionSummary> getAction(String actionId) async =>
-      throw StateError('No simulated HIP-3 action with id $actionId');
+      store.actions[actionId] ??
+      (throw StateError('Simulated action not found'));
 
   @override
   Future<Hip3ActionSummary> cancelAction(
@@ -1322,7 +1229,12 @@ final class AppReviewHip3OrderExecutionRepository
   Future<ResourceResult<TradingOrder>> cancelOrder(
     String orderId, {
     required String idempotencyKey,
-  }) async => ResourceResult(resource: store.orders[orderId]!);
+  }) async => ResourceResult(
+    resource: store.once(
+      'hip3-cancel:$idempotencyKey',
+      () => store.cancelOrder(orderId),
+    ),
+  );
 }
 
 final class AppReviewRealtimeRepository implements RealtimeRepository {

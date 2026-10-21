@@ -99,7 +99,7 @@ final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
 });
 final accountRepositoryProvider = Provider<AccountRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewAccountRepository(ref.watch(appReviewStoreProvider));
+    return AppReviewAccountRepository(watchAppReviewStore(ref));
   }
   final source = ref.watch(apiDataSourceProvider);
   return AccountRepositoryImpl(
@@ -135,13 +135,17 @@ final appUpdateRepositoryProvider = Provider<AppUpdateRepository>((ref) {
   );
 });
 final walletsRepositoryProvider = Provider<WalletsRepository>((ref) {
-  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewWalletsRepository(ref.watch(appReviewStoreProvider));
-  }
   final source = ref.watch(apiDataSourceProvider);
-  return WalletsRepositoryImpl(
+  final live = WalletsRepositoryImpl(
     GeneratedWalletsService(source.client.getWalletsApi()),
   );
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewWalletsRepository(
+      watchAppReviewStore(ref),
+      readDelegate: live,
+    );
+  }
+  return live;
 });
 final marketsRepositoryProvider = Provider<MarketsRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
@@ -158,21 +162,32 @@ final marketHoursRepositoryProvider = Provider<MarketHoursRepository>((ref) {
 });
 final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewPortfolioRepository();
+    return AppReviewPortfolioRepository(
+      watchAppReviewStore(ref),
+      ref.watch(marketsRepositoryProvider),
+    );
   }
   final source = ref.watch(apiDataSourceProvider);
   return PortfolioRepositoryImpl(
     GeneratedPortfolioService(source.client.getPortfolioApi()),
   );
 });
-final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
-  // Deposit data is read-only server configuration (wallet address, routes,
-  // and QR payloads). Keep it on the real API even in App Review mode so the
-  // Deposit sheet reflects the account's actual funding instructions.
+final _liveFundingRepositoryProvider = Provider<FundingRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return FundingRepositoryImpl(
     GeneratedFundingService(source.client.getFundingApi()),
   );
+});
+final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
+  final live = ref.watch(_liveFundingRepositoryProvider);
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewFundingRepository(
+      watchAppReviewStore(ref),
+      readDelegate: live,
+      quoteDelegate: ref.watch(ordersRepositoryProvider),
+    );
+  }
+  return live;
 });
 
 final hip3WithdrawalRepositoryProvider = Provider<Hip3WithdrawalRepository>((
@@ -180,12 +195,19 @@ final hip3WithdrawalRepositoryProvider = Provider<Hip3WithdrawalRepository>((
 ) {
   final generation = ref.watch(sessionGenerationProvider);
   final source = ref.watch(apiDataSourceProvider);
-  return Hip3WithdrawalRepositoryImpl(
+  final live = Hip3WithdrawalRepositoryImpl(
     GeneratedHip3WithdrawalService(source.client.getFundingApi()),
     _PositionSessionSigner(ref, generation),
     isActive: () =>
         ref.mounted && ref.read(sessionGenerationProvider) == generation,
   );
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewHip3WithdrawalRepository(
+      watchAppReviewStore(ref),
+      readDelegate: live,
+    );
+  }
+  return live;
 });
 
 /// Decoding a 2xx response into the untyped body drops typed fields such as
@@ -203,7 +225,7 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
     final source = ref.watch(apiDataSourceProvider);
     return AppReviewOrdersRepository(
-      ref.watch(appReviewStoreProvider),
+      watchAppReviewStore(ref),
       previewDelegate: OrdersRepositoryImpl(
         GeneratedOrdersService(
           source.client.getOrdersApi(),
@@ -232,6 +254,12 @@ final _bstocksSponsoredExecutionJournalProvider =
 
 final bstocksOrderExecutionRepositoryProvider =
     Provider<BstocksOrderExecutionRepository>((ref) {
+      if (AppReviewConfiguration.buildEnabled &&
+          ref.watch(appReviewModeProvider)) {
+        return AppReviewBstocksOrderExecutionRepository(
+          watchAppReviewStore(ref),
+        );
+      }
       final gateway = ref.watch(identityAuthGatewayProvider);
       return BstocksOrderExecutionRepositoryImpl(
         ref.watch(ordersRepositoryProvider),
@@ -252,7 +280,7 @@ final bstocksOrderExecutionRepositoryProvider =
     });
 final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewTradeIntentRepository(ref.watch(appReviewStoreProvider));
+    return AppReviewTradeIntentRepository(watchAppReviewStore(ref));
   }
   final source = ref.watch(apiDataSourceProvider);
   return TradeIntentRepositoryImpl(
@@ -293,9 +321,7 @@ final hip3OrderExecutionRepositoryProvider =
       ref.watch(sessionGenerationProvider);
       if (AppReviewConfiguration.buildEnabled &&
           ref.watch(appReviewModeProvider)) {
-        return AppReviewHip3OrderExecutionRepository(
-          ref.watch(appReviewStoreProvider),
-        );
+        return AppReviewHip3OrderExecutionRepository(watchAppReviewStore(ref));
       }
       final source = ref.watch(apiDataSourceProvider);
       return Hip3OrderExecutionRepositoryImpl(
@@ -308,7 +334,7 @@ final hip3OpeningRepositoryProvider = Provider<Hip3OpeningRepository>((ref) {
   final service = GeneratedHip3PositionActionService(
     ref.watch(apiDataSourceProvider).client.getOrdersApi(),
   );
-  return Hip3OpeningRepositoryImpl(
+  final live = Hip3OpeningRepositoryImpl(
     service,
     Hip3PositionActionExecutor(
       service,
@@ -318,10 +344,23 @@ final hip3OpeningRepositoryProvider = Provider<Hip3OpeningRepository>((ref) {
     ),
     (summary) => ref.read(hip3ConfirmationProvider.notifier).request(summary),
   );
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewHip3OpeningRepository(
+      watchAppReviewStore(ref),
+      readDelegate: live,
+    );
+  }
+  return live;
 });
 
 final hip3AccountAbstractionRepositoryProvider =
     Provider<Hip3AccountAbstractionRepository>((ref) {
+      if (AppReviewConfiguration.buildEnabled &&
+          ref.watch(appReviewModeProvider)) {
+        return AppReviewHip3AccountAbstractionRepository(
+          watchAppReviewStore(ref),
+        );
+      }
       ref.watch(sessionGenerationProvider);
       final source = ref.watch(apiDataSourceProvider);
       return Hip3AccountAbstractionRepositoryImpl(
@@ -337,7 +376,10 @@ final hip3AccountAbstractionCacheProvider =
 
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewPositionsRepository();
+    return AppReviewPositionsRepository(
+      watchAppReviewStore(ref),
+      ref.watch(marketsRepositoryProvider),
+    );
   }
   final generation = ref.watch(sessionGenerationProvider);
   final source = ref.watch(apiDataSourceProvider);
@@ -381,7 +423,7 @@ final class _PositionSessionSigner implements Hip3TypedDataSigner {
 
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewActivityRepository(ref.watch(appReviewStoreProvider));
+    return AppReviewActivityRepository(watchAppReviewStore(ref));
   }
   final source = ref.watch(apiDataSourceProvider);
   return ActivityRepositoryImpl(

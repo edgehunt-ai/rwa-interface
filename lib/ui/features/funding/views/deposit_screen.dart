@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nobell/app_review/demo_funds_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -332,7 +333,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     final chain = widget.chain;
     final token = widget.token;
     if (chain == null || token == null) {
-      return _DepositSelector(initialChain: chain);
+      return _DepositSelector(
+        initialChain: chain,
+        onDemoDeposit: _handleDemoDeposit,
+      );
     }
     final route = (chain: chain, token: token);
     final instruction = ref.watch(depositInstructionProvider(route));
@@ -341,6 +345,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       (_, next) => next.whenData(_handleBalanceChange),
     );
     return Scaffold(
+      bottomNavigationBar: AppReviewDemoFundsButton(
+        onDeposited: _handleDemoDeposit,
+        instruction: instruction.value,
+      ),
       body: SafeArea(
         child: instruction.when(
           loading: () => DesignStateFeedback(
@@ -359,6 +367,17 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           ),
           data: (value) => _DepositInstructions(instruction: value),
         ),
+      ),
+    );
+  }
+
+  void _handleDemoDeposit(Deposit deposit) {
+    _handleBalanceChange(
+      DepositBalanceChange(
+        eventId: deposit.depositId,
+        chain: deposit.chain,
+        token: deposit.token,
+        amount: deposit.amount!,
       ),
     );
   }
@@ -798,9 +817,10 @@ class _DetailRow extends StatelessWidget {
 }
 
 class _DepositSelector extends ConsumerStatefulWidget {
-  const _DepositSelector({this.initialChain});
+  const _DepositSelector({this.initialChain, required this.onDemoDeposit});
 
   final String? initialChain;
+  final ValueChanged<Deposit> onDemoDeposit;
 
   @override
   ConsumerState<_DepositSelector> createState() => _DepositSelectorState();
@@ -820,6 +840,9 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
   Widget build(BuildContext context) {
     final routes = ref.watch(depositRoutesProvider);
     return Scaffold(
+      bottomNavigationBar: AppReviewDemoFundsButton(
+        onDeposited: widget.onDemoDeposit,
+      ),
       body: SafeArea(
         child: routes.when(
           loading: () => DesignStateFeedback(
