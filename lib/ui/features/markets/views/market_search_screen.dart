@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
-import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
@@ -83,14 +82,6 @@ class _MarketDiscoverySearchScreenState
     if (ModalRoute.of(context)?.isCurrent ?? true) {
       ref.watch(marketListRefreshProvider);
     }
-    final catalog = ref.watch(
-      marketProductsProvider((
-        query: null,
-        cursor: null,
-        group: 'hot',
-        productType: null,
-      )),
-    );
     MarketProductFeedQuery? feedQuery;
     AsyncValue<MarketProductFeed>? searchResults;
     if (query.isNotEmpty && !(_searchDebounce?.isActive ?? false)) {
@@ -162,7 +153,7 @@ class _MarketDiscoverySearchScreenState
               const SizedBox(height: 16),
               Expanded(
                 child: query.isEmpty
-                    ? _recentSearches(catalog, recentSearches)
+                    ? _recentSearches(recentSearches)
                     : _searchResults(searchResults!, feedQuery),
               ),
             ],
@@ -172,47 +163,39 @@ class _MarketDiscoverySearchScreenState
     );
   }
 
-  Widget _recentSearches(
-    AsyncValue<DomainPage<MarketProduct>> catalog,
-    AsyncValue<List<MarketProductRef>> recentSearches,
-  ) => catalog.when(
-    loading: () => DesignStateFeedback(
-      state: DesignState.loading,
-      title: AppLocalizations.of(context).loadingMarkets,
-    ),
-    error: (error, _) => DesignStateFeedback(
-      error: error,
-      state: DesignState.failure,
-      title: AppLocalizations.of(context).marketsUnavailable,
-      message: AppLocalizations.of(context).marketCatalogUnavailable,
-      onRetry: () => ref.refresh(
-        marketProductsProvider((
-          query: null,
-          cursor: null,
-          group: 'hot',
-          productType: null,
-        )).future,
-      ),
-    ),
-    data: (page) {
-      if (recentSearches.isLoading) {
-        return DesignStateFeedback(
+  Widget _recentSearches(AsyncValue<List<MarketProductRef>> recentSearches) =>
+      recentSearches.when(
+        loading: () => DesignStateFeedback(
           state: DesignState.loading,
           title: AppLocalizations.of(context).loadingRecentSearches,
-        );
-      }
-      final visible = _recentProducts(
-        page.items,
-        recentSearches.asData?.value ?? const [],
+        ),
+        error: (error, _) => DesignStateFeedback(
+          error: error,
+          state: DesignState.failure,
+          title: AppLocalizations.of(context).recentSearches,
+          onRetry: () => ref.invalidate(recentMarketSearchesProvider),
+        ),
+        data: (references) {
+          if (references.isEmpty) return _emptyRecentSearches();
+          return ListView(
+            controller: _scrollController,
+            children: [
+              Text(
+                AppLocalizations.of(context).recentSearches,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              for (final reference in references)
+                _RecentSearchTile(
+                  key: ValueKey(reference),
+                  reference: reference,
+                  onOpen: _openReference,
+                ),
+            ],
+          );
+        },
+        skipLoadingOnReload: true,
       );
-      if (visible.isEmpty) return _emptyRecentSearches();
-      return _marketResultList(
-        title: AppLocalizations.of(context).recentSearches,
-        products: visible,
-      );
-    },
-    skipLoadingOnReload: true,
-  );
 
   Widget _searchResults(
     AsyncValue<MarketProductFeed> remoteProducts,
@@ -294,14 +277,19 @@ class _MarketDiscoverySearchScreenState
     ],
   );
 
-  void _openProduct(MarketProduct product) {
+  void _openProduct(MarketProduct product) => _openReference(
+    MarketProductRef(symbol: product.symbol, kind: product.kind),
+  );
+
+  void _openReference(MarketProductRef reference) {
     unawaited(
-      ref
-          .read(recentMarketSearchesProvider.notifier)
-          .record(MarketProductRef(symbol: product.symbol, kind: product.kind)),
+      ref.read(recentMarketSearchesProvider.notifier).record(reference),
     );
     context.go(
-      AppRoutes.tradeLocation(symbol: product.symbol, kind: product.kind.name),
+      AppRoutes.tradeLocation(
+        symbol: reference.symbol,
+        kind: reference.kind.name,
+      ),
     );
   }
 
@@ -325,13 +313,83 @@ class _MarketDiscoverySearchScreenState
   }
 }
 
-List<MarketProduct> _recentProducts(
-  List<MarketProduct> products,
-  List<MarketProductRef> recentSearches,
-) {
-  final byReference = {
-    for (final product in products)
-      MarketProductRef(symbol: product.symbol, kind: product.kind): product,
-  };
-  return [for (final reference in recentSearches) ?byReference[reference]];
+class _RecentSearchTile extends ConsumerWidget {
+  const _RecentSearchTile({
+    super.key,
+    required this.reference,
+    required this.onOpen,
+  });
+
+  final MarketProductRef reference;
+  final ValueChanged<MarketProductRef> onOpen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final product = ref.watch(marketProductProvider(reference));
+    return product.when(
+      data: (product) =>
+          MarketProductRow(product: product, onTap: () => onOpen(reference)),
+      loading: () => _RecentSearchFallbackTile(
+        reference: reference,
+        onTap: () => onOpen(reference),
+      ),
+      error: (_, _) => _RecentSearchFallbackTile(
+        reference: reference,
+        onTap: () => onOpen(reference),
+      ),
+      skipLoadingOnRefresh: true,
+      skipLoadingOnReload: true,
+    );
+  }
+}
+
+/// Keeps a recently opened market visible and tappable even when its detail
+/// request is still loading or fails, instead of dropping it from the list.
+class _RecentSearchFallbackTile extends StatelessWidget {
+  const _RecentSearchFallbackTile({
+    required this.reference,
+    required this.onTap,
+  });
+
+  final MarketProductRef reference;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 72,
+        child: Row(
+          children: [
+            MarketAssetMark(symbol: reference.symbol),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    reference.symbol,
+                    style: Theme.of(context).textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    reference.kind == MarketProductKind.bstock
+                        ? 'bStocks'
+                        : l10n.hip3Perps,
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.secondaryText),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

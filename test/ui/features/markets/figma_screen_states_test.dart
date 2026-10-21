@@ -114,6 +114,7 @@ void main() {
   });
 
   testWidgets('product tabs request Spot and Perps products', (tester) async {
+    SharedPreferences.setMockInitialValues({});
     await configureDisplay(tester, size: const Size(393, 852));
     final requestedKinds = <MarketProductKind?>[];
     await tester.pumpWidget(
@@ -526,7 +527,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Recent searches'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<MarketProductRow>(find.byType(MarketProductRow))
+          .map((row) => row.product.symbol),
+      ['NVDA'],
+    );
   });
 
   testWidgets(
@@ -656,10 +662,13 @@ Widget _marketApp(Widget home) => MaterialApp(
   home: home,
 );
 
-MarketProduct _testProduct(String symbol) => MarketProduct(
+MarketProduct _testProduct(
+  String symbol, {
+  MarketProductKind kind = MarketProductKind.bstock,
+}) => MarketProduct(
   symbol: symbol,
   name: symbol,
-  kind: MarketProductKind.bstock,
+  kind: kind,
   price: DecimalValue('100', asset: 'USD', unit: 'price'),
   settlementAsset: 'USDC',
   network: 'BSC',
@@ -727,6 +736,10 @@ final class _MarketsRepository implements MarketsRepository {
       ),
     ],
   );
+
+  @override
+  Future<MarketProduct> getProduct(MarketProductRef ref) async =>
+      _testProduct(ref.symbol, kind: ref.kind);
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
