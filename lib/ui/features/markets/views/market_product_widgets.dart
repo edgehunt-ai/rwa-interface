@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
@@ -519,13 +520,17 @@ class _MarketNetworkLogo extends StatelessWidget {
         errorBuilder: (_, _, _) => fallback,
       );
     }
-    return Image.network(
-      url,
+    return CachedNetworkImage(
+      imageUrl: url,
       key: ValueKey('market-network-logo-$url'),
       width: size,
       height: size,
       fit: BoxFit.contain,
-      errorBuilder: (_, _, _) => fallback,
+      // The URL is the cache identity, so a newly returned URL never reuses
+      // the previous image (including when the widget is rebuilt).
+      cacheKey: url,
+      placeholder: (_, _) => fallback,
+      errorWidget: (_, _, _) => fallback,
     );
   }
 }

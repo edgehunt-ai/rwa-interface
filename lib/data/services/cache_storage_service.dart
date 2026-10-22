@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/painting.dart';
 import 'package:path_provider/path_provider.dart';
 
 typedef CacheDirectoryResolver = Future<Directory> Function();
@@ -36,5 +37,8 @@ final class DeviceCacheStorageService implements CacheStorageService {
     await for (final entity in directory.list(followLinks: false)) {
       await entity.delete(recursive: entity is Directory);
     }
+    // Disk eviction must also remove decoded images held by Flutter.
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
   }
 }
