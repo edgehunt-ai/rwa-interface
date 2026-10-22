@@ -36,17 +36,20 @@ final class DeviceCacheStorageService implements CacheStorageService {
 
   @override
   Future<void> clear() async {
-    // Clear through the manager first so its database cannot retain stale
-    // records for image files removed from the system cache directory.
-    await _clearImageCache();
-    final directory = await _resolveDirectory();
-    if (!await directory.exists()) return;
+    try {
+      // Clear through the manager first so its database cannot retain stale
+      // records for image files removed from the system cache directory.
+      await _clearImageCache();
+      final directory = await _resolveDirectory();
+      if (!await directory.exists()) return;
 
-    await for (final entity in directory.list(followLinks: false)) {
-      await entity.delete(recursive: entity is Directory);
+      await for (final entity in directory.list(followLinks: false)) {
+        await entity.delete(recursive: entity is Directory);
+      }
+    } finally {
+      // Disk eviction must also remove decoded images held by Flutter.
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
     }
-    // Disk eviction must also remove decoded images held by Flutter.
-    PaintingBinding.instance.imageCache.clear();
-    PaintingBinding.instance.imageCache.clearLiveImages();
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/services/market_search_history_service.dart';
@@ -31,11 +32,10 @@ void main() {
       buildTestApp(const MarketAssetMark(symbol: 'NVDA', logoUrl: logoUrl)),
     );
 
-    final image = tester.widget<Image>(
+    final image = tester.widget<CachedNetworkImage>(
       find.byKey(const ValueKey('market-network-logo-$logoUrl')),
     );
-    expect(image.image, isA<NetworkImage>());
-    expect((image.image as NetworkImage).url, logoUrl);
+    expect(image.imageUrl, logoUrl);
     // The outline must not inset the square image inside the circular clip;
     // that intersection would leave flat edges on solid-background logos.
     final logoBounds = tester.getRect(
