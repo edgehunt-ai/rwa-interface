@@ -41,6 +41,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_svg: ^2.2.4
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.2
   rive: ^0.14.11
   qr_flutter_wc: ^0.0.3
   rwa_api_client:

@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
@@ -511,13 +514,22 @@ class _MarketNetworkLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Uri.tryParse(url)?.path.toLowerCase().endsWith('.svg') ?? false) {
-      return SvgPicture.network(
-        url,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        placeholderBuilder: (_) => fallback,
-        errorBuilder: (_, _, _) => fallback,
+      return FutureBuilder<Uint8List>(
+        key: ValueKey('market-network-logo-$url'),
+        future: DefaultCacheManager()
+            .getSingleFile(url)
+            .then((file) => file.readAsBytes()),
+        builder: (context, snapshot) {
+          final bytes = snapshot.data;
+          if (bytes == null) return fallback;
+          return SvgPicture.memory(
+            bytes,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => fallback,
+          );
+        },
       );
     }
     return CachedNetworkImage(
