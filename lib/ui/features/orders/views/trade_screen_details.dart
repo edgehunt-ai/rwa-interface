@@ -145,7 +145,6 @@ class _Details extends ConsumerWidget {
             positions: positionState,
             kind: kind,
             symbol: symbol,
-            productId: selectedProductId,
             positionCardKey: positionCardKey,
             targetPositionId: targetPositionId,
           ),
@@ -556,14 +555,12 @@ class _PositionTab extends ConsumerWidget {
     required this.positions,
     required this.kind,
     required this.symbol,
-    required this.productId,
     required this.positionCardKey,
     required this.targetPositionId,
   });
   final AsyncValue<DomainPage<Position>> positions;
   final MarketProductKind kind;
   final String symbol;
-  final String? productId;
   final GlobalKey positionCardKey;
   final String? targetPositionId;
 
@@ -602,7 +599,6 @@ class _PositionTab extends ConsumerWidget {
                   position,
                   key: ValueKey('trade-position-card-${position.positionId}'),
                   kind: kind,
-                  productId: productId,
                 ),
               ),
           ],
@@ -613,34 +609,24 @@ class _PositionTab extends ConsumerWidget {
 }
 
 class _PositionCard extends StatelessWidget {
-  const _PositionCard(
-    this.position, {
-    super.key,
-    required this.kind,
-    required this.productId,
-  });
+  const _PositionCard(this.position, {super.key, required this.kind});
   final Position position;
   final MarketProductKind kind;
-  final String? productId;
 
   @override
   Widget build(BuildContext context) => switch (kind) {
     MarketProductKind.perp => _Hip3PositionSummaryCard(position: position),
-    _ => _BstocksPositionSummaryCard(position: position, productId: productId),
+    _ => _BstocksPositionSummaryCard(position: position),
   };
 }
 
-class _BstocksPositionSummaryCard extends ConsumerWidget {
-  const _BstocksPositionSummaryCard({
-    required this.position,
-    required this.productId,
-  });
+class _BstocksPositionSummaryCard extends StatelessWidget {
+  const _BstocksPositionSummaryCard({required this.position});
 
   final Position position;
-  final String? productId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -650,14 +636,6 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
       colors: colors,
       semantic: semantic,
     );
-    final availabilityProductId = position.productId ?? productId;
-    final availabilityState = availabilityProductId == null
-        ? null
-        : ref.watch(bstocksSellAvailabilityProvider(availabilityProductId));
-    final availability = availabilityState?.value;
-    final availabilityLoading =
-        availability == null && availabilityState?.isLoading == true;
-
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
@@ -752,24 +730,6 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
                 l10n.marketPriceTitle,
                 _formatUsd(position.markPrice),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _Hip3MetricRow(
-            metrics: [
-              _Hip3Metric(
-                l10n.available,
-                _formatTokenQuantity(availability?.quantity),
-                loading: availabilityLoading,
-                skeletonKey: const Key('bstocks-available-loading'),
-              ),
-              _Hip3Metric(
-                l10n.unavailable,
-                _formatTokenQuantity(availability?.unavailableQuantity),
-                loading: availabilityLoading,
-                skeletonKey: const Key('bstocks-unavailable-loading'),
-              ),
-              const _Hip3Metric('', ''),
             ],
           ),
           const SizedBox(height: 16),
@@ -1027,9 +987,6 @@ String _formatUsd(DecimalValue? value) =>
 String _formatUsdFixed2(DecimalValue? value) =>
     value == null ? '—' : TokenAmountFormatter.formatUsdFixed(value);
 
-String _formatTokenQuantity(DecimalValue? value) =>
-    value == null ? '—' : TokenAmountFormatter.formatDecimal(value);
-
 String _formatSignedUsdFixed2(DecimalValue? value) {
   if (value == null) return '—';
   final formatted = TokenAmountFormatter.formatUsdFixed(
@@ -1081,19 +1038,11 @@ class _Hip3SourceChip extends StatelessWidget {
 }
 
 class _Hip3Metric {
-  const _Hip3Metric(
-    this.label,
-    this.value, {
-    this.valueColor,
-    this.loading = false,
-    this.skeletonKey,
-  });
+  const _Hip3Metric(this.label, this.value, {this.valueColor});
 
   final String label;
   final String value;
   final Color? valueColor;
-  final bool loading;
-  final Key? skeletonKey;
 }
 
 class _Hip3MetricRow extends StatelessWidget {
@@ -1128,28 +1077,20 @@ class _Hip3MetricRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (metrics[index].loading)
-                    SkeletonBlock(
-                      key: metrics[index].skeletonKey,
-                      width: 48,
-                      height: 14,
-                      radius: 4,
-                    )
-                  else
-                    Text(
-                      metrics[index].value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: index == metrics.length - 1
-                          ? TextAlign.end
-                          : TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 16 / 12,
-                        fontWeight: FontWeight.w600,
-                        color: metrics[index].valueColor,
-                      ),
+                  Text(
+                    metrics[index].value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: index == metrics.length - 1
+                        ? TextAlign.end
+                        : TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      fontWeight: FontWeight.w600,
+                      color: metrics[index].valueColor,
                     ),
+                  ),
                 ],
               ),
             ),

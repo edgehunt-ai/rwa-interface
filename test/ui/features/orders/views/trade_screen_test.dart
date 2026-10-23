@@ -1465,10 +1465,6 @@ void main() {
       '3.0154',
       'Market Price',
       r'$228.71',
-      'Available',
-      '2.0154',
-      'Unavailable',
-      '1',
       'Withdraw',
     ]) {
       expect(find.text(text), findsOneWidget);
@@ -1485,6 +1481,8 @@ void main() {
       ),
       findsWidgets,
     );
+    expect(find.text('Available'), findsNothing);
+    expect(find.text('Unavailable'), findsNothing);
     expect(find.text('Token position'), findsNothing);
     expect(find.text('Close'), findsNothing);
     expect(find.text('Edit TP/SL'), findsNothing);
@@ -1512,43 +1510,6 @@ void main() {
     expect(find.text('-0.0000123457%'), findsOneWidget);
     expect(find.text(r'$-0.00'), findsNothing);
     expect(find.text('-0.00%'), findsNothing);
-  });
-
-  testWidgets('Trade bStocks availability uses skeletons while loading', (
-    tester,
-  ) async {
-    final availabilityGate = Completer<void>();
-    addTearDown(() {
-      if (!availabilityGate.isCompleted) availabilityGate.complete();
-    });
-    await tester.pumpWidget(
-      _tradeWithMarkets(
-        locale: const Locale('en'),
-        positionsRepository: _PositionsRepository(),
-        portfolioRepository: _BstocksPositionPortfolioRepository(
-          availabilityGate: availabilityGate,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await _scrollToTradeTab(tester, 'Position');
-    await tester.tap(_tradeTab('Position'));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('bstocks-available-loading')), findsOneWidget);
-    expect(
-      find.byKey(const Key('bstocks-unavailable-loading')),
-      findsOneWidget,
-    );
-    expect(find.text('0'), findsNothing);
-
-    availabilityGate.complete();
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('bstocks-available-loading')), findsNothing);
-    expect(find.byKey(const Key('bstocks-unavailable-loading')), findsNothing);
-    expect(find.text('2.0154'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
   });
 
   testWidgets(
@@ -1951,17 +1912,12 @@ Position _position(
 
 final class _BstocksPositionPortfolioRepository
     implements PortfolioRepository, PortfolioAssetsRepository {
-  _BstocksPositionPortfolioRepository({this.availabilityGate});
-
-  final Completer<void>? availabilityGate;
-
   @override
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
     String? account,
   }) async {
-    await availabilityGate?.future;
     return [
       PortfolioAsset(
         assetId: 'portfolio-nvdab',
