@@ -3,28 +3,44 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 enum AppToastType { success, failure }
 
-/// A transient, application-level status message displayed at the top of the
-/// current route.
+/// An application-level status message displayed at the top of the current route.
 abstract final class AppToast {
   static OverlayEntry? _currentEntry;
 
   static void showSuccess(BuildContext context, String message) =>
       _show(context, message, AppToastType.success);
 
-  static void showFailure(BuildContext context, String message) =>
-      _show(context, message, AppToastType.failure);
+  static void showFailure(
+    BuildContext context,
+    String message, {
+    bool persistent = false,
+  }) => _show(context, message, AppToastType.failure, persistent: persistent);
 
   static void dismiss() {
     _currentEntry?.remove();
     _currentEntry = null;
   }
 
-  static void _show(BuildContext context, String message, AppToastType type) {
-    final overlay = Overlay.of(context, rootOverlay: true);
+  static void _show(
+    BuildContext context,
+    String message,
+    AppToastType type, {
+    bool persistent = false,
+  }) {
+    // An async command may retain the root overlay's own context after its
+    // initiating widget has been disposed.
+    final overlay = switch (context) {
+      StatefulElement(state: final OverlayState state) => state,
+      _ => Overlay.of(context, rootOverlay: true),
+    };
     dismiss();
 
     final entry = OverlayEntry(
-      builder: (context) => _AppToastMessage(message: message, type: type),
+      builder: (context) => _AppToastMessage(
+        message: message,
+        type: type,
+        persistent: persistent,
+      ),
     );
     _currentEntry = entry;
     overlay.insert(entry);
@@ -32,10 +48,15 @@ abstract final class AppToast {
 }
 
 class _AppToastMessage extends StatefulWidget {
-  const _AppToastMessage({required this.message, required this.type});
+  const _AppToastMessage({
+    required this.message,
+    required this.type,
+    required this.persistent,
+  });
 
   final String message;
   final AppToastType type;
+  final bool persistent;
 
   @override
   State<_AppToastMessage> createState() => _AppToastMessageState();
@@ -53,7 +74,7 @@ class _AppToastMessageState extends State<_AppToastMessage>
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) AppToast.dismiss();
           });
-    _dismissController.forward();
+    if (!widget.persistent) _dismissController.forward();
   }
 
   @override
@@ -103,6 +124,23 @@ class _AppToastMessageState extends State<_AppToastMessage>
                       ),
                     ),
                   ),
+                  if (widget.persistent)
+                    IconButton(
+                      key: const Key('app-toast-close'),
+                      tooltip: MaterialLocalizations.of(context)
+                          .closeButtonTooltip,
+                      onPressed: AppToast.dismiss,
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
                 ],
               ),
             ),

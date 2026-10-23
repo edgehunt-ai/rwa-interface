@@ -327,6 +327,7 @@ final hip3OrderExecutionRepositoryProvider =
       return Hip3OrderExecutionRepositoryImpl(
         ref.watch(hip3TypedDataSignerProvider),
         GeneratedHip3OrderActionService(source.client.getOrdersApi()),
+        isCancelled: () => !ref.mounted,
       );
     });
 final hip3OpeningRepositoryProvider = Provider<Hip3OpeningRepository>((ref) {

@@ -386,6 +386,168 @@ void main() {
     );
   });
 
+  for (final requiresReview in [false, true]) {
+    testWidgets(
+      'cancellation shows a persistent closable toast, review=$requiresReview',
+      (tester) async {
+        addTearDown(AppToast.dismiss);
+        final execution = _CancellingHip3Orders()
+          ..error = Hip3ExecutionPending(
+            'parent',
+            'action-1',
+            requiresReview: requiresReview,
+            reason: requiresReview
+                ? 'Venue acknowledgement needs review'
+                : null,
+            failure: requiresReview
+                ? null
+                : const ServerFailure(
+                    statusCode: 503,
+                    code: 'venue_unavailable',
+                    failureReason: 'Venue status service is unavailable',
+                    retryable: true,
+                  ),
+          );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+            ],
+            child: buildTestApp(
+              Hip3OpenOrderCard(order: _order('parent'), onChanged: () {}),
+              locale: const Locale('zh'),
+            ),
+          ),
+        );
+        await tester.tap(find.widgetWithText(OutlinedButton, '取消'));
+        await tester.pump();
+        final message = requiresReview
+            ? '此撤单操作需要人工复核，请在待处理操作中查看后续状态。\nVenue acknowledgement needs review'
+            : '网络或服务异常，暂时无法查询撤单结果，请刷新订单查看最新状态。\nVenue status service is unavailable';
+        expect(find.text(message), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(Hip3OpenOrderCard),
+            matching: find.text(message),
+          ),
+          findsNothing,
+        );
+        expect(find.text('取消操作仍在确认中，请刷新后再重试。'), findsNothing);
+        await tester.pump(const Duration(minutes: 1));
+        expect(find.text(message), findsOneWidget);
+        await tester.tap(find.byKey(const Key('app-toast-close')));
+        await tester.pump();
+        expect(find.text(message), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  for (final tab in ['Position', 'Details']) {
+    for (final outcome in ['success', 'queryFailure', 'manualReview']) {
+      testWidgets(
+        'cancellation loading survives switching to $tab and back: $outcome',
+        (tester) async {
+          addTearDown(AppToast.dismiss);
+          final completion = Completer<void>();
+          final execution = _CancellingHip3Orders()
+            ..completion = completion
+            ..error = switch (outcome) {
+              'queryFailure' => const Hip3ExecutionPending(
+                'parent',
+                'action-1',
+                failure: TimeoutFailure(),
+              ),
+              'manualReview' => const Hip3ExecutionPending(
+                'parent',
+                'action-1',
+                requiresReview: true,
+              ),
+              _ => null,
+            };
+          var activeTab = 'Open';
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                hip3OrderExecutionRepositoryProvider.overrideWithValue(
+                  execution,
+                ),
+              ],
+              child: buildTestApp(
+                StatefulBuilder(
+                  builder: (context, setState) => Column(
+                    children: [
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => setState(() => activeTab = tab),
+                            child: Text(tab),
+                          ),
+                          TextButton(
+                            onPressed: () => setState(() => activeTab = 'Open'),
+                            child: const Text('Open'),
+                          ),
+                        ],
+                      ),
+                      if (activeTab == 'Open')
+                        Hip3OpenOrderCard(
+                          order: _order('parent'),
+                          onChanged: () => fail('The old card was disposed'),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+          await tester.pump();
+          expect(execution.cancelledOrderId, 'parent');
+          expect(
+            tester
+                .widget<OutlinedButton>(find.byType(OutlinedButton))
+                .onPressed,
+            isNull,
+          );
+          expect(find.byType(CircularProgressIndicator), findsOneWidget);
+          await tester.tap(find.widgetWithText(TextButton, tab));
+          await tester.pump();
+          expect(find.byType(Hip3OpenOrderCard), findsNothing);
+          await tester.tap(find.widgetWithText(TextButton, 'Open'));
+          await tester.pump();
+          expect(find.byType(Hip3OpenOrderCard), findsOneWidget);
+          expect(
+            tester
+                .widget<OutlinedButton>(find.byType(OutlinedButton))
+                .onPressed,
+            isNull,
+          );
+          expect(find.byType(CircularProgressIndicator), findsOneWidget);
+          await tester.pump(const Duration(seconds: 3));
+          await tester.tap(find.byType(OutlinedButton));
+          expect(execution.cancelCalls, 1);
+          completion.complete();
+          await tester.pump();
+          await tester.pump();
+          final message = switch (outcome) {
+            'queryFailure' => 'The cancellation status query timed out.',
+            'manualReview' => 'This cancellation requires manual review.',
+            _ => 'Cancellation submitted.',
+          };
+          expect(find.textContaining(message), findsOneWidget);
+          expect(find.byType(CircularProgressIndicator), findsNothing);
+          expect(
+            tester
+                .widget<OutlinedButton>(find.byType(OutlinedButton))
+                .onPressed,
+            isNotNull,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   testWidgets(
     'pending protection automatically signs the same action without another confirmation',
     (tester) async {
@@ -3118,14 +3280,18 @@ class _Orders implements OrdersRepository {
 
 class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
   String? cancelledOrderId;
+  int cancelCalls = 0;
   Object? error;
+  Completer<void>? completion;
 
   @override
   Future<ResourceResult<TradingOrder>> cancelOrder(
     String orderId, {
     required String idempotencyKey,
   }) async {
+    cancelCalls++;
     cancelledOrderId = orderId;
+    await completion?.future;
     if (error case final failure?) throw failure;
     return ResourceResult(
       resource: _order(orderId, status: TradingOrderStatus.cancelled),

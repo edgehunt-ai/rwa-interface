@@ -1846,6 +1846,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancelling => '正在取消…';
 
   @override
+  String get cancellationStatusUnavailable => '网络或服务异常，暂时无法查询撤单结果，请刷新订单查看最新状态。';
+
+  @override
+  String get cancellationStatusTimedOut => '撤单结果查询超时，请刷新订单查看最新状态。';
+
+  @override
+  String get cancellationStatusNetworkError => '网络连接异常，无法查询撤单结果，请检查网络后刷新订单。';
+
+  @override
+  String get cancellationRequiresReview => '此撤单操作需要人工复核，请在待处理操作中查看后续状态。';
+
+  @override
   String get cancellationPending => '取消操作仍在确认中，请刷新后再重试。';
 
   @override

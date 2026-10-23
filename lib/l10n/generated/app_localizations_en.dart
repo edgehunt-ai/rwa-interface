@@ -1940,6 +1940,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelling => 'Cancelling…';
 
   @override
+  String get cancellationStatusUnavailable =>
+      'Unable to query the cancellation result because of a network or service error. Refresh the order to check its status.';
+
+  @override
+  String get cancellationStatusTimedOut =>
+      'The cancellation status query timed out. Refresh the order to check its status.';
+
+  @override
+  String get cancellationStatusNetworkError =>
+      'Unable to query the cancellation result because of a network connection error. Check your connection and refresh the order.';
+
+  @override
+  String get cancellationRequiresReview =>
+      'This cancellation requires manual review. Check pending actions for updates.';
+
+  @override
   String get cancellationPending =>
       'Cancellation is still being confirmed. Refresh before retrying.';
 

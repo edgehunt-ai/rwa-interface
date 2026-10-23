@@ -3616,6 +3616,30 @@ abstract class AppLocalizations {
   /// **'Cancelling…'**
   String get cancelling;
 
+  /// No description provided for @cancellationStatusUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to query the cancellation result because of a network or service error. Refresh the order to check its status.'**
+  String get cancellationStatusUnavailable;
+
+  /// No description provided for @cancellationStatusTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'The cancellation status query timed out. Refresh the order to check its status.'**
+  String get cancellationStatusTimedOut;
+
+  /// No description provided for @cancellationStatusNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to query the cancellation result because of a network connection error. Check your connection and refresh the order.'**
+  String get cancellationStatusNetworkError;
+
+  /// No description provided for @cancellationRequiresReview.
+  ///
+  /// In en, this message translates to:
+  /// **'This cancellation requires manual review. Check pending actions for updates.'**
+  String get cancellationRequiresReview;
+
   /// No description provided for @cancellationPending.
   ///
   /// In en, this message translates to:
