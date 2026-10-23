@@ -1149,7 +1149,7 @@ class _DetailsCard extends ConsumerWidget {
       marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
     );
     final snapshot = snapshotState.value;
-    final loading = snapshotState.isLoading;
+    final loading = snapshotState.isLoading && snapshot == null;
     final referencePrice = snapshot?.referencePrice;
     final reference = referencePrice == null
         ? '—'

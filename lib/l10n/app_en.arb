@@ -978,5 +978,21 @@
   "marketDataSourceDisclaimer": "Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.",
   "reviewAddDemoFunds": "Add 1,000 {token} demo funds",
   "@reviewAddDemoFunds": {"placeholders": {"token": {}}},
-  "reviewDemoFundsAdded": "1,000 USDC added to your demo balance"
+  "reviewDemoFundsAdded": "1,000 USDC added to your demo balance",
+  "tradeMarkers": "Markers",
+  "hideTradeMarkers": "Hide markers",
+  "showTradeMarkers": "Show markers",
+  "tradeMarkersUnavailable": "Trade markers are temporarily unavailable.",
+  "liquidationHistoryPartial": "Some liquidation history is unavailable.",
+  "tradeChartOutsideRange": "{count} {types} off-chart",
+  "@tradeChartOutsideRange": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "types": {
+        "type": "String"
+      }
+    }
+  }
 }

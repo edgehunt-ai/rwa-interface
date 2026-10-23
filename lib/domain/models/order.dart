@@ -26,6 +26,24 @@ enum BstocksOrderActionKind {
   unknown,
 }
 
+final class TradingOrderFill {
+  const TradingOrderFill({
+    required this.id,
+    required this.price,
+    required this.quantity,
+    required this.executedAt,
+    this.side,
+    this.positionEffect,
+  });
+
+  final String id;
+  final DecimalValue price;
+  final DecimalValue quantity;
+  final DateTime executedAt;
+  final TradingSide? side;
+  final String? positionEffect;
+}
+
 final class BstocksOrderAction {
   const BstocksOrderAction({
     required this.orderId,
@@ -141,6 +159,7 @@ final class TradingOrder {
     this.currentActionId,
     this.requestedAmount,
     this.settlementAsset,
+    this.fills = const [],
   });
   final String orderId;
   final String? productId;
@@ -169,6 +188,7 @@ final class TradingOrder {
   final String? currentActionId;
   final DecimalValue? requestedAmount;
   final String? settlementAsset;
+  final List<TradingOrderFill> fills;
 
   bool get isOpen =>
       status == TradingOrderStatus.open ||

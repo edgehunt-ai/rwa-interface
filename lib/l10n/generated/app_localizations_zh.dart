@@ -2755,4 +2755,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewDemoFundsAdded => '已添加 1,000 USDC 至模拟余额';
+
+  @override
+  String get tradeMarkers => '交易标记';
+
+  @override
+  String get hideTradeMarkers => '隐藏交易标记';
+
+  @override
+  String get showTradeMarkers => '显示交易标记';
+
+  @override
+  String get tradeMarkersUnavailable => '暂时无法获取交易标记。';
+
+  @override
+  String get liquidationHistoryPartial => '部分强平历史暂不可用。';
+
+  @override
+  String tradeChartOutsideRange(int count, String types) {
+    return '$count 个 $types 超出图表范围';
+  }
 }

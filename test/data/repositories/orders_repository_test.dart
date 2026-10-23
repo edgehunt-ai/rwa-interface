@@ -11,6 +11,55 @@ import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/hip3_opening_protection.dart';
 
 void main() {
+  for (final perp in [false, true]) {
+    test('order mapping preserves exact individual fills, perp=$perp', () {
+      final json = <String, Object?>{
+        'order_id': 'filled',
+        'symbol': 'NVDA',
+        'kind': perp ? 'perp' : 'bstock',
+        'side': perp ? 'long' : 'buy',
+        'type': 'market',
+        'status': 'filled',
+        if (perp) 'wallet_action_blocker': 'not_applicable',
+        'created_at': '2026-10-20T10:00:00Z',
+        'fills': [
+          {
+            'fill_id': 'fill-1',
+            'provider_trade_id': 'provider-1',
+            'side': 'buy',
+            'position_effect': perp ? 'open_long' : null,
+            'price': '101.250000001',
+            'quantity': '0.125',
+            'fee': '0.01',
+            'fee_asset': 'USDC',
+            'executed_at': '2026-10-20T10:20:00Z',
+          },
+        ],
+      };
+      final source = perp
+          ? _order(
+              api.standardSerializers.deserializeWith(
+                api.PerpOrder.serializer,
+                json,
+              )!,
+              typeIndex: 1,
+            )
+          : _order(
+              api.standardSerializers.deserializeWith(
+                api.BstockOrder.serializer,
+                json,
+              )!,
+              typeIndex: 0,
+            );
+      final fill = mapOrder(source).fills.single;
+      expect(fill.id, 'fill-1');
+      expect(fill.price.value, '101.250000001');
+      expect(fill.quantity.value, '0.125');
+      expect(fill.executedAt, DateTime.utc(2026, 10, 20, 10, 20));
+      expect(fill.side, TradingSide.buy);
+      expect(fill.positionEffect, perp ? 'open_long' : null);
+    });
+  }
   for (final asset in ['USDT', 'TUSDT', 'LUSDT', null]) {
     test(
       'bStocks order preserves settlement asset $asset and base quantities',

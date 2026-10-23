@@ -2919,4 +2919,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewDemoFundsAdded => '1,000 USDC added to your demo balance';
+
+  @override
+  String get tradeMarkers => 'Markers';
+
+  @override
+  String get hideTradeMarkers => 'Hide markers';
+
+  @override
+  String get showTradeMarkers => 'Show markers';
+
+  @override
+  String get tradeMarkersUnavailable =>
+      'Trade markers are temporarily unavailable.';
+
+  @override
+  String get liquidationHistoryPartial =>
+      'Some liquidation history is unavailable.';
+
+  @override
+  String tradeChartOutsideRange(int count, String types) {
+    return '$count $types off-chart';
+  }
 }

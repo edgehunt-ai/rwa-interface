@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/repositories/trade_chart_liquidations_repository_impl.dart';
+import '../../data/services/trade_chart_liquidations_service.dart';
+import '../../domain/repositories/trade_chart_liquidations_repository.dart';
+
 import '../../data/repositories/system_environment_repository_impl.dart';
 import '../../domain/repositories/system_environment_repository.dart';
 import '../../domain/models/deployment_environment.dart';
@@ -220,6 +224,16 @@ WireDecodeFailureReporter _decodeFallbackReporter(Ref ref) =>
           error: error,
           stackTrace: stackTrace,
         );
+
+final tradeChartLiquidationsRepositoryProvider =
+    Provider<TradeChartLiquidationsRepository>((ref) {
+      ref.watch(sessionGenerationProvider);
+      return TradeChartLiquidationsRepositoryImpl(
+        GeneratedTradeChartLiquidationsService(
+          ref.watch(apiDataSourceProvider).client.getOrdersApi(),
+        ),
+      );
+    });
 
 final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {

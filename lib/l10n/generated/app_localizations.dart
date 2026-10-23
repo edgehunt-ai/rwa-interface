@@ -5190,6 +5190,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1,000 USDC added to your demo balance'**
   String get reviewDemoFundsAdded;
+
+  /// No description provided for @tradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Markers'**
+  String get tradeMarkers;
+
+  /// No description provided for @hideTradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide markers'**
+  String get hideTradeMarkers;
+
+  /// No description provided for @showTradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show markers'**
+  String get showTradeMarkers;
+
+  /// No description provided for @tradeMarkersUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade markers are temporarily unavailable.'**
+  String get tradeMarkersUnavailable;
+
+  /// No description provided for @liquidationHistoryPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Some liquidation history is unavailable.'**
+  String get liquidationHistoryPartial;
+
+  /// No description provided for @tradeChartOutsideRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {types} off-chart'**
+  String tradeChartOutsideRange(int count, String types);
 }
 
 class _AppLocalizationsDelegate
