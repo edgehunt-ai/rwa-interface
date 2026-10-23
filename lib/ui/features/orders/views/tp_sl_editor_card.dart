@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
+import 'package:nobell/domain/models/position_operation.dart'
+    show percentageQuantity;
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
@@ -8,6 +11,8 @@ class TpSlEditorCard extends StatefulWidget {
   const TpSlEditorCard({
     super.key,
     required this.title,
+    required this.isLong,
+    required this.isTakeProfit,
     required this.controller,
     required this.enabled,
     required this.onEnabledChanged,
@@ -19,11 +24,13 @@ class TpSlEditorCard extends StatefulWidget {
   });
 
   final String title;
+  final bool isLong;
+  final bool isTakeProfit;
   final TextEditingController controller;
   final bool enabled;
   final ValueChanged<bool>? onEnabledChanged;
 
-  /// Price the ruler ranges around and that `Change` is measured against —
+  /// Price that Win / Loss is measured against —
   /// the mark price for a position, the order price when opening one. Without
   /// it the card can only anchor on whatever the field already held.
   final double? referencePrice;
@@ -37,8 +44,23 @@ class TpSlEditorCard extends StatefulWidget {
 }
 
 class _TpSlEditorCardState extends State<TpSlEditorCard> {
-  late final double _referencePrice =
-      widget.referencePrice ?? double.tryParse(widget.controller.text) ?? 100;
+  late final double _fallbackReferencePrice = switch (double.tryParse(
+    widget.controller.text,
+  )) {
+    final price? when price.isFinite && price > 0 => price,
+    _ => 100,
+  };
+
+  double get _referencePrice {
+    final price =
+        widget.referencePriceListenable?.value ?? widget.referencePrice;
+    return price != null && price.isFinite && price > 0
+        ? price
+        : _fallbackReferencePrice;
+  }
+
+  // Long TP / Short SL rise; Short TP / Long SL fall.
+  double get _priceDirection => widget.isLong == widget.isTakeProfit ? 1 : -1;
   final _change = TextEditingController();
 
   /// Guards the two-way price <-> change binding from looping.
@@ -62,6 +84,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   }
 
   void _onReferenceChanged() {
+    _pushChangeFromPrice();
     if (mounted) setState(() {});
   }
 
@@ -70,11 +93,44 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
     if (mounted) setState(() {});
   }
 
+  @override
+  void didUpdateWidget(covariant TpSlEditorCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onPriceEdited);
+      widget.controller.addListener(_onPriceEdited);
+    }
+    if (oldWidget.referencePriceListenable != widget.referencePriceListenable) {
+      oldWidget.referencePriceListenable?.removeListener(_onReferenceChanged);
+      widget.referencePriceListenable?.addListener(_onReferenceChanged);
+    }
+    if (oldWidget.controller != widget.controller ||
+        oldWidget.referencePrice != widget.referencePrice ||
+        oldWidget.referencePriceListenable != widget.referencePriceListenable ||
+        oldWidget.isLong != widget.isLong ||
+        oldWidget.isTakeProfit != widget.isTakeProfit) {
+      _pushChangeFromPrice();
+    }
+  }
+
+  bool get _hasWrongPriceDirection {
+    final price = double.tryParse(widget.controller.text);
+    return price != null &&
+        price.isFinite &&
+        price > 0 &&
+        (price - _referencePrice) * _priceDirection < 0;
+  }
+
   void _pushChangeFromPrice() {
     if (_syncing) return;
     final price = double.tryParse(widget.controller.text);
-    if (price == null) return;
-    final text = (((price / _referencePrice) - 1) * 100).toStringAsFixed(0);
+    final text =
+        price == null ||
+            !price.isFinite ||
+            price <= 0 ||
+            _hasWrongPriceDirection
+        ? ''
+        : _formatPercent((price / _referencePrice - 1) * 100 * _priceDirection);
     if (_change.text == text) return;
     _syncing = true;
     _change.text = text;
@@ -84,14 +140,36 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   void _onChangeEdited() {
     if (_syncing) return;
     final percent = double.tryParse(_change.text);
-    if (percent == null) return;
-    final text = _formatPrice(_referencePrice * (1 + percent / 100));
+    if (percent != null && (!percent.isFinite || percent < 0)) return;
+    final text = percent == null
+        ? ''
+        : _formatPrice(_referencePrice * (1 + _priceDirection * percent / 100));
     if (widget.controller.text == text) return;
     _syncing = true;
     widget.controller.text = text;
     _syncing = false;
     if (mounted) setState(() {});
   }
+
+  void _onRulerChanged(double value) {
+    final percent = value.truncate();
+    final price = percentageQuantity(
+      _referencePrice.toString(),
+      (_priceDirection > 0 ? 100 + percent : 100 - percent).toString(),
+      maxFractionDigits: 0,
+    );
+    // Write the submitted price and displayed ratio together. Manual edits
+    // continue through their existing bindings without integer truncation.
+    _syncing = true;
+    _change.text = percent.toString();
+    widget.controller.text = price;
+    _syncing = false;
+    if (mounted) setState(() {});
+  }
+
+  String _formatPercent(double value) => value == 0
+      ? '0'
+      : value.toStringAsFixed(8).replaceFirst(RegExp(r'\.?0+$'), '');
 
   String _formatPrice(double value) => value
       .toStringAsFixed(2)
@@ -102,12 +180,8 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final referencePrice =
-        widget.referencePriceListenable?.value ?? _referencePrice;
-    const minimum = 0.0;
-    final maximum = referencePrice * 1.1;
-    final price = double.tryParse(widget.controller.text) ?? _referencePrice;
-    final value = price.clamp(minimum, double.infinity);
+    final percent = double.tryParse(_change.text) ?? 0;
+    final decreasingPrice = _priceDirection < 0;
     final editable = widget.enabled && widget.onEnabledChanged != null;
     return Semantics(
       container: true,
@@ -159,10 +233,13 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
                     alignment: Alignment.centerRight,
                     child: _TpSlAmount(
                       fieldKey: widget.changeKey,
-                      label: l10n.change,
+                      label: widget.isTakeProfit ? l10n.tpSlWin : l10n.tpSlLoss,
                       controller: _change,
                       enabled: editable,
-                      suffix: '%',
+                      suffix: _hasWrongPriceDirection ? null : '%',
+                      hintText: _hasWrongPriceDirection ? '—' : '0',
+                      positiveOnly: true,
+                      maximumExclusive: decreasingPrice ? 100 : null,
                       alignEnd: true,
                     ),
                   ),
@@ -172,14 +249,15 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
             const SizedBox(height: 8),
             TpSlTickRuler(
               key: widget.rulerKey,
-              semanticLabel: '${widget.title} ${l10n.price}',
-              value: value,
-              minimum: minimum,
-              maximum: maximum,
+              semanticLabel:
+                  '${widget.title} ${widget.isTakeProfit ? l10n.tpSlWin : l10n.tpSlLoss}',
+              value: percent,
+              minimum: 0,
+              maximum: decreasingPrice ? 99 : 100,
               divisions: 20,
-              unbounded: true,
+              unbounded: !decreasingPrice,
               enabled: editable,
-              onChanged: (next) => widget.controller.text = _formatPrice(next),
+              onChanged: _onRulerChanged,
             ),
           ],
         ),
@@ -198,7 +276,10 @@ class _TpSlAmount extends StatelessWidget {
     required this.enabled,
     this.prefix,
     this.suffix,
+    this.hintText = '0',
     this.alignEnd = false,
+    this.positiveOnly = false,
+    this.maximumExclusive,
   });
 
   final Key? fieldKey;
@@ -207,7 +288,10 @@ class _TpSlAmount extends StatelessWidget {
   final bool enabled;
   final String? prefix;
   final String? suffix;
+  final String hintText;
   final bool alignEnd;
+  final bool positiveOnly;
+  final double? maximumExclusive;
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +322,7 @@ class _TpSlAmount extends StatelessWidget {
               final textPainter = TextPainter(
                 text: TextSpan(
                   text:
-                      '${prefix ?? ''}${value.text.isEmpty ? '0' : value.text}${suffix ?? ''}',
+                      '${prefix ?? ''}${value.text.isEmpty ? hintText : value.text}${suffix ?? ''}',
                   style: amountStyle,
                 ),
                 textDirection: Directionality.of(context),
@@ -255,10 +339,28 @@ class _TpSlAmount extends StatelessWidget {
                   controller: controller,
                   enabled: enabled,
                   textAlign: TextAlign.start,
-                  keyboardType: const TextInputType.numberWithOptions(
+                  keyboardType: TextInputType.numberWithOptions(
                     decimal: true,
-                    signed: true,
+                    signed: !positiveOnly,
                   ),
+                  inputFormatters: positiveOnly
+                      ? [
+                          TextInputFormatter.withFunction((oldValue, newValue) {
+                            if (!RegExp(r'^\d*\.?\d*$')
+                                .hasMatch(newValue.text)) {
+                              return oldValue;
+                            }
+                            final number = double.tryParse(newValue.text);
+                            if (number != null &&
+                                (!number.isFinite ||
+                                    (maximumExclusive != null &&
+                                        number >= maximumExclusive!))) {
+                              return oldValue;
+                            }
+                            return newValue;
+                          }),
+                        ]
+                      : null,
                   style: amountStyle,
                   cursorColor: colors.primaryText,
                   decoration: InputDecoration(
@@ -269,7 +371,7 @@ class _TpSlAmount extends StatelessWidget {
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
-                    hintText: '0',
+                    hintText: hintText,
                     hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
                     prefixText: prefix,
                     prefixStyle: amountStyle,

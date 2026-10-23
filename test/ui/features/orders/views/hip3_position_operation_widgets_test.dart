@@ -155,29 +155,42 @@ void main() {
     );
   });
   for (final conditional in [true, false]) {
-    testWidgets(
-      'open order price prefers ${conditional ? 'conditional trigger' : 'limit'} price',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: buildTestApp(
-              Hip3OpenOrderCard(
-                order: _order(
-                  'price-priority',
-                  conditional: conditional,
-                  executionType: 'limit',
-                  limitPrice: '125',
+    for (final (rawPrice, displayPrice) in [
+      ('241.250000000000000000', '241.25'),
+      ('177.200000000000000000', '177.2'),
+      ('200.000000000000000000', '200'),
+      ('0.000000123400000000', '0.0000001234'),
+    ]) {
+      testWidgets(
+        'open order formats ${conditional ? 'conditional trigger' : 'limit'} price $rawPrice',
+        (tester) async {
+          await configureDisplay(tester, size: const Size(393, 852));
+          await tester.pumpWidget(
+            ProviderScope(
+              child: buildTestApp(
+                Hip3OpenOrderCard(
+                  order: _order(
+                    'price-priority',
+                    conditional: conditional,
+                    executionType: 'limit',
+                    triggerPrice: rawPrice,
+                    limitPrice: conditional
+                        ? '125.000000000000000000'
+                        : rawPrice,
+                  ),
+                  onChanged: () {},
                 ),
-                onChanged: () {},
               ),
             ),
-          ),
-        );
-        expect(find.text(conditional ? '130' : '125'), findsOneWidget);
-        expect(find.text(conditional ? '125' : '130'), findsNothing);
-        expect(tester.takeException(), isNull);
-      },
-    );
+          );
+          expect(find.text(displayPrice), findsOneWidget);
+          expect(find.text(rawPrice), findsNothing);
+          expect(find.text('125.000000000000000000'), findsNothing);
+          expect(find.text('125'), findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
   }
 
   testWidgets('parent omits the cancellation protection warning', (
@@ -1866,11 +1879,22 @@ void main() {
               ),
               price,
             );
-            await tester.ensureVisible(
-              find.widgetWithText(FilledButton, '签名并确认'),
-            );
-            await tester.tap(find.widgetWithText(FilledButton, '签名并确认'));
             await tester.pumpAndSettle();
+            expect(repo.protectionCalls, 0);
+            expect(
+              find.text(
+                '${short ? '空仓' : '多仓'}${take ? '止盈' : '止损'}价格必须${mustBeAbove ? '高于' : '低于'}当前标记价格（100）。',
+              ),
+              findsOneWidget,
+            );
+            expect(
+              tester
+                  .widget<FilledButton>(
+                    find.widgetWithText(FilledButton, '签名并确认'),
+                  )
+                  .onPressed,
+              isNull,
+            );
 
             expect(repo.protectionCalls, 0);
             expect(
@@ -1884,6 +1908,27 @@ void main() {
               find.text('Trigger price conflicts with mark and position side'),
               findsNothing,
             );
+            await tester.enterText(
+              find.byKey(
+                Key(
+                  take
+                      ? 'position-protection-take-profit'
+                      : 'position-protection-stop-loss',
+                ),
+              ),
+              mustBeAbove ? '110' : '90',
+            );
+            await tester.pumpAndSettle();
+            expect(find.byType(TpSlInlineError), findsNothing);
+            expect(
+              tester
+                  .widget<FilledButton>(
+                    find.widgetWithText(FilledButton, '签名并确认'),
+                  )
+                  .onPressed,
+              isNotNull,
+            );
+            expect(repo.protectionCalls, 0);
           },
         );
       }
@@ -2273,6 +2318,106 @@ void main() {
         findsNothing,
       );
     });
+  }
+
+  for (final short in [false, true]) {
+    testWidgets(
+      'position Win / Loss ratios submit ${short ? 'Short' : 'Long'} triggers',
+      (tester) async {
+        final repo = _Positions();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+            child: buildTestApp(
+              PositionTpSlSheet(position: _position(short: short)),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Win'), findsOneWidget);
+        expect(find.text('Loss'), findsOneWidget);
+        expect(find.text('Change'), findsNothing);
+        for (final leg in ['take-profit', 'stop-loss']) {
+          await tester.enterText(
+            find.byKey(Key('position-$leg-percent')),
+            '10',
+          );
+        }
+        await tester.ensureVisible(
+          find.widgetWithText(FilledButton, 'Sign and confirm'),
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+        await tester.pumpAndSettle();
+        expect(repo.protectionCalls, 1);
+        final triggers = {
+          for (final change in repo.protectionChanges)
+            change.protection!.role: change.protection!.triggerPrice.value,
+        };
+        expect(triggers['takeProfit'], short ? '90' : '110');
+        expect(triggers['stopLoss'], short ? '110' : '90');
+      },
+    );
+  }
+
+  for (final short in [false, true]) {
+    for (final dragged in [true, false]) {
+      testWidgets(
+        'submitted ${short ? 'Short' : 'Long'} triggers preserve ${dragged ? 'dragged integers' : 'manual decimals'}',
+        (tester) async {
+          final repo = _Positions();
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+              child: buildTestApp(
+                PositionTpSlSheet(
+                  position: _position(short: short, mark: '100.75'),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          for (final take in [true, false]) {
+            final leg = take ? 'take-profit' : 'stop-loss';
+            if (dragged) {
+              tester
+                  .widget<TpSlTickRuler>(find.byKey(Key('position-$leg-ruler')))
+                  .onChanged(10.99);
+              await tester.pump();
+              expect(
+                tester
+                    .widget<TextField>(find.byKey(Key('position-$leg-percent')))
+                    .controller!
+                    .text,
+                '10',
+              );
+            } else {
+              await tester.enterText(
+                find.byKey(Key('position-protection-$leg')),
+                (!short == take)
+                    ? '110.123456789012345678'
+                    : '90.123456789012345678',
+              );
+            }
+          }
+          await tester.ensureVisible(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          );
+          await tester.tap(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          );
+          await tester.pumpAndSettle();
+          expect(repo.protectionCalls, 1);
+          for (final change in repo.protectionChanges) {
+            final take = change.protection!.role == 'takeProfit';
+            final expected = (!short == take) ? '110' : '90';
+            expect(
+              change.protection!.triggerPrice.value,
+              dragged ? expected : '$expected.123456789012345678',
+            );
+          }
+        },
+      );
+    }
   }
 
   testWidgets('position TP/SL uses the opening-order price editors', (
@@ -2697,6 +2842,7 @@ TradingOrder _order(
   TakeProfitStopLoss? tpSl,
   String executionType = 'market',
   String limitPrice = '130',
+  String triggerPrice = '130',
   String activationStatus = 'unknown',
   String? warningCode,
   TradingOrderStatus status = TradingOrderStatus.open,
@@ -2717,7 +2863,7 @@ TradingOrder _order(
   conditional: conditional
       ? ConditionalOrder(
           role: 'takeProfit',
-          triggerPrice: DecimalValue('130'),
+          triggerPrice: DecimalValue(triggerPrice),
           triggerReference: 'mark',
           triggerStatus: 'untriggered',
           executionType: executionType,

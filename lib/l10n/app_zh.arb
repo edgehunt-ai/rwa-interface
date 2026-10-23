@@ -239,6 +239,8 @@
   "add": "添加",
   "takeProfitStopLoss": "止盈/止损",
   "takeProfitStopLossTitle": "止盈 & 止损",
+  "tpSlWin": "盈利",
+  "tpSlLoss": "亏损",
   "change": "变动",
   "hip3OrderTpSl": "本单止盈止损",
   "hip3PositionTpSl": "持仓止盈止损",

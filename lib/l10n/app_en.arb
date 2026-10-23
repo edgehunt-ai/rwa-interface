@@ -275,6 +275,8 @@
   "add": "Add",
   "takeProfitStopLoss": "Take profit/stop loss",
   "takeProfitStopLossTitle": "Take Profit & stop loss",
+  "tpSlWin": "Win",
+  "tpSlLoss": "Loss",
   "change": "Change",
   "hip3OrderTpSl": "Order TP/SL",
   "hip3PositionTpSl": "Position TP/SL",

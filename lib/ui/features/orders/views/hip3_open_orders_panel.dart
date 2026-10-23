@@ -222,10 +222,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final totalQuantity = order.quantity?.value ?? conditional?.quantity ?? '—';
     final filledQuantity = order.filledQuantity?.value ?? '0';
-    final price =
-        conditional?.triggerPrice.value ??
-        order.limitPrice?.value ??
-        l10n.market;
+    final orderPrice = conditional?.triggerPrice ?? order.limitPrice;
+    final price = orderPrice == null
+        ? l10n.market
+        : TokenAmountFormatter.formatValue(orderPrice);
     final hasProtectionException =
         conditional != null &&
         (order.isTerminal || conditional.activationStatus != 'active');

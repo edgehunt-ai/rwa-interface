@@ -1454,6 +1454,18 @@ abstract class AppLocalizations {
   /// **'Take Profit & stop loss'**
   String get takeProfitStopLossTitle;
 
+  /// No description provided for @tpSlWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Win'**
+  String get tpSlWin;
+
+  /// No description provided for @tpSlLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Loss'**
+  String get tpSlLoss;
+
   /// No description provided for @change.
   ///
   /// In en, this message translates to:

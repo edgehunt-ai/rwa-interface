@@ -708,6 +708,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get takeProfitStopLossTitle => '止盈 & 止损';
 
   @override
+  String get tpSlWin => '盈利';
+
+  @override
+  String get tpSlLoss => '亏损';
+
+  @override
   String get change => '变动';
 
   @override

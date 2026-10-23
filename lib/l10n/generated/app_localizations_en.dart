@@ -727,6 +727,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takeProfitStopLossTitle => 'Take Profit & stop loss';
 
   @override
+  String get tpSlWin => 'Win';
+
+  @override
+  String get tpSlLoss => 'Loss';
+
+  @override
   String get change => 'Change';
 
   @override
