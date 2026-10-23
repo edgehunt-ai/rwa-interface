@@ -454,6 +454,8 @@
   "filterProducts": "Filter products",
   "allProducts": "All products",
   "hip3Perps": "HIP-3 Perps",
+  "marketMaxLeverage": "Max {leverage}x",
+  "@marketMaxLeverage": {"placeholders": {"leverage": {}}},
   "openTradeDetails": "Open {symbol} trade details",
   "@openTradeDetails": {"placeholders": {"symbol": {}}},
   "clearSearch": "Clear search",

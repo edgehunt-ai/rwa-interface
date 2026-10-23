@@ -70,9 +70,17 @@ class _$PerpFundingTargetCreditObservation
   @override
   final String availableBefore;
   @override
-  final String availableAfter;
+  final String? availableAfter;
   @override
   final String creditedAmount;
+  @override
+  final String? evidenceReference;
+  @override
+  final String? transactionHash;
+  @override
+  final int? logIndex;
+  @override
+  final String? venueReference;
   @override
   final PerpFundingTargetCreditObservationSource_Enum source_;
   @override
@@ -87,8 +95,12 @@ class _$PerpFundingTargetCreditObservation
       {required this.accountRef,
       required this.asset,
       required this.availableBefore,
-      required this.availableAfter,
+      this.availableAfter,
       required this.creditedAmount,
+      this.evidenceReference,
+      this.transactionHash,
+      this.logIndex,
+      this.venueReference,
       required this.source_,
       required this.observedAt})
       : super._();
@@ -110,6 +122,10 @@ class _$PerpFundingTargetCreditObservation
         availableBefore == other.availableBefore &&
         availableAfter == other.availableAfter &&
         creditedAmount == other.creditedAmount &&
+        evidenceReference == other.evidenceReference &&
+        transactionHash == other.transactionHash &&
+        logIndex == other.logIndex &&
+        venueReference == other.venueReference &&
         source_ == other.source_ &&
         observedAt == other.observedAt;
   }
@@ -122,6 +138,10 @@ class _$PerpFundingTargetCreditObservation
     _$hash = $jc(_$hash, availableBefore.hashCode);
     _$hash = $jc(_$hash, availableAfter.hashCode);
     _$hash = $jc(_$hash, creditedAmount.hashCode);
+    _$hash = $jc(_$hash, evidenceReference.hashCode);
+    _$hash = $jc(_$hash, transactionHash.hashCode);
+    _$hash = $jc(_$hash, logIndex.hashCode);
+    _$hash = $jc(_$hash, venueReference.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
     _$hash = $jf(_$hash);
@@ -136,6 +156,10 @@ class _$PerpFundingTargetCreditObservation
           ..add('availableBefore', availableBefore)
           ..add('availableAfter', availableAfter)
           ..add('creditedAmount', creditedAmount)
+          ..add('evidenceReference', evidenceReference)
+          ..add('transactionHash', transactionHash)
+          ..add('logIndex', logIndex)
+          ..add('venueReference', venueReference)
           ..add('source_', source_)
           ..add('observedAt', observedAt))
         .toString();
@@ -172,6 +196,25 @@ class PerpFundingTargetCreditObservationBuilder
   set creditedAmount(String? creditedAmount) =>
       _$this._creditedAmount = creditedAmount;
 
+  String? _evidenceReference;
+  String? get evidenceReference => _$this._evidenceReference;
+  set evidenceReference(String? evidenceReference) =>
+      _$this._evidenceReference = evidenceReference;
+
+  String? _transactionHash;
+  String? get transactionHash => _$this._transactionHash;
+  set transactionHash(String? transactionHash) =>
+      _$this._transactionHash = transactionHash;
+
+  int? _logIndex;
+  int? get logIndex => _$this._logIndex;
+  set logIndex(int? logIndex) => _$this._logIndex = logIndex;
+
+  String? _venueReference;
+  String? get venueReference => _$this._venueReference;
+  set venueReference(String? venueReference) =>
+      _$this._venueReference = venueReference;
+
   PerpFundingTargetCreditObservationSource_Enum? _source_;
   PerpFundingTargetCreditObservationSource_Enum? get source_ => _$this._source_;
   set source_(PerpFundingTargetCreditObservationSource_Enum? source_) =>
@@ -193,6 +236,10 @@ class PerpFundingTargetCreditObservationBuilder
       _availableBefore = $v.availableBefore;
       _availableAfter = $v.availableAfter;
       _creditedAmount = $v.creditedAmount;
+      _evidenceReference = $v.evidenceReference;
+      _transactionHash = $v.transactionHash;
+      _logIndex = $v.logIndex;
+      _venueReference = $v.venueReference;
       _source_ = $v.source_;
       _observedAt = $v.observedAt;
       _$v = null;
@@ -226,14 +273,15 @@ class PerpFundingTargetCreditObservationBuilder
                 availableBefore,
                 r'PerpFundingTargetCreditObservation',
                 'availableBefore'),
-            availableAfter: BuiltValueNullFieldError.checkNotNull(
-                availableAfter,
-                r'PerpFundingTargetCreditObservation',
-                'availableAfter'),
+            availableAfter: availableAfter,
             creditedAmount: BuiltValueNullFieldError.checkNotNull(
                 creditedAmount,
                 r'PerpFundingTargetCreditObservation',
                 'creditedAmount'),
+            evidenceReference: evidenceReference,
+            transactionHash: transactionHash,
+            logIndex: logIndex,
+            venueReference: venueReference,
             source_: BuiltValueNullFieldError.checkNotNull(
                 source_, r'PerpFundingTargetCreditObservation', 'source_'),
             observedAt: BuiltValueNullFieldError.checkNotNull(observedAt,

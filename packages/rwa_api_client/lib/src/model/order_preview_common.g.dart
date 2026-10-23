@@ -85,6 +85,9 @@ abstract class OrderPreviewCommonBuilder {
   bool? get fundsReserved;
   set fundsReserved(bool? fundsReserved);
 
+  DateTime? get orderExpiresAt;
+  set orderExpiresAt(DateTime? orderExpiresAt);
+
   String? get requiredFundingRaw;
   set requiredFundingRaw(String? requiredFundingRaw);
 
@@ -93,6 +96,9 @@ abstract class OrderPreviewCommonBuilder {
 
   String? get balanceRaw;
   set balanceRaw(String? balanceRaw);
+
+  String? get availableBalanceRaw;
+  set availableBalanceRaw(String? availableBalanceRaw);
 
   String? get allowanceRaw;
   set allowanceRaw(String? allowanceRaw);
@@ -209,11 +215,15 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   final bool? fundsReserved;
   @override
+  final DateTime? orderExpiresAt;
+  @override
   final String? requiredFundingRaw;
   @override
   final String? fundingToken;
   @override
   final String? balanceRaw;
+  @override
+  final String? availableBalanceRaw;
   @override
   final String? allowanceRaw;
   @override
@@ -292,9 +302,11 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
       this.priceConditionMet,
       this.fundingMode,
       this.fundsReserved,
+      this.orderExpiresAt,
       this.requiredFundingRaw,
       this.fundingToken,
       this.balanceRaw,
+      this.availableBalanceRaw,
       this.allowanceRaw,
       this.balanceSufficient,
       this.allowanceSufficient,
@@ -349,9 +361,11 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
         priceConditionMet == other.priceConditionMet &&
         fundingMode == other.fundingMode &&
         fundsReserved == other.fundsReserved &&
+        orderExpiresAt == other.orderExpiresAt &&
         requiredFundingRaw == other.requiredFundingRaw &&
         fundingToken == other.fundingToken &&
         balanceRaw == other.balanceRaw &&
+        availableBalanceRaw == other.availableBalanceRaw &&
         allowanceRaw == other.allowanceRaw &&
         balanceSufficient == other.balanceSufficient &&
         allowanceSufficient == other.allowanceSufficient &&
@@ -397,9 +411,11 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
     _$hash = $jc(_$hash, priceConditionMet.hashCode);
     _$hash = $jc(_$hash, fundingMode.hashCode);
     _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, orderExpiresAt.hashCode);
     _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
     _$hash = $jc(_$hash, fundingToken.hashCode);
     _$hash = $jc(_$hash, balanceRaw.hashCode);
+    _$hash = $jc(_$hash, availableBalanceRaw.hashCode);
     _$hash = $jc(_$hash, allowanceRaw.hashCode);
     _$hash = $jc(_$hash, balanceSufficient.hashCode);
     _$hash = $jc(_$hash, allowanceSufficient.hashCode);
@@ -447,9 +463,11 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
           ..add('priceConditionMet', priceConditionMet)
           ..add('fundingMode', fundingMode)
           ..add('fundsReserved', fundsReserved)
+          ..add('orderExpiresAt', orderExpiresAt)
           ..add('requiredFundingRaw', requiredFundingRaw)
           ..add('fundingToken', fundingToken)
           ..add('balanceRaw', balanceRaw)
+          ..add('availableBalanceRaw', availableBalanceRaw)
           ..add('allowanceRaw', allowanceRaw)
           ..add('balanceSufficient', balanceSufficient)
           ..add('allowanceSufficient', allowanceSufficient)
@@ -533,6 +551,11 @@ class $OrderPreviewCommonBuilder
   set fundsReserved(covariant bool? fundsReserved) =>
       _$this._fundsReserved = fundsReserved;
 
+  DateTime? _orderExpiresAt;
+  DateTime? get orderExpiresAt => _$this._orderExpiresAt;
+  set orderExpiresAt(covariant DateTime? orderExpiresAt) =>
+      _$this._orderExpiresAt = orderExpiresAt;
+
   String? _requiredFundingRaw;
   String? get requiredFundingRaw => _$this._requiredFundingRaw;
   set requiredFundingRaw(covariant String? requiredFundingRaw) =>
@@ -547,6 +570,11 @@ class $OrderPreviewCommonBuilder
   String? get balanceRaw => _$this._balanceRaw;
   set balanceRaw(covariant String? balanceRaw) =>
       _$this._balanceRaw = balanceRaw;
+
+  String? _availableBalanceRaw;
+  String? get availableBalanceRaw => _$this._availableBalanceRaw;
+  set availableBalanceRaw(covariant String? availableBalanceRaw) =>
+      _$this._availableBalanceRaw = availableBalanceRaw;
 
   String? _allowanceRaw;
   String? get allowanceRaw => _$this._allowanceRaw;
@@ -720,9 +748,11 @@ class $OrderPreviewCommonBuilder
       _priceConditionMet = $v.priceConditionMet;
       _fundingMode = $v.fundingMode;
       _fundsReserved = $v.fundsReserved;
+      _orderExpiresAt = $v.orderExpiresAt;
       _requiredFundingRaw = $v.requiredFundingRaw;
       _fundingToken = $v.fundingToken;
       _balanceRaw = $v.balanceRaw;
+      _availableBalanceRaw = $v.availableBalanceRaw;
       _allowanceRaw = $v.allowanceRaw;
       _balanceSufficient = $v.balanceSufficient;
       _allowanceSufficient = $v.allowanceSufficient;
@@ -786,9 +816,11 @@ class $OrderPreviewCommonBuilder
             priceConditionMet: priceConditionMet,
             fundingMode: fundingMode,
             fundsReserved: fundsReserved,
+            orderExpiresAt: orderExpiresAt,
             requiredFundingRaw: requiredFundingRaw,
             fundingToken: fundingToken,
             balanceRaw: balanceRaw,
+            availableBalanceRaw: availableBalanceRaw,
             allowanceRaw: allowanceRaw,
             balanceSufficient: balanceSufficient,
             allowanceSufficient: allowanceSufficient,

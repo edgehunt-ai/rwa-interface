@@ -56,13 +56,14 @@ part 'bstock_order.g.dart';
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [quantity] - 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
 /// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
 /// * [currentActionId] 
 /// * [status] 
 /// * [requestedAmount] - 用户原始预算，仅预算买入时有值；不从已执行数量反推。
 /// * [fundingMode] 
-/// * [fundsReserved] 
+/// * [fundsReserved] - Current bStocks market, IOC and GTC orders all return false; multiple independent operations may reference the same actual wallet balance. Actual balance, allowance, freshness and duplicate-delivery checks still apply. Historical boolean values remain decodable and never authorize a new execution. 
 /// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] 
@@ -402,6 +403,13 @@ class _$BstockOrderSerializer implements PrimitiveSerializer<BstockOrder> {
       yield serializers.serialize(
         object.slippagePercent,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.expiresAt != null) {
+      yield r'expires_at';
+      yield serializers.serialize(
+        object.expiresAt,
+        specifiedType: const FullType.nullable(DateTime),
       );
     }
     if (object.reconciliationStatus != null) {
@@ -816,6 +824,14 @@ class _$BstockOrderSerializer implements PrimitiveSerializer<BstockOrder> {
           if (valueDes == null) continue;
           result.slippagePercent = valueDes;
           break;
+        case r'expires_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.expiresAt = valueDes;
+          break;
         case r'reconciliation_status':
           final valueDes = serializers.deserialize(
             value,
@@ -957,6 +973,8 @@ class BstockOrderCancellationReasonEnum extends EnumClass {
   static const BstockOrderCancellationReasonEnum insufficientBalance = _$bstockOrderCancellationReasonEnum_insufficientBalance;
   @BuiltValueEnumConst(wireName: r'insufficient_allowance')
   static const BstockOrderCancellationReasonEnum insufficientAllowance = _$bstockOrderCancellationReasonEnum_insufficientAllowance;
+  @BuiltValueEnumConst(wireName: r'expired')
+  static const BstockOrderCancellationReasonEnum expired = _$bstockOrderCancellationReasonEnum_expired;
 
   static Serializer<BstockOrderCancellationReasonEnum> get serializer => _$bstockOrderCancellationReasonEnumSerializer;
 

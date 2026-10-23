@@ -17,13 +17,14 @@ part 'bstock_order_wallet_action_state.g.dart';
 ///
 /// Properties:
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [quantity] - 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
 /// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
 /// * [currentActionId] 
 /// * [status] 
 /// * [requestedAmount] - 用户原始预算，仅预算买入时有值；不从已执行数量反推。
 /// * [fundingMode] 
-/// * [fundsReserved] 
+/// * [fundsReserved] - Current bStocks market, IOC and GTC orders all return false; multiple independent operations may reference the same actual wallet balance. Actual balance, allowance, freshness and duplicate-delivery checks still apply. Historical boolean values remain decodable and never authorize a new execution. 
 /// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] 
@@ -42,6 +43,10 @@ abstract class BstockOrderWalletActionState  {
   @BuiltValueField(wireName: r'time_in_force')
   BstocksTimeInForce? get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  };
+
+  /// Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
+  @BuiltValueField(wireName: r'expires_at')
+  DateTime? get expiresAt;
 
   /// 预算买入在执行前可为null，原始预算保存在requested_amount，不能补造数量。 canonical IOC证据到达后，预算买入quantity为Router回执数量上限，不是用户请求的股数；实际成交看filled_quantity。 
   @BuiltValueField(wireName: r'quantity')
@@ -66,6 +71,7 @@ abstract class BstockOrderWalletActionState  {
   BstockOrderWalletActionStateFundingModeEnum? get fundingMode;
   // enum fundingModeEnum {  unreserved_transfer_from,  };
 
+  /// Current bStocks market, IOC and GTC orders all return false; multiple independent operations may reference the same actual wallet balance. Actual balance, allowance, freshness and duplicate-delivery checks still apply. Historical boolean values remain decodable and never authorize a new execution. 
   @BuiltValueField(wireName: r'funds_reserved')
   bool? get fundsReserved;
 
@@ -116,7 +122,7 @@ abstract class BstockOrderWalletActionState  {
 
   @BuiltValueField(wireName: r'cancellation_reason')
   BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason;
-  // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  };
+  // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  expired,  };
 
   @BuiltValueSerializer(custom: true)
   static Serializer<BstockOrderWalletActionState> get serializer => _$BstockOrderWalletActionStateSerializer();
@@ -139,6 +145,13 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield serializers.serialize(
         object.timeInForce,
         specifiedType: const FullType(BstocksTimeInForce),
+      );
+    }
+    if (object.expiresAt != null) {
+      yield r'expires_at';
+      yield serializers.serialize(
+        object.expiresAt,
+        specifiedType: const FullType.nullable(DateTime),
       );
     }
     if (object.quantity != null) {
@@ -339,6 +352,14 @@ class _$$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<$
           ) as BstocksTimeInForce?;
           if (valueDes == null) continue;
           result.timeInForce = valueDes;
+          break;
+        case r'expires_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.expiresAt = valueDes;
           break;
         case r'quantity':
           final valueDes = serializers.deserialize(
@@ -606,6 +627,8 @@ class BstockOrderWalletActionStateCancellationReasonEnum extends EnumClass {
   static const BstockOrderWalletActionStateCancellationReasonEnum insufficientBalance = _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance;
   @BuiltValueEnumConst(wireName: r'insufficient_allowance')
   static const BstockOrderWalletActionStateCancellationReasonEnum insufficientAllowance = _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance;
+  @BuiltValueEnumConst(wireName: r'expired')
+  static const BstockOrderWalletActionStateCancellationReasonEnum expired = _$bstockOrderWalletActionStateCancellationReasonEnum_expired;
 
   static Serializer<BstockOrderWalletActionStateCancellationReasonEnum> get serializer => _$bstockOrderWalletActionStateCancellationReasonEnumSerializer;
 

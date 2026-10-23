@@ -416,6 +416,8 @@
   "filterProducts": "筛选产品",
   "allProducts": "全部产品",
   "hip3Perps": "HIP-3 永续合约",
+  "marketMaxLeverage": "最高 {leverage}x",
+  "@marketMaxLeverage": {"placeholders": {"leverage": {}}},
   "openTradeDetails": "打开 {symbol} 的交易详情",
   "@openTradeDetails": {"placeholders": {"symbol": {}}},
   "clearSearch": "清除搜索",

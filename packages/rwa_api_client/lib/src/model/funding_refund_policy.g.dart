@@ -60,6 +60,8 @@ class _$FundingRefundPolicyAddressRoleEnumSerializer
 
 class _$FundingRefundPolicy extends FundingRefundPolicy {
   @override
+  final FundingAssetIdentity? asset;
+  @override
   final String address;
   @override
   final FundingRefundPolicyAddressRoleEnum addressRole;
@@ -73,7 +75,8 @@ class _$FundingRefundPolicy extends FundingRefundPolicy {
       (FundingRefundPolicyBuilder()..update(updates))._build();
 
   _$FundingRefundPolicy._(
-      {required this.address,
+      {this.asset,
+      required this.address,
       required this.addressRole,
       required this.mayDeductGas,
       required this.timingNote})
@@ -91,6 +94,7 @@ class _$FundingRefundPolicy extends FundingRefundPolicy {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is FundingRefundPolicy &&
+        asset == other.asset &&
         address == other.address &&
         addressRole == other.addressRole &&
         mayDeductGas == other.mayDeductGas &&
@@ -100,6 +104,7 @@ class _$FundingRefundPolicy extends FundingRefundPolicy {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, asset.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, addressRole.hashCode);
     _$hash = $jc(_$hash, mayDeductGas.hashCode);
@@ -111,6 +116,7 @@ class _$FundingRefundPolicy extends FundingRefundPolicy {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingRefundPolicy')
+          ..add('asset', asset)
           ..add('address', address)
           ..add('addressRole', addressRole)
           ..add('mayDeductGas', mayDeductGas)
@@ -122,6 +128,11 @@ class _$FundingRefundPolicy extends FundingRefundPolicy {
 class FundingRefundPolicyBuilder
     implements Builder<FundingRefundPolicy, FundingRefundPolicyBuilder> {
   _$FundingRefundPolicy? _$v;
+
+  FundingAssetIdentityBuilder? _asset;
+  FundingAssetIdentityBuilder get asset =>
+      _$this._asset ??= FundingAssetIdentityBuilder();
+  set asset(FundingAssetIdentityBuilder? asset) => _$this._asset = asset;
 
   String? _address;
   String? get address => _$this._address;
@@ -147,6 +158,7 @@ class FundingRefundPolicyBuilder
   FundingRefundPolicyBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _asset = $v.asset?.toBuilder();
       _address = $v.address;
       _addressRole = $v.addressRole;
       _mayDeductGas = $v.mayDeductGas;
@@ -170,17 +182,31 @@ class FundingRefundPolicyBuilder
   FundingRefundPolicy build() => _build();
 
   _$FundingRefundPolicy _build() {
-    final _$result = _$v ??
-        _$FundingRefundPolicy._(
-          address: BuiltValueNullFieldError.checkNotNull(
-              address, r'FundingRefundPolicy', 'address'),
-          addressRole: BuiltValueNullFieldError.checkNotNull(
-              addressRole, r'FundingRefundPolicy', 'addressRole'),
-          mayDeductGas: BuiltValueNullFieldError.checkNotNull(
-              mayDeductGas, r'FundingRefundPolicy', 'mayDeductGas'),
-          timingNote: BuiltValueNullFieldError.checkNotNull(
-              timingNote, r'FundingRefundPolicy', 'timingNote'),
-        );
+    _$FundingRefundPolicy _$result;
+    try {
+      _$result = _$v ??
+          _$FundingRefundPolicy._(
+            asset: _asset?.build(),
+            address: BuiltValueNullFieldError.checkNotNull(
+                address, r'FundingRefundPolicy', 'address'),
+            addressRole: BuiltValueNullFieldError.checkNotNull(
+                addressRole, r'FundingRefundPolicy', 'addressRole'),
+            mayDeductGas: BuiltValueNullFieldError.checkNotNull(
+                mayDeductGas, r'FundingRefundPolicy', 'mayDeductGas'),
+            timingNote: BuiltValueNullFieldError.checkNotNull(
+                timingNote, r'FundingRefundPolicy', 'timingNote'),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'asset';
+        _asset?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'FundingRefundPolicy', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

@@ -10,22 +10,20 @@ import 'package:built_value/serializer.dart';
 part 'hip3_withdrawal_rail.g.dart';
 
 class Hip3WithdrawalRail extends EnumClass {
-  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， 费用为报价输入输出差。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
+
+  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（无固定提现费，仍可能产生 HyperCore 激活费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， HyperCore 激活费仅计入实时目标预检明确返回的费用；不得因源账户历史缺失推定 1 USDC。 Spot 源激活无法核实时返回 HTTP 422 withdrawal_fee_unverified，user_action=contact_support、retryable=false，签名前终止，不提示充值固定费用。 已确认零费时保持原输入；Perps 来源不套用 Spot 首发激活费，实际来源以 Provider 冻结报价为准。 费用包含报价输入输出差和经预检确认的 HyperCore 激活费。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
   @BuiltValueEnumConst(wireName: r'bridge2')
   static const Hip3WithdrawalRail bridge2 = _$bridge2;
-
-  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， 费用为报价输入输出差。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
+  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（无固定提现费，仍可能产生 HyperCore 激活费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， HyperCore 激活费仅计入实时目标预检明确返回的费用；不得因源账户历史缺失推定 1 USDC。 Spot 源激活无法核实时返回 HTTP 422 withdrawal_fee_unverified，user_action=contact_support、retryable=false，签名前终止，不提示充值固定费用。 已确认零费时保持原输入；Perps 来源不套用 Spot 首发激活费，实际来源以 Provider 冻结报价为准。 费用包含报价输入输出差和经预检确认的 HyperCore 激活费。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalRail float = _$float;
-
-  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， 费用为报价输入输出差。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
+  /// 出金/划转通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（无固定提现费，仍可能产生 HyperCore 激活费）； `relay` 走跨链 solver —— 用户 `sendAsset` 到 Relay depository，solver 在冻结的目标链支付资产， HyperCore 激活费仅计入实时目标预检明确返回的费用；不得因源账户历史缺失推定 1 USDC。 Spot 源激活无法核实时返回 HTTP 422 withdrawal_fee_unverified，user_action=contact_support、retryable=false，签名前终止，不提示充值固定费用。 已确认零费时保持原输入；Perps 来源不套用 Spot 首发激活费，实际来源以 Provider 冻结报价为准。 费用包含报价输入输出差和经预检确认的 HyperCore 激活费。`relay` 仅在 mainnet 可用；显式 payout_chain_id=42161 为 Arbitrum 原生 USDC exact-input，省略目标链或指定56为旧版 BSC USDT exact-output。请求前必须先用 preview 拿到实价， 实际 venue 扣款见响应 amount，到账见 minimum_received。
   @BuiltValueEnumConst(wireName: r'relay')
   static const Hip3WithdrawalRail relay = _$relay;
 
-  static Serializer<Hip3WithdrawalRail> get serializer =>
-      _$hip3WithdrawalRailSerializer;
+  static Serializer<Hip3WithdrawalRail> get serializer => _$hip3WithdrawalRailSerializer;
 
-  const Hip3WithdrawalRail._(String name) : super(name);
+  const Hip3WithdrawalRail._(String name): super(name);
 
   static BuiltSet<Hip3WithdrawalRail> get values => _$values;
   static Hip3WithdrawalRail valueOf(String name) => _$valueOf(name);
@@ -38,3 +36,4 @@ class Hip3WithdrawalRail extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class Hip3WithdrawalRailMixin = Object with _$Hip3WithdrawalRailMixin;
+

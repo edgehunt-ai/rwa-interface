@@ -209,6 +209,8 @@ class _$OriginTransactionAction extends OriginTransactionAction {
   @override
   final GasPaymentQuote? gasPayment;
   @override
+  final GasPaymentMode? gasPaymentMode;
+  @override
   final String recipient;
   @override
   final String refundAddress;
@@ -230,6 +232,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
       required this.validUntil,
       required this.status,
       this.gasPayment,
+      this.gasPaymentMode,
       required this.recipient,
       required this.refundAddress})
       : super._();
@@ -258,6 +261,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
         validUntil == other.validUntil &&
         status == other.status &&
         gasPayment == other.gasPayment &&
+        gasPaymentMode == other.gasPaymentMode &&
         recipient == other.recipient &&
         refundAddress == other.refundAddress;
   }
@@ -277,6 +281,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
     _$hash = $jc(_$hash, validUntil.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, gasPayment.hashCode);
+    _$hash = $jc(_$hash, gasPaymentMode.hashCode);
     _$hash = $jc(_$hash, recipient.hashCode);
     _$hash = $jc(_$hash, refundAddress.hashCode);
     _$hash = $jf(_$hash);
@@ -298,6 +303,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
           ..add('validUntil', validUntil)
           ..add('status', status)
           ..add('gasPayment', gasPayment)
+          ..add('gasPaymentMode', gasPaymentMode)
           ..add('recipient', recipient)
           ..add('refundAddress', refundAddress))
         .toString();
@@ -360,6 +366,11 @@ class OriginTransactionActionBuilder
   set gasPayment(GasPaymentQuoteBuilder? gasPayment) =>
       _$this._gasPayment = gasPayment;
 
+  GasPaymentMode? _gasPaymentMode;
+  GasPaymentMode? get gasPaymentMode => _$this._gasPaymentMode;
+  set gasPaymentMode(GasPaymentMode? gasPaymentMode) =>
+      _$this._gasPaymentMode = gasPaymentMode;
+
   String? _recipient;
   String? get recipient => _$this._recipient;
   set recipient(String? recipient) => _$this._recipient = recipient;
@@ -388,6 +399,7 @@ class OriginTransactionActionBuilder
       _validUntil = $v.validUntil;
       _status = $v.status;
       _gasPayment = $v.gasPayment?.toBuilder();
+      _gasPaymentMode = $v.gasPaymentMode;
       _recipient = $v.recipient;
       _refundAddress = $v.refundAddress;
       _$v = null;
@@ -436,6 +448,7 @@ class OriginTransactionActionBuilder
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'OriginTransactionAction', 'status'),
             gasPayment: _gasPayment?.build(),
+            gasPaymentMode: gasPaymentMode,
             recipient: BuiltValueNullFieldError.checkNotNull(
                 recipient, r'OriginTransactionAction', 'recipient'),
             refundAddress: BuiltValueNullFieldError.checkNotNull(

@@ -9,18 +9,18 @@ import 'package:built_value/serializer.dart';
 
 part 'bstocks_portfolio_availability.g.dart';
 
-/// 平台账户钱包级可用数量投影；不是链上托管或真实锁币。GTC按未成交剩余量占用，待执行IOC按最大输入占用。 生成可执行动作即占用；approval和仅预览不占用。canonical订单替代动作占用，不重复计算。 部分成交减少占用，完全成交或撤单确认后释放；申请撤单或本地超时不提前释放。缺少钱包身份时数量为null。 
+/// 钱包范围的实际可用数量投影。全部 bStocks 市价、IOC/GTC、BSC 钱包提现和相关划转／补资均不冻结用户资产。 当前可用量等于已观察余额，占用数量为0，pending／manual_review／未知历史执行不扣减或阻断余额；缺少钱包身份时数量为null。 多笔独立操作可引用同一余额，实际执行仍检查新鲜余额、allowance、Gas、幂等及防重复交付；旧占用字段和枚举仅保留解码兼容。 
 ///
 /// Properties:
 /// * [rail] 
 /// * [productId] 
 /// * [withdrawalAssetId] - 可用于自托管提现asset_id的服务端链/token身份，不等同于顶层内部asset_id。
-/// * [pendingWithdrawalQuantity] - 已创建尚未结算的提现占用，包括等待签名/提交、确认中及未决结果；身份或覆盖未知时为null。不是已确认支出。
-/// * [availableQuantity] - 钱包余额减去平台订单、转账/补资及提现占用后的可用数量，下限为0；待签名可执行交易也占用。用于提现额度/Max及卖出数量校验，不是美元金额或执行保证；未知时为null，不得回退到总余额。
-/// * [unavailableQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [reservationQuantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [pendingWithdrawalQuantity] - 当前已知钱包身份下为字符串0；待签名、提交、确认中或未知提现均不冻结资产。身份不可用时为null；不是已确认支出或提现结果。
+/// * [availableQuantity] - 当前等于同一钱包、链和token已观察的实际余额，待处理或未知的订单、提现、划转／补资不扣减。用于提现额度／Max及卖出数量校验，不是美元金额或执行保证；身份不可用时为null，不得回退到总余额。
+/// * [unavailableQuantity] - 当前已知钱包身份下为字符串0；历史响应可能非零，身份不可用时为null。
+/// * [reservationQuantity] - 当前已知钱包身份下为字符串0；历史响应可能非零。零预留不能证明未扣款、成功、退款或已解除执行权限。
 /// * [availabilityStatus] 
-/// * [unavailableReasons] 
+/// * [unavailableReasons] - 当前不产生订单、划转或提现占用原因；缺少钱包身份仍返回wallet_identity_unavailable。保留旧枚举用于历史响应解码。
 @BuiltValue()
 abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAvailability, BstocksPortfolioAvailabilityBuilder> {
   @BuiltValueField(wireName: r'rail')
@@ -34,19 +34,19 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
   @BuiltValueField(wireName: r'withdrawal_asset_id')
   String? get withdrawalAssetId;
 
-  /// 已创建尚未结算的提现占用，包括等待签名/提交、确认中及未决结果；身份或覆盖未知时为null。不是已确认支出。
+  /// 当前已知钱包身份下为字符串0；待签名、提交、确认中或未知提现均不冻结资产。身份不可用时为null；不是已确认支出或提现结果。
   @BuiltValueField(wireName: r'pending_withdrawal_quantity')
   String? get pendingWithdrawalQuantity;
 
-  /// 钱包余额减去平台订单、转账/补资及提现占用后的可用数量，下限为0；待签名可执行交易也占用。用于提现额度/Max及卖出数量校验，不是美元金额或执行保证；未知时为null，不得回退到总余额。
+  /// 当前等于同一钱包、链和token已观察的实际余额，待处理或未知的订单、提现、划转／补资不扣减。用于提现额度／Max及卖出数量校验，不是美元金额或执行保证；身份不可用时为null，不得回退到总余额。
   @BuiltValueField(wireName: r'available_quantity')
   String? get availableQuantity;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 当前已知钱包身份下为字符串0；历史响应可能非零，身份不可用时为null。
   @BuiltValueField(wireName: r'unavailable_quantity')
   String? get unavailableQuantity;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// 当前已知钱包身份下为字符串0；历史响应可能非零。零预留不能证明未扣款、成功、退款或已解除执行权限。
   @BuiltValueField(wireName: r'reservation_quantity')
   String? get reservationQuantity;
 
@@ -54,6 +54,7 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
   BstocksPortfolioAvailabilityAvailabilityStatusEnum get availabilityStatus;
   // enum availabilityStatusEnum {  complete,  partial,  unavailable,  };
 
+  /// 当前不产生订单、划转或提现占用原因；缺少钱包身份仍返回wallet_identity_unavailable。保留旧枚举用于历史响应解码。
   @BuiltValueField(wireName: r'unavailable_reasons')
   BuiltList<BstocksPortfolioAvailabilityUnavailableReasonsEnum> get unavailableReasons;
   // enum unavailableReasonsEnum {  wallet_identity_unavailable,  confirmed_gtc_sell,  submitted_gtc_sell,  reservation_exceeds_balance,  platform_order,  pending_transfer,  pending_withdrawal,  };

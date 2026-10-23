@@ -13,17 +13,18 @@ part 'user_settings.g.dart';
 ///
 /// Properties:
 /// * [language] 
-/// * [pushEnabled] - 推送总开关。关闭后后端不再向该用户的任何设备推送， 下面三个分类开关的取值被忽略（但保留，重新打开总开关后恢复原样）。 
+/// * [pushEnabled] - 推送总开关。关闭后后端不再向该用户的任何设备推送， 下面各分类开关的取值被忽略（但保留，重新打开总开关后恢复原样）。 
 /// * [notifyOrderFilled] - 订单成交。市价成交、限价单被撮合、止盈止损触发都归这一类。
 /// * [notifyOrderFailed] - 订单失败。下单被拒、超出滑点、资金准备失败等。
 /// * [notifyLiquidationWarning] - 强平预警。仅对 HIP-3 合约仓位有效，现货持仓不会触发。 触发阈值由平台统一设定，暂不支持用户自定义。 
+/// * [notifyDepositCredited] - 入金到账。外部转入用户钱包的资金经链上确认并入账后推送一次， 不含应用内主动发起的跨链划转或账户内划转，也不推送低于 1 USDC 的粉尘转入。 该字段不在 `required` 中：旧版后端不会返回它，消费者应把缺省视为 true。 
 @BuiltValue()
 abstract class UserSettings implements Built<UserSettings, UserSettingsBuilder> {
   @BuiltValueField(wireName: r'language')
   UserLanguage get language;
   // enum languageEnum {  zh-CN,  en,  ja,  ko,  };
 
-  /// 推送总开关。关闭后后端不再向该用户的任何设备推送， 下面三个分类开关的取值被忽略（但保留，重新打开总开关后恢复原样）。 
+  /// 推送总开关。关闭后后端不再向该用户的任何设备推送， 下面各分类开关的取值被忽略（但保留，重新打开总开关后恢复原样）。 
   @BuiltValueField(wireName: r'push_enabled')
   bool get pushEnabled;
 
@@ -39,6 +40,10 @@ abstract class UserSettings implements Built<UserSettings, UserSettingsBuilder> 
   @BuiltValueField(wireName: r'notify_liquidation_warning')
   bool get notifyLiquidationWarning;
 
+  /// 入金到账。外部转入用户钱包的资金经链上确认并入账后推送一次， 不含应用内主动发起的跨链划转或账户内划转，也不推送低于 1 USDC 的粉尘转入。 该字段不在 `required` 中：旧版后端不会返回它，消费者应把缺省视为 true。 
+  @BuiltValueField(wireName: r'notify_deposit_credited')
+  bool? get notifyDepositCredited;
+
   UserSettings._();
 
   factory UserSettings([void updates(UserSettingsBuilder b)]) = _$UserSettings;
@@ -48,7 +53,8 @@ abstract class UserSettings implements Built<UserSettings, UserSettingsBuilder> 
       ..pushEnabled = true
       ..notifyOrderFilled = true
       ..notifyOrderFailed = true
-      ..notifyLiquidationWarning = true;
+      ..notifyLiquidationWarning = true
+      ..notifyDepositCredited = true;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<UserSettings> get serializer => _$UserSettingsSerializer();
@@ -91,6 +97,13 @@ class _$UserSettingsSerializer implements PrimitiveSerializer<UserSettings> {
       object.notifyLiquidationWarning,
       specifiedType: const FullType(bool),
     );
+    if (object.notifyDepositCredited != null) {
+      yield r'notify_deposit_credited';
+      yield serializers.serialize(
+        object.notifyDepositCredited,
+        specifiedType: const FullType(bool),
+      );
+    }
   }
 
   @override
@@ -148,6 +161,14 @@ class _$UserSettingsSerializer implements PrimitiveSerializer<UserSettings> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.notifyLiquidationWarning = valueDes;
+          break;
+        case r'notify_deposit_credited':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.notifyDepositCredited = valueDes;
           break;
         default:
           unhandled.add(key);

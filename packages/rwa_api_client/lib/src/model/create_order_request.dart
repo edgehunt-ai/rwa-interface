@@ -25,6 +25,7 @@ part 'create_order_request.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格

@@ -25,6 +25,7 @@ part 'funding_session_trade.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [amount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格

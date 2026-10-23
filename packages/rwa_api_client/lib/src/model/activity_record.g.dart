@@ -176,6 +176,10 @@ class _$ActivityRecordChainEnumSerializer
 
 class _$ActivityRecord extends ActivityRecord {
   @override
+  final FinancialEconomicStatus? economicStatus;
+  @override
+  final BuiltList<String>? financialObligationIds;
+  @override
   final ActivityRecordBusinessTypeEnum? businessType;
   @override
   final String id;
@@ -226,7 +230,9 @@ class _$ActivityRecord extends ActivityRecord {
       (ActivityRecordBuilder()..update(updates))._build();
 
   _$ActivityRecord._(
-      {this.businessType,
+      {this.economicStatus,
+      this.financialObligationIds,
+      this.businessType,
       required this.id,
       required this.category,
       required this.type,
@@ -261,6 +267,8 @@ class _$ActivityRecord extends ActivityRecord {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ActivityRecord &&
+        economicStatus == other.economicStatus &&
+        financialObligationIds == other.financialObligationIds &&
         businessType == other.businessType &&
         id == other.id &&
         category == other.category &&
@@ -289,6 +297,8 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, economicStatus.hashCode);
+    _$hash = $jc(_$hash, financialObligationIds.hashCode);
     _$hash = $jc(_$hash, businessType.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, category.hashCode);
@@ -319,6 +329,8 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ActivityRecord')
+          ..add('economicStatus', economicStatus)
+          ..add('financialObligationIds', financialObligationIds)
           ..add('businessType', businessType)
           ..add('id', id)
           ..add('category', category)
@@ -349,6 +361,17 @@ class _$ActivityRecord extends ActivityRecord {
 class ActivityRecordBuilder
     implements Builder<ActivityRecord, ActivityRecordBuilder> {
   _$ActivityRecord? _$v;
+
+  FinancialEconomicStatus? _economicStatus;
+  FinancialEconomicStatus? get economicStatus => _$this._economicStatus;
+  set economicStatus(FinancialEconomicStatus? economicStatus) =>
+      _$this._economicStatus = economicStatus;
+
+  ListBuilder<String>? _financialObligationIds;
+  ListBuilder<String> get financialObligationIds =>
+      _$this._financialObligationIds ??= ListBuilder<String>();
+  set financialObligationIds(ListBuilder<String>? financialObligationIds) =>
+      _$this._financialObligationIds = financialObligationIds;
 
   ActivityRecordBusinessTypeEnum? _businessType;
   ActivityRecordBusinessTypeEnum? get businessType => _$this._businessType;
@@ -461,6 +484,8 @@ class ActivityRecordBuilder
   ActivityRecordBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _economicStatus = $v.economicStatus;
+      _financialObligationIds = $v.financialObligationIds?.toBuilder();
       _businessType = $v.businessType;
       _id = $v.id;
       _category = $v.category;
@@ -507,6 +532,8 @@ class ActivityRecordBuilder
     try {
       _$result = _$v ??
           _$ActivityRecord._(
+            economicStatus: economicStatus,
+            financialObligationIds: _financialObligationIds?.build(),
             businessType: businessType,
             id: BuiltValueNullFieldError.checkNotNull(
                 id, r'ActivityRecord', 'id'),
@@ -541,6 +568,9 @@ class ActivityRecordBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'financialObligationIds';
+        _financialObligationIds?.build();
+
         _$failedField = 'cashFlow';
         _cashFlow?.build();
 

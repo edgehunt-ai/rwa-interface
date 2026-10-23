@@ -257,6 +257,33 @@ class MarketProductFilter extends StatelessWidget {
   }
 }
 
+/// Display-only max leverage badge for HIP-3 products, mirroring the
+/// `Financial List Row` design. Trading limits still come from the latest
+/// trading context, never from this listing metadata.
+class MarketMaxLeverageBadge extends StatelessWidget {
+  const MarketMaxLeverageBadge({super.key, required this.leverage});
+
+  final String leverage;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.subtleSurface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        AppLocalizations.of(context).marketMaxLeverage(leverage),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: colors.primaryText, fontWeight: FontWeight.w400),
+      ),
+    );
+  }
+}
+
 class MarketProductRow extends StatelessWidget {
   const MarketProductRow({
     super.key,
@@ -297,10 +324,24 @@ class MarketProductRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  product.symbol,
-                  style: Theme.of(context).textTheme.bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        product.symbol,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    if (product.maxLeverage case final maxLeverage?) ...[
+                      const SizedBox(width: 4),
+                      MarketMaxLeverageBadge(
+                        key: ValueKey('market-max-leverage-${product.symbol}'),
+                        leverage: maxLeverage,
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Row(

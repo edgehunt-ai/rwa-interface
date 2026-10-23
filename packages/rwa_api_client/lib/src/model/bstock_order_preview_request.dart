@@ -20,10 +20,11 @@ part 'bstock_order_preview_request.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，向上取整。 市价确认重新报价Q（最终签名RFQ输出加当次DEX报价），链上minAmountOut=max(冻结下限,ceil(Q×(1-p/100)))； Pancake分路也约束其最低输出，RFQ固定输出不因滑点降低。显式IOC限价链上使用新路由报价输出，并独立强制用户限价。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；部分成交后对剩余数量重新报价。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
+/// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，向上取整。 市价确认重新报价Q（最终签名RFQ输出加当次DEX报价），链上minAmountOut=max(冻结下限,ceil(Q×(1-p/100)))； Pancake分路也约束其最低输出，RFQ固定输出不因滑点降低。显式IOC限价链上使用新路由报价输出，并独立强制用户限价。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；GTC 必须一次成交全部剩余数量，不按余额或流动性缩小成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
 /// * [tpSl] 
 @BuiltValue()
 abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
@@ -46,6 +47,10 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   BstocksTimeInForce? get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  };
 
+  /// Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
+  @BuiltValueField(wireName: r'expires_at')
+  DateTime? get expiresAt;
+
   /// 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
   @BuiltValueField(wireName: r'amount')
   String? get amount;
@@ -58,7 +63,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，向上取整。 市价确认重新报价Q（最终签名RFQ输出加当次DEX报价），链上minAmountOut=max(冻结下限,ceil(Q×(1-p/100)))； Pancake分路也约束其最低输出，RFQ固定输出不因滑点降低。显式IOC限价链上使用新路由报价输出，并独立强制用户限价。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；部分成交后对剩余数量重新报价。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
+  /// bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，向上取整。 市价确认重新报价Q（最终签名RFQ输出加当次DEX报价），链上minAmountOut=max(冻结下限,ceil(Q×(1-p/100)))； Pancake分路也约束其最低输出，RFQ固定输出不因滑点降低。显式IOC限价链上使用新路由报价输出，并独立强制用户限价。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；GTC 必须一次成交全部剩余数量，不按余额或流动性缩小成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 
@@ -113,6 +118,13 @@ class _$BstockOrderPreviewRequestSerializer implements PrimitiveSerializer<Bstoc
       yield serializers.serialize(
         object.timeInForce,
         specifiedType: const FullType.nullable(BstocksTimeInForce),
+      );
+    }
+    if (object.expiresAt != null) {
+      yield r'expires_at';
+      yield serializers.serialize(
+        object.expiresAt,
+        specifiedType: const FullType.nullable(DateTime),
       );
     }
     if (object.amount != null) {
@@ -208,6 +220,14 @@ class _$BstockOrderPreviewRequestSerializer implements PrimitiveSerializer<Bstoc
           ) as BstocksTimeInForce?;
           if (valueDes == null) continue;
           result.timeInForce = valueDes;
+          break;
+        case r'expires_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.expiresAt = valueDes;
           break;
         case r'amount':
           final valueDes = serializers.deserialize(

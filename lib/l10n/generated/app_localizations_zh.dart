@@ -1250,6 +1250,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3Perps => 'HIP-3 永续合约';
 
   @override
+  String marketMaxLeverage(Object leverage) {
+    return '最高 ${leverage}x';
+  }
+
+  @override
   String openTradeDetails(Object symbol) {
     return '打开 $symbol 的交易详情';
   }

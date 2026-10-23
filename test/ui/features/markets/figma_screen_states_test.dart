@@ -23,6 +23,57 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('HIP-3 rows show the listing max leverage badge', (tester) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct(
+            'TSLA',
+            kind: MarketProductKind.perp,
+            maxLeverage: '10',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Max 10x'), findsOneWidget);
+  });
+
+  testWidgets('the max leverage badge follows the active locale', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct(
+            'TSLA',
+            kind: MarketProductKind.perp,
+            maxLeverage: '10',
+          ),
+        ),
+        locale: const Locale('zh'),
+      ),
+    );
+
+    expect(find.text('最高 10x'), findsOneWidget);
+    expect(find.text('Max 10x'), findsNothing);
+  });
+
+  testWidgets('rows without listing leverage never show a badge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct('NVDA', kind: MarketProductKind.perp),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Max '), findsNothing);
+    expect(find.textContaining('最高 '), findsNothing);
+  });
+
   testWidgets('market asset mark prefers a remote logo', (tester) async {
     const logoUrl =
         'data:image/png;base64,'
@@ -665,6 +716,7 @@ Widget _marketApp(Widget home) => MaterialApp(
 MarketProduct _testProduct(
   String symbol, {
   MarketProductKind kind = MarketProductKind.bstock,
+  String? maxLeverage,
 }) => MarketProduct(
   symbol: symbol,
   name: symbol,
@@ -673,6 +725,7 @@ MarketProduct _testProduct(
   settlementAsset: 'USDC',
   network: 'BSC',
   tradable: true,
+  maxLeverage: maxLeverage,
 );
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {

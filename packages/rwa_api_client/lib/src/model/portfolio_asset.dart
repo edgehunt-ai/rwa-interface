@@ -36,12 +36,12 @@ part 'portfolio_asset.g.dart';
 /// * [decimals] 
 /// * [balanceRaw] - 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
 /// * [balance] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [availableQuantity] - BSC ERC20的服务器可用数量，已扣除平台订单、转账/补资和提现占用，下限为0；非交易准入token同样使用观察到的精度及自身占用。 提现额度、Max和输入上限使用此值，不使用balance；总余额仍用于持仓和估值。 null表示不可确定，禁止回退到balance。旧服务可能缺省，客户端须升级并刷新，不得视作零占用。 
-/// * [unavailableQuantity] - 当前余额中不可用的数量，最多为balance；未知时为null。
-/// * [reservationQuantity] - 完整平台占用，可能大于钱包余额；不能将占用截断后当成已释放。
-/// * [pendingWithdrawalQuantity] - 占用中的待处理提现数量，包括等待签名/提交；未知时为null。
-/// * [availabilityStatus] - partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
-/// * [unavailableReasons] 
+/// * [availableQuantity] - BSC ERC20的服务器可用数量，当前等于同一钱包、链和token已观察的balance；股票、计价币及非交易准入token均不扣减待处理或未知操作的占用。 提现额度、Max和输入上限仍使用此字段及availability_status；总余额继续用于持仓和估值，缺少钱包身份时可用数量为null。 null或旧服务缺省表示无法确认可用量，禁止回退到balance；余额stale时不能作为当前可付款保证。 
+/// * [unavailableQuantity] - 当前BSC ERC20在钱包身份可用时为字符串0，身份不可用时为null。历史响应可能非零。
+/// * [reservationQuantity] - 当前BSC ERC20在钱包身份可用时为字符串0；历史非零占用保持可解码。零预留不表示退款、未扣款或历史执行已失效。
+/// * [pendingWithdrawalQuantity] - 当前BSC ERC20在钱包身份可用时为字符串0；待处理提现不冻结余额。身份不可用时为null；旧响应可能包含非零值。
+/// * [availabilityStatus] - 当前BSC ERC20在钱包身份可用时为complete，缺少钱包身份时为unavailable；旧partial状态保持解码兼容。unavailable、数量null或余额stale时禁用Max及提现确认。
+/// * [unavailableReasons] - 当前BSC ERC20仅因钱包身份等实际可用性问题受限，不返回pending-hold原因；原有占用原因枚举保持历史解码兼容。
 /// * [priceUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [pricingSource] - USD 估值来源；不代表余额或钱包所有权来源。
 /// * [valueUsd] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
@@ -115,27 +115,28 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   @BuiltValueField(wireName: r'balance')
   String get balance;
 
-  /// BSC ERC20的服务器可用数量，已扣除平台订单、转账/补资和提现占用，下限为0；非交易准入token同样使用观察到的精度及自身占用。 提现额度、Max和输入上限使用此值，不使用balance；总余额仍用于持仓和估值。 null表示不可确定，禁止回退到balance。旧服务可能缺省，客户端须升级并刷新，不得视作零占用。 
+  /// BSC ERC20的服务器可用数量，当前等于同一钱包、链和token已观察的balance；股票、计价币及非交易准入token均不扣减待处理或未知操作的占用。 提现额度、Max和输入上限仍使用此字段及availability_status；总余额继续用于持仓和估值，缺少钱包身份时可用数量为null。 null或旧服务缺省表示无法确认可用量，禁止回退到balance；余额stale时不能作为当前可付款保证。 
   @BuiltValueField(wireName: r'available_quantity')
   String? get availableQuantity;
 
-  /// 当前余额中不可用的数量，最多为balance；未知时为null。
+  /// 当前BSC ERC20在钱包身份可用时为字符串0，身份不可用时为null。历史响应可能非零。
   @BuiltValueField(wireName: r'unavailable_quantity')
   String? get unavailableQuantity;
 
-  /// 完整平台占用，可能大于钱包余额；不能将占用截断后当成已释放。
+  /// 当前BSC ERC20在钱包身份可用时为字符串0；历史非零占用保持可解码。零预留不表示退款、未扣款或历史执行已失效。
   @BuiltValueField(wireName: r'reservation_quantity')
   String? get reservationQuantity;
 
-  /// 占用中的待处理提现数量，包括等待签名/提交；未知时为null。
+  /// 当前BSC ERC20在钱包身份可用时为字符串0；待处理提现不冻结余额。身份不可用时为null；旧响应可能包含非零值。
   @BuiltValueField(wireName: r'pending_withdrawal_quantity')
   String? get pendingWithdrawalQuantity;
 
-  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  /// 当前BSC ERC20在钱包身份可用时为complete，缺少钱包身份时为unavailable；旧partial状态保持解码兼容。unavailable、数量null或余额stale时禁用Max及提现确认。
   @BuiltValueField(wireName: r'availability_status')
   PortfolioAssetAvailabilityStatusEnum? get availabilityStatus;
   // enum availabilityStatusEnum {  complete,  partial,  unavailable,  };
 
+  /// 当前BSC ERC20仅因钱包身份等实际可用性问题受限，不返回pending-hold原因；原有占用原因枚举保持历史解码兼容。
   @BuiltValueField(wireName: r'unavailable_reasons')
   BuiltList<PortfolioAssetUnavailableReasonsEnum>? get unavailableReasons;
   // enum unavailableReasonsEnum {  wallet_identity_unavailable,  confirmed_gtc_sell,  submitted_gtc_sell,  reservation_exceeds_balance,  platform_order,  pending_transfer,  pending_withdrawal,  };
@@ -706,13 +707,13 @@ class PortfolioAssetAssetTypeEnum extends EnumClass {
 
 class PortfolioAssetAvailabilityStatusEnum extends EnumClass {
 
-  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  /// 当前BSC ERC20在钱包身份可用时为complete，缺少钱包身份时为unavailable；旧partial状态保持解码兼容。unavailable、数量null或余额stale时禁用Max及提现确认。
   @BuiltValueEnumConst(wireName: r'complete')
   static const PortfolioAssetAvailabilityStatusEnum complete = _$portfolioAssetAvailabilityStatusEnum_complete;
-  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  /// 当前BSC ERC20在钱包身份可用时为complete，缺少钱包身份时为unavailable；旧partial状态保持解码兼容。unavailable、数量null或余额stale时禁用Max及提现确认。
   @BuiltValueEnumConst(wireName: r'partial')
   static const PortfolioAssetAvailabilityStatusEnum partial = _$portfolioAssetAvailabilityStatusEnum_partial;
-  /// partial可表示占用超过余额；只能使用明确返回的可用量。unavailable或余额stale时禁用Max及提现确认。
+  /// 当前BSC ERC20在钱包身份可用时为complete，缺少钱包身份时为unavailable；旧partial状态保持解码兼容。unavailable、数量null或余额stale时禁用Max及提现确认。
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const PortfolioAssetAvailabilityStatusEnum unavailable = _$portfolioAssetAvailabilityStatusEnum_unavailable;
 

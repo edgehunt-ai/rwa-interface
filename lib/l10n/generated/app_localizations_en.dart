@@ -1293,6 +1293,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3Perps => 'HIP-3 Perps';
 
   @override
+  String marketMaxLeverage(Object leverage) {
+    return 'Max ${leverage}x';
+  }
+
+  @override
   String openTradeDetails(Object symbol) {
     return 'Open $symbol trade details';
   }

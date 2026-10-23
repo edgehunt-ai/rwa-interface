@@ -2500,6 +2500,12 @@ abstract class AppLocalizations {
   /// **'HIP-3 Perps'**
   String get hip3Perps;
 
+  /// No description provided for @marketMaxLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {leverage}x'**
+  String marketMaxLeverage(Object leverage);
+
   /// No description provided for @openTradeDetails.
   ///
   /// In en, this message translates to:

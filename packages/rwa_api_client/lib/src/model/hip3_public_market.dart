@@ -9,13 +9,14 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_public_market.g.dart';
 
-/// 服务端确认的公开 HIP3 行情身份。environment 指行情来源环境，不是钱包充值网络。 tradable 仅表示该公开产品在当前客户端签名执行通道的产品级可用性，不授予账户交易权限。 仅支持逐仓的市场仍可返回 tradable=true；不支持全仓不代表整个产品不可交易。 可选保证金模式以最新 context.rules.margin_modes 为准；仅逐仓市场只能使用 isolated，不得强制使用 cross。 开仓前必须加载同 product_id、venue、environment 的最新 context，并使用其中最大杠杆及其他动态限制； 身份不一致必须拒绝下单，不能按 symbol 偷换产品或网络。主网只读行情不代表已开放主网执行。 
+/// 服务端确认的公开 HIP3 行情身份与展示属性。environment 指行情来源环境，不是钱包充值网络。 tradable 仅表示该公开产品在当前客户端签名执行通道的产品级可用性，不授予账户交易权限。 仅支持逐仓的市场仍可返回 tradable=true；不支持全仓不代表整个产品不可交易。 可选保证金模式以最新 context.rules.margin_modes 为准；仅逐仓市场只能使用 isolated，不得强制使用 cross。 max_leverage 仅用于市场列表/详情展示；开仓前必须加载同 product_id、venue、environment 的最新 context， 并使用其中最大杠杆及其他动态限制；身份不一致必须拒绝下单，不能按 symbol 偷换产品或网络。 主网只读行情不代表已开放主网执行。 
 ///
 /// Properties:
 /// * [productId] 
 /// * [venue] 
 /// * [environment] 
 /// * [settlementAsset] - 来源于该场所权威产品元数据的结算资产，不从 symbol 猜测。
+/// * [maxLeverage] - 该 HIP-3 市场当前允许的最高杠杆倍数，来自 Hyperliquid DEX 产品元数据。 十进制字符串，正整数；仅用于市场列表/详情展示，可能随场所规则变化； 不表示当前账户杠杆，也不表示账户已获授权使用该倍数。开仓前必须以 最新 trading-context 的 rules.max_leverage 为准。 
 /// * [tradable] 
 /// * [unavailableReason] - 不可交易的产品级原因；tradable=true 时为 null。账户级限制仍由 context 返回。
 @BuiltValue(instantiable: false)
@@ -33,6 +34,10 @@ abstract class Hip3PublicMarket  {
   /// 来源于该场所权威产品元数据的结算资产，不从 symbol 猜测。
   @BuiltValueField(wireName: r'settlement_asset')
   String get settlementAsset;
+
+  /// 该 HIP-3 市场当前允许的最高杠杆倍数，来自 Hyperliquid DEX 产品元数据。 十进制字符串，正整数；仅用于市场列表/详情展示，可能随场所规则变化； 不表示当前账户杠杆，也不表示账户已获授权使用该倍数。开仓前必须以 最新 trading-context 的 rules.max_leverage 为准。 
+  @BuiltValueField(wireName: r'max_leverage')
+  String? get maxLeverage;
 
   @BuiltValueField(wireName: r'tradable')
   bool get tradable;
@@ -77,6 +82,13 @@ class _$Hip3PublicMarketSerializer implements PrimitiveSerializer<Hip3PublicMark
       object.settlementAsset,
       specifiedType: const FullType(String),
     );
+    if (object.maxLeverage != null) {
+      yield r'max_leverage';
+      yield serializers.serialize(
+        object.maxLeverage,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'tradable';
     yield serializers.serialize(
       object.tradable,
@@ -177,6 +189,14 @@ class _$$Hip3PublicMarketSerializer implements PrimitiveSerializer<$Hip3PublicMa
             specifiedType: const FullType(String),
           ) as String;
           result.settlementAsset = valueDes;
+          break;
+        case r'max_leverage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.maxLeverage = valueDes;
           break;
         case r'tradable':
           final valueDes = serializers.deserialize(

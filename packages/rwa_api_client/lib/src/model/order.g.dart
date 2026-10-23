@@ -94,6 +94,8 @@ const OrderCancellationReasonEnum
 const OrderCancellationReasonEnum
     _$orderCancellationReasonEnum_insufficientAllowance =
     const OrderCancellationReasonEnum._('insufficientAllowance');
+const OrderCancellationReasonEnum _$orderCancellationReasonEnum_expired =
+    const OrderCancellationReasonEnum._('expired');
 
 OrderCancellationReasonEnum _$orderCancellationReasonEnumValueOf(String name) {
   switch (name) {
@@ -103,6 +105,8 @@ OrderCancellationReasonEnum _$orderCancellationReasonEnumValueOf(String name) {
       return _$orderCancellationReasonEnum_insufficientBalance;
     case 'insufficientAllowance':
       return _$orderCancellationReasonEnum_insufficientAllowance;
+    case 'expired':
+      return _$orderCancellationReasonEnum_expired;
     default:
       throw ArgumentError(name);
   }
@@ -114,6 +118,7 @@ final BuiltSet<OrderCancellationReasonEnum>
   _$orderCancellationReasonEnum_userCancelled,
   _$orderCancellationReasonEnum_insufficientBalance,
   _$orderCancellationReasonEnum_insufficientAllowance,
+  _$orderCancellationReasonEnum_expired,
 ]);
 
 Serializer<OrderFundingModeEnum> _$orderFundingModeEnumSerializer =
@@ -243,11 +248,13 @@ class _$OrderCancellationReasonEnumSerializer
     'userCancelled': 'user_cancelled',
     'insufficientBalance': 'insufficient_balance',
     'insufficientAllowance': 'insufficient_allowance',
+    'expired': 'expired',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'user_cancelled': 'userCancelled',
     'insufficient_balance': 'insufficientBalance',
     'insufficient_allowance': 'insufficientAllowance',
+    'expired': 'expired',
   };
 
   @override

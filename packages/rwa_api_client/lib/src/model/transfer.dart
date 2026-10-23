@@ -51,6 +51,7 @@ part 'transfer.g.dart';
 /// * [walletActionReleasedAt] 
 /// * [planId] 
 /// * [legId] - Required by the server for a Transfer created from an `auto_multi_source` plan and null for legacy or single-source plans. Together with `plan_id`, it permanently identifies one leg. 
+/// * [targetReceivedAmount] - Current exact aggregate of distinct attributed target-credit events in target asset units. Not wallet availability, quoted amount, or merely the last event. Null/absent means unknown, never zero.
 /// * [source_] 
 /// * [provider] 
 /// * [refundStatus] 

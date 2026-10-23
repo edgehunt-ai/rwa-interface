@@ -57,13 +57,14 @@ part 'order.g.dart';
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [timeInForce] 
+/// * [expiresAt] - Optional immutable expiry of the GTC business order, in RFC3339 with whole-second precision. New previews/orders require a future instant; the backend normalizes it to UTC. Omitted/null means no expiry, including historical orders. Non-null is rejected for market/IOC. At or after this instant no GTC fill is permitted; cancellation does not require a price match. This is independent of preview expires_at and wallet authorization valid_until. 
 /// * [quantity] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [orderId] 
 /// * [currentActionId] 
 /// * [status] 
 /// * [requestedAmount] - 用户原始预算，仅预算买入时有值；不从已执行数量反推。
 /// * [fundingMode] 
-/// * [fundsReserved] 
+/// * [fundsReserved] - Current bStocks market, IOC and GTC orders all return false; multiple independent operations may reference the same actual wallet balance. Actual balance, allowance, freshness and duplicate-delivery checks still apply. Historical boolean values remain decodable and never authorize a new execution. 
 /// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] 
@@ -196,6 +197,8 @@ class OrderCancellationReasonEnum extends EnumClass {
   static const OrderCancellationReasonEnum insufficientBalance = _$orderCancellationReasonEnum_insufficientBalance;
   @BuiltValueEnumConst(wireName: r'insufficient_allowance')
   static const OrderCancellationReasonEnum insufficientAllowance = _$orderCancellationReasonEnum_insufficientAllowance;
+  @BuiltValueEnumConst(wireName: r'expired')
+  static const OrderCancellationReasonEnum expired = _$orderCancellationReasonEnum_expired;
 
   static Serializer<OrderCancellationReasonEnum> get serializer => _$orderCancellationReasonEnumSerializer;
 
