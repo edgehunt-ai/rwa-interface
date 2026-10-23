@@ -169,6 +169,8 @@ class _$Hip3RealtimeCandle extends Hip3RealtimeCandle {
   @override
   final String settlementAsset;
   @override
+  final String? maxLeverage;
+  @override
   final bool tradable;
   @override
   final String? unavailableReason;
@@ -194,6 +196,7 @@ class _$Hip3RealtimeCandle extends Hip3RealtimeCandle {
       required this.venue,
       required this.environment,
       required this.settlementAsset,
+      this.maxLeverage,
       required this.tradable,
       this.unavailableReason,
       required this.symbol,
@@ -222,6 +225,7 @@ class _$Hip3RealtimeCandle extends Hip3RealtimeCandle {
         venue == other.venue &&
         environment == other.environment &&
         settlementAsset == other.settlementAsset &&
+        maxLeverage == other.maxLeverage &&
         tradable == other.tradable &&
         unavailableReason == other.unavailableReason &&
         symbol == other.symbol &&
@@ -241,6 +245,7 @@ class _$Hip3RealtimeCandle extends Hip3RealtimeCandle {
     _$hash = $jc(_$hash, venue.hashCode);
     _$hash = $jc(_$hash, environment.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
+    _$hash = $jc(_$hash, maxLeverage.hashCode);
     _$hash = $jc(_$hash, tradable.hashCode);
     _$hash = $jc(_$hash, unavailableReason.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -262,6 +267,7 @@ class _$Hip3RealtimeCandle extends Hip3RealtimeCandle {
           ..add('venue', venue)
           ..add('environment', environment)
           ..add('settlementAsset', settlementAsset)
+          ..add('maxLeverage', maxLeverage)
           ..add('tradable', tradable)
           ..add('unavailableReason', unavailableReason)
           ..add('symbol', symbol)
@@ -314,6 +320,11 @@ class Hip3RealtimeCandleBuilder
   set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
+  String? _maxLeverage;
+  String? get maxLeverage => _$this._maxLeverage;
+  set maxLeverage(covariant String? maxLeverage) =>
+      _$this._maxLeverage = maxLeverage;
+
   bool? _tradable;
   bool? get tradable => _$this._tradable;
   set tradable(covariant bool? tradable) => _$this._tradable = tradable;
@@ -355,6 +366,7 @@ class Hip3RealtimeCandleBuilder
       _venue = $v.venue;
       _environment = $v.environment;
       _settlementAsset = $v.settlementAsset;
+      _maxLeverage = $v.maxLeverage;
       _tradable = $v.tradable;
       _unavailableReason = $v.unavailableReason;
       _symbol = $v.symbol;
@@ -401,6 +413,7 @@ class Hip3RealtimeCandleBuilder
                 environment, r'Hip3RealtimeCandle', 'environment'),
             settlementAsset: BuiltValueNullFieldError.checkNotNull(
                 settlementAsset, r'Hip3RealtimeCandle', 'settlementAsset'),
+            maxLeverage: maxLeverage,
             tradable: BuiltValueNullFieldError.checkNotNull(
                 tradable, r'Hip3RealtimeCandle', 'tradable'),
             unavailableReason: unavailableReason,

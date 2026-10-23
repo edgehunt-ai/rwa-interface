@@ -20,6 +20,8 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/account_avatar.dart';
+import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -47,6 +49,9 @@ class HomeScreen extends ConsumerWidget {
         : null;
     final portfolio = authenticated
         ? ref.watch(portfolioSummaryProvider)
+        : null;
+    final avatarUri = authenticated
+        ? ref.watch(accountProvider).value?.avatarUri
         : null;
     final portfolioValue = portfolio?.maybeWhen(
       data: (value) => value,
@@ -83,6 +88,7 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             children: [
               _UtilityBar(
+                avatarUri: avatarUri,
                 onSearch: () => context.pushNamed(AppRoutes.marketSearchName),
                 onSettings: authenticated
                     ? () => context.pushNamed(AppRoutes.settingsName)
@@ -155,8 +161,13 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class _UtilityBar extends StatelessWidget {
-  const _UtilityBar({required this.onSearch, this.onSettings});
+  const _UtilityBar({
+    required this.onSearch,
+    required this.avatarUri,
+    this.onSettings,
+  });
   final VoidCallback onSearch;
+  final Uri? avatarUri;
   final VoidCallback? onSettings;
   @override
   Widget build(BuildContext context) {
@@ -179,13 +190,9 @@ class _UtilityBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: colors.border),
-                  image: const DecorationImage(
-                    image: AssetImage(
-                      'assets/figma/home_markets/account_avatar.webp',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
                 ),
+                clipBehavior: Clip.antiAlias,
+                child: AccountAvatar(avatarUri: avatarUri),
               ),
             ),
           SizedBox(

@@ -1,4 +1,5 @@
 import '../models/order.dart';
+import '../models/api_failure.dart';
 import '../models/resource_result.dart';
 import '../models/domain_page.dart';
 import '../models/hip3_action_summary.dart';
@@ -25,8 +26,12 @@ final class Hip3ExecutionPending implements Exception {
     this.orderId,
     this.actionId, {
     this.requiresReview = false,
+    this.failure,
+    this.reason,
   });
   final String orderId;
   final String actionId;
   final bool requiresReview;
+  final ApiFailure? failure;
+  final String? reason;
 }

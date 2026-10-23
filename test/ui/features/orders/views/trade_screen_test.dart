@@ -19,6 +19,8 @@ import 'package:nobell/domain/models/deployment_environment.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
+import 'package:nobell/domain/models/trade_chart_marker.dart';
+import 'package:nobell/ui/features/orders/providers/trade_chart_marker_providers.dart';
 import 'package:nobell/domain/models/hip3_account_abstraction.dart';
 import 'package:nobell/domain/models/hip3_opening_context.dart';
 import 'package:nobell/domain/models/order.dart';
@@ -194,7 +196,7 @@ void main() {
     final marketSession = find.byType(MarketSessionBadge);
 
     expect(find.text('NVDA'), findsOneWidget);
-    expect(find.text('20x'), findsOneWidget);
+    expect(find.text('Max 20x'), findsOneWidget);
     expect(find.text('HIP-3 · XYZ'), findsOneWidget);
     expect(find.text('Overnight 04:30', findRichText: true), findsOneWidget);
     expect(find.descendant(of: header, matching: productType), findsOneWidget);
@@ -242,6 +244,701 @@ void main() {
     );
   });
 
+  testWidgets(
+    'spot markers show real buys and sells and toggle across chart styles',
+    (tester) async {
+      tester.view.physicalSize = const Size(375, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          markerChart: _markerChart(),
+          markerOrders: [
+            _markerOrder('buy', MarketProductKind.bstock, TradingSide.buy),
+            _markerOrder('sell', MarketProductKind.bstock, TradingSide.sell),
+            _markerOrder(
+              'outside',
+              MarketProductKind.bstock,
+              TradingSide.buy,
+              at: DateTime.utc(2026, 10, 19),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      final buy = find.byKey(const ValueKey('trade-chart-execution-buy:fill'));
+      final sell = find.byKey(
+        const ValueKey('trade-chart-execution-sell:fill'),
+      );
+      expect(buy, findsOneWidget);
+      expect(sell, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('trade-chart-execution-outside:fill')),
+        findsNothing,
+      );
+      expect(find.byTooltip('Hide markers'), findsOneWidget);
+      for (final style in ['Candlestick chart', 'US stock reference price']) {
+        await tester.tap(find.byTooltip(style));
+        await tester.pumpAndSettle();
+        expect(buy, findsOneWidget);
+        expect(sell, findsOneWidget);
+      }
+      await tester.tap(find.byTooltip('Hide markers'));
+      await tester.pumpAndSettle();
+      expect(buy, findsNothing);
+      expect(sell, findsNothing);
+      await tester.tap(find.text('4h'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Show markers'), findsOneWidget);
+      expect(buy, findsNothing);
+      await tester.tap(find.byTooltip('Show markers'));
+      await tester.pumpAndSettle();
+      expect(buy, findsOneWidget);
+      expect(sell, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'position updates replace live levels and closing preserves all execution markers',
+    (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final positions = [_markerPosition()];
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          initialKind: MarketProductKind.perp,
+          markerChart: _markerChart(includeProtectionRange: true),
+          markerPositions: positions,
+          markerOrders: [
+            _markerOrder(
+              'long',
+              MarketProductKind.perp,
+              TradingSide.long,
+              effect: 'open_long',
+            ),
+            _markerOrder(
+              'short',
+              MarketProductKind.perp,
+              TradingSide.short,
+              effect: 'close_short',
+            ),
+            _markerOrder(
+              'tp',
+              MarketProductKind.perp,
+              TradingSide.short,
+              role: 'takeProfit',
+            ),
+            _markerOrder(
+              'sl',
+              MarketProductKind.perp,
+              TradingSide.short,
+              role: 'stopLoss',
+            ),
+          ],
+          liquidations: TradeChartLiquidations(
+            markers: [
+              TradeChartExecutionMarker(
+                id: 'liq-event',
+                kind: TradeChartMarkerKind.liquidation,
+                at: DateTime.utc(2026, 10, 20, 10, 30),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final id in [
+        'long:fill',
+        'short:fill',
+        'tp:fill',
+        'sl:fill',
+        'liq-event',
+      ]) {
+        expect(
+          find.byKey(ValueKey('trade-chart-execution-$id')),
+          findsOneWidget,
+        );
+      }
+      final executionRects = [
+        for (final id in [
+          'long:fill',
+          'short:fill',
+          'tp:fill',
+          'sl:fill',
+          'liq-event',
+        ])
+          tester.getRect(find.byKey(ValueKey('trade-chart-execution-$id'))),
+      ];
+      for (var i = 0; i < executionRects.length; i++) {
+        for (var j = i + 1; j < executionRects.length; j++) {
+          expect(executionRects[i].overlaps(executionRects[j]), isFalse);
+        }
+      }
+      expect(find.text('TP 110'), findsOneWidget);
+      expect(find.text('SL 90'), findsOneWidget);
+      expect(find.text('Liq 60'), findsOneWidget);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TradeScreen)),
+      );
+      positions
+        ..clear()
+        ..add(_markerPosition(tp: '115', sl: null, liq: '65'));
+      container.invalidate(tradeChartPositionsProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('TP 110'), findsNothing);
+      expect(find.text('SL 90'), findsNothing);
+      expect(find.text('TP 115'), findsOneWidget);
+      expect(find.text('Liq 65'), findsOneWidget);
+      positions.clear();
+      container.invalidate(tradeChartPositionsProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('TP 115'), findsNothing);
+      expect(find.text('Liq 65'), findsNothing);
+      for (final id in [
+        'long:fill',
+        'short:fill',
+        'tp:fill',
+        'sl:fill',
+        'liq-event',
+      ]) {
+        expect(
+          find.byKey(ValueKey('trade-chart-execution-$id')),
+          findsOneWidget,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'live levels ignore time windows while execution history follows the selected range',
+    (tester) async {
+      final positions = [
+        _markerPosition(
+          tp: '103',
+          sl: '101',
+          liq: '100',
+          updatedAt: DateTime.utc(2025),
+        ),
+      ];
+      final end = DateTime.utc(2026, 10, 20, 11);
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          initialKind: MarketProductKind.perp,
+          markerPositions: positions,
+          markerChartForRange: (range) {
+            final duration = switch (range) {
+              CandleChartRange.oneHour => const Duration(hours: 1),
+              CandleChartRange.fourHours => const Duration(hours: 4),
+              CandleChartRange.oneDay => const Duration(days: 1),
+              CandleChartRange.oneWeek => const Duration(days: 7),
+            };
+            final start = end.subtract(duration);
+            return CandleChart(
+              symbol: 'NVDA',
+              range: range.label,
+              from: start,
+              to: end,
+              points: [
+                for (var i = 0; i <= 4; i++)
+                  Candle(
+                    at: start.add(
+                      Duration(microseconds: duration.inMicroseconds * i ~/ 4),
+                    ),
+                    close: DecimalValue('${100 + i}', unit: 'price'),
+                  ),
+              ],
+            );
+          },
+          markerOrders: [
+            _markerOrder(
+              'recent',
+              MarketProductKind.perp,
+              TradingSide.long,
+              effect: 'open_long',
+            ),
+            _markerOrder(
+              'older-tp',
+              MarketProductKind.perp,
+              TradingSide.short,
+              role: 'takeProfit',
+              at: DateTime.utc(2026, 10, 17, 12),
+            ),
+          ],
+          liquidations: TradeChartLiquidations(
+            markers: [
+              TradeChartExecutionMarker(
+                id: 'older-liq',
+                kind: TradeChartMarkerKind.liquidation,
+                at: DateTime.utc(2026, 10, 17, 12),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final range in ['1h', '4h', '1d', '1w', '1h']) {
+        await tester.tap(find.text(range));
+        await tester.pumpAndSettle();
+        for (final label in ['TP 103', 'SL 101', 'Liq 100']) {
+          expect(
+            find.text(label),
+            findsOneWidget,
+            reason:
+                'Active levels must ignore position age and chart time range',
+          );
+        }
+        expect(
+          find.byKey(const ValueKey('trade-chart-execution-recent:fill')),
+          findsOneWidget,
+        );
+        for (final id in ['older-tp:fill', 'older-liq']) {
+          expect(
+            find.byKey(ValueKey('trade-chart-execution-$id')),
+            range == '1w' ? findsOneWidget : findsNothing,
+          );
+        }
+      }
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TradeScreen)),
+      );
+      positions
+        ..clear()
+        ..add(_markerPosition(tp: '267.22', sl: '90', liq: '60'));
+      container.invalidate(tradeChartPositionsProvider);
+      await tester.pumpAndSettle();
+      for (final label in ['TP 267.22', 'SL 90', 'Liq 60']) {
+        expect(
+          find.text(label),
+          findsNothing,
+          reason: 'Out-of-range levels must not change the price axis',
+        );
+      }
+      expect(
+        find.byKey(const ValueKey('trade-chart-execution-recent:fill')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'linear market range has 20 percent padding and counts outside levels across styles',
+    (tester) async {
+      tester.view.physicalSize = const Size(375, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final positions = [_markerPosition()];
+      var wide = false;
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          initialKind: MarketProductKind.perp,
+          markerChartForRange: (range) => _markerChart(
+            includeProtectionRange: wide || range == CandleChartRange.fourHours,
+          ),
+          markerPositions: positions,
+          markerOrders: [
+            _markerOrder(
+              'long',
+              MarketProductKind.perp,
+              TradingSide.long,
+              effect: 'open_long',
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TradeScreen)),
+      );
+      for (final entry in [
+        ('Line chart', 'trade-chart-line-painter'),
+        ('Candlestick chart', 'trade-chart-candle-painter'),
+        ('US stock reference price', 'trade-chart-reference-painter'),
+      ]) {
+        await tester.tap(find.byTooltip(entry.$1));
+        await tester.tap(find.text('1h'));
+        await tester.pumpAndSettle();
+        final dynamic painter = tester
+            .widget<CustomPaint>(find.byKey(Key(entry.$2)))
+            .painter;
+        final dynamic scale = painter.scale;
+        expect(scale.minimum, closeTo(99.2, .000001));
+        expect(scale.maximum, closeTo(104.8, .000001));
+        expect(
+          (scale.y(100.0, 142.0) as double) - (scale.y(102.0, 142.0) as double),
+          closeTo(
+            (scale.y(102.0, 142.0) as double) -
+                (scale.y(104.0, 142.0) as double),
+            .000001,
+          ),
+        );
+        expect(find.text('3 TP/SL/Liq off-chart'), findsOneWidget);
+        final plot = tester.getRect(find.byKey(const Key('trade-chart-plot')));
+        final badge = tester.getRect(
+          find.byKey(const Key('trade-chart-outside-levels')),
+        );
+        expect(badge.bottom, closeTo(plot.bottom, .001));
+        expect(badge.center.dx, closeTo(plot.center.dx, .001));
+        expect(badge.height, closeTo(14, .001));
+        expect(plot.contains(badge.topLeft), isTrue);
+        expect(plot.contains(badge.center), isTrue);
+        final hint = tester.widget<Text>(
+          find.byKey(const Key('trade-chart-outside-levels')),
+        );
+        expect(hint.textAlign, TextAlign.center);
+        expect(hint.style?.fontSize, 10);
+        expect(hint.style?.fontWeight, FontWeight.w400);
+        final execution = tester.getRect(
+          find.byKey(const ValueKey('trade-chart-execution-long:fill')),
+        );
+        expect(execution.overlaps(badge), isFalse);
+        for (final role in ['tp', 'sl', 'liq']) {
+          expect(
+            find.byKey(
+              ValueKey('trade-chart-level-line-marker-position:$role'),
+            ),
+            findsNothing,
+          );
+        }
+        for (final label in ['TP 110', 'SL 90', 'Liq 60']) {
+          expect(find.text(label), findsNothing);
+        }
+        expect(
+          find.byKey(const ValueKey('trade-chart-execution-long:fill')),
+          findsOneWidget,
+        );
+        await tester.tap(find.byTooltip('Hide markers'));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('trade-chart-outside-levels')),
+          findsNothing,
+        );
+        await tester.tap(find.byTooltip('Show markers'));
+        await tester.pumpAndSettle();
+        expect(find.text('3 TP/SL/Liq off-chart'), findsOneWidget);
+        await tester.tap(find.text('4h'));
+        await tester.pumpAndSettle();
+        final dynamic wider = tester
+            .widget<CustomPaint>(find.byKey(Key(entry.$2)))
+            .painter;
+        expect(wider.scale.minimum, 36);
+        expect(wider.scale.maximum, 134);
+        expect(
+          find.byKey(const Key('trade-chart-outside-levels')),
+          findsNothing,
+        );
+        for (final label in ['TP 110', 'SL 90', 'Liq 60']) {
+          expect(find.text(label), findsOneWidget);
+        }
+      }
+      await tester.tap(find.text('1h'));
+      await tester.pumpAndSettle();
+      // The same selected period gains lines automatically after market refresh.
+      wide = true;
+      container.invalidate(marketCandlesProvider);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('trade-chart-outside-levels')), findsNothing);
+      expect(find.text('TP 110'), findsOneWidget);
+      wide = false;
+      container.invalidate(marketCandlesProvider);
+      positions
+        ..clear()
+        ..add(_markerPosition(tp: '104.8', sl: '99.2', liq: '99.19'));
+      container.invalidate(tradeChartPositionsProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('TP 104.8'), findsOneWidget);
+      expect(find.text('SL 99.2'), findsOneWidget);
+      expect(find.text('Liq 99.19'), findsNothing);
+      expect(find.text('1 Liq off-chart'), findsOneWidget);
+      positions.clear();
+      container.invalidate(tradeChartPositionsProvider);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('trade-chart-outside-levels')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('trade-chart-execution-long:fill')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('trade-chart-price-scale-toggle')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('trade-chart-compressed-prices')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final locale in [const Locale('en'), const Locale('zh')]) {
+    testWidgets(
+      'low executions avoid off-chart text in ${locale.languageCode}',
+      (tester) async {
+        tester.view.physicalSize = const Size(375, 852);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final positions = [_markerPosition()];
+        await tester.pumpWidget(
+          _tradeWithMarkets(
+            locale: locale,
+            initialKind: MarketProductKind.perp,
+            markerChart: _markerChart(),
+            markerPositions: positions,
+            markerOrders: [
+              _markerOrder(
+                'edge',
+                MarketProductKind.perp,
+                TradingSide.short,
+                effect: 'open_short',
+                fillPrice: '100',
+                at: DateTime.utc(2026, 10, 20, 10),
+              ),
+              _markerOrder(
+                'low-short',
+                MarketProductKind.perp,
+                TradingSide.short,
+                effect: 'open_short',
+                fillPrice: '100',
+              ),
+              _markerOrder(
+                'low-sl',
+                MarketProductKind.perp,
+                TradingSide.short,
+                role: 'stopLoss',
+                fillPrice: '100',
+                at: DateTime.utc(2026, 10, 20, 10, 30),
+              ),
+            ],
+            liquidations: TradeChartLiquidations(
+              markers: [
+                TradeChartExecutionMarker(
+                  id: 'low-liq',
+                  kind: TradeChartMarkerKind.liquidation,
+                  at: DateTime.utc(2026, 10, 20, 10, 35),
+                  price: DecimalValue('100', unit: 'price'),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final styles = locale.languageCode == 'en'
+            ? ['Line chart', 'Candlestick chart', 'US stock reference price']
+            : ['折线图', 'K 线图', '美股参考价格'];
+        for (final style in styles) {
+          await tester.tap(find.byTooltip(style));
+          await tester.pumpAndSettle();
+          final plot = tester.getRect(
+            find.byKey(const Key('trade-chart-plot')),
+          );
+          final hint = find.byKey(const Key('trade-chart-outside-levels'));
+          final dynamic paragraph = tester.renderObject(hint);
+          final text = tester.widget<Text>(hint).data!;
+          final dynamic boxes = paragraph.getBoxesForSelection(
+            TextSelection(baseOffset: 0, extentOffset: text.length),
+          );
+          final textRect = (boxes.first.toRect() as Rect).shift(
+            tester.getTopLeft(hint),
+          );
+          expect(textRect.bottom, lessThanOrEqualTo(plot.bottom));
+          for (final id in ['low-short:fill', 'low-sl:fill', 'low-liq']) {
+            final marker = tester.getRect(
+              find.byKey(ValueKey('trade-chart-execution-$id')),
+            );
+            expect(
+              marker.overlaps(textRect),
+              isFalse,
+              reason: '$id overlaps off-chart text',
+            );
+            expect(marker.top, greaterThanOrEqualTo(plot.top));
+            expect(marker.bottom, lessThanOrEqualTo(plot.bottom));
+          }
+          final edge = tester.getRect(
+            find.byKey(const ValueKey('trade-chart-execution-edge:fill')),
+          );
+          expect(edge.top, closeTo(plot.top + plot.height * 6 / 7, .001));
+        }
+        positions.clear();
+        ProviderScope.containerOf(tester.element(find.byType(TradeScreen)))
+            .invalidate(tradeChartPositionsProvider);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('trade-chart-outside-levels')),
+          findsNothing,
+        );
+        final plot = tester.getRect(find.byKey(const Key('trade-chart-plot')));
+        final marker = tester.getRect(
+          find.byKey(const ValueKey('trade-chart-execution-low-short:fill')),
+        );
+        expect(marker.top, closeTo(plot.top + plot.height * 6 / 7, .001));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('flat candle series keeps a finite linear price axis', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        markerChart: CandleChart(
+          symbol: 'NVDA',
+          range: '1h',
+          points: [
+            for (var i = 0; i < 3; i++)
+              Candle(
+                at: DateTime.utc(2026, 10, 20, 10, i),
+                close: DecimalValue('100'),
+              ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final dynamic painter = tester
+        .widget<CustomPaint>(find.byKey(const Key('trade-chart-line-painter')))
+        .painter;
+    expect(painter.scale.minimum, lessThan(100));
+    expect(painter.scale.maximum, greaterThan(100));
+    expect(painter.scale.y(100.0, 142.0), closeTo(71, .000001));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'position refresh keeps live lines through loading and errors until closure is confirmed',
+    (tester) async {
+      final repository = _RefreshingMarkerPositionsRepository([
+        _markerPosition(),
+      ]);
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          initialKind: MarketProductKind.perp,
+          markerChart: _markerChart(includeProtectionRange: true),
+          positionsRepository: repository,
+          useRealMarkerPositions: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TradeScreen)),
+      );
+      const query = (
+        product: MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
+        productId: 'xyz:NVDA',
+      );
+      final dynamic initialPainter = tester
+          .widget<CustomPaint>(
+            find.byKey(const Key('trade-chart-line-painter')),
+          )
+          .painter;
+      final initialMinimum = initialPainter.scale.minimum as double;
+      final initialMaximum = initialPainter.scale.maximum as double;
+      void expectLevels() {
+        final dynamic painter = tester
+            .widget<CustomPaint>(
+              find.byKey(const Key('trade-chart-line-painter')),
+            )
+            .painter;
+        expect(painter.scale.minimum, initialMinimum);
+        expect(painter.scale.maximum, initialMaximum);
+        for (final label in ['TP 110', 'SL 90', 'Liq 60']) {
+          expect(find.text(label), findsOneWidget);
+        }
+        expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+      }
+
+      expectLevels();
+      final delayed = Completer<DomainPage<Position>>();
+      repository.pending = delayed.future;
+      container.invalidate(positionsProvider);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        container.read(tradeChartPositionsProvider(query)).isLoading,
+        isTrue,
+      );
+      expectLevels();
+      delayed.completeError(
+        const ServerFailure(
+          statusCode: 503,
+          code: 'positions_unavailable',
+          failureReason: 'Venue position data is temporarily unavailable',
+        ),
+      );
+      // The shared positions provider retries transient failures before
+      // exposing the final error to the chart's dependent provider.
+      for (var retry = 0; retry < 11; retry++) {
+        await tester.pump(const Duration(seconds: 10));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expect(
+        container.read(tradeChartPositionsProvider(query)).hasError,
+        isTrue,
+      );
+      expectLevels();
+      expect(
+        find.text('Venue position data is temporarily unavailable'),
+        findsWidgets,
+      );
+      final retry = Completer<DomainPage<Position>>();
+      repository.pending = retry.future;
+      container.invalidate(positionsProvider);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expectLevels();
+      retry.complete(const DomainPage(items: <Position>[]));
+      await tester.pumpAndSettle();
+      for (final label in ['TP 110', 'SL 90', 'Liq 60']) {
+        expect(find.text(label), findsNothing);
+      }
+      expect(container.read(tradeChartPositionsProvider(query)).value, isEmpty);
+      expect(find.byKey(const Key('trade-chart-line-painter')), findsOneWidget);
+      expect(
+        find.byKey(const Key('trade-chart-markers-feedback')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'marker failure preserves the API reason without blocking the chart',
+    (tester) async {
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          markerChart: _markerChart(),
+          markerError: const ServerFailure(
+            statusCode: 503,
+            code: 'trade_history_unavailable',
+            failureReason: 'Venue trade history is temporarily unavailable',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Venue trade history is temporarily unavailable'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('trade-chart-line-painter')), findsOneWidget);
+      await tester.tap(find.byTooltip('Hide markers'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('trade-chart-markers-feedback')),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('trade-chart-line-painter')), findsOneWidget);
+    },
+  );
+
   for (final scenario in ['missing stock', 'empty lookup', 'failed lookup']) {
     testWidgets('HIP-3 header retains metadata with $scenario', (tester) async {
       await tester.pumpWidget(
@@ -260,7 +957,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('NVDA'), findsOneWidget);
-      expect(find.text('20x'), findsOneWidget);
+      expect(find.text('Max 20x'), findsOneWidget);
       expect(find.text('HIP-3 · XYZ'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -610,6 +1307,68 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
   });
+
+  testWidgets(
+    'background refresh keeps existing chart and prices until new data arrives',
+    (tester) async {
+      const product = MarketProductRef(
+        symbol: 'NVDAB',
+        kind: MarketProductKind.bstock,
+      );
+      const chartQuery = (product: product, range: CandleChartRange.oneHour);
+      final chartRefresh = Completer<CandleChart>();
+      final snapshotRefresh = Completer<MarketSnapshot>();
+      var chartCalls = 0;
+      var snapshotCalls = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketCandlesProvider(chartQuery).overrideWith((_) async {
+              chartCalls++;
+              return chartCalls == 1
+                  ? _interactiveChart(product.symbol)
+                  : chartRefresh.future;
+            }),
+            marketSnapshotProvider(product).overrideWith((_) async {
+              snapshotCalls++;
+              return snapshotCalls == 1
+                  ? MarketSnapshot(price: DecimalValue('100'))
+                  : snapshotRefresh.future;
+            }),
+          ],
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TradeScreen)),
+      );
+      container.invalidate(marketCandlesProvider(chartQuery));
+      container.invalidate(marketSnapshotProvider(product));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(chartCalls, 2);
+      expect(snapshotCalls, 2);
+      expect(
+        container.read(marketCandlesProvider(chartQuery)).isLoading,
+        isTrue,
+      );
+      expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+      expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
+      expect(
+        find.byKey(const Key('trade-details-price-skeleton')),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('trade-chart-line-painter')), findsOneWidget);
+      expect(_headerPrice(r'$100'), findsOneWidget);
+      chartRefresh.complete(_chart(product.symbol, CandleChartRange.oneHour));
+      snapshotRefresh.complete(MarketSnapshot(price: DecimalValue('101')));
+      await tester.pumpAndSettle();
+      expect(_headerPrice(r'$101'), findsOneWidget);
+      expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('Trade tooltip shows history while header keeps latest quote', (
     tester,
@@ -1465,10 +2224,6 @@ void main() {
       '3.0154',
       'Market Price',
       r'$228.71',
-      'Available',
-      '2.0154',
-      'Unavailable',
-      '1',
       'Withdraw',
     ]) {
       expect(find.text(text), findsOneWidget);
@@ -1485,6 +2240,8 @@ void main() {
       ),
       findsWidgets,
     );
+    expect(find.text('Available'), findsNothing);
+    expect(find.text('Unavailable'), findsNothing);
     expect(find.text('Token position'), findsNothing);
     expect(find.text('Close'), findsNothing);
     expect(find.text('Edit TP/SL'), findsNothing);
@@ -1512,43 +2269,6 @@ void main() {
     expect(find.text('-0.0000123457%'), findsOneWidget);
     expect(find.text(r'$-0.00'), findsNothing);
     expect(find.text('-0.00%'), findsNothing);
-  });
-
-  testWidgets('Trade bStocks availability uses skeletons while loading', (
-    tester,
-  ) async {
-    final availabilityGate = Completer<void>();
-    addTearDown(() {
-      if (!availabilityGate.isCompleted) availabilityGate.complete();
-    });
-    await tester.pumpWidget(
-      _tradeWithMarkets(
-        locale: const Locale('en'),
-        positionsRepository: _PositionsRepository(),
-        portfolioRepository: _BstocksPositionPortfolioRepository(
-          availabilityGate: availabilityGate,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await _scrollToTradeTab(tester, 'Position');
-    await tester.tap(_tradeTab('Position'));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('bstocks-available-loading')), findsOneWidget);
-    expect(
-      find.byKey(const Key('bstocks-unavailable-loading')),
-      findsOneWidget,
-    );
-    expect(find.text('0'), findsNothing);
-
-    availabilityGate.complete();
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('bstocks-available-loading')), findsNothing);
-    expect(find.byKey(const Key('bstocks-unavailable-loading')), findsNothing);
-    expect(find.text('2.0154'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
   });
 
   testWidgets(
@@ -1951,17 +2671,12 @@ Position _position(
 
 final class _BstocksPositionPortfolioRepository
     implements PortfolioRepository, PortfolioAssetsRepository {
-  _BstocksPositionPortfolioRepository({this.availabilityGate});
-
-  final Completer<void>? availabilityGate;
-
   @override
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
     String? account,
   }) async {
-    await availabilityGate?.future;
     return [
       PortfolioAsset(
         assetId: 'portfolio-nvdab',
@@ -2069,8 +2784,28 @@ Widget _tradeWithMarkets({
   MarketProductKind initialKind = MarketProductKind.bstock,
   Hip3OpeningContext? hip3OpeningContext,
   Hip3OrderExecutionRepository? hip3ExecutionRepository,
+  List<TradingOrder> markerOrders = const [],
+  List<Position> markerPositions = const [],
+  bool useRealMarkerPositions = false,
+  TradeChartLiquidations liquidations = const TradeChartLiquidations(),
+  CandleChart? markerChart,
+  CandleChart Function(CandleChartRange)? markerChartForRange,
+  Object? markerError,
 }) => ProviderScope(
   overrides: [
+    tradeChartMarkerRefreshProvider.overrideWith((_, _) {}),
+    tradeChartOrdersProvider.overrideWith((_, _) async {
+      if (markerError != null) throw markerError;
+      return markerOrders;
+    }),
+    if (!useRealMarkerPositions)
+      tradeChartPositionsProvider.overrideWith((_, _) async => markerPositions),
+    tradeChartLiquidationsProvider.overrideWith((_, _) async => liquidations),
+    if (markerChart != null || markerChartForRange != null)
+      marketCandlesProvider.overrideWith(
+        (_, query) async =>
+            markerChartForRange?.call(query.range) ?? markerChart!,
+      ),
     authenticatedStateOverride,
     bstocksSettlementTokenProvider.overrideWith(
       (_) async => _testSettlementToken,
@@ -2796,6 +3531,99 @@ final class _ResultNavigationPositionsRepository
           : const [],
     );
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+CandleChart _markerChart({bool includeProtectionRange = false}) => CandleChart(
+  symbol: 'NVDA',
+  range: '1h',
+  from: DateTime.utc(2026, 10, 20, 10),
+  to: DateTime.utc(2026, 10, 20, 11),
+  points: [
+    for (var index = 0; index <= 4; index++)
+      Candle(
+        at: DateTime.utc(2026, 10, 20, 10, index * 15),
+        close: DecimalValue('${100 + index}'),
+        low: includeProtectionRange ? DecimalValue('50') : null,
+        high: includeProtectionRange ? DecimalValue('120') : null,
+      ),
+  ],
+);
+
+TradingOrder _markerOrder(
+  String id,
+  MarketProductKind kind,
+  TradingSide side, {
+  String? effect,
+  String? role,
+  DateTime? at,
+  String fillPrice = '102.5',
+}) => TradingOrder(
+  orderId: id,
+  symbol: kind == MarketProductKind.perp ? 'NVDA' : 'NVDAB',
+  productId: kind == MarketProductKind.perp ? 'xyz:NVDA' : null,
+  kind: kind,
+  side: side,
+  type: TradingOrderType.market,
+  status: TradingOrderStatus.filled,
+  createdAt: DateTime.utc(2026, 10, 20, 9),
+  conditional: role == null
+      ? null
+      : ConditionalOrder(
+          role: role,
+          triggerPrice: DecimalValue('102'),
+          triggerStatus: 'triggered',
+          executionType: 'market',
+          sizeMode: 'quantity',
+          quantity: '1',
+          triggerReference: 'mark',
+        ),
+  fills: [
+    TradingOrderFill(
+      id: 'fill',
+      price: DecimalValue(fillPrice, unit: 'price'),
+      quantity: DecimalValue('1', unit: 'quantity'),
+      positionEffect: effect,
+      executedAt: at ?? DateTime.utc(2026, 10, 20, 10, 25),
+    ),
+  ],
+);
+
+Position _markerPosition({
+  String tp = '110',
+  String? sl = '90',
+  String liq = '60',
+  DateTime? updatedAt,
+}) => Position(
+  positionId: 'marker-position',
+  updatedAt: updatedAt,
+  symbol: 'NVDA',
+  productId: 'xyz:NVDA',
+  kind: MarketProductKind.perp,
+  side: PositionSide.long,
+  quantity: DecimalValue('1', unit: 'quantity'),
+  valueUsd: DecimalValue('100'),
+  takeProfitPrice: DecimalValue(tp, asset: 'USDC', unit: 'price'),
+  stopLossPrice: sl == null
+      ? null
+      : DecimalValue(sl, asset: 'USDC', unit: 'price'),
+  liquidationPrice: DecimalValue(liq, asset: 'USDC', unit: 'price'),
+);
+
+final class _RefreshingMarkerPositionsRepository
+    implements PositionsRepository {
+  _RefreshingMarkerPositionsRepository(this.initial);
+  final List<Position> initial;
+  Future<DomainPage<Position>>? pending;
+
+  @override
+  Future<DomainPage<Position>> list({
+    String? symbol,
+    MarketProductKind? kind,
+    String? cursor,
+  }) async => pending ?? DomainPage(items: initial);
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

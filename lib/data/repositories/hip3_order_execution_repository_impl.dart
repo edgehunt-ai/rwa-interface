@@ -20,13 +20,16 @@ final class Hip3OrderExecutionRepositoryImpl
     this._service, {
     DateTime Function()? now,
     Future<void> Function(Duration)? delay,
+    bool Function()? isCancelled,
   }) : _now = now ?? DateTime.now,
-       _delay = delay ?? Future<void>.delayed;
+       _delay = delay ?? Future<void>.delayed,
+       _isCancelled = isCancelled ?? (() => false);
 
   final Hip3TypedDataSigner _signer;
   final Hip3OrderActionService _service;
   final DateTime Function() _now;
   final Future<void> Function(Duration) _delay;
+  final bool Function() _isCancelled;
   final Map<String, Hip3RsvSignature> _signatures = {};
   final Map<String, Future<ResourceResult<TradingOrder>>> _inFlight = {};
 
@@ -76,6 +79,7 @@ final class Hip3OrderExecutionRepositoryImpl
       try {
         api.Hip3Action? action;
         for (var attempt = 0; attempt < 30; attempt++) {
+          if (_isCancelled()) throw const CancelledFailure();
           try {
             action = cancel
                 ? await _service.createCancelOrderAction(
@@ -103,7 +107,10 @@ final class Hip3OrderExecutionRepositoryImpl
           );
         }
         var current = action;
-        for (var attempt = 0; attempt < 30; attempt++) {
+        // Cancellation belongs to the session, not the currently visible tab.
+        // Keep querying until a final result, review state, or query failure.
+        for (var attempt = 0; cancel || attempt < 30; attempt++) {
+          if (_isCancelled()) throw const CancelledFailure();
           if (current.orderId != orderId ||
               current.operation != (cancel ? 'cancel_order' : 'place_order')) {
             throw const Hip3SigningFailure(
@@ -120,6 +127,7 @@ final class Hip3OrderExecutionRepositoryImpl
               orderId,
               current.actionId,
               requiresReview: true,
+              reason: current.failureReason,
             );
           }
           _throwIfTerminal(current);
@@ -174,7 +182,11 @@ final class Hip3OrderExecutionRepositoryImpl
               } on ApiFailure catch (failure) {
                 if (!_transient(failure)) rethrow;
                 if (retry == 2) {
-                  throw Hip3ExecutionPending(orderId, current.actionId);
+                  throw Hip3ExecutionPending(
+                    orderId,
+                    current.actionId,
+                    failure: failure,
+                  );
                 }
               }
             }

@@ -727,6 +727,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takeProfitStopLossTitle => 'Take Profit & stop loss';
 
   @override
+  String get tpSlWin => 'Win';
+
+  @override
+  String get tpSlLoss => 'Loss';
+
+  @override
   String get change => 'Change';
 
   @override
@@ -1285,6 +1291,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hip3Perps => 'HIP-3 Perps';
+
+  @override
+  String marketMaxLeverage(Object leverage) {
+    return 'Max ${leverage}x';
+  }
 
   @override
   String openTradeDetails(Object symbol) {
@@ -1932,6 +1943,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelling => 'Cancelling…';
+
+  @override
+  String get cancellationStatusUnavailable =>
+      'Unable to query the cancellation result because of a network or service error. Refresh the order to check its status.';
+
+  @override
+  String get cancellationStatusTimedOut =>
+      'The cancellation status query timed out. Refresh the order to check its status.';
+
+  @override
+  String get cancellationStatusNetworkError =>
+      'Unable to query the cancellation result because of a network connection error. Check your connection and refresh the order.';
+
+  @override
+  String get cancellationRequiresReview =>
+      'This cancellation requires manual review. Check pending actions for updates.';
 
   @override
   String get cancellationPending =>
@@ -2892,4 +2919,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewDemoFundsAdded => '1,000 USDC added to your demo balance';
+
+  @override
+  String get tradeMarkers => 'Markers';
+
+  @override
+  String get hideTradeMarkers => 'Hide markers';
+
+  @override
+  String get showTradeMarkers => 'Show markers';
+
+  @override
+  String get tradeMarkersUnavailable =>
+      'Trade markers are temporarily unavailable.';
+
+  @override
+  String get liquidationHistoryPartial =>
+      'Some liquidation history is unavailable.';
+
+  @override
+  String tradeChartOutsideRange(int count, String types) {
+    return '$count $types off-chart';
+  }
 }

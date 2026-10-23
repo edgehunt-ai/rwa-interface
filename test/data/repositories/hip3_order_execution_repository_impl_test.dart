@@ -9,6 +9,108 @@ import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart'
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
+  test(
+    'cancellation keeps polling beyond 30 rounds until it succeeds',
+    () async {
+      final service = _Service(
+        createdAction: _action(status: 'ambiguous', operation: 'cancel_order'),
+        fetchedActions: [
+          ...List.generate(
+            40,
+            (_) => _action(status: 'ambiguous', operation: 'cancel_order'),
+          ),
+          _action(status: 'succeeded', operation: 'cancel_order'),
+        ],
+      );
+      await Hip3OrderExecutionRepositoryImpl(
+        _Signer(),
+        service,
+        delay: (_) async {},
+      ).cancelOrder('order-1', idempotencyKey: 'cancel-key');
+      expect(service.getActionCalls, 41);
+      expect(service.getOrderCalls, 1);
+      expect(service.createCalls, 1);
+      expect(service.submitCalls, 0);
+    },
+  );
+
+  test('cancellation stops when its owning session is disposed', () async {
+    var cancelled = false;
+    final service = _Service(
+      createdAction: _action(status: 'ambiguous', operation: 'cancel_order'),
+      fetchedActions: [_action(status: 'ambiguous', operation: 'cancel_order')],
+    );
+    await expectLater(
+      Hip3OrderExecutionRepositoryImpl(
+        _Signer(),
+        service,
+        delay: (_) async => cancelled = true,
+        isCancelled: () => cancelled,
+      ).cancelOrder('order-1', idempotencyKey: 'cancel-key'),
+      throwsA(isA<CancelledFailure>()),
+    );
+    expect(service.getActionCalls, 1);
+  });
+
+  test(
+    'cancellation query exhaustion preserves the underlying failure',
+    () async {
+      const failure = ServerFailure(
+        statusCode: 503,
+        code: 'venue_unavailable',
+        failureReason: 'Venue status service is unavailable',
+        retryable: true,
+      );
+      final service = _Service(
+        createdAction: _action(status: 'ambiguous', operation: 'cancel_order'),
+        queryFailure: failure,
+      );
+      await expectLater(
+        Hip3OrderExecutionRepositoryImpl(
+          _Signer(),
+          service,
+          delay: (_) async {},
+        ).cancelOrder('order-1', idempotencyKey: 'cancel-key'),
+        throwsA(
+          isA<Hip3ExecutionPending>()
+              .having((e) => e.requiresReview, 'requires review', isFalse)
+              .having((e) => e.failure, 'underlying failure', same(failure)),
+        ),
+      );
+      expect(service.getActionCalls, 4);
+    },
+  );
+
+  test(
+    'manual review preserves its reason without continuing to poll',
+    () async {
+      final service = _Service(
+        createdAction: _action(
+          status: 'manual_review',
+          operation: 'cancel_order',
+          actionFailureReason: 'Venue acknowledgement needs review',
+        ),
+      );
+      await expectLater(
+        Hip3OrderExecutionRepositoryImpl(
+          _Signer(),
+          service,
+          delay: (_) async {},
+        ).cancelOrder('order-1', idempotencyKey: 'cancel-key'),
+        throwsA(
+          isA<Hip3ExecutionPending>()
+              .having((e) => e.requiresReview, 'requires review', isTrue)
+              .having(
+                (e) => e.reason,
+                'reason',
+                'Venue acknowledgement needs review',
+              ),
+        ),
+      );
+      expect(service.getActionCalls, 0);
+    },
+  );
+
   test('cancel uses an independently signed cancellation workflow', () async {
     final service = _Service(
       createdAction: _action(signable: true, operation: 'cancel_order'),
@@ -422,6 +524,7 @@ final class _Service implements Hip3OrderActionService {
     this._submittedActions = const [],
     this.notReadyAttempts = 0,
     this.submitTimeout = false,
+    this.queryFailure,
   });
 
   final api.Hip3Action createdAction;
@@ -429,6 +532,7 @@ final class _Service implements Hip3OrderActionService {
   final List<api.Hip3Action> _submittedActions;
   final int notReadyAttempts;
   final bool submitTimeout;
+  final ApiFailure? queryFailure;
   @override
   Future<api.Hip3Action> createCancelOrderAction({
     required String orderId,
@@ -462,6 +566,10 @@ final class _Service implements Hip3OrderActionService {
 
   @override
   Future<api.Hip3Action> getAction(String actionId) async {
+    if (queryFailure case final failure?) {
+      getActionCalls++;
+      throw failure;
+    }
     final index = getActionCalls.clamp(0, _fetchedActions.length - 1).toInt();
     getActionCalls++;
     return _fetchedActions[index];

@@ -17,6 +17,8 @@ class _$UserSettingsUpdate extends UserSettingsUpdate {
   final bool? notifyOrderFailed;
   @override
   final bool? notifyLiquidationWarning;
+  @override
+  final bool? notifyDepositCredited;
 
   factory _$UserSettingsUpdate(
           [void Function(UserSettingsUpdateBuilder)? updates]) =>
@@ -27,7 +29,8 @@ class _$UserSettingsUpdate extends UserSettingsUpdate {
       this.pushEnabled,
       this.notifyOrderFilled,
       this.notifyOrderFailed,
-      this.notifyLiquidationWarning})
+      this.notifyLiquidationWarning,
+      this.notifyDepositCredited})
       : super._();
   @override
   UserSettingsUpdate rebuild(
@@ -46,7 +49,8 @@ class _$UserSettingsUpdate extends UserSettingsUpdate {
         pushEnabled == other.pushEnabled &&
         notifyOrderFilled == other.notifyOrderFilled &&
         notifyOrderFailed == other.notifyOrderFailed &&
-        notifyLiquidationWarning == other.notifyLiquidationWarning;
+        notifyLiquidationWarning == other.notifyLiquidationWarning &&
+        notifyDepositCredited == other.notifyDepositCredited;
   }
 
   @override
@@ -57,6 +61,7 @@ class _$UserSettingsUpdate extends UserSettingsUpdate {
     _$hash = $jc(_$hash, notifyOrderFilled.hashCode);
     _$hash = $jc(_$hash, notifyOrderFailed.hashCode);
     _$hash = $jc(_$hash, notifyLiquidationWarning.hashCode);
+    _$hash = $jc(_$hash, notifyDepositCredited.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -68,7 +73,8 @@ class _$UserSettingsUpdate extends UserSettingsUpdate {
           ..add('pushEnabled', pushEnabled)
           ..add('notifyOrderFilled', notifyOrderFilled)
           ..add('notifyOrderFailed', notifyOrderFailed)
-          ..add('notifyLiquidationWarning', notifyLiquidationWarning))
+          ..add('notifyLiquidationWarning', notifyLiquidationWarning)
+          ..add('notifyDepositCredited', notifyDepositCredited))
         .toString();
   }
 }
@@ -100,6 +106,11 @@ class UserSettingsUpdateBuilder
   set notifyLiquidationWarning(bool? notifyLiquidationWarning) =>
       _$this._notifyLiquidationWarning = notifyLiquidationWarning;
 
+  bool? _notifyDepositCredited;
+  bool? get notifyDepositCredited => _$this._notifyDepositCredited;
+  set notifyDepositCredited(bool? notifyDepositCredited) =>
+      _$this._notifyDepositCredited = notifyDepositCredited;
+
   UserSettingsUpdateBuilder() {
     UserSettingsUpdate._defaults(this);
   }
@@ -112,6 +123,7 @@ class UserSettingsUpdateBuilder
       _notifyOrderFilled = $v.notifyOrderFilled;
       _notifyOrderFailed = $v.notifyOrderFailed;
       _notifyLiquidationWarning = $v.notifyLiquidationWarning;
+      _notifyDepositCredited = $v.notifyDepositCredited;
       _$v = null;
     }
     return this;
@@ -138,6 +150,7 @@ class UserSettingsUpdateBuilder
           notifyOrderFilled: notifyOrderFilled,
           notifyOrderFailed: notifyOrderFailed,
           notifyLiquidationWarning: notifyLiquidationWarning,
+          notifyDepositCredited: notifyDepositCredited,
         );
     replace(_$result);
     return _$result;

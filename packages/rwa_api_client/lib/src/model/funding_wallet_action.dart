@@ -8,6 +8,7 @@ import 'package:rwa_api_client/src/model/origin_transaction_action.dart';
 import 'package:rwa_api_client/src/model/transfer_action_status.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
+import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -29,6 +30,7 @@ part 'funding_wallet_action.g.dart';
 /// * [validUntil] 
 /// * [status] 
 /// * [gasPayment] 
+/// * [gasPaymentMode] - Server-selected publication mode; not a fee estimate. Clients must not infer sponsorship or native permission when absent.
 /// * [tokenContract] 
 /// * [spender] 
 /// * [approvalAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 

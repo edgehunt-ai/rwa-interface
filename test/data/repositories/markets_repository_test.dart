@@ -32,6 +32,24 @@ void main() {
       expect(chart.interval, '1m');
     },
   );
+  test(
+    'HIP3 max leverage maps from listing and detail without touching bStocks',
+    () async {
+      final repository = MarketsRepositoryImpl(_Markets('100'));
+      final page = await repository.listProducts();
+      final perp = await repository.getProduct(
+        const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
+      );
+      final bstock = await repository.getProduct(
+        const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+      );
+
+      expect(page.items.first.maxLeverage, isNull);
+      expect(page.items.last.maxLeverage, '10');
+      expect(perp.maxLeverage, '10');
+      expect(bstock.maxLeverage, isNull);
+    },
+  );
   test('分页映射保留 cursor，金融字符串逐字不变', () async {
     const financial = '999999999999999999.123456789012345678';
     final repository = MarketsRepositoryImpl(_Markets(financial));
@@ -214,6 +232,7 @@ final class _Markets implements MarketsService {
                 'venue': 'xyz',
                 'environment': 'mainnet',
                 'settlement_asset': 'USDC',
+                'max_leverage': '10',
                 'tradable': true,
               },
             )
@@ -257,7 +276,18 @@ final class _Markets implements MarketsService {
             ..symbol = 'NVDA'
             ..kind = wire.ProductKind.perp
             ..price = financial
-            ..logoText = 'NO',
+            ..logoText = 'NO'
+            ..hip3Market = wire.standardSerializers.deserializeWith(
+              wire.Hip3PublicMarket.serializer,
+              {
+                'product_id': 'xyz:NVDA',
+                'venue': 'xyz',
+                'environment': 'mainnet',
+                'settlement_asset': 'USDC',
+                'max_leverage': '10',
+                'tradable': true,
+              },
+            ),
         ),
       ]),
   );

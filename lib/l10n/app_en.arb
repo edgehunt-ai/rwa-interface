@@ -275,6 +275,8 @@
   "add": "Add",
   "takeProfitStopLoss": "Take profit/stop loss",
   "takeProfitStopLossTitle": "Take Profit & stop loss",
+  "tpSlWin": "Win",
+  "tpSlLoss": "Loss",
   "change": "Change",
   "hip3OrderTpSl": "Order TP/SL",
   "hip3PositionTpSl": "Position TP/SL",
@@ -452,6 +454,8 @@
   "filterProducts": "Filter products",
   "allProducts": "All products",
   "hip3Perps": "HIP-3 Perps",
+  "marketMaxLeverage": "Max {leverage}x",
+  "@marketMaxLeverage": {"placeholders": {"leverage": {}}},
   "openTradeDetails": "Open {symbol} trade details",
   "@openTradeDetails": {"placeholders": {"symbol": {}}},
   "clearSearch": "Clear search",
@@ -655,6 +659,10 @@
   "openOrdersRefreshHint": "Try again to refresh open orders.",
   "openOrdersEmptyDescription": "Open orders for this product will appear here.",
   "cancelling": "Cancelling…",
+  "cancellationStatusUnavailable": "Unable to query the cancellation result because of a network or service error. Refresh the order to check its status.",
+  "cancellationStatusTimedOut": "The cancellation status query timed out. Refresh the order to check its status.",
+  "cancellationStatusNetworkError": "Unable to query the cancellation result because of a network connection error. Check your connection and refresh the order.",
+  "cancellationRequiresReview": "This cancellation requires manual review. Check pending actions for updates.",
   "cancellationPending": "Cancellation is still being confirmed. Refresh before retrying.",
   "cancellationFailed": "Cancellation was not completed. Refresh and retry; signing may still be required.",
   "parentCancelWarning": "If this order has attached TP/SL, cancelling the parent also cancels that protection. Check protection for any remaining position; replacement protection is not created automatically.",
@@ -970,5 +978,21 @@
   "marketDataSourceDisclaimer": "Price, chart, and related market data are sourced from Binance for reference only and may differ from actual trading conditions on this platform.",
   "reviewAddDemoFunds": "Add 1,000 {token} demo funds",
   "@reviewAddDemoFunds": {"placeholders": {"token": {}}},
-  "reviewDemoFundsAdded": "1,000 USDC added to your demo balance"
+  "reviewDemoFundsAdded": "1,000 USDC added to your demo balance",
+  "tradeMarkers": "Markers",
+  "hideTradeMarkers": "Hide markers",
+  "showTradeMarkers": "Show markers",
+  "tradeMarkersUnavailable": "Trade markers are temporarily unavailable.",
+  "liquidationHistoryPartial": "Some liquidation history is unavailable.",
+  "tradeChartOutsideRange": "{count} {types} off-chart",
+  "@tradeChartOutsideRange": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "types": {
+        "type": "String"
+      }
+    }
+  }
 }

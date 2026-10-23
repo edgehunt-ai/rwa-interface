@@ -708,6 +708,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get takeProfitStopLossTitle => '止盈 & 止损';
 
   @override
+  String get tpSlWin => '盈利';
+
+  @override
+  String get tpSlLoss => '亏损';
+
+  @override
   String get change => '变动';
 
   @override
@@ -1242,6 +1248,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hip3Perps => 'HIP-3 永续合约';
+
+  @override
+  String marketMaxLeverage(Object leverage) {
+    return '最高 ${leverage}x';
+  }
 
   @override
   String openTradeDetails(Object symbol) {
@@ -1838,6 +1849,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cancelling => '正在取消…';
+
+  @override
+  String get cancellationStatusUnavailable => '网络或服务异常，暂时无法查询撤单结果，请刷新订单查看最新状态。';
+
+  @override
+  String get cancellationStatusTimedOut => '撤单结果查询超时，请刷新订单查看最新状态。';
+
+  @override
+  String get cancellationStatusNetworkError => '网络连接异常，无法查询撤单结果，请检查网络后刷新订单。';
+
+  @override
+  String get cancellationRequiresReview => '此撤单操作需要人工复核，请在待处理操作中查看后续状态。';
 
   @override
   String get cancellationPending => '取消操作仍在确认中，请刷新后再重试。';
@@ -2732,4 +2755,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reviewDemoFundsAdded => '已添加 1,000 USDC 至模拟余额';
+
+  @override
+  String get tradeMarkers => '交易标记';
+
+  @override
+  String get hideTradeMarkers => '隐藏交易标记';
+
+  @override
+  String get showTradeMarkers => '显示交易标记';
+
+  @override
+  String get tradeMarkersUnavailable => '暂时无法获取交易标记。';
+
+  @override
+  String get liquidationHistoryPartial => '部分强平历史暂不可用。';
+
+  @override
+  String tradeChartOutsideRange(int count, String types) {
+    return '$count 个 $types 超出图表范围';
+  }
 }

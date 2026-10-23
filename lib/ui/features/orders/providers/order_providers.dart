@@ -332,6 +332,36 @@ final class Hip3ActionCommands {
   }
 }
 
+/// Session-owned cancellation state survives the initiating card or tab.
+final orderCancellationsProvider =
+    NotifierProvider<OrderCancellations, Set<String>>(OrderCancellations.new);
+
+final class OrderCancellations extends Notifier<Set<String>> {
+  final Map<String, Future<void>> _inFlight = {};
+
+  @override
+  Set<String> build() {
+    ref.watch(sessionGenerationProvider);
+    _inFlight.clear();
+    return const {};
+  }
+
+  Future<void> run(String orderId, Future<void> Function() command) =>
+      _inFlight.putIfAbsent(orderId, () async {
+        final generation = ref.read(sessionGenerationProvider);
+        state = {...state, orderId};
+        try {
+          await Future<void>.sync(command);
+        } finally {
+          if (ref.mounted &&
+              ref.read(sessionGenerationProvider) == generation) {
+            _inFlight.remove(orderId);
+            state = {...state}..remove(orderId);
+          }
+        }
+      });
+}
+
 final orderCommandProvider =
     NotifierProvider<
       OrderCommandNotifier,
@@ -663,7 +693,11 @@ final class OrderCommandNotifier
     if (ref.mounted) state = const CommandIdle();
   }
 
-  Future<void> cancel(TradingOrder order) async {
+  Future<void> cancel(TradingOrder order) => ref
+      .read(orderCancellationsProvider.notifier)
+      .run(order.orderId, () => _cancel(order));
+
+  Future<void> _cancel(TradingOrder order) async {
     const operation = 'cancel_order';
     final context = {
       'order_id': order.orderId,

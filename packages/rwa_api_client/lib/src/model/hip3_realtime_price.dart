@@ -19,6 +19,7 @@ part 'hip3_realtime_price.g.dart';
 /// * [venue] 
 /// * [environment] 
 /// * [settlementAsset] - 来源于该场所权威产品元数据的结算资产，不从 symbol 猜测。
+/// * [maxLeverage] - 该 HIP-3 市场当前允许的最高杠杆倍数，来自 Hyperliquid DEX 产品元数据。 十进制字符串，正整数；仅用于市场列表/详情展示，可能随场所规则变化； 不表示当前账户杠杆，也不表示账户已获授权使用该倍数。开仓前必须以 最新 trading-context 的 rules.max_leverage 为准。 
 /// * [tradable] 
 /// * [unavailableReason] - 不可交易的产品级原因；tradable=true 时为 null。账户级限制仍由 context 返回。
 /// * [symbol] 
@@ -99,6 +100,13 @@ class _$Hip3RealtimePriceSerializer implements PrimitiveSerializer<Hip3RealtimeP
       object.freshUntil,
       specifiedType: const FullType(DateTime),
     );
+    if (object.maxLeverage != null) {
+      yield r'max_leverage';
+      yield serializers.serialize(
+        object.maxLeverage,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'environment';
     yield serializers.serialize(
       object.environment,
@@ -206,6 +214,14 @@ class _$Hip3RealtimePriceSerializer implements PrimitiveSerializer<Hip3RealtimeP
             specifiedType: const FullType(DateTime),
           ) as DateTime;
           result.freshUntil = valueDes;
+          break;
+        case r'max_leverage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.maxLeverage = valueDes;
           break;
         case r'environment':
           final valueDes = serializers.deserialize(

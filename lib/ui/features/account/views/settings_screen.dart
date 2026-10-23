@@ -16,6 +16,7 @@ import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/account_avatar.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/account/providers/app_update_providers.dart';
 import 'package:nobell/ui/features/account/providers/cache_providers.dart';
@@ -64,6 +65,7 @@ class SettingsScreen extends ConsumerWidget {
                   onRetry: () => ref.refresh(accountProvider.future),
                 ),
                 data: (account) => _SettingsContent(
+                  avatarUri: account.avatarUri,
                   name: accountDisplayName(
                     account,
                     identityDisplayName: switch (authentication) {
@@ -379,6 +381,7 @@ class _SettingsHeader extends StatelessWidget {
 
 class _SettingsContent extends StatelessWidget {
   const _SettingsContent({
+    required this.avatarUri,
     required this.name,
     required this.language,
     required this.passkey,
@@ -397,6 +400,7 @@ class _SettingsContent extends StatelessWidget {
   });
 
   final String name;
+  final Uri? avatarUri;
   final String language;
   final PasskeyCredential? passkey;
   final bool passkeyLoading;
@@ -417,7 +421,9 @@ class _SettingsContent extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       children: [
-        _Card(child: _AccountRow(name: name)),
+        _Card(
+          child: _AccountRow(name: name, avatarUri: avatarUri),
+        ),
         const SizedBox(height: 16),
         _Card(
           child: _PasskeyRow(
@@ -877,9 +883,10 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
 }
 
 class _AccountRow extends StatelessWidget {
-  const _AccountRow({required this.name});
+  const _AccountRow({required this.name, required this.avatarUri});
 
   final String name;
+  final Uri? avatarUri;
 
   @override
   Widget build(BuildContext context) {
@@ -898,10 +905,9 @@ class _AccountRow extends StatelessWidget {
                 border: Border.all(color: colors.border),
                 shape: BoxShape.circle,
               ),
-              child: Image.asset(
-                'assets/figma/home_markets/account_avatar.webp',
+              child: AccountAvatar(
                 key: const Key('settings-account-avatar'),
-                fit: BoxFit.cover,
+                avatarUri: avatarUri,
               ),
             ),
             const SizedBox(width: 12),

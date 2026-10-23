@@ -145,6 +145,9 @@ const BstockOrderWalletActionStateCancellationReasonEnum
     _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance =
     const BstockOrderWalletActionStateCancellationReasonEnum._(
         'insufficientAllowance');
+const BstockOrderWalletActionStateCancellationReasonEnum
+    _$bstockOrderWalletActionStateCancellationReasonEnum_expired =
+    const BstockOrderWalletActionStateCancellationReasonEnum._('expired');
 
 BstockOrderWalletActionStateCancellationReasonEnum
     _$bstockOrderWalletActionStateCancellationReasonEnumValueOf(String name) {
@@ -155,6 +158,8 @@ BstockOrderWalletActionStateCancellationReasonEnum
       return _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance;
     case 'insufficientAllowance':
       return _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance;
+    case 'expired':
+      return _$bstockOrderWalletActionStateCancellationReasonEnum_expired;
     default:
       throw ArgumentError(name);
   }
@@ -166,6 +171,7 @@ final BuiltSet<BstockOrderWalletActionStateCancellationReasonEnum>
   _$bstockOrderWalletActionStateCancellationReasonEnum_userCancelled,
   _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance,
   _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance,
+  _$bstockOrderWalletActionStateCancellationReasonEnum_expired,
 ]);
 
 Serializer<BstockOrderWalletActionStateFundingModeEnum>
@@ -329,11 +335,13 @@ class _$BstockOrderWalletActionStateCancellationReasonEnumSerializer
     'userCancelled': 'user_cancelled',
     'insufficientBalance': 'insufficient_balance',
     'insufficientAllowance': 'insufficient_allowance',
+    'expired': 'expired',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'user_cancelled': 'userCancelled',
     'insufficient_balance': 'insufficientBalance',
     'insufficient_allowance': 'insufficientAllowance',
+    'expired': 'expired',
   };
 
   @override
@@ -362,6 +370,9 @@ abstract class BstockOrderWalletActionStateBuilder {
   void update(void Function(BstockOrderWalletActionStateBuilder) updates);
   BstocksTimeInForce? get timeInForce;
   set timeInForce(BstocksTimeInForce? timeInForce);
+
+  DateTime? get expiresAt;
+  set expiresAt(DateTime? expiresAt);
 
   String? get quantity;
   set quantity(String? quantity);
@@ -430,6 +441,8 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
   @override
   final BstocksTimeInForce? timeInForce;
   @override
+  final DateTime? expiresAt;
+  @override
   final String? quantity;
   @override
   final String orderId;
@@ -477,6 +490,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
 
   _$$BstockOrderWalletActionState._(
       {this.timeInForce,
+      this.expiresAt,
       this.quantity,
       required this.orderId,
       this.currentActionId,
@@ -512,6 +526,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
     if (identical(other, this)) return true;
     return other is $BstockOrderWalletActionState &&
         timeInForce == other.timeInForce &&
+        expiresAt == other.expiresAt &&
         quantity == other.quantity &&
         orderId == other.orderId &&
         currentActionId == other.currentActionId &&
@@ -538,6 +553,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, expiresAt.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, currentActionId.hashCode);
@@ -566,6 +582,7 @@ class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
   String toString() {
     return (newBuiltValueToStringHelper(r'$BstockOrderWalletActionState')
           ..add('timeInForce', timeInForce)
+          ..add('expiresAt', expiresAt)
           ..add('quantity', quantity)
           ..add('orderId', orderId)
           ..add('currentActionId', currentActionId)
@@ -601,6 +618,10 @@ class $BstockOrderWalletActionStateBuilder
   BstocksTimeInForce? get timeInForce => _$this._timeInForce;
   set timeInForce(covariant BstocksTimeInForce? timeInForce) =>
       _$this._timeInForce = timeInForce;
+
+  DateTime? _expiresAt;
+  DateTime? get expiresAt => _$this._expiresAt;
+  set expiresAt(covariant DateTime? expiresAt) => _$this._expiresAt = expiresAt;
 
   String? _quantity;
   String? get quantity => _$this._quantity;
@@ -716,6 +737,7 @@ class $BstockOrderWalletActionStateBuilder
     final $v = _$v;
     if ($v != null) {
       _timeInForce = $v.timeInForce;
+      _expiresAt = $v.expiresAt;
       _quantity = $v.quantity;
       _orderId = $v.orderId;
       _currentActionId = $v.currentActionId;
@@ -760,6 +782,7 @@ class $BstockOrderWalletActionStateBuilder
       _$result = _$v ??
           _$$BstockOrderWalletActionState._(
             timeInForce: timeInForce,
+            expiresAt: expiresAt,
             quantity: quantity,
             orderId: BuiltValueNullFieldError.checkNotNull(
                 orderId, r'$BstockOrderWalletActionState', 'orderId'),

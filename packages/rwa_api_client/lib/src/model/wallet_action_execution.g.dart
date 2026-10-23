@@ -122,6 +122,12 @@ class _$WalletActionExecution extends WalletActionExecution {
   @override
   final WalletActionExecutionProvider executionProvider;
   @override
+  final String? nativeNonce;
+  @override
+  final NativeDeliveryState? nativeDeliveryState;
+  @override
+  final NativeCancellation? nativeCancellation;
+  @override
   final WalletActionExecutionStatus status;
   @override
   final WalletActionProviderStatus providerStatus;
@@ -170,6 +176,9 @@ class _$WalletActionExecution extends WalletActionExecution {
       required this.businessExpiresAt,
       required this.mode,
       required this.executionProvider,
+      this.nativeNonce,
+      this.nativeDeliveryState,
+      this.nativeCancellation,
       required this.status,
       required this.providerStatus,
       required this.gasPayment,
@@ -211,6 +220,9 @@ class _$WalletActionExecution extends WalletActionExecution {
         businessExpiresAt == other.businessExpiresAt &&
         mode == other.mode &&
         executionProvider == other.executionProvider &&
+        nativeNonce == other.nativeNonce &&
+        nativeDeliveryState == other.nativeDeliveryState &&
+        nativeCancellation == other.nativeCancellation &&
         status == other.status &&
         providerStatus == other.providerStatus &&
         gasPayment == other.gasPayment &&
@@ -243,6 +255,9 @@ class _$WalletActionExecution extends WalletActionExecution {
     _$hash = $jc(_$hash, businessExpiresAt.hashCode);
     _$hash = $jc(_$hash, mode.hashCode);
     _$hash = $jc(_$hash, executionProvider.hashCode);
+    _$hash = $jc(_$hash, nativeNonce.hashCode);
+    _$hash = $jc(_$hash, nativeDeliveryState.hashCode);
+    _$hash = $jc(_$hash, nativeCancellation.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, providerStatus.hashCode);
     _$hash = $jc(_$hash, gasPayment.hashCode);
@@ -277,6 +292,9 @@ class _$WalletActionExecution extends WalletActionExecution {
           ..add('businessExpiresAt', businessExpiresAt)
           ..add('mode', mode)
           ..add('executionProvider', executionProvider)
+          ..add('nativeNonce', nativeNonce)
+          ..add('nativeDeliveryState', nativeDeliveryState)
+          ..add('nativeCancellation', nativeCancellation)
           ..add('status', status)
           ..add('providerStatus', providerStatus)
           ..add('gasPayment', gasPayment)
@@ -351,6 +369,21 @@ class WalletActionExecutionBuilder
       _$this._executionProvider;
   set executionProvider(WalletActionExecutionProvider? executionProvider) =>
       _$this._executionProvider = executionProvider;
+
+  String? _nativeNonce;
+  String? get nativeNonce => _$this._nativeNonce;
+  set nativeNonce(String? nativeNonce) => _$this._nativeNonce = nativeNonce;
+
+  NativeDeliveryState? _nativeDeliveryState;
+  NativeDeliveryState? get nativeDeliveryState => _$this._nativeDeliveryState;
+  set nativeDeliveryState(NativeDeliveryState? nativeDeliveryState) =>
+      _$this._nativeDeliveryState = nativeDeliveryState;
+
+  NativeCancellationBuilder? _nativeCancellation;
+  NativeCancellationBuilder get nativeCancellation =>
+      _$this._nativeCancellation ??= NativeCancellationBuilder();
+  set nativeCancellation(NativeCancellationBuilder? nativeCancellation) =>
+      _$this._nativeCancellation = nativeCancellation;
 
   WalletActionExecutionStatus? _status;
   WalletActionExecutionStatus? get status => _$this._status;
@@ -450,6 +483,9 @@ class WalletActionExecutionBuilder
       _businessExpiresAt = $v.businessExpiresAt;
       _mode = $v.mode;
       _executionProvider = $v.executionProvider;
+      _nativeNonce = $v.nativeNonce;
+      _nativeDeliveryState = $v.nativeDeliveryState;
+      _nativeCancellation = $v.nativeCancellation?.toBuilder();
       _status = $v.status;
       _providerStatus = $v.providerStatus;
       _gasPayment = $v.gasPayment.toBuilder();
@@ -515,6 +551,9 @@ class WalletActionExecutionBuilder
                 executionProvider,
                 r'WalletActionExecution',
                 'executionProvider'),
+            nativeNonce: nativeNonce,
+            nativeDeliveryState: nativeDeliveryState,
+            nativeCancellation: _nativeCancellation?.build(),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'WalletActionExecution', 'status'),
             providerStatus: BuiltValueNullFieldError.checkNotNull(
@@ -539,6 +578,9 @@ class WalletActionExecutionBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'nativeCancellation';
+        _nativeCancellation?.build();
+
         _$failedField = 'gasPayment';
         gasPayment.build();
         _$failedField = 'frozenTransaction';

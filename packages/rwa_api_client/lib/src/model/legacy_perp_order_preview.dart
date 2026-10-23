@@ -30,10 +30,12 @@ part 'legacy_perp_order_preview.g.dart';
 /// * [limitPrice] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
 /// * [priceConditionMet] 
 /// * [fundingMode] 
-/// * [fundsReserved] 
+/// * [fundsReserved] - 当前全部 bStocks 市价、IOC/GTC 限价预览均为 false；预览和后续创建动作不预留钱包资产。
+/// * [orderExpiresAt] - GTC business-order expiry echoed from the immutable request; top-level expires_at still expires only this preview.
 /// * [requiredFundingRaw] - 本次 bStocks 预览检查余额和 allowance 的实际阈值，与 allowance_raw 使用同一输入 token 最小单位。 输入身份及精度见 bstocks.input_asset；买入为 quote token，卖出为 bStock，不一定是结算 token。 市价为当前报价含输入交易费的 order_value/total_input 转 raw，不包含未使用的预算尾差。 限价买入为 ceil(quantity × limit_price × 10^quote_decimals)，限价卖出为 quantity × 10^base_decimals。 不包含额外原生 gas，不等于 approval_amount_raw；新 bStocks 市价和限价预览均返回，旧快照可缺失。 
 /// * [fundingToken] 
 /// * [balanceRaw] - 预览时读取的认证用户输入 token 余额，与 required_funding_raw 同单位；不是原生 gas 余额。
+/// * [availableBalanceRaw] - 当前 bStocks 预览可用输入余额，等于同一观测的 balance_raw；IOC/GTC、提现、划转及补资的 pending 或未知状态不扣减该值。 输入 token 和精度与 required_funding_raw 相同；十进制原始整数字符串，禁止 JSON 数字、浮点或科学计数法。 余额／allowance 仍在确认时重新读取；同一余额可被多笔操作引用。旧响应可缺省，缺失不表示余额充足，也不授予签名或执行权限。 
 /// * [allowanceRaw] - 预览时链上 allowance(owner, spender) 的十进制整数字符串，owner 为认证账户的钱包， token 为 bstocks.input_asset，spender 为服务端选定的执行合约（正常交易为订单 Router）。 数量可以为 uint256.max，客户端须使用大整数而非浮点；RPC 失败返回错误，不能把未知量当作 0 或已授权。 同一 Idempotency-Key 重放原预览，不刷新此观测。字段缺失表示旧响应未提供，不能推断授权充足。 
 /// * [balanceSufficient] - balance_raw >= required_funding_raw，等于也算足够；与授权是否足够独立，不表示 gas 已满足。
 /// * [allowanceSufficient] - allowance_raw >= required_funding_raw，等于也算足够；不是与 approval_amount_raw 比较。 仅为预览时的授权快照，创建订单仍重新查询；true 不保证余额充足、价格条件满足或最终成交。 
@@ -170,6 +172,13 @@ class _$LegacyPerpOrderPreviewSerializer implements PrimitiveSerializer<LegacyPe
       yield r'fee';
       yield serializers.serialize(
         object.fee,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.availableBalanceRaw != null) {
+      yield r'available_balance_raw';
+      yield serializers.serialize(
+        object.availableBalanceRaw,
         specifiedType: const FullType(String),
       );
     }
@@ -327,6 +336,13 @@ class _$LegacyPerpOrderPreviewSerializer implements PrimitiveSerializer<LegacyPe
       yield serializers.serialize(
         object.approvalAmountRaw,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.orderExpiresAt != null) {
+      yield r'order_expires_at';
+      yield serializers.serialize(
+        object.orderExpiresAt,
+        specifiedType: const FullType.nullable(DateTime),
       );
     }
     if (object.slippagePercent != null) {
@@ -514,6 +530,14 @@ class _$LegacyPerpOrderPreviewSerializer implements PrimitiveSerializer<LegacyPe
           if (valueDes == null) continue;
           result.fee = valueDes;
           break;
+        case r'available_balance_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.availableBalanceRaw = valueDes;
+          break;
         case r'bstocks':
           final valueDes = serializers.deserialize(
             value,
@@ -699,6 +723,14 @@ class _$LegacyPerpOrderPreviewSerializer implements PrimitiveSerializer<LegacyPe
           ) as String?;
           if (valueDes == null) continue;
           result.approvalAmountRaw = valueDes;
+          break;
+        case r'order_expires_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.orderExpiresAt = valueDes;
           break;
         case r'slippage_percent':
           final valueDes = serializers.deserialize(

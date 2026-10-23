@@ -116,6 +116,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
           ? (value.hip3Market?.tradable ?? false)
           : true,
       productId: value.hip3Market?.productId,
+      maxLeverage: value.hip3Market?.maxLeverage,
       isFavorite: value.isFavorite ?? false,
       change24hPercent: _decimal(value.quote.change24hPercent, unit: 'percent'),
     );
@@ -264,6 +265,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
     tradable: true,
     productId: value.hip3Market?.productId,
+    maxLeverage: value.hip3Market?.maxLeverage,
     change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
     volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
     turnover24h: _decimal(value.turnover24hUsd, asset: 'USD', unit: 'turnover'),

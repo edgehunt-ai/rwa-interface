@@ -88,8 +88,8 @@ final class WalletActionExecutionRepositoryImpl
       api.WalletActionExecutionSubmissionRequest(
         (request) => request.oneOf = OneOfDynamic(
           typeIndex: 0,
-          types: const [api.SponsoredWalletActionExecutionSubmissionRequest],
-          value: api.SponsoredWalletActionExecutionSubmissionRequest(
+          types: const [api.WalletActionAuthorizationSubmissionRequest],
+          value: api.WalletActionAuthorizationSubmissionRequest(
             (submission) => submission.privyAuthorizationSignature = signature,
           ),
         ),
@@ -109,8 +109,8 @@ final class WalletActionExecutionRepositoryImpl
       api.WalletActionExecutionSubmissionRequest(
         (request) => request.oneOf = OneOfDynamic(
           typeIndex: 0,
-          types: const [api.UserPaidWalletActionExecutionSubmissionRequest],
-          value: api.UserPaidWalletActionExecutionSubmissionRequest(
+          types: const [api.WalletActionTransactionEvidenceRequest],
+          value: api.WalletActionTransactionEvidenceRequest(
             (submission) => submission.txHash = txHash,
           ),
         ),

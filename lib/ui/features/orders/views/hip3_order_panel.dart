@@ -1914,9 +1914,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
   }
 
   void _onPriceChanged() {
-    if (_error != null && mounted) {
-      setState(() => _error = null);
-    }
+    if (mounted) setState(() => _error = null);
   }
 
   void _onReferenceChanged() {
@@ -2081,11 +2079,14 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                 const SizedBox(height: 16),
                 TpSlEditorCard(
                   title: l10n.takeProfit,
+                  isLong: widget.side == TradingSide.long,
+                  isTakeProfit: true,
                   controller: _takeProfit,
                   enabled: _takeProfitEnabled,
                   referencePrice: _referencePrice,
                   referencePriceListenable: widget.referencePriceListenable,
                   inputKey: const Key('opening-protection-0'),
+                  changeKey: const Key('opening-take-profit-percent'),
                   rulerKey: const Key('take-profit-ruler'),
                   onEnabledChanged: (value) =>
                       setState(() => _takeProfitEnabled = value),
@@ -2093,11 +2094,14 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                 const SizedBox(height: 12),
                 TpSlEditorCard(
                   title: l10n.stopLoss,
+                  isLong: widget.side == TradingSide.long,
+                  isTakeProfit: false,
                   controller: _stopLoss,
                   enabled: _stopLossEnabled,
                   referencePrice: _referencePrice,
                   referencePriceListenable: widget.referencePriceListenable,
                   inputKey: const Key('opening-protection-2'),
+                  changeKey: const Key('opening-stop-loss-percent'),
                   rulerKey: const Key('stop-loss-ruler'),
                   onEnabledChanged: (value) =>
                       setState(() => _stopLossEnabled = value),
@@ -2140,7 +2144,9 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                           backgroundColor: colors.primaryAction,
                           foregroundColor: colors.onPrimaryAction,
                         ),
-                        onPressed: _consentLoading ? null : _confirm,
+                        onPressed: _consentLoading || errors.isNotEmpty
+                            ? null
+                            : _confirm,
                         child: Text(l10n.confirm),
                       ),
                     ),

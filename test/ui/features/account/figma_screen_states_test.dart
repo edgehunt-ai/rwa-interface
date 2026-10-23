@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
@@ -15,6 +16,7 @@ import 'package:nobell/domain/models/user_account.dart';
 import 'package:nobell/domain/repositories/session_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/account_avatar.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/account/providers/cache_providers.dart';
 import 'package:nobell/ui/features/account/views/settings_screen.dart';
@@ -36,11 +38,13 @@ void main() {
     expect(find.text('Export Private Key'), findsOneWidget);
     expect(find.text('Terms Of Use'), findsOneWidget);
     expect(find.text('Privacy Policy'), findsOneWidget);
-    final avatar = tester.widget<Image>(
+    final avatar = tester.widget<AccountAvatar>(
       find.byKey(const Key('settings-account-avatar')),
     );
+    expect(avatar.avatarUri, isNull);
+    final fallback = tester.widget<Image>(find.byType(Image).first);
     expect(
-      (avatar.image as AssetImage).assetName,
+      (fallback.image as AssetImage).assetName,
       'assets/figma/home_markets/account_avatar.webp',
     );
 
@@ -60,6 +64,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(session.endCalls, 1);
     expect(identity.logoutCalls, 1);
+  });
+
+  testWidgets('settings prefers the account avatar URL', (tester) async {
+    final avatarUri = Uri.parse('https://cdn.example.com/avatar.png');
+    await tester.pumpWidget(
+      _settingsApp(
+        FakeIdentityAuthGateway(),
+        _SessionRepository(),
+        avatarUri: avatarUri,
+      ),
+    );
+    await tester.pump();
+
+    final avatar = tester.widget<CachedNetworkImage>(
+      find.descendant(
+        of: find.byKey(const Key('settings-account-avatar')),
+        matching: find.byType(CachedNetworkImage),
+      ),
+    );
+    expect(avatar.imageUrl, avatarUri.toString());
+    expect(avatar.cacheKey, avatarUri.toString());
   });
 
   testWidgets('settings warning remains usable at 200% text scale', (
@@ -333,6 +358,7 @@ Widget _settingsApp(
   String language = 'en',
   CacheStorageService? cache,
   AccountRepository? accountRepository,
+  Uri? avatarUri,
 }) => ProviderScope(
   overrides: [
     identityAuthGatewayProvider.overrideWithValue(identity),
@@ -346,6 +372,7 @@ Widget _settingsApp(
       (_) async => UserAccount(
         userId: 'account-1',
         displayName: 'RWA user',
+        avatarUri: avatarUri,
         settings: UserPreferences(
           language: language,
           pushEnabled: true,

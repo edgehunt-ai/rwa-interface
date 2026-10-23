@@ -26,6 +26,33 @@ final BuiltSet<BstockFundingTargetBalanceSnapshotAccountEnum>
   _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks,
 ]);
 
+const BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet =
+    const BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum._('mainnet');
+const BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet =
+    const BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum._('testnet');
+
+BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum
+    _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnumValueOf(
+        String name) {
+  switch (name) {
+    case 'mainnet':
+      return _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet;
+    case 'testnet':
+      return _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum>
+    _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnumValues = BuiltSet<
+        BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum>(const <BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum>[
+  _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_mainnet,
+  _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnum_testnet,
+]);
+
 const BstockFundingTargetBalanceSnapshotSource_Enum
     _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc =
     const BstockFundingTargetBalanceSnapshotSource_Enum._('bscRpc');
@@ -49,6 +76,9 @@ final BuiltSet<BstockFundingTargetBalanceSnapshotSource_Enum>
 Serializer<BstockFundingTargetBalanceSnapshotAccountEnum>
     _$bstockFundingTargetBalanceSnapshotAccountEnumSerializer =
     _$BstockFundingTargetBalanceSnapshotAccountEnumSerializer();
+Serializer<BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum>
+    _$bstockFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer =
+    _$BstockFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer();
 Serializer<BstockFundingTargetBalanceSnapshotSource_Enum>
     _$bstockFundingTargetBalanceSnapshotSourceEnumSerializer =
     _$BstockFundingTargetBalanceSnapshotSource_EnumSerializer();
@@ -81,6 +111,41 @@ class _$BstockFundingTargetBalanceSnapshotAccountEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       BstockFundingTargetBalanceSnapshotAccountEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockFundingTargetBalanceSnapshotTargetEnvironmentEnumSerializer
+    implements
+        PrimitiveSerializer<
+            BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'mainnet': 'mainnet',
+    'testnet': 'testnet',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum
+  ];
+  @override
+  final String wireName =
+      'BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -124,6 +189,9 @@ class _$BstockFundingTargetBalanceSnapshot
   @override
   final BstockFundingTargetAsset asset;
   @override
+  final BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum?
+      targetEnvironment;
+  @override
   final String availableAmount;
   @override
   final BstockFundingTargetBalanceSnapshotSource_Enum source_;
@@ -141,6 +209,7 @@ class _$BstockFundingTargetBalanceSnapshot
       {required this.account,
       required this.accountRef,
       required this.asset,
+      this.targetEnvironment,
       required this.availableAmount,
       required this.source_,
       required this.observedAt,
@@ -162,6 +231,7 @@ class _$BstockFundingTargetBalanceSnapshot
         account == other.account &&
         accountRef == other.accountRef &&
         asset == other.asset &&
+        targetEnvironment == other.targetEnvironment &&
         availableAmount == other.availableAmount &&
         source_ == other.source_ &&
         observedAt == other.observedAt &&
@@ -174,6 +244,7 @@ class _$BstockFundingTargetBalanceSnapshot
     _$hash = $jc(_$hash, account.hashCode);
     _$hash = $jc(_$hash, accountRef.hashCode);
     _$hash = $jc(_$hash, asset.hashCode);
+    _$hash = $jc(_$hash, targetEnvironment.hashCode);
     _$hash = $jc(_$hash, availableAmount.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
@@ -188,6 +259,7 @@ class _$BstockFundingTargetBalanceSnapshot
           ..add('account', account)
           ..add('accountRef', accountRef)
           ..add('asset', asset)
+          ..add('targetEnvironment', targetEnvironment)
           ..add('availableAmount', availableAmount)
           ..add('source_', source_)
           ..add('observedAt', observedAt)
@@ -215,6 +287,14 @@ class BstockFundingTargetBalanceSnapshotBuilder
   BstockFundingTargetAssetBuilder get asset =>
       _$this._asset ??= BstockFundingTargetAssetBuilder();
   set asset(BstockFundingTargetAssetBuilder? asset) => _$this._asset = asset;
+
+  BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum? _targetEnvironment;
+  BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum?
+      get targetEnvironment => _$this._targetEnvironment;
+  set targetEnvironment(
+          BstockFundingTargetBalanceSnapshotTargetEnvironmentEnum?
+              targetEnvironment) =>
+      _$this._targetEnvironment = targetEnvironment;
 
   String? _availableAmount;
   String? get availableAmount => _$this._availableAmount;
@@ -244,6 +324,7 @@ class BstockFundingTargetBalanceSnapshotBuilder
       _account = $v.account;
       _accountRef = $v.accountRef;
       _asset = $v.asset.toBuilder();
+      _targetEnvironment = $v.targetEnvironment;
       _availableAmount = $v.availableAmount;
       _source_ = $v.source_;
       _observedAt = $v.observedAt;
@@ -277,6 +358,7 @@ class BstockFundingTargetBalanceSnapshotBuilder
             accountRef: BuiltValueNullFieldError.checkNotNull(accountRef,
                 r'BstockFundingTargetBalanceSnapshot', 'accountRef'),
             asset: asset.build(),
+            targetEnvironment: targetEnvironment,
             availableAmount: BuiltValueNullFieldError.checkNotNull(
                 availableAmount,
                 r'BstockFundingTargetBalanceSnapshot',

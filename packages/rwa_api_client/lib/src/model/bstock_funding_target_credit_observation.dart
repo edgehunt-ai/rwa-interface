@@ -16,8 +16,12 @@ part 'bstock_funding_target_credit_observation.g.dart';
 /// * [accountRef] 
 /// * [asset] 
 /// * [availableBefore] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
-/// * [availableAfter] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [availableAfter] - Legacy frozen arithmetic, not observed spendable balance. New observations return null.
 /// * [creditedAmount] - 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+/// * [evidenceReference] - Immutable credit observation uniquely attributed to this transfer, not a balance delta.
+/// * [transactionHash] 
+/// * [logIndex] 
+/// * [venueReference] 
 /// * [source_] 
 /// * [observedAt] 
 @BuiltValue()
@@ -32,13 +36,26 @@ abstract class BstockFundingTargetCreditObservation implements Built<BstockFundi
   @BuiltValueField(wireName: r'available_before')
   String get availableBefore;
 
-  /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
+  /// Legacy frozen arithmetic, not observed spendable balance. New observations return null.
   @BuiltValueField(wireName: r'available_after')
-  String get availableAfter;
+  String? get availableAfter;
 
   /// 十进制字符串，避免浮点误差。请求最多60位整数和18位小数，不接受整数部分多余前导零； 各操作另行校验正负、范围及资产精度，不以此通用响应标量代替业务准入。 
   @BuiltValueField(wireName: r'credited_amount')
   String get creditedAmount;
+
+  /// Immutable credit observation uniquely attributed to this transfer, not a balance delta.
+  @BuiltValueField(wireName: r'evidence_reference')
+  String? get evidenceReference;
+
+  @BuiltValueField(wireName: r'transaction_hash')
+  String? get transactionHash;
+
+  @BuiltValueField(wireName: r'log_index')
+  int? get logIndex;
+
+  @BuiltValueField(wireName: r'venue_reference')
+  String? get venueReference;
 
   @BuiltValueField(wireName: r'source')
   BstockFundingTargetCreditObservationSource_Enum get source_;
@@ -86,15 +103,43 @@ class _$BstockFundingTargetCreditObservationSerializer implements PrimitiveSeria
       specifiedType: const FullType(String),
     );
     yield r'available_after';
-    yield serializers.serialize(
+    yield object.availableAfter == null ? null : serializers.serialize(
       object.availableAfter,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType.nullable(String),
     );
     yield r'credited_amount';
     yield serializers.serialize(
       object.creditedAmount,
       specifiedType: const FullType(String),
     );
+    if (object.evidenceReference != null) {
+      yield r'evidence_reference';
+      yield serializers.serialize(
+        object.evidenceReference,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.transactionHash != null) {
+      yield r'transaction_hash';
+      yield serializers.serialize(
+        object.transactionHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.logIndex != null) {
+      yield r'log_index';
+      yield serializers.serialize(
+        object.logIndex,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.venueReference != null) {
+      yield r'venue_reference';
+      yield serializers.serialize(
+        object.venueReference,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'source';
     yield serializers.serialize(
       object.source_,
@@ -152,8 +197,9 @@ class _$BstockFundingTargetCreditObservationSerializer implements PrimitiveSeria
         case r'available_after':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.availableAfter = valueDes;
           break;
         case r'credited_amount':
@@ -162,6 +208,38 @@ class _$BstockFundingTargetCreditObservationSerializer implements PrimitiveSeria
             specifiedType: const FullType(String),
           ) as String;
           result.creditedAmount = valueDes;
+          break;
+        case r'evidence_reference':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.evidenceReference = valueDes;
+          break;
+        case r'transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.transactionHash = valueDes;
+          break;
+        case r'log_index':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.logIndex = valueDes;
+          break;
+        case r'venue_reference':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.venueReference = valueDes;
           break;
         case r'source':
           final valueDes = serializers.deserialize(

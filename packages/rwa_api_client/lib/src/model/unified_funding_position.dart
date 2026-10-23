@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'unified_funding_position.g.dart';
 
-/// One account-scoped view of an exact supported stablecoin held by the user's Embedded EVM Wallet. This is not a platform ledger balance and does not imply that the platform has custody of the asset. 
+/// One account-scoped view of an exact supported stablecoin held by the user's Embedded EVM Wallet. This is not a platform ledger balance and does not imply that the platform has custody of the asset. BSC56/97/31337 source positions expose their full observed balance with reserved_amount=0; historical pending or unknown bStocks operations do not reduce availability. Other-chain non-bStocks/HIP3 reservations still apply. Missing/stale source evidence retains its failure semantics. 
 ///
 /// Properties:
 /// * [positionId] - Account-scoped opaque identifier; clients must not derive wallet or asset identities from it.
