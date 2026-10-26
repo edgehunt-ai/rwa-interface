@@ -598,7 +598,7 @@ void main() {
       for (final label in [
         'Language',
         'Display Mode',
-        'Terms Of Use',
+        'Terms of Use',
         'Privacy Policy',
         'Check for Updates',
         'App Version',
@@ -615,9 +615,9 @@ void main() {
         expect(find.text(label), findsNothing);
       }
       expect(personalRequests, 0);
-      await tester.tap(find.text('Terms Of Use'));
+      await tester.tap(find.text('Terms of Use'));
       await tester.pumpAndSettle();
-      expect(find.text('Term of Use'), findsOneWidget);
+      expect(find.text('Terms of Use'), findsOneWidget);
       router.pop();
       await tester.pumpAndSettle();
       await tester.tap(find.text('Log in'));

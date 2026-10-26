@@ -327,6 +327,7 @@
   "settingsPasskeyRemoveSucceeded": "通行密钥已移除",
   "settingsPasskeyRemoveFailed": "无法移除通行密钥，请重试。",
   "settingsLanguage": "语言",
+  "settingsLanguageSaveFailed": "无法保存语言设置，请重试。",
   "languageEnglish": "英语",
   "languageSimplifiedChinese": "简体中文",
   "settingsDisplayMode": "显示模式",

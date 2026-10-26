@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
@@ -23,6 +24,7 @@ class LegalDocumentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final paragraphs = document == LegalDocument.terms
         ? termsParagraphs
         : privacyParagraphs;
@@ -35,9 +37,9 @@ class LegalDocumentScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: AppPageHeader(
                 key: const Key('legal-back'),
-                title: paragraphs.first.spans
-                    .map((span) => span.toPlainText())
-                    .join(),
+                title: document == LegalDocument.terms
+                    ? l10n.settingsTermsConditions
+                    : l10n.settingsPrivacyPolicy,
                 onBack: () {
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();

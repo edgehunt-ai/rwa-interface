@@ -82,7 +82,7 @@ void main() {
     expect(find.text('RWA user'), findsOneWidget);
     expect(find.text('Passkey'), findsOneWidget);
     expect(find.text('Export Private Key'), findsOneWidget);
-    expect(find.text('Terms Of Use'), findsOneWidget);
+    expect(find.text('Terms of Use'), findsOneWidget);
     expect(find.text('Privacy Policy'), findsOneWidget);
     final avatar = tester.widget<AccountAvatar>(
       find.byKey(const Key('settings-account-avatar')),
@@ -468,7 +468,7 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -400));
     await tester.pumpAndSettle();
     for (final entry in [
-      ('Terms Of Use', 'Term of Use'),
+      ('Terms of Use', 'Terms of Use'),
       ('Privacy Policy', 'Privacy Policy'),
     ]) {
       await tester.ensureVisible(find.text(entry.$1));

@@ -21,7 +21,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "Term of Use",
+        text: "Terms of Use",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],

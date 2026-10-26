@@ -37,7 +37,7 @@ void main() {
           for (final label in [
             'Language',
             'Display Mode',
-            'Terms Of Use',
+            'Terms of Use',
             'Privacy Policy',
             'Check for Updates',
             'App Version',

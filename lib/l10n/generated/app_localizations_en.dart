@@ -1016,6 +1016,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguage => 'Language';
 
   @override
+  String get settingsLanguageSaveFailed =>
+      'Could not save language. Please try again.';
+
+  @override
   String get languageEnglish => 'English';
 
   @override
@@ -1089,7 +1093,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsClearCache => 'Clear';
 
   @override
-  String get settingsTermsConditions => 'Terms Of Use';
+  String get settingsTermsConditions => 'Terms of Use';
 
   @override
   String get settingsLogOut => 'Log Out';

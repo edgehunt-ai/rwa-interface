@@ -57,7 +57,6 @@ class SettingsScreen extends ConsumerWidget {
                               .languageCode,
                       onLanguage: () => _showLanguageSheet(
                         context,
-                        ref,
                         (ref.read(appLocaleProvider) ??
                                 Localizations.localeOf(context))
                             .languageCode,
@@ -110,7 +109,6 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         onLanguage: () => _showLanguageSheet(
                           context,
-                          ref,
                           ref.read(appLocaleProvider)?.languageCode ??
                               account.settings.language,
                         ),
@@ -215,35 +213,15 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _showLanguageSheet(
-    BuildContext context,
-    WidgetRef ref,
-    String current,
-  ) async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
-      builder: (_) => _LanguageSheet(current: current),
-    );
-    if (!context.mounted) return;
-    if (selected != null &&
-        localeFromLanguageCode(selected) != localeFromLanguageCode(current)) {
-      if (ref.read(authenticationProvider) is! AuthenticationAuthenticated) {
-        ref.read(appLocaleProvider.notifier).setGuestLanguage(selected);
-        return;
-      }
-      await ref
-          .read(settingsCommandProvider.notifier)
-          .updateSettings(UserPreferencesPatch(language: selected));
-      if (!ref.read(settingsCommandProvider).hasError) {
-        ref
-            .read<AppLocaleNotifier>(appLocaleProvider.notifier)
-            .setLanguage(selected);
-      }
-    }
-  }
+  Future<void> _showLanguageSheet(BuildContext context, String current) =>
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        enableDrag: false,
+        backgroundColor: Colors.transparent,
+        barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
+        builder: (_) => _LanguageSheet(current: current),
+      );
 
   Future<void> _showDisplayModeSheet(
     BuildContext context,
@@ -1530,17 +1508,51 @@ class _ValueWithChevron extends StatelessWidget {
   }
 }
 
-class _LanguageSheet extends StatefulWidget {
+class _LanguageSheet extends ConsumerStatefulWidget {
   const _LanguageSheet({required this.current});
 
   final String current;
 
   @override
-  State<_LanguageSheet> createState() => _LanguageSheetState();
+  ConsumerState<_LanguageSheet> createState() => _LanguageSheetState();
 }
 
-class _LanguageSheetState extends State<_LanguageSheet> {
+class _LanguageSheetState extends ConsumerState<_LanguageSheet> {
   late var _selected = widget.current == 'zh' ? 'zh-CN' : widget.current;
+
+  var _submitting = false;
+  Object? _error;
+
+  Future<void> _submit() async {
+    if (_submitting) return;
+    if (localeFromLanguageCode(_selected) ==
+        localeFromLanguageCode(widget.current)) {
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      if (ref.read(authenticationProvider) is! AuthenticationAuthenticated) {
+        ref.read(appLocaleProvider.notifier).setGuestLanguage(_selected);
+      } else {
+        await ref
+            .read(settingsCommandProvider.notifier)
+            .updateSettings(UserPreferencesPatch(language: _selected));
+        if (!mounted) return;
+        final result = ref.read(settingsCommandProvider);
+        if (result.hasError) throw result.error!;
+        ref.read(appLocaleProvider.notifier).setLanguage(_selected);
+      }
+      if (mounted) Navigator.of(context).pop();
+    } on Object catch (error) {
+      if (mounted) setState(() => _error = error);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   static const _languages = <({String code, String label})>[
     (code: 'en', label: 'English'),
@@ -1550,55 +1562,79 @@ class _LanguageSheetState extends State<_LanguageSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Material(
-      color: colors.surfaceBase,
-      clipBehavior: Clip.antiAlias,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 32,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colors.textSecondary.withValues(alpha: 0.45),
-                    borderRadius: BorderRadius.circular(2),
+    return PopScope(
+      canPop: !_submitting,
+      child: Material(
+        color: colors.surfaceBase,
+        clipBehavior: Clip.antiAlias,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.textSecondary.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context).settingsLanguage,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              for (var index = 0; index < _languages.length; index++) ...[
-                _LanguageOption(
-                  key: ValueKey('language-option-${_languages[index].code}'),
-                  label: _languages[index].label,
-                  selected: _selected == _languages[index].code,
-                  onTap: () =>
-                      setState(() => _selected = _languages[index].code),
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context).settingsLanguage,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                if (index < _languages.length - 1)
-                  Divider(color: colors.surfaceSubtle, height: 1),
+                const SizedBox(height: 8),
+                for (var index = 0; index < _languages.length; index++) ...[
+                  _LanguageOption(
+                    key: ValueKey('language-option-${_languages[index].code}'),
+                    label: _languages[index].label,
+                    selected: _selected == _languages[index].code,
+                    onTap: _submitting
+                        ? null
+                        : () => setState(
+                            () => _selected = _languages[index].code,
+                          ),
+                  ),
+                  if (index < _languages.length - 1)
+                    Divider(color: colors.surfaceSubtle, height: 1),
+                ],
+                if (_error case final error?) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    errorMessage(
+                      error,
+                      fallback: AppLocalizations.of(context)
+                          .settingsLanguageSaveFailed,
+                    ),
+                    style: TextStyle(color: context.semanticColors.danger),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    key: const Key('settings-language-confirm'),
+                    onPressed: _submitting ? null : _submit,
+                    child: _submitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(AppLocalizations.of(context).confirm),
+                  ),
+                ),
               ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(_selected),
-                  child: Text(AppLocalizations.of(context).confirm),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1616,7 +1652,7 @@ class _LanguageOption extends StatelessWidget {
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

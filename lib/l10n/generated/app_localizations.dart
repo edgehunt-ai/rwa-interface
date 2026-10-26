@@ -1972,6 +1972,12 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguage;
 
+  /// No description provided for @settingsLanguageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save language. Please try again.'**
+  String get settingsLanguageSaveFailed;
+
   /// No description provided for @languageEnglish.
   ///
   /// In en, this message translates to:
@@ -2107,7 +2113,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTermsConditions.
   ///
   /// In en, this message translates to:
-  /// **'Terms Of Use'**
+  /// **'Terms of Use'**
   String get settingsTermsConditions;
 
   /// No description provided for @settingsLogOut.
