@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,6 +27,7 @@ import 'package:nobell/domain/repositories/session_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/account/views/settings_screen.dart';
@@ -32,6 +35,7 @@ import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -40,6 +44,67 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final dependencyReload in [false, true]) {
+    testWidgets(
+      'Home keeps loaded funds during ${dependencyReload ? 'dependency reload' : 'refresh'}',
+      (tester) async {
+        await configureDisplay(tester, size: const Size(393, 852));
+        SharedPreferences.setMockInitialValues({});
+        final responses = <Completer<Portfolio>>[];
+        final container = ProviderContainer(
+          overrides: [
+            authenticatedStateOverride,
+            portfolioRepositoryProvider.overrideWith(
+              (_) => _DeferredPortfolio(responses),
+            ),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+        );
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: buildTestApp(const HomeScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(LoadingSkeleton), findsOneWidget);
+        expect(find.text('Withdraw'), findsNothing);
+
+        responses.single.complete(await _Portfolio().getSummary());
+        await tester.pumpAndSettle();
+        expect(find.text(r'$12,580.42'), findsOneWidget);
+        expect(find.text('Withdraw'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+
+        if (dependencyReload) {
+          container.invalidate(portfolioRepositoryProvider);
+        } else {
+          container.invalidate(portfolioSummaryProvider);
+        }
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(responses, hasLength(2));
+        expect(container.read(portfolioSummaryProvider).isLoading, isTrue);
+        expect(find.text(r'$12,580.42'), findsOneWidget);
+        expect(find.text(r'+$248.32 (+2.01%) Today'), findsOneWidget);
+        expect(find.text('Withdraw'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+
+        responses.last.complete(
+          Portfolio(
+            totalValueUsd: DecimalValue('13000', asset: 'USD', unit: 'fiat'),
+            availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(r'$13,000.00'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+        expect(tester.takeException(), isNull);
+        await _disposeContainerAfterWidgets(tester, container);
+      },
+    );
+  }
+
   for (final language in ['en', 'zh-CN']) {
     testWidgets('app startup applies account $language on the home screen', (
       tester,
@@ -793,6 +858,22 @@ Future<ProviderContainer> _authenticatedContainer({
     isA<AuthenticationAuthenticated>(),
   );
   return container;
+}
+
+final class _DeferredPortfolio implements PortfolioRepository {
+  _DeferredPortfolio(this.responses);
+
+  final List<Completer<Portfolio>> responses;
+
+  @override
+  Future<Portfolio> getSummary() {
+    final response = Completer<Portfolio>();
+    responses.add(response);
+    return response.future;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _Portfolio implements PortfolioRepository {

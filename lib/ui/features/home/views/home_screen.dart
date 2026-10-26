@@ -49,6 +49,7 @@ class HomeScreen extends ConsumerWidget {
         ? ref.watch(portfolioSummaryProvider)
         : null;
     final portfolioValue = portfolio?.maybeWhen(
+      skipLoadingOnReload: true,
       data: (value) => value,
       orElse: () => null,
     );
@@ -89,6 +90,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               if (authenticated)
                 portfolio!.when(
+                  skipLoadingOnReload: true,
                   loading: () => const _HomeStateCard(),
                   error: (error, _) => FailureState(
                     error: error,

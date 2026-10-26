@@ -396,7 +396,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     // afterwards and leaves `_favoriteBusy` stuck true forever.
     ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
-    final marketHours = ref.watch(marketHoursProvider).value;
+    final marketHoursState = ref.watch(marketHoursProvider);
     final hip3ContextState =
         productKind == MarketProductKind.perp && _productId != null
         ? ref.watch(hip3OpeningContextProvider(_productId!))
@@ -501,7 +501,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     kind: productKind,
                     productId: _productId,
                     maximumLeverage: maximumLeverage,
-                    marketHours: marketHours,
+                    marketHours: marketHoursState.value,
+                    marketHoursLoading: marketHoursState.isLoading,
                     onMarketHours: () => setState(() => marketHoursOpen = true),
                     chartStyle: chartStyle,
                     snapshot: snapshot,
@@ -765,6 +766,7 @@ class _ProductHeader extends StatelessWidget {
     required this.productId,
     required this.maximumLeverage,
     required this.marketHours,
+    required this.marketHoursLoading,
     required this.onMarketHours,
     required this.chartStyle,
     required this.snapshot,
@@ -781,6 +783,7 @@ class _ProductHeader extends StatelessWidget {
   final String? productId;
   final int? maximumLeverage;
   final MarketHours? marketHours;
+  final bool marketHoursLoading;
   final VoidCallback onMarketHours;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
@@ -923,7 +926,11 @@ class _ProductHeader extends StatelessWidget {
                         ),
                         if (symbol != 'ETH') ...[
                           const SizedBox(width: 4),
-                          MarketSessionBadge(hours: marketHours, compact: true),
+                          MarketSessionBadge(
+                            hours: marketHours,
+                            compact: true,
+                            loading: marketHoursLoading,
+                          ),
                         ],
                       ],
                     ),

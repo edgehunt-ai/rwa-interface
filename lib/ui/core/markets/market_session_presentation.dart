@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
 String marketSessionLabel(AppLocalizations l10n, MarketSessionKind kind) =>
@@ -126,6 +127,7 @@ class MarketSessionBadge extends StatelessWidget {
   const MarketSessionBadge({
     required this.hours,
     this.compact = false,
+    this.loading = false,
     super.key,
   });
 
@@ -133,9 +135,18 @@ class MarketSessionBadge extends StatelessWidget {
 
   /// The tighter pill the trade screen's navigation bar uses.
   final bool compact;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
+    if (loading && hours == null) {
+      return SkeletonBlock(
+        key: const Key('market-session-skeleton'),
+        width: 72,
+        height: compact ? 20 : 32,
+        radius: compact ? 8 : 16,
+      );
+    }
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final value = hours;

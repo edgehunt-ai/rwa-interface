@@ -1309,7 +1309,7 @@ void main() {
   });
 
   testWidgets(
-    'background refresh keeps existing chart and prices until new data arrives',
+    'initial market hours use a skeleton and background refresh keeps existing data',
     (tester) async {
       const product = MarketProductRef(
         symbol: 'NVDAB',
@@ -1318,11 +1318,24 @@ void main() {
       const chartQuery = (product: product, range: CandleChartRange.oneHour);
       final chartRefresh = Completer<CandleChart>();
       final snapshotRefresh = Completer<MarketSnapshot>();
+      final initialHours = Completer<MarketHours>();
+      final hoursRefresh = Completer<MarketHours>();
+      const hours = MarketHours(
+        timezone: 'America/New_York',
+        current: MarketSessionKind.overnight,
+      );
       var chartCalls = 0;
       var snapshotCalls = 0;
+      var hoursCalls = 0;
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            marketHoursProvider.overrideWith((_) {
+              hoursCalls++;
+              return hoursCalls == 1
+                  ? initialHours.future
+                  : hoursRefresh.future;
+            }),
             marketCandlesProvider(chartQuery).overrideWith((_) async {
               chartCalls++;
               return chartCalls == 1
@@ -1340,15 +1353,27 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(find.byKey(const Key('market-session-skeleton')), findsOneWidget);
+      expect(find.byKey(const Key('market-session-label')), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      initialHours.complete(hours);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('market-session-skeleton')), findsNothing);
+      expect(find.text('Overnight'), findsOneWidget);
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TradeScreen)),
       );
       container.invalidate(marketCandlesProvider(chartQuery));
       container.invalidate(marketSnapshotProvider(product));
+      container.invalidate(marketHoursProvider);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(chartCalls, 2);
       expect(snapshotCalls, 2);
+      expect(hoursCalls, 2);
+      expect(container.read(marketHoursProvider).isLoading, isTrue);
+      expect(find.byKey(const Key('market-session-skeleton')), findsNothing);
+      expect(find.text('Overnight'), findsOneWidget);
       expect(
         container.read(marketCandlesProvider(chartQuery)).isLoading,
         isTrue,
@@ -1363,6 +1388,7 @@ void main() {
       expect(_headerPrice(r'$100'), findsOneWidget);
       chartRefresh.complete(_chart(product.symbol, CandleChartRange.oneHour));
       snapshotRefresh.complete(MarketSnapshot(price: DecimalValue('101')));
+      hoursRefresh.complete(hours);
       await tester.pumpAndSettle();
       expect(_headerPrice(r'$101'), findsOneWidget);
       expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
