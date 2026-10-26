@@ -586,10 +586,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                     l10n.availableTokenAmount(
                       availableBalance == null
                           ? '—'
-                          : TokenAmountFormatter.formatValue(
-                              availableBalance,
-                              decimals: widget.asset!.decimals,
-                            ),
+                          : TokenAmountFormatter.formatValue(availableBalance),
                       widget.token,
                     ),
                   ),
@@ -1218,10 +1215,7 @@ class _AssetRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      TokenAmountFormatter.formatValue(
-                        asset.balance,
-                        decimals: asset.decimals,
-                      ),
+                      TokenAmountFormatter.formatValue(asset.balance),
                       style: _strongText,
                     ),
                     const SizedBox(height: 2),
