@@ -47,7 +47,10 @@ void main() {
     harness.repository.failure = StateError(
       'Language update temporarily unavailable',
     );
-    final login = expectLater(harness.login('first', 'zh-CN'), throwsStateError);
+    final login = expectLater(
+      harness.login('first', 'zh-CN'),
+      throwsStateError,
+    );
     await tester.pumpAndSettle();
     await login;
     expect(
