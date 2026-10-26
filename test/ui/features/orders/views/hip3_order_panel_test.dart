@@ -222,7 +222,7 @@ void main() {
       expect(tester.getSize(marker), const Size(6, 6));
       final decoration =
           tester.widget<Container>(marker).decoration! as BoxDecoration;
-      expect(decoration.color, colors.subtleSurface);
+      expect(decoration.color, colors.surfaceSubtle);
     }
 
     expect(
@@ -2356,11 +2356,11 @@ void main() {
     ).extension<AppRwaColors>()!;
     expect(
       tester.widget<Text>(find.text('Liquidation Price')).style?.color,
-      colors.secondaryText,
+      colors.textSecondary,
     );
     expect(
       tester.widget<Text>(find.text('Margin Required')).style?.color,
-      colors.secondaryText,
+      colors.textSecondary,
     );
 
     final liquidationRow = tester.getRect(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/repositories/markets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
@@ -23,6 +25,48 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets(
+      'market venue badges use layered theme colors in ${mode.name}',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            Column(
+              children: [
+                MarketProductRow(product: _testProduct('NVDA')),
+                MarketProductRow(
+                  product: _testProduct('TSLA', kind: MarketProductKind.perp),
+                ),
+              ],
+            ),
+            themeMode: mode,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(VenueIcon), findsNWidgets(2));
+        for (final badge in find.byType(VenueIcon).evaluate()) {
+          final picture = tester.widget<SvgPicture>(
+            find.descendant(
+              of: find.byWidget(badge.widget),
+              matching: find.byType(SvgPicture),
+            ),
+          );
+          expect(
+            (picture.bytesLoader as SvgAssetLoader).colorMapper,
+            isNotNull,
+          );
+          expect(picture.colorFilter, isNull);
+          expect(
+            tester.getSize(find.byWidget(badge.widget)),
+            const Size.square(14),
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('HIP-3 rows show the listing max leverage badge', (tester) async {
     await tester.pumpWidget(
       buildTestApp(
@@ -160,7 +204,7 @@ void main() {
     expect(popular.style?.shape?.resolve({}), isA<StadiumBorder>());
     expect(
       popular.style?.backgroundColor?.resolve({}),
-      AppTheme.light.extension<AppRwaColors>()!.subtleSurface,
+      AppTheme.light.extension<AppRwaColors>()!.surfaceSubtle,
     );
   });
 

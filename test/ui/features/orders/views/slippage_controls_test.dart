@@ -75,7 +75,7 @@ void main() {
     );
     expect(
       tester.widget<ChoiceChip>(preset).selectedColor,
-      AppTheme.light.extension<AppRwaColors>()!.primaryAction,
+      AppTheme.light.extension<AppRwaColors>()!.actionPrimary,
     );
 
     await tester.tap(find.byKey(const Key('slippage-confirm')));

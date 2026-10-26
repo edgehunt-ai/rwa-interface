@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../../../../app/routing/routes.dart';
 import '../../../../app/providers/auth_providers.dart';
@@ -260,18 +261,27 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
-                key: Key('login-backdrop'),
+                key: const Key('login-backdrop'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFFF9D6E8),
-                      Color(0xFFF6DFEC),
-                      Color(0xFFF2E5EF),
-                      Color(0xFFF7F0F6),
+                      Color.alphaBlend(
+                        colors.brandDefault.withValues(alpha: 0.18),
+                        colors.surfaceCanvas,
+                      ),
+                      Color.alphaBlend(
+                        colors.brandDefault.withValues(alpha: 0.12),
+                        colors.surfaceCanvas,
+                      ),
+                      Color.alphaBlend(
+                        colors.brandDefault.withValues(alpha: 0.07),
+                        colors.surfaceCanvas,
+                      ),
+                      colors.surfaceCanvas,
                     ],
                     stops: [0, .36, .72, 1],
                   ),
@@ -293,7 +303,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Center(
-                          child: SvgPicture.asset(
+                          child: AppSvgIcon(
                             'assets/figma/session/nobell_wordmark.svg',
                             key: const Key('login-wordmark'),
                           ),
@@ -306,7 +316,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
-                                color: Colors.black,
+                                color: colors.textPrimary,
                                 fontSize: 22,
                                 height: 27 / 22,
                                 fontWeight: FontWeight.w500,
@@ -319,9 +329,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                               : l10n.loginSubtitle,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: waitingForCode
-                                ? colors.secondaryText
-                                : const Color(0xFF636673),
+                            color: colors.textSecondary,
                             fontSize: 13,
                             height: 18 / 13,
                           ),
@@ -350,7 +358,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                             l10n.didntGetEmail,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: const Color(0xFF676776)),
+                                ?.copyWith(color: colors.textSecondary),
                           ),
                           TextButton(
                             onPressed: _resendCode,
@@ -385,7 +393,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                               child: Text(
                                 l10n.enterValidEmail,
                                 style: TextStyle(
-                                  color: Color(0xFFB42318),
+                                  color: context.semanticColors.danger,
                                   fontSize: 12,
                                 ),
                               ),
@@ -455,15 +463,15 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                                 onTap: busy
                                     ? null
                                     : () => _loginWith('Passkey'),
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 6,
                                   ),
                                   child: Text(
                                     'Sign in with Passkey',
                                     style: TextStyle(
-                                      color: Color(0xFF1D1D24),
+                                      color: colors.textPrimary,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       height: 18 / 13,
@@ -491,10 +499,11 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SvgPicture.asset(
+                        AppSvgIcon(
                           'assets/figma/session/protected_by_privy.svg',
                           width: 150,
                           height: 13,
+                          color: colors.textSecondary,
                         ),
                         const SizedBox(height: 8),
                         Text.rich(
@@ -526,7 +535,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           ),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: const Color(0xFF616370)),
+                              ?.copyWith(color: colors.textSecondary),
                         ),
                       ],
                     ),
@@ -544,7 +553,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
       showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
-        barrierColor: const Color(0x70111215),
+        barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
         backgroundColor: Colors.transparent,
         builder: (sheetContext) => _OtherSocialsSheet(
           onTelegram: () {
@@ -584,19 +593,20 @@ class _EmailLoginOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         height: 48,
         child: Material(
-          color: Colors.white,
+          color: colors.surfaceBase,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(99),
             side: BorderSide(
               color: emailFormatError
-                  ? const Color(0xFFB42318)
+                  ? context.semanticColors.danger
                   : editing
-                  ? const Color(0xFF1D1D24)
+                  ? colors.textPrimary
                   : Colors.transparent,
               width: 1,
             ),
@@ -606,8 +616,9 @@ class _EmailLoginOption extends StatelessWidget {
             children: [
               Positioned(
                 left: 20,
-                child: SvgPicture.asset(
+                child: AppSvgIcon(
                   'assets/figma/session/email.svg',
+                  color: context.appColors.iconSecondary,
                   width: 20,
                   height: 20,
                 ),
@@ -624,15 +635,15 @@ class _EmailLoginOption extends StatelessWidget {
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF1D1D24),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'your@email.com',
                     hintStyle: TextStyle(
-                      color: Color(0xFF9494A3),
+                      color: colors.textTertiary,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
@@ -650,9 +661,9 @@ class _EmailLoginOption extends StatelessWidget {
                     onPressed: onSend,
                     icon: const Icon(Icons.arrow_upward_rounded),
                     iconSize: 16,
-                    color: Colors.white,
+                    color: colors.textInverse,
                     style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D1D24),
+                      backgroundColor: colors.actionPrimary,
                       minimumSize: const Size(24, 24),
                       padding: EdgeInsets.zero,
                     ),
@@ -712,6 +723,7 @@ class _VerificationCodeInputState extends State<_VerificationCodeInput> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final digits = widget.controller.text
         .padRight(6)
         .split('')
@@ -735,19 +747,19 @@ class _VerificationCodeInputState extends State<_VerificationCodeInput> {
                       margin: EdgeInsets.only(right: index == 5 ? 0 : 8),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colors.surfaceBase,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isActive
-                              ? const Color(0xFF1D1D24)
-                              : const Color(0xFFD9DBEC),
+                              ? colors.textPrimary
+                              : colors.borderSubtle,
                           width: isActive ? 1.5 : 1,
                         ),
                       ),
                       child: Text(
                         digits[index].trim(),
-                        style: const TextStyle(
-                          color: Color(0xFF1D1D24),
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
                         ),
@@ -802,12 +814,12 @@ class _RecentBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(
-      color: const Color(0xFFF1F1F5),
+      color: context.appColors.surfaceSubtle,
       borderRadius: BorderRadius.circular(10),
     ),
-    child: const Text(
+    child: Text(
       'Recent',
-      style: TextStyle(color: Color(0xFF676776), fontSize: 12),
+      style: TextStyle(color: context.appColors.textSecondary, fontSize: 12),
     ),
   );
 }
@@ -826,12 +838,13 @@ class _LoginOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         height: 48,
         child: Material(
-          color: Colors.white,
+          color: colors.surfaceBase,
           borderRadius: BorderRadius.circular(99),
           child: InkWell(
             borderRadius: BorderRadius.circular(99),
@@ -841,15 +854,20 @@ class _LoginOption extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1D1D24),
+                    color: colors.textPrimary,
                   ),
                 ),
                 Positioned(
                   left: 20,
-                  child: SvgPicture.asset(asset, width: 20, height: 20),
+                  child: SvgPicture.asset(
+                    asset,
+                    width: 20,
+                    height: 20,
+                    theme: SvgTheme(currentColor: colors.iconPrimary),
+                  ),
                 ),
                 if (badge != null)
                   Positioned(
@@ -860,14 +878,14 @@ class _LoginOption extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F1F5),
+                        color: colors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         badge!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF676776),
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -896,7 +914,7 @@ class _OtherSocialsSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         decoration: BoxDecoration(
-          color: colors.canvas,
+          color: colors.surfaceCanvas,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -908,7 +926,7 @@ class _OtherSocialsSheet extends StatelessWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colors.secondaryText.withValues(alpha: .45),
+                  color: colors.textSecondary.withValues(alpha: .45),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -917,7 +935,7 @@ class _OtherSocialsSheet extends StatelessWidget {
             Text(
               l10n.loginOrSignUp,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colors.primaryText,
+                color: colors.textPrimary,
                 fontSize: 20,
                 height: 26 / 20,
                 fontWeight: FontWeight.w600,
@@ -958,7 +976,7 @@ class _OtherSocialOption extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     height: 48,
     child: Material(
-      color: Colors.white,
+      color: context.appColors.surfaceBase,
       borderRadius: BorderRadius.circular(99),
       child: InkWell(
         borderRadius: BorderRadius.circular(99),
@@ -968,8 +986,8 @@ class _OtherSocialOption extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF1D1D24),
+              style: TextStyle(
+                color: context.appColors.textPrimary,
                 fontSize: 15,
                 height: 22 / 15,
                 fontWeight: FontWeight.w600,
@@ -977,7 +995,12 @@ class _OtherSocialOption extends StatelessWidget {
             ),
             Positioned(
               left: 20,
-              child: SvgPicture.asset(asset, width: 20, height: 20),
+              child: SvgPicture.asset(
+                asset,
+                width: 20,
+                height: 20,
+                theme: SvgTheme(currentColor: context.appColors.iconPrimary),
+              ),
             ),
           ],
         ),
@@ -1013,7 +1036,7 @@ class _LoginFailure extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.selectedSoft,
+        color: colors.brandSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -1023,14 +1046,14 @@ class _LoginFailure extends StatelessWidget {
           Text(
             message,
             style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: colors.primaryText),
+                ?.copyWith(color: colors.textPrimary),
           ),
           if (failure.requestId case final requestId?) ...[
             const SizedBox(height: 6),
             Text(
               l10n.supportId(requestId),
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colors.secondaryText),
+                  ?.copyWith(color: colors.textSecondary),
             ),
           ],
         ],

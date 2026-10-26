@@ -46,6 +46,7 @@ void main() {
 
       container.listen(accountLocaleSyncProvider, (_, _) {});
       await container.pump();
+      await container.read(accountLocaleSyncProvider.future);
 
       expect(
         container.read(appLocaleProvider),
@@ -62,6 +63,7 @@ void main() {
       container.listen(accountLocaleSyncProvider, (_, _) {});
       await container.read(accountProvider.future);
       await container.pump();
+      await container.read(accountLocaleSyncProvider.future);
       expect(container.read(appLocaleProvider), const Locale('en'));
 
       final refresh = Completer<UserAccount>();
@@ -87,11 +89,11 @@ void main() {
 
     container.read(sessionGenerationProvider.notifier).clearUserScope();
     await container.pump();
-    expect(container.read(appLocaleProvider), isNull);
+    expect(container.read(appLocaleProvider), const Locale('zh'));
 
     response.complete(_account('en'));
     await container.pump();
-    expect(container.read(appLocaleProvider), isNull);
+    expect(container.read(appLocaleProvider), const Locale('zh'));
   });
 }
 

@@ -244,7 +244,9 @@ void main() {
         );
         expect(
           badge.style!.color,
-          side == TradingSide.long ? const Color(0xFF04A08B) : kShortTradeColor,
+          side == TradingSide.long
+              ? AppTheme.light.extension<AppSemanticColors>()!.success
+              : AppTheme.light.extension<AppSemanticColors>()!.danger,
         );
         if (legs == 'none') {
           expect(find.text('TP/SL pending'), findsNothing);
@@ -1174,7 +1176,7 @@ void main() {
       final text = tester.widget<Text>(find.text(message));
       final semantic = Theme.of(tester.element(find.text(message)))
           .extension<AppSemanticColors>()!;
-      expect(text.style!.color, semantic.loss);
+      expect(text.style!.color, semantic.danger);
       expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
       final notice = find.byKey(const Key('close-error'));
       expect(

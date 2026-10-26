@@ -25,14 +25,15 @@ String marketSessionAsset(MarketSessionKind kind) => switch (kind) {
   _ => 'assets/figma/trade/session_pre_after.svg',
 };
 
-Color marketSessionColor(MarketSessionKind kind) => switch (kind) {
-  MarketSessionKind.regular => const Color(0xFFB9F34A),
-  MarketSessionKind.premarket ||
-  MarketSessionKind.afterHours => const Color(0xFFFF9654),
-  MarketSessionKind.overnight => const Color(0xFF2690E6),
-  MarketSessionKind.weekend ||
-  MarketSessionKind.holiday => const Color(0xFF9292A0),
-};
+Color marketSessionColor(AppRwaColors colors, MarketSessionKind kind) =>
+    switch (kind) {
+      MarketSessionKind.regular => colors.illustrationLime,
+      MarketSessionKind.premarket ||
+      MarketSessionKind.afterHours => colors.illustrationOrange,
+      MarketSessionKind.overnight => colors.illustrationSky,
+      MarketSessionKind.weekend ||
+      MarketSessionKind.holiday => colors.textTertiary,
+    };
 
 MarketSessionSegment? currentMarketSegment(MarketHours hours) {
   final now = DateTime.now().toUtc();
@@ -145,15 +146,15 @@ class MarketSessionBadge extends StatelessWidget {
     final style = TextStyle(
       fontSize: 11,
       height: 16 / 11,
-      color: colors.primaryText,
+      color: colors.textPrimary,
     );
     return Container(
       constraints: BoxConstraints(minHeight: compact ? 0 : 32),
       padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 10, vertical: 2),
       decoration: BoxDecoration(
         color: value == null
-            ? colors.subtleSurface
-            : marketSessionColor(value.current).withValues(alpha: .1),
+            ? colors.surfaceSubtle
+            : marketSessionColor(colors, value.current).withValues(alpha: .1),
         borderRadius: BorderRadius.circular(compact ? 8 : 999),
       ),
       child: Row(

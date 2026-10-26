@@ -987,6 +987,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageSimplifiedChinese => '简体中文';
 
   @override
+  String get settingsDisplayMode => '显示模式';
+
+  @override
+  String get displayModeLight => '浅色';
+
+  @override
+  String get displayModeLightDescription => '在此设备上始终使用浅色模式';
+
+  @override
+  String get displayModeDark => '深色';
+
+  @override
+  String get displayModeDarkDescription => '在此设备上始终使用深色模式';
+
+  @override
+  String get displayModeSystem => '系统';
+
+  @override
+  String get displayModeSystemDescription => '跟随此设备的系统设置';
+
+  @override
   String get settingsExportPrivateKey => '导出私钥';
 
   @override
@@ -2775,4 +2796,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String tradeChartOutsideRange(int count, String types) {
     return '$count 个 $types 超出图表范围';
   }
+
+  @override
+  String get settingsYourAccount => '你的账户';
+
+  @override
+  String get settingsLoginToManageAccount => '登录以管理你的账户';
 }

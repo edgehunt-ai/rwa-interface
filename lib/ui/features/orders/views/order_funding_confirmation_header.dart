@@ -19,24 +19,24 @@ class OrderFundingConfirmationHeader extends StatelessWidget {
       key: stepKey,
       children: [
         _StepCircle(
-          backgroundColor: colors.subtleSurface,
-          child: Icon(Icons.check, size: 18, color: colors.primaryText),
+          backgroundColor: colors.surfaceSubtle,
+          child: Icon(Icons.check, size: 18, color: colors.textPrimary),
         ),
         const SizedBox(width: 8),
         _StepCircle(
-          backgroundColor: colors.subtleSurface,
-          child: Icon(Icons.check, size: 18, color: colors.primaryText),
+          backgroundColor: colors.surfaceSubtle,
+          child: Icon(Icons.check, size: 18, color: colors.textPrimary),
         ),
         const SizedBox(width: 8),
         _StepCircle(
-          backgroundColor: colors.primaryAction,
+          backgroundColor: colors.actionPrimary,
           child: Text(
             '3',
             style: TextStyle(
               fontSize: 13,
               height: 18 / 13,
               fontWeight: FontWeight.w600,
-              color: colors.onPrimaryAction,
+              color: colors.textInverse,
             ),
           ),
         ),
@@ -50,7 +50,7 @@ class OrderFundingConfirmationHeader extends StatelessWidget {
               height: 26 / 20,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
-              color: colors.primaryText,
+              color: colors.textPrimary,
             ),
           ),
         ),

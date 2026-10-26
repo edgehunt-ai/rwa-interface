@@ -11,6 +11,7 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 String marketProductGroupForTab(String tab) => switch (tab) {
   'Favorites' => 'favorites',
@@ -158,15 +159,15 @@ class _RankingTab extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: selected ? colors.primaryText : colors.secondaryText,
-        backgroundColor: selected ? colors.subtleSurface : Colors.transparent,
+        foregroundColor: selected ? colors.textPrimary : colors.textSecondary,
+        backgroundColor: selected ? colors.surfaceSubtle : Colors.transparent,
         minimumSize: Size(0, height),
         maximumSize: Size(double.infinity, height),
         padding: const EdgeInsets.symmetric(horizontal: 8),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: StadiumBorder(
           side: BorderSide(
-            color: selected ? Colors.transparent : colors.border,
+            color: selected ? Colors.transparent : colors.borderSubtle,
           ),
         ),
         textStyle: const TextStyle(
@@ -214,8 +215,8 @@ class MarketProductFilter extends StatelessWidget {
                     onPressed: () => onChanged(kind),
                     style: TextButton.styleFrom(
                       foregroundColor: selected
-                          ? colors.primaryText
-                          : colors.secondaryText,
+                          ? colors.textPrimary
+                          : colors.textSecondary,
                       minimumSize: Size(0, tabHeight),
                       padding: EdgeInsets.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -239,7 +240,7 @@ class MarketProductFilter extends StatelessWidget {
                           height: 2,
                           decoration: BoxDecoration(
                             color: selected
-                                ? colors.selected
+                                ? colors.brandDefault
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(1),
                           ),
@@ -271,14 +272,14 @@ class MarketMaxLeverageBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceSubtle,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         AppLocalizations.of(context).marketMaxLeverage(leverage),
         style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: colors.primaryText, fontWeight: FontWeight.w400),
+            ?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -351,11 +352,11 @@ class MarketProductRow extends StatelessWidget {
                         product.name,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall
-                            ?.copyWith(color: colors.secondaryText),
+                            ?.copyWith(color: colors.textSecondary),
                       ),
                     ),
                     const SizedBox(width: 4),
-                    SvgPicture.asset(
+                    VenueIcon(
                       product.kind == MarketProductKind.bstock
                           ? 'assets/figma/home_markets/venue_bnb.svg'
                           : 'assets/figma/home_markets/venue_hyperliquid.svg',
@@ -368,7 +369,7 @@ class MarketProductRow extends StatelessWidget {
                           ? 'bStocks'
                           : l10n.hip3Perps,
                       style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: colors.secondaryText),
+                          ?.copyWith(color: colors.textSecondary),
                     ),
                   ],
                 ),
@@ -392,14 +393,14 @@ class MarketProductRow extends StatelessWidget {
                   key: ValueKey('market-volume-${product.symbol}'),
                   comparisonValue: turnover?.value,
                   style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: colors.secondaryText),
+                      ?.copyWith(color: colors.textSecondary),
                 )
               else if (product.change24hPercent != null)
                 AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(product.change24hPercent!),
                   key: ValueKey('market-change-${product.symbol}'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: positive ? semantic.success : semantic.loss,
+                    color: positive ? semantic.success : semantic.danger,
                   ),
                 ),
             ],
@@ -515,7 +516,7 @@ class MarketAssetMark extends StatelessWidget {
       alignment: Alignment.center,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         shape: borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: borderRadius == null
             ? null
@@ -528,7 +529,7 @@ class MarketAssetMark extends StatelessWidget {
         borderRadius: borderRadius == null
             ? null
             : BorderRadius.circular(borderRadius!),
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: !hasLogo
           ? fallback

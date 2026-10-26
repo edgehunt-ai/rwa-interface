@@ -24,6 +24,7 @@ import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.d
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import '../../../core/feedback/error_message.dart';
 
@@ -510,8 +511,8 @@ class _PerpsWithdrawalFormState extends State<_PerpsWithdrawalForm> {
                   height: 96,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: colors.surface,
-                    border: Border.all(color: colors.border),
+                    color: colors.surfaceBase,
+                    border: Border.all(color: colors.borderSubtle),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -558,7 +559,7 @@ class _PerpsWithdrawalFormState extends State<_PerpsWithdrawalForm> {
                                               .textTheme
                                               .bodySmall
                                               ?.copyWith(
-                                                color: colors.secondaryText,
+                                                color: colors.textSecondary,
                                               ),
                                         ),
                                 ),
@@ -611,7 +612,7 @@ class _PerpsWithdrawalFormState extends State<_PerpsWithdrawalForm> {
                                 ? null
                                 : () => widget.amount.text = widget.balance!,
                             style: TextButton.styleFrom(
-                              foregroundColor: colors.primaryText,
+                              foregroundColor: colors.textPrimary,
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(36, 16),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -648,7 +649,7 @@ class _PerpsWithdrawalFormState extends State<_PerpsWithdrawalForm> {
                     style: TextStyle(
                       color: Theme.of(context)
                           .extension<AppSemanticColors>()!
-                          .loss,
+                          .danger,
                     ),
                   ),
                 ],
@@ -711,13 +712,13 @@ class _PerpsWithdrawalReview extends StatelessWidget {
         Text(
           '≈ \$${TokenAmountFormatter.formatText(preview.amount)}',
           style: Theme.of(context).textTheme.bodyLarge
-              ?.copyWith(color: colors.secondaryText),
+              ?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.subtleSurface,
+            color: colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -776,7 +777,7 @@ class _PerpsWithdrawalReview extends StatelessWidget {
           Text(
             error!,
             style: TextStyle(
-              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
+              color: Theme.of(context).extension<AppSemanticColors>()!.danger,
             ),
           ),
         ],
@@ -816,9 +817,7 @@ class _PerpsRouteCard extends StatelessWidget {
         _RouteRow(
           label: l10n.signatureFrom,
           value: l10n.perpsAccount,
-          icon: SvgPicture.asset(
-            'assets/figma/home_markets/venue_hyperliquid.svg',
-          ),
+          icon: VenueIcon('assets/figma/home_markets/venue_hyperliquid.svg'),
         ),
       ],
     );
@@ -839,8 +838,8 @@ class _ReadOnlyDestinationCard extends StatelessWidget {
       height: 80,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -887,7 +886,7 @@ class _EstimateCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -979,7 +978,7 @@ class _PerpsAvailableTooltip extends StatelessWidget {
                 label: '– ${l10n.openOrderMargin}',
                 amount: _tooltipAmount(breakdown?.openOrderMargin?.valueUsd),
               ),
-              Divider(height: 13, color: colors.border),
+              Divider(height: 13, color: colors.borderSubtle),
               _PerpsTooltipAmountRow(
                 label: '= ${l10n.available}',
                 amount: available == null
@@ -992,7 +991,7 @@ class _PerpsAvailableTooltip extends StatelessWidget {
                 l10n.sharedMarginForCross,
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                   fontSize: 11,
                   height: 15 / 11,
                 ),
@@ -1004,7 +1003,7 @@ class _PerpsAvailableTooltip extends StatelessWidget {
       child: SizedBox.square(
         key: const Key('perps-withdrawal-available-help'),
         dimension: 14,
-        child: Icon(Icons.help_outline, size: 14, color: colors.secondaryText),
+        child: Icon(Icons.help_outline, size: 14, color: colors.textSecondary),
       ),
     );
   }
@@ -1028,7 +1027,7 @@ class _PerpsTooltipAmountRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final style = TextStyle(
-      color: emphasized ? colors.primaryText : colors.secondaryText,
+      color: emphasized ? colors.textPrimary : colors.textSecondary,
       fontSize: 12,
       height: 17 / 12,
       fontWeight: emphasized ? FontWeight.w600 : FontWeight.w400,
@@ -1053,8 +1052,8 @@ class _RouteContainer extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1132,7 +1131,7 @@ class _BreakdownRow extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: muted
-                ? Theme.of(context).extension<AppRwaColors>()!.secondaryText
+                ? Theme.of(context).extension<AppRwaColors>()!.textSecondary
                 : null,
           ),
         ),
@@ -1159,7 +1158,7 @@ class _MutedText extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     value,
     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+      color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
     ),
   );
 }

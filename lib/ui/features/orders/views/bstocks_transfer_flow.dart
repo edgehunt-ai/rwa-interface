@@ -92,7 +92,10 @@ class _BstocksTransferFlowState
         if (error case final value?)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(value, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              value,
+              style: TextStyle(color: context.semanticColors.danger),
+            ),
           ),
         _AmountOverview(amount: widget.amountNeeded),
         _TransferDetails(plan: _plan),
@@ -240,8 +243,8 @@ class _BstocksTransferFlowState
       children: [
         _TransferHeader(step: '2', title: l10n.transfer),
         const Divider(),
-        Image.asset(
-          'assets/figma/trade/funding_pending.webp',
+        ThemedIllustration(
+          IllustrationAsset.fundingPending,
           width: 120,
           height: 120,
         ),
@@ -255,7 +258,7 @@ class _BstocksTransferFlowState
           l10n.bridgeInProgress,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
             fontSize: 12,
           ),
         ),
@@ -279,8 +282,8 @@ class _BstocksTransferFlowState
       children: [
         _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
         const Divider(),
-        Image.asset(
-          'assets/figma/trade/order_submitting.webp',
+        ThemedIllustration(
+          IllustrationAsset.orderSubmitting,
           width: 120,
           height: 120,
           fit: BoxFit.contain,
@@ -295,7 +298,7 @@ class _BstocksTransferFlowState
           l10n.submittingOrderDescription,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
             fontSize: 12,
           ),
         ),
@@ -386,7 +389,7 @@ class _AmountOverview extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.canvas,
+      color: Theme.of(context).extension<AppRwaColors>()!.surfaceCanvas,
       borderRadius: BorderRadius.circular(14),
     ),
     child: Row(
@@ -474,8 +477,8 @@ class _ConversionOverview extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: colors.canvas,
-            border: Border.all(color: colors.surface, width: 4),
+            color: colors.surfaceCanvas,
+            border: Border.all(color: colors.surfaceBase, width: 4),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.arrow_forward, size: 16),
@@ -504,7 +507,7 @@ class _ConversionCard extends StatelessWidget {
       height: 82,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.canvas,
+        color: colors.surfaceCanvas,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -534,7 +537,7 @@ class _ConversionCard extends StatelessWidget {
           Text(
             pieces.length > 1 ? pieces.last : '',
             style: TextStyle(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -555,9 +558,9 @@ class _AssetMark extends StatelessWidget {
     width: 20,
     height: 20,
     decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
+      color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
       border: Border.all(
-        color: Theme.of(context).extension<AppRwaColors>()!.border,
+        color: Theme.of(context).extension<AppRwaColors>()!.borderSubtle,
       ),
       shape: BoxShape.circle,
     ),

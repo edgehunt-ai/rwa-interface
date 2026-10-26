@@ -54,14 +54,14 @@ import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 part 'trade_screen_details.dart';
 part 'trade_position_tp_sl_sheet.dart';
 part 'trade_chart_markers.dart';
 
 enum TradeChartStyle { line, candle, reference }
-
-const _referenceChartLineColor = Color(0xFF8A8A98);
 
 enum _OrderPanelTarget { openOrder, position }
 
@@ -692,7 +692,7 @@ class _OrderPanelLoading extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
       key: const Key('order-panel-entry-loading'),
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -725,7 +725,7 @@ class _OrderPanelLoading extends StatelessWidget {
               const SizedBox(height: 8),
               const SkeletonBlock(width: double.infinity, height: 46),
               const SizedBox(height: 16),
-              Divider(color: colors.subtleSurface),
+              Divider(color: colors.surfaceSubtle),
               const SizedBox(height: 14),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -814,8 +814,9 @@ class _ProductHeader extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
                   child: Transform.flip(
                     flipX: true,
-                    child: SvgPicture.asset(
+                    child: AppSvgIcon(
                       'assets/figma/home_markets/chevron_right.svg',
+                      color: context.appColors.iconSecondary,
                       width: 20,
                       height: 20,
                     ),
@@ -876,11 +877,11 @@ class _ProductHeader extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: Theme.of(context)
                                       .extension<AppRwaColors>()!
-                                      .subtleSurface,
+                                      .surfaceSubtle,
                                   border: Border.all(
                                     color: Theme.of(context)
                                         .extension<AppRwaColors>()!
-                                        .border,
+                                        .borderSubtle,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -891,13 +892,14 @@ class _ProductHeader extends StatelessWidget {
                                     height: 16 / 12,
                                     color: Theme.of(context)
                                         .extension<AppRwaColors>()!
-                                        .primaryText,
+                                        .textPrimary,
                                   ),
                                 ),
                               ),
                             ],
-                            SvgPicture.asset(
+                            AppSvgIcon(
                               'assets/figma/trade/chevron_down_18.svg',
+                              color: context.appColors.iconSecondary,
                               key: const Key('trade-product-chevron'),
                             ),
                           ],
@@ -950,10 +952,11 @@ class _ProductHeader extends StatelessWidget {
                       size: 24,
                       color: Theme.of(context)
                           .extension<AppRwaColors>()!
-                          .primaryText,
+                          .textPrimary,
                     )
-                  : SvgPicture.asset(
+                  : AppSvgIcon(
                       'assets/figma/trade/favorite_outline.svg',
+                      color: context.appColors.iconSecondary,
                       key: const Key('trade-favorite-outline'),
                     ),
               onPressed: favoriteLoading ? null : onFavoriteToggle,
@@ -1011,7 +1014,7 @@ class _ProductHeader extends StatelessWidget {
                   fontSize: 12,
                   color: Theme.of(context)
                       .extension<AppRwaColors>()!
-                      .secondaryText,
+                      .textSecondary,
                 ),
               ),
             ],
@@ -1042,14 +1045,14 @@ class _TradeProductTypeBadge extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 128),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(
+          VenueIcon(
             isPerp
                 ? 'assets/figma/home_markets/venue_hyperliquid.svg'
                 : 'assets/figma/home_markets/venue_bnb.svg',
@@ -1069,7 +1072,7 @@ class _TradeProductTypeBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -1249,7 +1252,7 @@ class _Chart extends StatelessWidget {
                                     ),
                                     painter: _ReferenceChartPainter(
                                       productColor: productColor,
-                                      referenceColor: _referenceChartLineColor,
+                                      referenceColor: colors.textTertiary,
                                       points: points,
                                       referencePoints: referencePoints,
                                       scale: scale,
@@ -1261,7 +1264,7 @@ class _Chart extends StatelessWidget {
                                     ),
                                     painter: _CandleChartPainter(
                                       semantic.success,
-                                      semantic.loss,
+                                      semantic.danger,
                                       points,
                                       scale: scale,
                                     ),
@@ -1351,7 +1354,9 @@ class _Chart extends StatelessWidget {
                       vertical: 7,
                     ),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: option == range ? colors.surface : null,
+                    backgroundColor: option == range
+                        ? colors.surfaceBase
+                        : null,
                     shape: const StadiumBorder(),
                   ),
                   child: Text(
@@ -1365,7 +1370,7 @@ class _Chart extends StatelessWidget {
                 height: 32,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Semantics(
@@ -1387,7 +1392,7 @@ class _Chart extends StatelessWidget {
                 height: 32,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1425,7 +1430,7 @@ class _Chart extends StatelessWidget {
               Expanded(
                 child: Text(
                   markerError ?? l10n.liquidationHistoryPartial,
-                  style: TextStyle(fontSize: 11, color: colors.secondaryText),
+                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
                 ),
               ),
               IconButton(
@@ -1498,8 +1503,8 @@ Color _changeColor(BuildContext context, DecimalValue? change) {
   final semantic = Theme.of(context).extension<AppSemanticColors>()!;
   return switch (change == null ? 0 : _decimalSign(change)) {
     > 0 => semantic.success,
-    < 0 => semantic.loss,
-    _ => Theme.of(context).extension<AppRwaColors>()!.primaryText,
+    < 0 => semantic.danger,
+    _ => Theme.of(context).extension<AppRwaColors>()!.textPrimary,
   };
 }
 
@@ -1539,7 +1544,7 @@ class _ChartValueTooltip extends StatelessWidget {
       width: 164,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
         border: Border.all(color: color.withValues(alpha: .35)),
         borderRadius: BorderRadius.circular(6),
       ),
@@ -1551,7 +1556,7 @@ class _ChartValueTooltip extends StatelessWidget {
             key: const Key('trade-chart-tooltip-date'),
             style: TextStyle(
               fontSize: 10,
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+              color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
             ),
           ),
           Text(
@@ -1574,7 +1579,7 @@ class _ChartValueTooltip extends StatelessWidget {
                 fontSize: 10,
                 color: Theme.of(context)
                     .extension<AppRwaColors>()!
-                    .secondaryText,
+                    .textSecondary,
               ),
             ),
         ],
@@ -1628,7 +1633,10 @@ class _SessionBand extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 child: Container(
-                  color: marketSessionColor(segment.kind).withValues(alpha: .1),
+                  color: marketSessionColor(
+                    context.appColors,
+                    segment.kind,
+                  ).withValues(alpha: .1),
                   alignment: Alignment.center,
                   child: LayoutBuilder(
                     builder: (context, constraints) => constraints.maxWidth < 68
@@ -1644,7 +1652,7 @@ class _SessionBand extends StatelessWidget {
                               fontSize: 10,
                               color: Theme.of(context)
                                   .extension<AppRwaColors>()!
-                                  .secondaryText,
+                                  .textSecondary,
                             ),
                           ),
                   ),
@@ -1732,18 +1740,15 @@ class _ChartControl extends StatelessWidget {
           alignment: Alignment.center,
           decoration: selected
               ? BoxDecoration(
-                  color: colors.surface,
+                  color: colors.surfaceBase,
                   borderRadius: BorderRadius.circular(8),
                 )
               : null,
-          child: SvgPicture.asset(
+          child: AppSvgIcon(
             asset,
             width: 16,
             height: 16,
-            colorFilter: ColorFilter.mode(
-              selected ? colors.primaryText : colors.secondaryText,
-              BlendMode.srcIn,
-            ),
+            color: selected ? colors.textPrimary : colors.textSecondary,
           ),
         ),
       ),
@@ -2092,7 +2097,7 @@ class _Statistics extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Wrap(
@@ -2169,7 +2174,7 @@ class _Metric extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           height: 14 / 11,
-          color: Theme.of(context).extension<AppRwaColors>()!.tertiaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textTertiary,
         ),
       ),
       const SizedBox(height: 4),
@@ -2182,7 +2187,7 @@ class _Metric extends StatelessWidget {
             fontSize: 12,
             height: 16 / 12,
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).extension<AppRwaColors>()!.primaryText,
+            color: Theme.of(context).extension<AppRwaColors>()!.textPrimary,
           ),
         ),
     ],

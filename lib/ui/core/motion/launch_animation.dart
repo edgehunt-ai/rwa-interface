@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rive/rive.dart' as rive;
 
-const launchBackgroundColor = Color(0xFFF7F7FA);
-const launchForegroundColor = Color(0xFFFF7BE5);
+import '../theme/app_theme.dart';
+
 const launchAnimationAsset = 'assets/launch/surface/nobell-surface.riv';
 const launchFirstFrameAsset = 'assets/launch/surface/first-frame.svg';
 const launchFinalFrameAsset = 'assets/launch/surface/final-frame.svg';
@@ -15,11 +15,32 @@ const _launchAnimationDuration = Duration(milliseconds: 4217);
 const launchSurfaceKey = Key('launch-surface');
 const launchAnimationKey = Key('launch-animation');
 
-Widget _launchSvgFrame(String asset) => SvgPicture.asset(
+Color _launchMarkColor(BuildContext context) =>
+    AppLaunchMark.colorFor(Theme.of(context).brightness);
+
+Widget _launchSvgFrame(BuildContext context, String asset) => SvgPicture.asset(
   asset,
   fit: BoxFit.contain,
-  theme: const SvgTheme(currentColor: launchForegroundColor),
+  // Like the Rive animation, these frames are transparent. The launch surface
+  // supplies the current theme's background, including while preferences load.
+  theme: SvgTheme(currentColor: _launchMarkColor(context)),
 );
+
+/// The Rive artboard is authored in a single flat pink ink with no colour input,
+/// so the dark appearance recolours the rendered layer with [BlendMode.srcIn].
+/// Every stroke keeps its geometry and antialiasing while the fill follows
+/// [AppLaunchMark]; the light appearance already matches and skips the layer.
+Widget _tintLaunchArtwork(BuildContext context, Widget child) {
+  final brightness = Theme.of(context).brightness;
+  if (brightness != Brightness.dark) return child;
+  return ColorFiltered(
+    colorFilter: ColorFilter.mode(
+      AppLaunchMark.colorFor(brightness),
+      BlendMode.srcIn,
+    ),
+    child: child,
+  );
+}
 
 /// Keeps the application alive beneath a one-shot cold-start animation.
 class LaunchAnimationGate extends StatefulWidget {
@@ -216,30 +237,36 @@ class _LaunchAnimationState extends State<LaunchAnimation> {
     super.dispose();
   }
 
-  Widget _buildAnimatedLaunch() {
+  Widget _buildAnimatedLaunch(BuildContext context) {
     final controller = _controller;
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (!_animationLoaded) _launchSvgFrame(launchFirstFrameAsset),
+        if (!_animationLoaded) _launchSvgFrame(context, launchFirstFrameAsset),
         if (controller != null)
-          rive.RiveWidget(
-            key: launchAnimationKey,
-            controller: controller,
-            fit: rive.Fit.contain,
+          _tintLaunchArtwork(
+            context,
+            rive.RiveWidget(
+              key: launchAnimationKey,
+              controller: controller,
+              fit: rive.Fit.contain,
+            ),
           ),
       ],
     );
   }
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-    key: launchSurfaceKey,
-    color: launchBackgroundColor,
-    child: ExcludeSemantics(
-      child: _reduceMotion
-          ? _launchSvgFrame(launchFinalFrameAsset)
-          : _buildAnimatedLaunch(),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final tokens = AppTheme.tokensFor(Theme.of(context).brightness);
+    return ColoredBox(
+      key: launchSurfaceKey,
+      color: tokens.surfaceCanvas,
+      child: ExcludeSemantics(
+        child: _reduceMotion
+            ? _launchSvgFrame(context, launchFinalFrameAsset)
+            : _buildAnimatedLaunch(context),
+      ),
+    );
+  }
 }

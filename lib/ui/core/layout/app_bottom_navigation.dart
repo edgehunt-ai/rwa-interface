@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 enum AppDestination { home, markets, assets, activity }
 
@@ -19,8 +19,8 @@ class AppBottomNavigation extends StatelessWidget {
     final showLabels = MediaQuery.textScalerOf(context).scale(11) <= 14;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.border)),
+        color: colors.surfaceBase,
+        border: Border(top: BorderSide(color: colors.borderSubtle)),
       ),
       child: SafeArea(
         top: false,
@@ -103,14 +103,11 @@ class _DestinationButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(
+              AppSvgIcon(
                 asset,
                 width: 20,
                 height: 20,
-                colorFilter: ColorFilter.mode(
-                  selected ? colors.selected : colors.tertiaryText,
-                  BlendMode.srcIn,
-                ),
+                color: selected ? colors.brandDefault : colors.textTertiary,
               ),
               if (showLabel) ...[
                 const SizedBox(height: 4),
@@ -125,8 +122,8 @@ class _DestinationButton extends StatelessWidget {
                     ),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: selected
-                          ? colors.primaryText
-                          : colors.tertiaryText,
+                          ? colors.textPrimary
+                          : colors.textTertiary,
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       height: 14 / 11,

@@ -68,7 +68,7 @@ class LegalDocumentScreen extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       letterSpacing: paragraph.size == 20 ? -0.2 : 0,
                       color: paragraph.size == 12
-                          ? colors.secondaryText
+                          ? colors.textSecondary
                           : Theme.of(context).colorScheme.onSurface,
                     ),
                   );

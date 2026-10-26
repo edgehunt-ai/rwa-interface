@@ -24,10 +24,10 @@ void main() {
       ),
     );
     final decoration = notice.decoration! as BoxDecoration;
-    expect(decoration.color, semantic.loss.withValues(alpha: 0.1));
+    expect(decoration.color, semantic.danger.withValues(alpha: 0.1));
     expect(
       tester.widget<Text>(find.text('Something went wrong')).style?.color,
-      semantic.loss,
+      semantic.danger,
     );
   });
 }

@@ -212,9 +212,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
           };
     final isDirectionalLimit =
         conditional == null && order.type == TradingOrderType.limit;
+    final semantic = context.semanticColors;
     final directionColor = order.side == TradingSide.long
-        ? const Color(0xFF04A08B)
-        : kShortTradeColor;
+        ? semantic.success
+        : semantic.danger;
     final badge = isDirectionalLimit
         ? '${order.side == TradingSide.long ? l10n.long : l10n.short} / $role'
         : role;
@@ -253,7 +254,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -288,7 +289,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                           decoration: BoxDecoration(
                             color: isDirectionalLimit
                                 ? directionColor.withValues(alpha: 0.1)
-                                : colors.border,
+                                : colors.borderSubtle,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -310,7 +311,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 14 / 11,
-                              color: colors.tertiaryText,
+                              color: colors.textTertiary,
                             ),
                           ),
                         ),
@@ -326,7 +327,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 28),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    backgroundColor: colors.subtleSurface,
+                    backgroundColor: colors.surfaceSubtle,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -367,7 +368,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
-                          color: colors.tertiaryText,
+                          color: colors.textTertiary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -382,9 +383,9 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                               child: LinearProgressIndicator(
                                 value: progress,
                                 minHeight: 8,
-                                backgroundColor: colors.subtleSurface,
+                                backgroundColor: colors.surfaceSubtle,
                                 valueColor: AlwaysStoppedAnimation(
-                                  colors.primaryAction,
+                                  colors.actionPrimary,
                                 ),
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
@@ -415,7 +416,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
-                color: colors.subtleSurface,
+                color: colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -425,7 +426,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       l10n.openOrderTpSlPending,
                       style: TextStyle(
                         fontSize: 11,
-                        color: colors.tertiaryText,
+                        color: colors.textTertiary,
                       ),
                     ),
                   ),
@@ -451,13 +452,13 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       style: TextStyle(
                         fontSize: 12,
                         height: 18 / 12,
-                        color: colors.primaryText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     child: Icon(
                       Icons.help_outline,
                       size: 14,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                       semanticLabel: l10n.openOrderTpSlPending,
                     ),
                   ),
@@ -479,7 +480,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       'inactive' => l10n.protectionInactive,
                       _ => l10n.protectionStatusUnknown,
                     },
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
           ],
           if (conditional?.warningCode ==
@@ -488,7 +489,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 l10n.parentCancelledProtectionWarning,
-                style: TextStyle(fontSize: 12, color: colors.secondaryText),
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
               ),
             ),
           if (_message != null)
@@ -522,7 +523,7 @@ class _OrderMetric extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.tertiaryText,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: 4),

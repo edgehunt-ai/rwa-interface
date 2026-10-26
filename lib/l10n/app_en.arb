@@ -367,6 +367,13 @@
   "settingsLanguage": "Language",
   "languageEnglish": "English",
   "languageSimplifiedChinese": "Simplified Chinese",
+  "settingsDisplayMode": "Display Mode",
+  "displayModeLight": "Light",
+  "displayModeLightDescription": "Always use light mode on this device",
+  "displayModeDark": "Dark",
+  "displayModeDarkDescription": "Always use dark mode on this device",
+  "displayModeSystem": "System",
+  "displayModeSystemDescription": "Follow this device’s system setting",
   "settingsExportPrivateKey": "Export Private Key",
   "settingsPrivateKeyWarning": "Sign in on the web to export\nyour private key",
   "settingsPrivateKeyContinue": "Sign in on the web",
@@ -985,14 +992,7 @@
   "tradeMarkersUnavailable": "Trade markers are temporarily unavailable.",
   "liquidationHistoryPartial": "Some liquidation history is unavailable.",
   "tradeChartOutsideRange": "{count} {types} off-chart",
-  "@tradeChartOutsideRange": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "types": {
-        "type": "String"
-      }
-    }
-  }
+  "@tradeChartOutsideRange": {"placeholders": {"count": {"type": "int"}, "types": {"type": "String"}}},
+  "settingsYourAccount": "Your account",
+  "settingsLoginToManageAccount": "Log in to manage your account"
 }

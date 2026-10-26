@@ -63,7 +63,7 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
     final action = _isZh ? '立即设置' : 'Set Up Now';
 
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -72,7 +72,7 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
+              SizedBox(
                 height: 4,
                 child: Center(
                   child: SizedBox(
@@ -80,8 +80,10 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                     height: 4,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Color(0x73676776),
-                        borderRadius: BorderRadius.all(Radius.circular(2)),
+                        color: colors.textSecondary.withValues(alpha: 0.45),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(2),
+                        ),
                       ),
                     ),
                   ),
@@ -119,7 +121,7 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, thickness: 1, color: Color(0xFFF1F1F5)),
+              Divider(height: 1, thickness: 1, color: colors.dividerSoft),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -151,7 +153,7 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                       style: TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -172,8 +174,8 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                   key: const Key('hip3-unified-account-confirm'),
                   onPressed: _loading ? null : _confirm,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF171719),
-                    foregroundColor: Colors.white,
+                    backgroundColor: colors.actionPrimary,
+                    foregroundColor: colors.textInverse,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

@@ -27,6 +27,7 @@ import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
@@ -34,6 +35,8 @@ import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import '../../../core/feedback/error_message.dart';
 
@@ -288,7 +291,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                                                   ),
                                               style: OutlinedButton.styleFrom(
                                                 backgroundColor:
-                                                    colors.subtleSurface,
+                                                    colors.surfaceSubtle,
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       horizontal: 20,
@@ -314,7 +317,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                                                   ),
                                               style: OutlinedButton.styleFrom(
                                                 backgroundColor:
-                                                    colors.subtleSurface,
+                                                    colors.surfaceSubtle,
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                       horizontal: 20,
@@ -477,7 +480,7 @@ class _EmptyAssets extends StatelessWidget {
       children: [
         Text(
           l10n.portfolioValue,
-          style: TextStyle(color: colors.secondaryText),
+          style: TextStyle(color: colors.textSecondary),
         ),
         const SizedBox(height: 4),
         Text(
@@ -486,7 +489,7 @@ class _EmptyAssets extends StatelessWidget {
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
-        Text('—', style: TextStyle(color: colors.secondaryText)),
+        Text('—', style: TextStyle(color: colors.textSecondary)),
         const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
@@ -497,8 +500,8 @@ class _EmptyAssets extends StatelessWidget {
         ),
         const SizedBox(height: 42),
         Center(
-          child: Image.asset(
-            'assets/figma/common/empty_state_illustration.webp',
+          child: ThemedIllustration(
+            IllustrationAsset.emptyState,
             width: 120,
             height: 120,
             fit: BoxFit.contain,
@@ -515,7 +518,7 @@ class _EmptyAssets extends StatelessWidget {
           l10n.depositToBuildPortfolio,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(color: colors.secondaryText),
+              ?.copyWith(color: colors.textSecondary),
         ),
       ],
     );
@@ -543,8 +546,8 @@ class _LoggedOutAssets extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/figma/common/sign_in_illustration.webp',
+              ThemedIllustration(
+                IllustrationAsset.signIn,
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
@@ -560,7 +563,7 @@ class _LoggedOutAssets extends StatelessWidget {
                 l10n.portfolioBalancesAppearHere,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: colors.secondaryText),
+                    ?.copyWith(color: colors.textSecondary),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -653,7 +656,7 @@ class _PortfolioSummary extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       color: Theme.of(context)
                           .extension<AppRwaColors>()!
-                          .secondaryText,
+                          .textSecondary,
                     ),
                   ),
                 ),
@@ -698,7 +701,7 @@ class _PortfolioSummary extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         height: 22 / 15,
-                        color: positive ? semantic.success : semantic.loss,
+                        color: positive ? semantic.success : semantic.danger,
                       ),
                     ),
                   ),
@@ -726,7 +729,7 @@ class _PortfolioSummary extends StatelessWidget {
                             painter: _TrendPainter(
                               Theme.of(context)
                                   .extension<AppRwaColors>()!
-                                  .selected,
+                                  .brandDefault,
                               value.points,
                             ),
                           ),
@@ -779,8 +782,9 @@ class _Allocation extends StatelessWidget {
                     AnimatedRotation(
                       turns: expanded ? .5 : 0,
                       duration: const Duration(milliseconds: 180),
-                      child: SvgPicture.asset(
+                      child: AppSvgIcon(
                         'assets/figma/portfolio/chevron_down.svg',
+                        color: context.appColors.iconSecondary,
                         width: 20,
                         height: 20,
                       ),
@@ -799,7 +803,7 @@ class _Allocation extends StatelessWidget {
             ),
             error: (error, _) => Text(
               errorMessage(error, fallback: l10n.allocationUnavailable),
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
             data: (allocation) => _AllocationValues(
               allocation: allocation,
@@ -868,8 +872,8 @@ class _AllocationValues extends StatelessWidget {
                           percent: entry.percent,
                         ),
                         color: entry.rail == 'bstock'
-                            ? colors.primaryText
-                            : colors.secondaryText,
+                            ? colors.textPrimary
+                            : colors.textSecondary,
                       ),
                     ),
                 ],
@@ -884,7 +888,7 @@ class _AllocationValues extends StatelessWidget {
                       showPercent:
                           allocation.hasCompleteValuation &&
                           perps.percent != null,
-                      color: colors.selected,
+                      color: colors.brandDefault,
                     ),
                     const SizedBox(height: 4),
                     if (perpsBreakdown.estimatedWithdrawable
@@ -898,7 +902,7 @@ class _AllocationValues extends StatelessWidget {
                         tooltipTriggerKey: const Key(
                           'max-withdraw-tooltip-trigger',
                         ),
-                        tooltipBorderColor: colors.subtleSurface,
+                        tooltipBorderColor: colors.surfaceSubtle,
                       ),
                       const SizedBox(height: 4),
                     ],
@@ -911,7 +915,7 @@ class _AllocationValues extends StatelessWidget {
                       _AllocationDetailRow(
                         label: l10n.isolatedMargin,
                         amount: amount,
-                        color: colors.selected.withValues(alpha: .5),
+                        color: colors.brandDefault.withValues(alpha: .5),
                       ),
                       const SizedBox(height: 4),
                     ],
@@ -919,7 +923,7 @@ class _AllocationValues extends StatelessWidget {
                       _AllocationDetailRow(
                         label: l10n.openOrderMargin,
                         amount: amount,
-                        color: colors.selected.withValues(alpha: .3),
+                        color: colors.brandDefault.withValues(alpha: .3),
                       ),
                   ],
                 ],
@@ -934,7 +938,7 @@ class _AllocationValues extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -981,7 +985,7 @@ class _AllocationBar extends StatelessWidget {
               child: indexed.$2.rail == 'perp'
                   ? _PerpsAllocationBar(
                       breakdown: perpsBreakdown,
-                      color: colors.selected,
+                      color: colors.brandDefault,
                     )
                   : Container(
                       height: 6,
@@ -989,8 +993,8 @@ class _AllocationBar extends StatelessWidget {
                         color:
                             indexed.$2.rail == 'bstock' ||
                                 indexed.$2.rail == 'spot'
-                            ? colors.primaryText
-                            : colors.secondaryText,
+                            ? colors.textPrimary
+                            : colors.textSecondary,
                         borderRadius: BorderRadius.horizontal(
                           left:
                               indexed.$2.rail == 'bstock' ||
@@ -1080,7 +1084,7 @@ class _AllocationAccountRow extends StatelessWidget {
           child: Text(
             _accountAllocationLabel(label, account),
             style: TextStyle(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontSize: 12,
               height: 16 / 12,
             ),
@@ -1090,7 +1094,7 @@ class _AllocationAccountRow extends StatelessWidget {
           key: Key('allocation-account-value-$label'),
           _formatUsdFixed2(account.valueUsd),
           style: TextStyle(
-            color: colors.secondaryText,
+            color: colors.textSecondary,
             fontSize: 12,
             height: 16 / 12,
           ),
@@ -1146,7 +1150,7 @@ class _AllocationDetailRow extends StatelessWidget {
                     ),
                   ),
           ),
-          if (indent) Text('└ ', style: TextStyle(color: colors.secondaryText)),
+          if (indent) Text('└ ', style: TextStyle(color: colors.textSecondary)),
           Expanded(
             child: Row(
               children: [
@@ -1157,7 +1161,7 @@ class _AllocationDetailRow extends StatelessWidget {
                         : '$label · ${_formatAllocationPercent(amount!.percent)}',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                       fontSize: 13,
                       height: 18 / 13,
                       fontWeight: FontWeight.w500,
@@ -1178,7 +1182,7 @@ class _AllocationDetailRow extends StatelessWidget {
                       child: Icon(
                         Icons.help_outline,
                         size: 14,
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -1193,7 +1197,7 @@ class _AllocationDetailRow extends StatelessWidget {
                 ? AppLocalizations.of(context).unavailable
                 : _formatUsdFixed2(amount!.valueUsd),
             style: TextStyle(
-              color: colors.primaryText,
+              color: colors.textPrimary,
               fontSize: 13,
               height: 18 / 13,
               fontWeight: FontWeight.w500,
@@ -1209,7 +1213,7 @@ InlineSpan _maxWithdrawTooltipMessage(BuildContext context) {
   final l10n = AppLocalizations.of(context);
   final colors = Theme.of(context).extension<AppRwaColors>()!;
   final base = TextStyle(
-    color: colors.secondaryText,
+    color: colors.textSecondary,
     fontSize: 12,
     height: 16 / 12,
   );
@@ -1241,12 +1245,12 @@ class _AllocationRiskRow extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 14),
-          Text('└ ', style: TextStyle(color: colors.secondaryText)),
+          Text('└ ', style: TextStyle(color: colors.textSecondary)),
           Expanded(
             child: Text(
               l10n.risk,
               style: TextStyle(
-                color: colors.secondaryText,
+                color: colors.textSecondary,
                 fontSize: 13,
                 height: 18 / 13,
                 fontWeight: FontWeight.w500,
@@ -1269,41 +1273,42 @@ class _AllocationRiskBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final (label, foreground, background, message) = switch (level) {
       PortfolioLiquidationRiskLevel.safe => (
         l10n.safe,
-        const Color(0xFF04A08B),
-        const Color(0xFFE9F8F4),
+        semantic.success,
+        semantic.successSoft,
         l10n.safeLiquidationRiskTooltip,
       ),
       PortfolioLiquidationRiskLevel.liquidationRisk => (
         l10n.liquidationRisk,
-        const Color(0xFFB45309),
-        const Color(0xFFFFF7ED),
+        semantic.warning,
+        semantic.warningSoft,
         l10n.liquidationRiskTooltip,
       ),
       PortfolioLiquidationRiskLevel.highLiquidationRisk => (
         l10n.highLiquidationRisk,
-        const Color(0xFFDE596E),
-        const Color(0xFFFFF0F2),
+        semantic.danger,
+        semantic.dangerSoft,
         l10n.highLiquidationRiskTooltip,
       ),
       PortfolioLiquidationRiskLevel.unavailable => (
         l10n.unavailable,
-        colors.secondaryText,
-        colors.subtleSurface,
+        colors.textSecondary,
+        colors.surfaceSubtle,
         l10n.noReliableLiquidationEstimate,
       ),
     };
     final tooltipStyle = TextStyle(
-      color: colors.secondaryText,
+      color: colors.textSecondary,
       fontSize: 12,
       height: 16 / 12,
     );
     return RwaRichTooltip(
       message: TextSpan(text: message, style: tooltipStyle),
       autoFlipVertically: true,
-      borderColor: colors.subtleSurface,
+      borderColor: colors.surfaceSubtle,
       tooltipKey: Key('allocation-risk-tooltip-${level.name}'),
       child: Container(
         key: Key('allocation-risk-${level.name}'),
@@ -1428,7 +1433,7 @@ class _TrendExpanded extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         _TrendPeriodSelector(
-          selectedColor: colors.selected,
+          selectedColor: colors.brandDefault,
           selected: range,
           onSelected: onRangeChanged,
         ),
@@ -1512,11 +1517,11 @@ class _TrendChartState extends State<_TrendChart> {
                         top: offset,
                         left: 0,
                         right: 0,
-                        child: Divider(height: 1, color: colors.subtleSurface),
+                        child: Divider(height: 1, color: colors.surfaceSubtle),
                       ),
                     Positioned.fill(
                       child: CustomPaint(
-                        painter: _TrendPainter(colors.selected, points),
+                        painter: _TrendPainter(colors.brandDefault, points),
                       ),
                     ),
                     if (selectedIndex == null)
@@ -1539,7 +1544,7 @@ class _TrendChartState extends State<_TrendChart> {
                         ),
                         top: 0,
                         bottom: 0,
-                        child: Container(width: 1, color: colors.border),
+                        child: Container(width: 1, color: colors.borderSubtle),
                       ),
                       Positioned(
                         left: _trendTooltipLeft(
@@ -1565,11 +1570,11 @@ class _TrendChartState extends State<_TrendChart> {
           children: [
             Text(
               _trendDate(points.first.timestamp),
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
             Text(
               _trendDate(points.last.timestamp),
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
           ],
         ),
@@ -1609,8 +1614,8 @@ class _PortfolioTrendTooltip extends StatelessWidget {
       width: 112,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1623,7 +1628,7 @@ class _PortfolioTrendTooltip extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             _trendDateTime(point.timestamp),
-            style: TextStyle(fontSize: 10, color: colors.secondaryText),
+            style: TextStyle(fontSize: 10, color: colors.textSecondary),
           ),
         ],
       ),
@@ -1663,8 +1668,8 @@ class _TrendPeriodSelector extends StatelessWidget {
               selected: period == selected,
               selectedColor: selectedColor,
               textColor: period == selected
-                  ? colors.primaryText
-                  : colors.secondaryText,
+                  ? colors.textPrimary
+                  : colors.textSecondary,
               onTap: () => onSelected(period),
             ),
         ],
@@ -1731,9 +1736,9 @@ class _AssetTabs extends StatelessWidget {
             _AssetTabButton(
               label: entry.value == 'spot' ? l10n.spot : l10n.perps,
               selected: selected == entry.key,
-              selectedColor: colors.selected,
-              primaryText: colors.primaryText,
-              secondaryText: colors.secondaryText,
+              selectedColor: colors.brandDefault,
+              primaryText: colors.textPrimary,
+              secondaryText: colors.textSecondary,
               onTap: () => onSelected(entry.key),
             ),
           ],
@@ -2076,7 +2081,7 @@ class _CashRow extends StatelessWidget {
     return InkWell(
       onTap: () => showModalBottomSheet<void>(
         context: context,
-        backgroundColor: colors.surface,
+        backgroundColor: colors.surfaceBase,
         isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -2155,7 +2160,7 @@ class _CashRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       height: 16 / 12,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -2180,7 +2185,7 @@ class _CashRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -2228,7 +2233,7 @@ class _CashActionSheet extends StatelessWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -2262,7 +2267,7 @@ class _CashActionSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             height: 16 / 12,
-                            color: colors.secondaryText,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -2272,19 +2277,16 @@ class _CashActionSheet extends StatelessWidget {
                   TextButton.icon(
                     onPressed: onHistory,
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.secondaryText,
+                      foregroundColor: colors.textSecondary,
                       minimumSize: const Size(0, 40),
                       padding: EdgeInsets.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    icon: SvgPicture.asset(
+                    icon: AppSvgIcon(
                       'assets/figma/funding/activity.svg',
                       width: 20,
                       height: 20,
-                      colorFilter: ColorFilter.mode(
-                        colors.secondaryText,
-                        BlendMode.srcIn,
-                      ),
+                      color: colors.textSecondary,
                     ),
                     label: Text(
                       l10n.history,
@@ -2311,7 +2313,7 @@ class _CashActionSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: colors.subtleSurface,
+                color: colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -2347,7 +2349,7 @@ class _CashActionSheet extends StatelessWidget {
                 fontSize: 13,
                 height: 18 / 13,
                 fontWeight: FontWeight.w500,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
             Row(
@@ -2368,7 +2370,7 @@ class _CashActionSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -2387,7 +2389,7 @@ class _CashActionSheet extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: onWithdraw,
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: colors.subtleSurface,
+                      backgroundColor: colors.surfaceSubtle,
                     ),
                     child: Text(l10n.withdraw),
                   ),
@@ -2421,7 +2423,7 @@ class _CashDetailRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -2844,7 +2846,7 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
                 style: TextStyle(
                   fontSize: 12,
                   height: 16 / 12,
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -2853,15 +2855,12 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
           AnimatedRotation(
             turns: expanded && canExpand ? 0 : .5,
             duration: const Duration(milliseconds: 180),
-            child: SvgPicture.asset(
+            child: AppSvgIcon(
               'assets/figma/portfolio/chevron_down.svg',
               key: Key('perps-margin-chevron-${widget.label}'),
               width: 20,
               height: 20,
-              colorFilter: ColorFilter.mode(
-                canExpand ? colors.primaryText : colors.secondaryText,
-                BlendMode.srcIn,
-              ),
+              color: canExpand ? colors.textPrimary : colors.textSecondary,
             ),
           ),
         ],
@@ -2896,7 +2895,7 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
                   key: Key('perps-margin-details-${widget.label}'),
                   margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
-                    color: colors.subtleSurface,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -2908,7 +2907,7 @@ class _PerpsMarginGroupState extends State<_PerpsMarginGroup> {
                             height: 1,
                             thickness: 1,
                             indent: 16,
-                            color: colors.border,
+                            color: colors.borderSubtle,
                           ),
                         entry.$2,
                         if (entry.$1 == 0)
@@ -2949,7 +2948,7 @@ class _PerpsBalanceLabel extends StatelessWidget {
         const SizedBox(height: 2),
         Row(
           children: [
-            SvgPicture.asset(
+            VenueIcon(
               'assets/figma/home_markets/venue_hyperliquid.svg',
               width: 14,
               height: 14,
@@ -2963,7 +2962,7 @@ class _PerpsBalanceLabel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   height: 16 / 12,
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                 ),
               ),
             ),
@@ -3018,7 +3017,7 @@ class _PerpsBalanceDetail extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -3094,7 +3093,7 @@ class _PerpsPositionDetail extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        SvgPicture.asset(
+                        VenueIcon(
                           isBstock ? 'assets/figma/home_markets/venue_bnb.svg' : 'assets/figma/home_markets/venue_hyperliquid.svg',
                           width: 14,
                           height: 14,
@@ -3108,7 +3107,7 @@ class _PerpsPositionDetail extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               height: 16 / 12,
-                              color: colors.secondaryText,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ),
@@ -3124,7 +3123,7 @@ class _PerpsPositionDetail extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  border: Border.all(color: colors.border),
+                  border: Border.all(color: colors.borderSubtle),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: FittedBox(
@@ -3135,7 +3134,7 @@ class _PerpsPositionDetail extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       height: 16 / 12,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
@@ -3160,7 +3159,7 @@ class _PerpsVenueBadge extends StatelessWidget {
       height: 20,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -3170,7 +3169,7 @@ class _PerpsVenueBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           height: 16 / 12,
-          color: colors.secondaryText,
+          color: colors.textSecondary,
         ),
       ),
     );
@@ -3257,7 +3256,7 @@ class _HoldingRow extends StatelessWidget {
                               const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  SvgPicture.asset(
+                                  VenueIcon(
                                     isBstock
                                         ? 'assets/figma/home_markets/venue_bnb.svg'
                                         : 'assets/figma/home_markets/venue_hyperliquid.svg',
@@ -3270,7 +3269,7 @@ class _HoldingRow extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 12,
                                       height: 16 / 12,
-                                      color: colors.secondaryText,
+                                      color: colors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -3312,7 +3311,7 @@ class _HoldingRow extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   height: 16 / 12,
-                                  color: colors.secondaryText,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -3336,7 +3335,7 @@ class _HoldingRow extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 16 / 12,
-                                color: colors.secondaryText,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ),
@@ -3358,9 +3357,9 @@ class _HoldingRow extends StatelessWidget {
                                     fontSize: 12,
                                     height: 16 / 12,
                                     color: pnlText.isEmpty
-                                        ? colors.secondaryText
+                                        ? colors.textSecondary
                                         : pnlIsNegative
-                                        ? semantic.loss
+                                        ? semantic.danger
                                         : semantic.success,
                                   ),
                                 ),
@@ -3681,8 +3680,8 @@ class _NetworkBadge extends StatelessWidget {
       width: 16,
       height: 16,
       decoration: BoxDecoration(
-        color: isEthereum ? const Color(0xFF627EEA) : const Color(0xFF2F3749),
-        border: Border.all(color: const Color(0xFFE4E4EA)),
+        color: isEthereum ? AppBrandColors.ethereum : AppBrandColors.arbitrum,
+        border: Border.all(color: context.appColors.borderSubtle),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Padding(

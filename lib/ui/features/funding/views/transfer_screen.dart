@@ -31,6 +31,7 @@ import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.d
 import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart';
 import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../../../core/feedback/error_message.dart';
 
@@ -1017,7 +1018,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           if (!didPop) _closeTokenSelector();
         },
         child: Scaffold(
-          backgroundColor: colors.canvas,
+          backgroundColor: colors.surfaceCanvas,
           body: SafeArea(
             child: options.when(
               data: (value) {
@@ -1054,7 +1055,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     return PopScope(
       canPop: !_submitting,
       child: Scaffold(
-        backgroundColor: colors.canvas,
+        backgroundColor: colors.surfaceCanvas,
         body: SafeArea(
           child: CustomScrollView(
             slivers: [
@@ -1296,8 +1297,8 @@ class _TransferSkeleton extends StatelessWidget {
     return Semantics(
       label: AppLocalizations.of(context).loadingTransferDetails,
       child: Shimmer.fromColors(
-        baseColor: colors.subtleSurface,
-        highlightColor: colors.surface,
+        baseColor: colors.surfaceSubtle,
+        highlightColor: colors.surfaceBase,
         child: Container(
           key: const Key('transfer-loading-skeleton'),
           height: height,
@@ -1306,8 +1307,8 @@ class _TransferSkeleton extends StatelessWidget {
             vertical: compact ? 10 : 16,
           ),
           decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: colors.border),
+            color: colors.surfaceBase,
+            border: Border.all(color: colors.borderSubtle),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -1358,7 +1359,7 @@ class _SkeletonBlock extends StatelessWidget {
     width: width,
     height: height,
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: context.appColors.surfaceBase,
       borderRadius: BorderRadius.circular(circular ? height / 2 : 6),
     ),
   );
@@ -1392,8 +1393,8 @@ class _SendAmountCard extends StatelessWidget {
     return Container(
       key: const Key('send-token-card'),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: selected == null || controller == null
@@ -1480,14 +1481,15 @@ class _AssetAmountRow extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     height: 14 / 11,
-                                    color: colors.secondaryText,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ),
                               if (canSelect) ...[
                                 const SizedBox(width: 2),
-                                SvgPicture.asset(
+                                AppSvgIcon(
                                   'assets/figma/portfolio/chevron_down.svg',
+                                  color: context.appColors.iconSecondary,
                                   key: const Key('transfer-token-chevron'),
                                   width: 18,
                                   height: 18,
@@ -1503,7 +1505,7 @@ class _AssetAmountRow extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               height: 14 / 11,
-                              color: colors.secondaryText,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
@@ -1519,8 +1521,8 @@ class _AssetAmountRow extends StatelessWidget {
               height: 32,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
-                  border: Border.all(color: colors.border),
+                  color: colors.surfaceSubtle,
+                  border: Border.all(color: colors.borderSubtle),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(
@@ -1535,7 +1537,7 @@ class _AssetAmountRow extends StatelessWidget {
                     fontSize: 15,
                     height: 22 / 15,
                     fontWeight: FontWeight.w600,
-                    color: colors.primaryText,
+                    color: colors.textPrimary,
                   ),
                   decoration: const InputDecoration(
                     isDense: true,
@@ -1627,19 +1629,16 @@ class _TokenSelector extends StatelessWidget {
                             onPressed: () =>
                                 context.goNamed(AppRoutes.activityName),
                             style: TextButton.styleFrom(
-                              foregroundColor: colors.secondaryText,
+                              foregroundColor: colors.textSecondary,
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(76, 34),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            icon: SvgPicture.asset(
+                            icon: AppSvgIcon(
                               'assets/figma/funding/activity.svg',
                               width: 20,
                               height: 20,
-                              colorFilter: ColorFilter.mode(
-                                colors.primaryText,
-                                BlendMode.srcIn,
-                              ),
+                              color: colors.textPrimary,
                             ),
                             label: Text(l10n.history),
                           ),
@@ -1654,18 +1653,15 @@ class _TokenSelector extends StatelessWidget {
                           decoration: InputDecoration(
                             prefixIcon: Padding(
                               padding: const EdgeInsets.all(12),
-                              child: SvgPicture.asset(
+                              child: AppSvgIcon(
                                 'assets/figma/home_markets/search.svg',
                                 width: 20,
                                 height: 20,
-                                colorFilter: ColorFilter.mode(
-                                  colors.primaryText,
-                                  BlendMode.srcIn,
-                                ),
+                                color: colors.textPrimary,
                               ),
                             ),
                             hintText: l10n.searchAssets,
-                            fillColor: colors.subtleSurface,
+                            fillColor: colors.surfaceSubtle,
                           ),
                         ),
                       ),
@@ -1675,7 +1671,7 @@ class _TokenSelector extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           height: 16 / 12,
-                          color: colors.tertiaryText,
+                          color: colors.textTertiary,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -1760,7 +1756,7 @@ class _TokenSelectorRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       height: 16 / 12,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -1809,9 +1805,13 @@ class _PositionIcon extends StatelessWidget {
                 height: 16,
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).extension<AppRwaColors>()!.surface,
+                  color: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .surfaceBase,
                   border: Border.all(
-                    color: Theme.of(context).extension<AppRwaColors>()!.border,
+                    color: Theme.of(context)
+                        .extension<AppRwaColors>()!
+                        .borderSubtle,
                     width: 0.8,
                   ),
                   borderRadius: BorderRadius.circular(4),
@@ -1847,8 +1847,8 @@ class _Hip3SendAmountCard extends StatelessWidget {
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1884,7 +1884,7 @@ class _Hip3SendAmountCard extends StatelessWidget {
                           ? '-'
                           : TokenAmountFormatter.formatText(balance!),
                     ),
-                    style: TextStyle(fontSize: 11, color: colors.secondaryText),
+                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
                   ),
               ],
             ),
@@ -1909,7 +1909,7 @@ class _Hip3SendAmountCard extends StatelessWidget {
                   vertical: 5,
                 ),
                 filled: true,
-                fillColor: colors.subtleSurface,
+                fillColor: colors.surfaceSubtle,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1951,7 +1951,7 @@ class _Hip3FeeSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -2036,8 +2036,8 @@ class _ReceiveAmountCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 59),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -2070,7 +2070,7 @@ class _ReceiveAmountCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 height: 14 / 11,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -2114,7 +2114,7 @@ class _FeeSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -2232,7 +2232,7 @@ class _FeeRow extends StatelessWidget {
               fontSize: 13,
               height: 18 / 13,
               fontWeight: FontWeight.w500,
-              color: colors.secondaryText,
+              color: colors.textSecondary,
             ),
           ),
         ),

@@ -1984,6 +1984,48 @@ abstract class AppLocalizations {
   /// **'Simplified Chinese'**
   String get languageSimplifiedChinese;
 
+  /// No description provided for @settingsDisplayMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Mode'**
+  String get settingsDisplayMode;
+
+  /// No description provided for @displayModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get displayModeLight;
+
+  /// No description provided for @displayModeLightDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use light mode on this device'**
+  String get displayModeLightDescription;
+
+  /// No description provided for @displayModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get displayModeDark;
+
+  /// No description provided for @displayModeDarkDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use dark mode on this device'**
+  String get displayModeDarkDescription;
+
+  /// No description provided for @displayModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get displayModeSystem;
+
+  /// No description provided for @displayModeSystemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow this device’s system setting'**
+  String get displayModeSystemDescription;
+
   /// No description provided for @settingsExportPrivateKey.
   ///
   /// In en, this message translates to:
@@ -5226,6 +5268,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} {types} off-chart'**
   String tradeChartOutsideRange(int count, String types);
+
+  /// No description provided for @settingsYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account'**
+  String get settingsYourAccount;
+
+  /// No description provided for @settingsLoginToManageAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to manage your account'**
+  String get settingsLoginToManageAccount;
 }
 
 class _AppLocalizationsDelegate

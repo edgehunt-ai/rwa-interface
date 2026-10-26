@@ -41,6 +41,62 @@ import '../../../helpers/display_config.dart';
 void main() {
   tearDown(AppToast.dismiss);
 
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('deposit QR has high contrast in ${mode.name} mode', (
+      tester,
+    ) async {
+      const route = (chain: 'Arbitrum', token: 'USDC');
+      await configureDisplay(tester, size: const Size(393, 900));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            depositInstructionProvider(route)
+                .overrideWith((_) async => _depositInstruction(route)),
+            depositBalanceChangesProvider(route)
+                .overrideWith((_) => const Stream.empty()),
+          ],
+          child: buildTestApp(
+            const DepositScreen(chain: 'Arbitrum', token: 'USDC'),
+            themeMode: mode,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final qrFinder = find.byKey(const ValueKey('deposit-qr'));
+      final qr = tester.widget<QrImageView>(qrFinder);
+      final painter =
+          tester
+                  .widget<CustomPaint>(
+                    find.descendant(
+                      of: qrFinder,
+                      matching: find.byType(CustomPaint),
+                    ),
+                  )
+                  .painter!
+              as QrPainter;
+      final background = qr.backgroundColor.computeLuminance();
+      for (final color in [
+        painter.eyeStyle.color!,
+        painter.dataModuleStyle.color!,
+      ]) {
+        final foreground = color.computeLuminance();
+        final contrast = foreground > background
+            ? (foreground + 0.05) / (background + 0.05)
+            : (background + 0.05) / (foreground + 0.05);
+        expect(contrast, greaterThanOrEqualTo(7));
+        expect(
+          color,
+          (mode == ThemeMode.dark ? AppTheme.dark : AppTheme.light)
+              .extension<AppRwaColors>()!
+              .textPrimary,
+        );
+      }
+      expect(tester.getSize(qrFinder), const Size.square(160));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('deposit routes loading state fits a short viewport', (
     tester,
   ) async {

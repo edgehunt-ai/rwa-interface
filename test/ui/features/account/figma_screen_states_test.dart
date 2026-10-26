@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
@@ -26,6 +28,50 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('settings action icons match their text in ${mode.name} mode', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _settingsApp(
+          FakeIdentityAuthGateway(),
+          _SessionRepository(),
+          themeMode: mode,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.pumpAndSettle();
+
+      final theme = mode == ThemeMode.dark ? AppTheme.dark : AppTheme.light;
+      for (final (label, asset, expected) in [
+        ('Log Out', 'logout.svg', theme.extension<AppSemanticColors>()!.danger),
+        (
+          'Delete Account',
+          'delete_account.svg',
+          theme.extension<AppRwaColors>()!.textPrimary,
+        ),
+      ]) {
+        final text = tester.widget<Text>(find.text(label));
+        final svg = tester.widget<SvgPicture>(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is SvgPicture &&
+                widget.bytesLoader is SvgAssetLoader &&
+                (widget.bytesLoader as SvgAssetLoader).assetName ==
+                    'assets/figma/account_activity/$asset',
+          ),
+        );
+        expect(text.style!.color, expected);
+        expect(
+          (svg.bytesLoader as SvgAssetLoader).theme!.currentColor,
+          text.style!.color,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('settings exposes account settings data', (tester) async {
     final identity = FakeIdentityAuthGateway();
     final session = _SessionRepository();
@@ -97,12 +143,175 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull);
-    await tester.drag(find.byType(ListView), const Offset(0, -360));
+    await tester.drag(find.byType(ListView), const Offset(0, -520));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Export Private Key'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Export Private Key'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.textContaining('Sign in on the web to export'), findsOneWidget);
+  });
+
+  testWidgets('settings switches the display mode from its bottom sheet', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      _settingsApp(FakeIdentityAuthGateway(), _SessionRepository()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Display Mode'), findsOneWidget);
+    expect(find.text('System'), findsOneWidget);
+
+    await tester.tap(find.text('Display Mode'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('All stocks'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('display-mode-option-light')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('display-mode-option-dark')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('display-mode-option-system')),
+      findsOneWidget,
+    );
+    expect(find.text('Always use light mode on this device'), findsOneWidget);
+    expect(find.text('Always use dark mode on this device'), findsOneWidget);
+    expect(find.text('Follow this device’s system setting'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('display-mode-option-dark')));
+    await tester.pumpAndSettle();
+
+    // Selecting a row applies it immediately and closes the sheet.
+    expect(find.text('Display Mode'), findsOneWidget);
+    expect(find.text('Dark'), findsOneWidget);
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getString('app_theme_mode_v1'), 'dark');
+  });
+
+  testWidgets('the display mode sheet closes without changing the mode', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      _settingsApp(FakeIdentityAuthGateway(), _SessionRepository()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Display Mode'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-mode-close')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Display Mode'), findsOneWidget);
+    expect(find.text('System'), findsOneWidget);
+    expect(
+      (await SharedPreferences.getInstance()).getString('app_theme_mode_v1'),
+      isNull,
+    );
+  });
+
+  testWidgets('the display mode sheet fits a narrow viewport at 200% text', (
+    tester,
+  ) async {
+    await configureDisplay(tester, textScale: 2);
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      _settingsApp(FakeIdentityAuthGateway(), _SessionRepository()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Display Mode'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Display Mode'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('display-mode-option-system')),
+    );
+    await tester.tap(find.byKey(const ValueKey('display-mode-option-system')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Display Mode'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('display mode rows follow the design geometry', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      _settingsApp(FakeIdentityAuthGateway(), _SessionRepository()),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Display Mode'));
+    await tester.pumpAndSettle();
+
+    final sheet = find.byType(SingleChildScrollView);
+    expect(sheet, findsOneWidget);
+    expect(tester.getSize(sheet).width, greaterThan(0));
+
+    for (final mode in ['light', 'dark', 'system']) {
+      final row = find.byKey(ValueKey('display-mode-option-$mode'));
+      expect(row, findsOneWidget);
+      expect(tester.getSize(row).height, 72);
+    }
+
+    // The selected row is highlighted with the subtle surface token.
+    final theme = Theme.of(tester.element(sheet));
+    final colors = theme.extension<AppRwaColors>()!;
+    final selected = tester.widget<Container>(
+      find
+          .descendant(
+            of: find.byKey(const ValueKey('display-mode-option-system')),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    expect((selected.decoration! as BoxDecoration).color, colors.surfaceSubtle);
+
+    // Only the selected row renders a visible check indicator.
+    final checks = tester
+        .widgetList<AnimatedOpacity>(
+          find.descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(AnimatedOpacity),
+          ),
+        )
+        .toList();
+    expect(checks.map((widget) => widget.opacity), [0.0, 0.0, 1.0]);
+  });
+
+  testWidgets('the system display mode is labelled System in Chinese', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      _settingsApp(
+        FakeIdentityAuthGateway(),
+        _SessionRepository(),
+        language: 'zh-CN',
+        locale: const Locale('zh'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('显示模式'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(SingleChildScrollView),
+        matching: find.text('系统'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('跟随系统'), findsNothing);
   });
 
   testWidgets('settings links and removes a Privy passkey', (tester) async {
@@ -234,6 +443,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedStateOverride,
           identityAuthGatewayProvider.overrideWithValue(identity),
           sessionRepositoryProvider.overrideWithValue(session),
           accountProvider.overrideWith(
@@ -359,8 +569,11 @@ Widget _settingsApp(
   CacheStorageService? cache,
   AccountRepository? accountRepository,
   Uri? avatarUri,
+  Locale? locale,
+  ThemeMode themeMode = ThemeMode.light,
 }) => ProviderScope(
   overrides: [
+    authenticatedStateOverride,
     identityAuthGatewayProvider.overrideWithValue(identity),
     sessionRepositoryProvider.overrideWithValue(session),
     if (accountRepository != null)
@@ -385,6 +598,9 @@ Widget _settingsApp(
   ],
   child: MaterialApp(
     theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
+    themeMode: themeMode,
+    locale: locale,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: const SettingsScreen(),

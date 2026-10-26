@@ -190,7 +190,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.subtleSurface),
+          border: Border.all(color: colors.surfaceSubtle),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -214,7 +214,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
               ],
             ),
             const SizedBox(height: 12),
-            Container(height: 1, color: colors.subtleSurface),
+            Container(height: 1, color: colors.surfaceSubtle),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -300,7 +300,7 @@ class _TpSlAmount extends StatelessWidget {
       fontSize: 20,
       height: 22 / 20,
       fontWeight: FontWeight.w600,
-      color: enabled ? colors.primaryText : colors.tertiaryText,
+      color: enabled ? colors.textPrimary : colors.textTertiary,
     );
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -311,7 +311,7 @@ class _TpSlAmount extends StatelessWidget {
             fontSize: 12,
             height: 22 / 12,
             fontWeight: FontWeight.w500,
-            color: colors.tertiaryText,
+            color: colors.textTertiary,
           ),
         ),
         const SizedBox(width: 4),
@@ -362,7 +362,7 @@ class _TpSlAmount extends StatelessWidget {
                         ]
                       : null,
                   style: amountStyle,
-                  cursorColor: colors.primaryText,
+                  cursorColor: colors.textPrimary,
                   decoration: InputDecoration(
                     isDense: true,
                     filled: false,
@@ -372,7 +372,7 @@ class _TpSlAmount extends StatelessWidget {
                     focusedBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
                     hintText: hintText,
-                    hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
+                    hintStyle: amountStyle.copyWith(color: colors.textTertiary),
                     prefixText: prefix,
                     prefixStyle: amountStyle,
                     suffixText: suffix,
@@ -408,11 +408,11 @@ class _TpSlSwitch extends StatelessWidget {
           child: Switch(
             value: value,
             onChanged: onChanged,
-            thumbColor: const WidgetStatePropertyAll(Colors.white),
+            thumbColor: WidgetStatePropertyAll(colors.textInverse),
             trackColor: WidgetStateProperty.resolveWith(
               (states) => states.contains(WidgetState.selected)
-                  ? colors.selected
-                  : colors.border,
+                  ? colors.brandDefault
+                  : colors.borderSubtle,
             ),
             trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
             trackOutlineWidth: const WidgetStatePropertyAll(0),
@@ -534,7 +534,7 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
           child: Container(
             height: 48,
             decoration: BoxDecoration(
-              color: colors.subtleSurface,
+              color: colors.surfaceSubtle,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Stack(
@@ -547,8 +547,8 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
                     divisions: widget.divisions,
                     tickCount: tickCount,
                     unbounded: widget.unbounded,
-                    tickColor: colors.border,
-                    accentColor: colors.selected,
+                    tickColor: colors.borderSubtle,
+                    accentColor: colors.brandDefault,
                   ),
                   child: Align(
                     alignment: Alignment.centerLeft,
@@ -556,10 +556,10 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
                       padding: const EdgeInsets.only(left: 8),
                       child: Text(
                         AppLocalizations.of(context).dragToSet,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           height: 22 / 12,
-                          color: Color(0xFF676776),
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -625,9 +625,13 @@ class _TpSlRulerPainter extends CustomPainter {
     final trackRight = size.width - 12;
     final trackWidth = trackRight - trackLeft;
     final centerX = size.width / 2;
-    final gradient = const LinearGradient(
-      colors: [Color(0x1A676776), Color(0x80676776), Color(0x1A676776)],
-      stops: [0, 0.5, 1],
+    final gradient = LinearGradient(
+      colors: [
+        tickColor.withValues(alpha: 0.1),
+        tickColor.withValues(alpha: 0.5),
+        tickColor.withValues(alpha: 0.1),
+      ],
+      stops: const [0, 0.5, 1],
     ).createShader(Rect.fromLTWH(trackLeft, 0, trackWidth, size.height));
     final paint = Paint()..shader = gradient;
     // Keep the interval fixed so a changing value scrolls the ticks beneath

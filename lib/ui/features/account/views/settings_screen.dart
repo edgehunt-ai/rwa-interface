@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
@@ -10,6 +9,7 @@ import 'package:nobell/domain/models/app_update.dart';
 import 'package:nobell/domain/models/account_deletion.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/app/providers/locale_provider.dart';
+import 'package:nobell/app/providers/theme_mode_provider.dart';
 import 'package:nobell/domain/models/user_account.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
@@ -22,7 +22,9 @@ import 'package:nobell/ui/features/account/providers/app_update_providers.dart';
 import 'package:nobell/ui/features/account/providers/cache_providers.dart';
 import 'package:nobell/ui/features/account/views/private_key_export_sheet.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
+import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../../../core/feedback/error_message.dart';
 
@@ -31,12 +33,14 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final account = ref.watch(accountProvider);
     final authentication = ref.watch(authenticationProvider);
-    final passkey = ref.watch(passkeyProvider);
+    final authenticated = authentication is AuthenticationAuthenticated;
+    final account = authenticated ? ref.watch(accountProvider) : null;
+    final passkey = authenticated ? ref.watch(passkeyProvider) : null;
     final cacheSize = ref.watch(cacheSizeProvider);
     final clearingCache = ref.watch(cacheCommandProvider).isLoading;
     final installedAppInfo = ref.watch(installedAppInfoProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
     final checkingForUpdate = ref.watch(appUpdateCommandProvider).isLoading;
     return Scaffold(
       body: SafeArea(
@@ -45,57 +49,94 @@ class SettingsScreen extends ConsumerWidget {
             const _SettingsHeader(),
             const SizedBox(height: 16),
             Expanded(
-              child: account.when(
-                loading: () => DesignStateFeedback(
-                  state: DesignState.loading,
-                  title: AppLocalizations.of(context).settingsLoading,
-                ),
-                error: (error, _) => DesignStateFeedback(
-                  error: error,
-                  state: DesignState.failure,
-                  title: AppLocalizations.of(context).settingsUnavailable,
-                  message: AppLocalizations.of(context).settingsRetry,
-                  onRetry: () => ref.refresh(accountProvider.future),
-                ),
-                data: (account) => _SettingsContent(
-                  avatarUri: account.avatarUri,
-                  name: accountDisplayName(
-                    account,
-                    identityDisplayName: switch (authentication) {
-                      AuthenticationAuthenticated(:final principal) =>
-                        principal.displayName,
-                      _ => null,
-                    },
-                  ),
-                  language: account.settings.language,
-                  passkey: _passkeyValue(passkey),
-                  passkeyLoading: passkey.isLoading,
-                  onPasskey: () =>
-                      _showPasskeySheet(context, ref, _passkeyValue(passkey)),
-                  onLanguage: () => _showLanguageSheet(
-                    context,
-                    ref,
-                    account.settings.language,
-                  ),
-                  onPrivateKey: () => _showPrivateKeyWarning(context, ref),
-                  appVersion: switch (installedAppInfo) {
-                    AsyncData(:final value) => 'v${value.version}',
-                    _ => '...',
-                  },
-                  checkingForUpdate: checkingForUpdate,
-                  onCheckForUpdates: () => _checkForUpdates(context, ref),
-                  cacheSizeBytes: switch (cacheSize) {
-                    AsyncData(:final value) => value,
-                    _ => null,
-                  },
-                  clearingCache: clearingCache,
-                  onClearCache: () =>
-                      ref.read(cacheCommandProvider.notifier).clear(),
-                  onLogOut: () => _showLogOutConfirmation(context, ref),
-                  onDeleteAccount: () =>
-                      _showDeleteAccountConfirmation(context, ref),
-                ),
-              ),
+              child: account == null
+                  ? _SettingsContent(
+                      language:
+                          (ref.watch(appLocaleProvider) ??
+                                  Localizations.localeOf(context))
+                              .languageCode,
+                      onLanguage: () => _showLanguageSheet(
+                        context,
+                        ref,
+                        (ref.read(appLocaleProvider) ??
+                                Localizations.localeOf(context))
+                            .languageCode,
+                      ),
+                      themeMode: themeMode,
+                      onDisplayMode: () =>
+                          _showDisplayModeSheet(context, ref, themeMode),
+                      appVersion: switch (installedAppInfo) {
+                        AsyncData(:final value) => 'v${value.version}',
+                        _ => '...',
+                      },
+                      checkingForUpdate: checkingForUpdate,
+                      onCheckForUpdates: () => _checkForUpdates(context, ref),
+                      cacheSizeBytes: cacheSize.value,
+                      clearingCache: clearingCache,
+                      onClearCache: () =>
+                          ref.read(cacheCommandProvider.notifier).clear(),
+                    )
+                  : account.when(
+                      loading: () => DesignStateFeedback(
+                        state: DesignState.loading,
+                        title: AppLocalizations.of(context).settingsLoading,
+                      ),
+                      error: (error, _) => DesignStateFeedback(
+                        error: error,
+                        state: DesignState.failure,
+                        title: AppLocalizations.of(context).settingsUnavailable,
+                        message: AppLocalizations.of(context).settingsRetry,
+                        onRetry: () => ref.refresh(accountProvider.future),
+                      ),
+                      data: (account) => _SettingsContent(
+                        avatarUri: account.avatarUri,
+                        name: accountDisplayName(
+                          account,
+                          identityDisplayName: switch (authentication) {
+                            AuthenticationAuthenticated(:final principal) =>
+                              principal.displayName,
+                            _ => null,
+                          },
+                        ),
+                        language:
+                            ref.watch(appLocaleProvider)?.languageCode ??
+                            account.settings.language,
+                        passkey: _passkeyValue(passkey!),
+                        passkeyLoading: passkey.isLoading,
+                        onPasskey: () => _showPasskeySheet(
+                          context,
+                          ref,
+                          _passkeyValue(passkey),
+                        ),
+                        onLanguage: () => _showLanguageSheet(
+                          context,
+                          ref,
+                          ref.read(appLocaleProvider)?.languageCode ??
+                              account.settings.language,
+                        ),
+                        themeMode: themeMode,
+                        onDisplayMode: () =>
+                            _showDisplayModeSheet(context, ref, themeMode),
+                        onPrivateKey: () =>
+                            _showPrivateKeyWarning(context, ref),
+                        appVersion: switch (installedAppInfo) {
+                          AsyncData(:final value) => 'v${value.version}',
+                          _ => '...',
+                        },
+                        checkingForUpdate: checkingForUpdate,
+                        onCheckForUpdates: () => _checkForUpdates(context, ref),
+                        cacheSizeBytes: switch (cacheSize) {
+                          AsyncData(:final value) => value,
+                          _ => null,
+                        },
+                        clearingCache: clearingCache,
+                        onClearCache: () =>
+                            ref.read(cacheCommandProvider.notifier).clear(),
+                        onLogOut: () => _showLogOutConfirmation(context, ref),
+                        onDeleteAccount: () =>
+                            _showDeleteAccountConfirmation(context, ref),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -161,7 +202,7 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x70111215),
+      barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
       builder: (_) => _PasskeySheet(passkey: passkey),
     );
     if (!context.mounted || action == null) return;
@@ -183,10 +224,16 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x70111215),
+      barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
       builder: (_) => _LanguageSheet(current: current),
     );
-    if (selected != null && selected != current) {
+    if (!context.mounted) return;
+    if (selected != null &&
+        localeFromLanguageCode(selected) != localeFromLanguageCode(current)) {
+      if (ref.read(authenticationProvider) is! AuthenticationAuthenticated) {
+        ref.read(appLocaleProvider.notifier).setGuestLanguage(selected);
+        return;
+      }
       await ref
           .read(settingsCommandProvider.notifier)
           .updateSettings(UserPreferencesPatch(language: selected));
@@ -198,12 +245,28 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _showDisplayModeSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode current,
+  ) async {
+    final selected = await showModalBottomSheet<ThemeMode>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
+      builder: (_) => _DisplayModeSheet(current: current),
+    );
+    if (selected == null || selected == current) return;
+    await ref.read(appThemeModeProvider.notifier).setMode(selected);
+  }
+
   void _showPrivateKeyWarning(BuildContext context, WidgetRef ref) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x70111215),
+      barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
       builder: (_) => PrivateKeyExportSheet(
         configuration: ref.read(privyConfigurationProvider),
       ),
@@ -374,144 +437,235 @@ class _SettingsHeader extends StatelessWidget {
 
 class _SettingsContent extends StatelessWidget {
   const _SettingsContent({
-    required this.avatarUri,
-    required this.name,
+    this.avatarUri,
+    this.name,
     required this.language,
-    required this.passkey,
-    required this.passkeyLoading,
-    required this.onPasskey,
+    this.passkey,
+    this.passkeyLoading = false,
+    this.onPasskey,
     required this.onLanguage,
-    required this.onPrivateKey,
+    required this.themeMode,
+    required this.onDisplayMode,
+    this.onPrivateKey,
     required this.appVersion,
     required this.checkingForUpdate,
     required this.onCheckForUpdates,
     required this.cacheSizeBytes,
     required this.clearingCache,
     required this.onClearCache,
-    required this.onLogOut,
-    required this.onDeleteAccount,
+    this.onLogOut,
+    this.onDeleteAccount,
   });
 
-  final String name;
+  final String? name;
   final Uri? avatarUri;
   final String language;
   final PasskeyCredential? passkey;
   final bool passkeyLoading;
-  final VoidCallback onPasskey;
+  final VoidCallback? onPasskey;
   final VoidCallback onLanguage;
-  final VoidCallback onPrivateKey;
+  final ThemeMode themeMode;
+  final VoidCallback onDisplayMode;
+  final VoidCallback? onPrivateKey;
   final String appVersion;
   final bool checkingForUpdate;
   final VoidCallback onCheckForUpdates;
   final int? cacheSizeBytes;
   final bool clearingCache;
   final VoidCallback onClearCache;
-  final VoidCallback onLogOut;
-  final VoidCallback onDeleteAccount;
+  final VoidCallback? onLogOut;
+  final VoidCallback? onDeleteAccount;
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      children: [
+    final l10n = AppLocalizations.of(context);
+    final guest = name == null;
+    final rowHeight = guest ? 56.0 : 70.0;
+    Widget card(List<Widget> rows) => _Card(
+      child: Column(
+        children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+            rows[i],
+          ],
+        ],
+      ),
+    );
+    final groups = <Widget>[
+      if (guest)
+        const _GuestAccountCard()
+      else ...[
         _Card(
-          child: _AccountRow(name: name, avatarUri: avatarUri),
+          child: _AccountRow(name: name!, avatarUri: avatarUri),
         ),
-        const SizedBox(height: 16),
         _Card(
           child: _PasskeyRow(
             passkey: passkey,
             loading: passkeyLoading,
-            onTap: onPasskey,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _Card(
-          child: Column(
-            children: [
-              _SettingRow(
-                asset: 'assets/figma/account_activity/language.svg',
-                label: AppLocalizations.of(context).settingsLanguage,
-                value: _languageLabel(AppLocalizations.of(context), language),
-                onTap: onLanguage,
-              ),
-              const Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/private_key.svg',
-                label: AppLocalizations.of(context).settingsExportPrivateKey,
-                trailing: const _ChevronRight(),
-                onTap: onPrivateKey,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _Card(
-          child: Column(
-            children: [
-              _SettingRow(
-                asset: 'assets/figma/account_activity/update.svg',
-                label: AppLocalizations.of(context).settingsCheckUpdates,
-                value: checkingForUpdate ? '...' : 'Check',
-                onTap: checkingForUpdate ? null : onCheckForUpdates,
-              ),
-              Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/version.svg',
-                label: AppLocalizations.of(context).settingsAppVersion,
-                value: appVersion,
-              ),
-              Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/cache.svg',
-                label: AppLocalizations.of(context).settingsCacheSize,
-                trailing: _CacheSizeValue(
-                  bytes: cacheSizeBytes,
-                  clearing: clearingCache,
-                  onClear: onClearCache,
-                ),
-                trailingBelowAtLargeText: true,
-              ),
-              Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/terms_conditions.svg',
-                label: AppLocalizations.of(context).settingsTermsConditions,
-                trailing: const _ChevronRight(),
-                onTap: () => context.pushNamed(AppRoutes.termsName),
-              ),
-              const Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/privacy_policy.svg',
-                label: AppLocalizations.of(context).settingsPrivacyPolicy,
-                trailing: const _ChevronRight(),
-                onTap: () => context.pushNamed(AppRoutes.privacyName),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _Card(
-          child: Column(
-            children: [
-              _SettingRow(
-                asset: 'assets/figma/account_activity/logout.svg',
-                label: AppLocalizations.of(context).settingsLogOut,
-                labelColor: Theme.of(context)
-                    .extension<AppSemanticColors>()!
-                    .loss,
-                onTap: onLogOut,
-              ),
-              const Divider(height: 1, indent: 16, endIndent: 16),
-              _SettingRow(
-                asset: 'assets/figma/account_activity/delete_account.svg',
-                label: AppLocalizations.of(context).settingsDeleteAccount,
-                trailing: const _ChevronRight(),
-                onTap: onDeleteAccount,
-              ),
-            ],
+            onTap: onPasskey!,
           ),
         ),
       ],
+      card([
+        _SettingRow(
+          asset: 'assets/figma/account_activity/language.svg',
+          label: l10n.settingsLanguage,
+          trailing: _ValueWithChevron(label: _languageLabel(l10n, language)),
+          trailingBelowAtLargeText: true,
+          onTap: onLanguage,
+          height: rowHeight,
+        ),
+        _SettingRow(
+          asset: 'assets/figma/account_activity/display_mode.svg',
+          label: l10n.settingsDisplayMode,
+          trailing: _ValueWithChevron(
+            label: _displayModeLabel(l10n, themeMode),
+          ),
+          trailingBelowAtLargeText: true,
+          onTap: onDisplayMode,
+          height: rowHeight,
+        ),
+        if (!guest)
+          _SettingRow(
+            asset: 'assets/figma/account_activity/private_key.svg',
+            label: l10n.settingsExportPrivateKey,
+            trailing: const _ChevronRight(),
+            onTap: onPrivateKey,
+          ),
+      ]),
+      // Legal and app preferences are available without an account.
+      if (guest) card(_legalRows(context, rowHeight)),
+      card([
+        _SettingRow(
+          asset: 'assets/figma/account_activity/update.svg',
+          label: l10n.settingsCheckUpdates,
+          value: checkingForUpdate ? '...' : 'Check',
+          onTap: checkingForUpdate ? null : onCheckForUpdates,
+          height: rowHeight,
+        ),
+        _SettingRow(
+          asset: 'assets/figma/account_activity/version.svg',
+          label: l10n.settingsAppVersion,
+          value: appVersion,
+          height: rowHeight,
+        ),
+        _SettingRow(
+          asset: 'assets/figma/account_activity/cache.svg',
+          label: l10n.settingsCacheSize,
+          trailing: _CacheSizeValue(
+            bytes: cacheSizeBytes,
+            clearing: clearingCache,
+            onClear: onClearCache,
+          ),
+          trailingBelowAtLargeText: true,
+          height: rowHeight,
+        ),
+        if (!guest) ..._legalRows(context, rowHeight),
+      ]),
+      if (!guest)
+        card([
+          _SettingRow(
+            asset: 'assets/figma/account_activity/logout.svg',
+            label: l10n.settingsLogOut,
+            labelColor: Theme.of(context)
+                .extension<AppSemanticColors>()!
+                .danger,
+            onTap: onLogOut,
+          ),
+          _SettingRow(
+            asset: 'assets/figma/account_activity/delete_account.svg',
+            label: l10n.settingsDeleteAccount,
+            trailing: const _ChevronRight(),
+            onTap: onDeleteAccount,
+          ),
+        ]),
+    ];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      children: [
+        for (var i = 0; i < groups.length; i++) ...[
+          if (i > 0) SizedBox(height: guest ? 12 : 16),
+          groups[i],
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _legalRows(BuildContext context, double height) => [
+    _SettingRow(
+      asset: 'assets/figma/account_activity/terms_conditions.svg',
+      label: AppLocalizations.of(context).settingsTermsConditions,
+      trailing: const _ChevronRight(),
+      height: height,
+      onTap: () => context.pushNamed(AppRoutes.termsName),
+    ),
+    _SettingRow(
+      asset: 'assets/figma/account_activity/privacy_policy.svg',
+      label: AppLocalizations.of(context).settingsPrivacyPolicy,
+      trailing: const _ChevronRight(),
+      height: height,
+      onTap: () => context.pushNamed(AppRoutes.privacyName),
+    ),
+  ];
+}
+
+class _GuestAccountCard extends StatelessWidget {
+  const _GuestAccountCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.appColors;
+    final enlargedText = MediaQuery.textScalerOf(context).scale(14) > 18;
+    final description = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          l10n.settingsYourAccount,
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 16,
+            height: 22 / 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.settingsLoginToManageAccount,
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: 12,
+            height: 16 / 12,
+          ),
+        ),
+      ],
+    );
+    final login = FilledButton(
+      onPressed: () => pushLoginScreen(context),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(76, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      child: Text(l10n.logIn),
+    );
+    return _Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: enlargedText
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [description, const SizedBox(height: 12), login],
+              )
+            : Row(
+                children: [
+                  Expanded(child: description),
+                  const SizedBox(width: 12),
+                  login,
+                ],
+              ),
+      ),
     );
   }
 }
@@ -520,6 +674,13 @@ String _languageLabel(AppLocalizations l10n, String language) =>
     switch (language) {
       'zh-CN' || 'zh' => l10n.languageSimplifiedChinese,
       _ => l10n.languageEnglish,
+    };
+
+String _displayModeLabel(AppLocalizations l10n, ThemeMode mode) =>
+    switch (mode) {
+      ThemeMode.light => l10n.displayModeLight,
+      ThemeMode.dark => l10n.displayModeDark,
+      ThemeMode.system => l10n.displayModeSystem,
     };
 
 class _Card extends StatelessWidget {
@@ -544,6 +705,7 @@ class _SettingRow extends StatelessWidget {
     this.labelColor,
     this.onTap,
     this.trailingBelowAtLargeText = false,
+    this.height = 70,
   });
   final String asset;
   final String label;
@@ -552,96 +714,123 @@ class _SettingRow extends StatelessWidget {
   final Color? labelColor;
   final VoidCallback? onTap;
   final bool trailingBelowAtLargeText;
+  final double height;
   @override
   Widget build(BuildContext context) {
-    final iconWidget = SvgPicture.asset(asset, width: 24, height: 24);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final foreground = labelColor ?? colors.textPrimary;
+    final iconWidget = AppSvgIcon(
+      asset,
+      width: 24,
+      height: 24,
+      color: foreground,
+    );
     final valueStyle = TextStyle(
-      color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+      color: colors.textSecondary,
       fontSize: 15,
       height: 22 / 15,
       fontWeight: FontWeight.w500,
     );
     final labelStyle = TextStyle(
-      color: labelColor,
+      color: foreground,
       fontSize: 15,
       height: 22 / 15,
       fontWeight: FontWeight.w600,
     );
-    final enlargedText = MediaQuery.textScalerOf(context).scale(14) > 18;
-    if (enlargedText) {
-      return InkWell(
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 70),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 40,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Center(child: iconWidget),
-                  ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final enlargedText = MediaQuery.textScalerOf(context).scale(14) > 18;
+        // Values and actions get a second line when space is limited, so
+        // they remain readable and tappable.
+        final stackContent =
+            enlargedText ||
+            (trailingBelowAtLargeText && constraints.maxWidth < 320);
+        if (stackContent) {
+          return InkWell(
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 70),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(label, style: labelStyle),
-                      if (value != null && value!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(value!, style: valueStyle, maxLines: 2),
-                      ],
-                      if (trailingBelowAtLargeText && trailing != null) ...[
-                        const SizedBox(height: 4),
-                        trailing!,
-                      ],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 40,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Center(child: iconWidget),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(label, style: labelStyle),
+                          if (value != null && value!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(value!, style: valueStyle, maxLines: 2),
+                          ],
+                          if (trailingBelowAtLargeText && trailing != null) ...[
+                            const SizedBox(height: 4),
+                            trailing!,
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (!trailingBelowAtLargeText && trailing != null) ...[
+                      const SizedBox(width: 12),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: trailing!,
+                      ),
                     ],
-                  ),
-                ),
-                if (!trailingBelowAtLargeText && trailing != null) ...[
-                  const SizedBox(width: 12),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: trailing!,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        height: 70,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              SizedBox(width: 40, height: 40, child: Center(child: iconWidget)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: labelStyle,
+                  ],
                 ),
               ),
-              if (trailing ?? _value(value, valueStyle)
-                  case final trailing?) ...[
-                const SizedBox(width: 12),
-                trailing,
-              ],
-            ],
+            ),
+          );
+        }
+        return InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: height == 56 ? 8 : 12,
+              ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Center(child: iconWidget),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: labelStyle,
+                    ),
+                  ),
+                  if (trailing ?? _value(value, valueStyle)
+                      case final trailing?) ...[
+                    const SizedBox(width: 12),
+                    trailing,
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -677,7 +866,7 @@ class _PasskeyRow extends StatelessWidget {
                 ? l10n.settingsPasskeyNotSetUp
                 : l10n.settingsPasskeyEnabled,
             style: TextStyle(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontSize: 15,
               height: 22 / 15,
               fontWeight: FontWeight.w500,
@@ -695,8 +884,9 @@ class _PasskeyRow extends StatelessWidget {
                 width: 40,
                 height: 40,
                 child: Center(
-                  child: SvgPicture.asset(
+                  child: AppSvgIcon(
                     'assets/figma/account_activity/passkey.svg',
+                    color: context.appColors.iconPrimary,
                     width: 24,
                     height: 24,
                   ),
@@ -722,7 +912,7 @@ class _PasskeyRow extends StatelessWidget {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                         fontSize: 12,
                         height: 16 / 12,
                       ),
@@ -787,7 +977,7 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final removing = widget.passkey != null;
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
@@ -803,7 +993,7 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    color: colors.textSecondary.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -823,7 +1013,7 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
               Text(
                 l10n.settingsPasskeyExistingMethods,
                 style: TextStyle(
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                   fontSize: 13,
                   height: 18 / 13,
                   fontWeight: FontWeight.w500,
@@ -837,7 +1027,7 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
                       onPressed: _submitting ? null : _submit,
                       style: removing
                           ? FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFFDE596E),
+                              backgroundColor: context.semanticColors.danger,
                             )
                           : null,
                       child: _submitting
@@ -860,7 +1050,7 @@ class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
                           ? null
                           : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: colors.subtleSurface,
+                        backgroundColor: colors.surfaceSubtle,
                       ),
                       child: Text(l10n.settingsNotNow),
                     ),
@@ -895,7 +1085,7 @@ class _AccountRow extends StatelessWidget {
               height: 40,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                border: Border.all(color: colors.border),
+                border: Border.all(color: colors.borderSubtle),
                 shape: BoxShape.circle,
               ),
               child: AccountAvatar(
@@ -924,7 +1114,7 @@ class _AccountRow extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context).settingsActiveAccount,
                     style: TextStyle(
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                       fontSize: 12,
                       height: 16 / 12,
                     ),
@@ -946,8 +1136,9 @@ class _ChevronRight extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: 20,
     height: 20,
-    child: SvgPicture.asset(
+    child: AppSvgIcon(
       'assets/figma/account_activity/chevron_right.svg',
+      color: context.appColors.iconSecondary,
       fit: BoxFit.none,
     ),
   );
@@ -969,7 +1160,7 @@ class _CacheSizeValue extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final textStyle = TextStyle(
-      color: colors.secondaryText,
+      color: colors.textSecondary,
       fontSize: 15,
       height: 22 / 15,
       fontWeight: FontWeight.w500,
@@ -985,7 +1176,7 @@ class _CacheSizeValue extends StatelessWidget {
             minimumSize: Size.zero,
             padding: EdgeInsets.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            foregroundColor: colors.secondaryText,
+            foregroundColor: colors.textSecondary,
             textStyle: textStyle,
           ),
           child: clearing
@@ -1036,7 +1227,9 @@ class _NoticeSheet extends StatelessWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).extension<AppRwaColors>()!.border,
+                  color: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .borderSubtle,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1061,6 +1254,282 @@ class _NoticeSheet extends StatelessWidget {
   );
 }
 
+class _DisplayModeSheet extends StatelessWidget {
+  const _DisplayModeSheet({required this.current});
+
+  final ThemeMode current;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final l10n = AppLocalizations.of(context);
+    final options = <_DisplayModeOption>[
+      _DisplayModeOption(
+        mode: ThemeMode.light,
+        asset: 'assets/figma/account_activity/display_mode_light.svg',
+        title: l10n.displayModeLight,
+        description: l10n.displayModeLightDescription,
+      ),
+      _DisplayModeOption(
+        mode: ThemeMode.dark,
+        asset: 'assets/figma/account_activity/display_mode_dark.svg',
+        title: l10n.displayModeDark,
+        description: l10n.displayModeDarkDescription,
+      ),
+      _DisplayModeOption(
+        mode: ThemeMode.system,
+        asset: 'assets/figma/account_activity/display_mode_system.svg',
+        title: l10n.displayModeSystem,
+        description: l10n.displayModeSystemDescription,
+      ),
+    ];
+    return Material(
+      color: colors.surfaceBase,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.textSecondary.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.settingsDisplayMode,
+                      style: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(letterSpacing: -0.2),
+                    ),
+                  ),
+                  Semantics(
+                    button: true,
+                    label: MaterialLocalizations.of(context).closeButtonLabel,
+                    child: InkWell(
+                      key: const Key('display-mode-close'),
+                      onTap: () => Navigator.of(context).pop(),
+                      customBorder: const CircleBorder(),
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: AppSvgIcon(
+                          'assets/figma/account_activity/close.svg',
+                          color: colors.iconPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(height: 1, color: colors.dividerSoft),
+              const SizedBox(height: 16),
+              for (var index = 0; index < options.length; index++) ...[
+                _DisplayModeRow(
+                  key: ValueKey(
+                    'display-mode-option-${options[index].mode.name}',
+                  ),
+                  option: options[index],
+                  selected: current == options[index].mode,
+                  onTap: () => Navigator.of(context).pop(options[index].mode),
+                ),
+                if (index < options.length - 1)
+                  // The design insets the separator to the option content.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(height: 1, color: colors.dividerSoft),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DisplayModeOption {
+  const _DisplayModeOption({
+    required this.mode,
+    required this.asset,
+    required this.title,
+    required this.description,
+  });
+
+  final ThemeMode mode;
+  final String asset;
+  final String title;
+  final String description;
+}
+
+/// One selectable display mode: icon tile, title/description and the check
+/// indicator from the design.
+class _DisplayModeRow extends StatelessWidget {
+  const _DisplayModeRow({
+    super.key,
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _DisplayModeOption option;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: option.title,
+      hint: option.description,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: selected ? colors.surfaceSubtle : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.surfaceBase,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: AppSvgIcon(
+                  option.asset,
+                  width: 20,
+                  height: 20,
+                  color: colors.iconPrimary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.title,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      option.description,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: colors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _DisplayModeCheck(
+                selected: selected,
+                backgroundColor: colors.actionPrimary,
+                foregroundColor: colors.textInverse,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The 20px radio chip from the design: filled with the primary action colour
+/// and a check mark when selected, invisible otherwise.
+class _DisplayModeCheck extends StatelessWidget {
+  const _DisplayModeCheck({
+    required this.selected,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
+
+  final bool selected;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  @override
+  Widget build(BuildContext context) => AnimatedOpacity(
+    duration: const Duration(milliseconds: 120),
+    opacity: selected ? 1 : 0,
+    child: Container(
+      width: 20,
+      height: 20,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
+      child: AppSvgIcon(
+        'assets/figma/account_activity/display_mode_check.svg',
+        width: 14.286,
+        height: 14.286,
+        color: foregroundColor,
+      ),
+    ),
+  );
+}
+
+/// A right-aligned setting value followed by the chevron that opens its sheet.
+class _ValueWithChevron extends StatelessWidget {
+  const _ValueWithChevron({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      color: context.appColors.textSecondary,
+      fontSize: 15,
+      height: 22 / 15,
+      fontWeight: FontWeight.w500,
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 160),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+            textHeightBehavior: const TextHeightBehavior(
+              applyHeightToFirstAscent: false,
+              applyHeightToLastDescent: false,
+              leadingDistribution: TextLeadingDistribution.even,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        const _ChevronRight(),
+      ],
+    );
+  }
+}
+
 class _LanguageSheet extends StatefulWidget {
   const _LanguageSheet({required this.current});
 
@@ -1071,7 +1540,7 @@ class _LanguageSheet extends StatefulWidget {
 }
 
 class _LanguageSheetState extends State<_LanguageSheet> {
-  late var _selected = widget.current;
+  late var _selected = widget.current == 'zh' ? 'zh-CN' : widget.current;
 
   static const _languages = <({String code, String label})>[
     (code: 'en', label: 'English'),
@@ -1082,7 +1551,7 @@ class _LanguageSheetState extends State<_LanguageSheet> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
@@ -1098,7 +1567,7 @@ class _LanguageSheetState extends State<_LanguageSheet> {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    color: colors.textSecondary.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1118,7 +1587,7 @@ class _LanguageSheetState extends State<_LanguageSheet> {
                       setState(() => _selected = _languages[index].code),
                 ),
                 if (index < _languages.length - 1)
-                  Divider(color: colors.subtleSurface, height: 1),
+                  Divider(color: colors.surfaceSubtle, height: 1),
               ],
               const SizedBox(height: 16),
               SizedBox(
@@ -1176,14 +1645,16 @@ class _LanguageOption extends StatelessWidget {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: selected ? colors.primaryAction : colors.subtleSurface,
+                  color: selected ? colors.actionPrimary : colors.surfaceSubtle,
                   shape: BoxShape.circle,
                   border: selected
                       ? null
-                      : Border.all(color: colors.border.withValues(alpha: 0.7)),
+                      : Border.all(
+                          color: colors.borderSubtle.withValues(alpha: 0.7),
+                        ),
                 ),
                 child: selected
-                    ? Icon(Icons.check, size: 14, color: colors.onPrimaryAction)
+                    ? Icon(Icons.check, size: 14, color: colors.textInverse)
                     : null,
               ),
             ],

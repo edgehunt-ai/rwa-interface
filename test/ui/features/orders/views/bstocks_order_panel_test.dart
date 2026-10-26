@@ -396,7 +396,7 @@ void main() {
           .style
           ?.backgroundColor
           ?.resolve(<WidgetState>{}),
-      kShortTradeColor,
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
     );
   });
 
@@ -2699,14 +2699,17 @@ void main() {
       find.byKey(const Key('bstocks-side-indicator')),
     );
     final decoration = indicator.decoration! as BoxDecoration;
-    expect(decoration.color, kShortTradeColor);
+    expect(
+      decoration.color,
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
+    );
 
     final submit = tester.widget<FilledButton>(
       find.byKey(const Key('bstocks-primary-order-action')),
     );
     expect(
       submit.style?.backgroundColor?.resolve(<WidgetState>{}),
-      kShortTradeColor,
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
     );
   });
 
@@ -3334,7 +3337,7 @@ void main() {
       );
       expect(
         (errorContainer.decoration! as BoxDecoration).color,
-        semantic.loss.withValues(alpha: 0.1),
+        semantic.danger.withValues(alpha: 0.1),
       );
     },
   );

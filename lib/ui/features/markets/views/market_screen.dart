@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/auth/authentication.dart';
@@ -18,6 +17,7 @@ import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
@@ -140,11 +140,12 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         onTap: () =>
                             context.pushNamed(AppRoutes.marketSearchName),
                         decoration: InputDecoration(
-                          fillColor: colors.subtleSurface,
+                          fillColor: colors.surfaceSubtle,
                           prefixIcon: Padding(
                             padding: const EdgeInsets.all(12),
-                            child: SvgPicture.asset(
+                            child: AppSvgIcon(
                               'assets/figma/home_markets/search.svg',
+                              color: context.appColors.iconSecondary,
                               width: 20,
                               height: 20,
                             ),
@@ -240,7 +241,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       itemCount: items.length * 2 - 1,
                       itemBuilder: (context, index) {
                         if (index.isOdd) {
-                          return Divider(height: 1, color: colors.border);
+                          return Divider(height: 1, color: colors.borderSubtle);
                         }
                         final product = items[index ~/ 2];
                         return MarketProductRow(
@@ -327,7 +328,7 @@ class _MarketStatusButton extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .extension<AppRwaColors>()!
-                      .subtleSurface,
+                      .surfaceSubtle,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const SkeletonBlock(width: 72, height: 14, radius: 4),

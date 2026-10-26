@@ -392,7 +392,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: SafeArea(
           top: false,
@@ -438,7 +438,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                           fontSize: 13,
                           height: 18 / 13,
                           fontWeight: FontWeight.w500,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -522,8 +522,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.subtleSurface,
-                          foregroundColor: colors.primaryText,
+                          backgroundColor: colors.surfaceSubtle,
+                          foregroundColor: colors.textPrimary,
                           side: BorderSide.none,
                         ),
                         onPressed: _submitting
@@ -536,8 +536,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: colors.primaryAction,
-                          foregroundColor: colors.onPrimaryAction,
+                          backgroundColor: colors.actionPrimary,
+                          foregroundColor: colors.textInverse,
                         ),
                         onPressed: _submitting || waiting
                             ? null
@@ -582,8 +582,8 @@ class _SideBadge extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final (label, tone) = switch (side) {
       PositionSide.long => (l10n.long, semantic.success),
-      PositionSide.short => (l10n.short, kShortTradeColor),
-      PositionSide.none => ('—', colors.secondaryText),
+      PositionSide.short => (l10n.short, semantic.danger),
+      PositionSide.none => ('—', colors.textSecondary),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

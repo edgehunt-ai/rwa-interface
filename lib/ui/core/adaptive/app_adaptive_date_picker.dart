@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 Future<DateTime?> showAppDatePicker({
   required BuildContext context,
   required DateTime initialDate,
@@ -22,7 +24,7 @@ Future<DateTime?> showAppDatePicker({
     context: context,
     builder: (context) => Container(
       height: 320,
-      color: CupertinoColors.systemBackground.resolveFrom(context),
+      color: context.appColors.surfaceBase,
       child: SafeArea(
         top: false,
         child: Column(

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
 import 'package:nobell/ui/core/markets/market_session_presentation.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 import '../../../helpers/test_app.dart';
 
@@ -56,7 +57,11 @@ void main() {
     final decoration =
         tester.widget<Container>(find.byType(Container).first).decoration
             as BoxDecoration;
-    expect(decoration.color, const Color(0xFF2690E6).withValues(alpha: .1));
+    expect(
+      decoration.color,
+      AppTheme.tokensFor(Brightness.light).illustrationSky
+          .withValues(alpha: .1),
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

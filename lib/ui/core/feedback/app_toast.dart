@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../theme/app_theme.dart';
+
 enum AppToastType { success, failure }
 
 /// An application-level status message displayed at the top of the current route.
@@ -85,6 +87,7 @@ class _AppToastMessageState extends State<_AppToastMessage>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final isSuccess = widget.type == AppToastType.success;
     return Positioned(
       top: MediaQuery.paddingOf(context).top + 20,
@@ -101,7 +104,7 @@ class _AppToastMessageState extends State<_AppToastMessage>
               constraints: const BoxConstraints(minHeight: 44),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xCC1D1D24),
+                color: colors.textPrimary.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -117,8 +120,8 @@ class _AppToastMessageState extends State<_AppToastMessage>
                   Expanded(
                     child: Text(
                       widget.message,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colors.textInverse,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -130,9 +133,9 @@ class _AppToastMessageState extends State<_AppToastMessage>
                       tooltip: MaterialLocalizations.of(context)
                           .closeButtonTooltip,
                       onPressed: AppToast.dismiss,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: Colors.white,
+                        color: colors.textInverse,
                         size: 18,
                       ),
                       constraints: const BoxConstraints(

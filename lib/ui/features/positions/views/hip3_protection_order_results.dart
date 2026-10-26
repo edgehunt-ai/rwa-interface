@@ -44,7 +44,7 @@ class Hip3ProtectionOrderResults extends StatelessWidget {
                     color: order.isConfirmed
                         ? semantic.success
                         : order.isFailed
-                        ? semantic.loss
+                        ? semantic.danger
                         : semantic.warning,
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:nobell/app/config/privy_configuration.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PrivateKeyExportSheet extends StatelessWidget {
@@ -42,7 +43,7 @@ class PrivateKeyExportSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Material(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
+      color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
@@ -62,10 +63,8 @@ class PrivateKeyExportSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Center(
-                child: Image(
-                  image: AssetImage(
-                    'assets/figma/account_activity/private_key_warning.webp',
-                  ),
+                child: ThemedIllustration(
+                  IllustrationAsset.privateKeyWarning,
                   width: 160,
                   height: 160,
                   fit: BoxFit.contain,
@@ -106,7 +105,7 @@ class PrivateKeyExportSheet extends StatelessWidget {
     width: 32,
     height: 4,
     decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.border,
+      color: Theme.of(context).extension<AppRwaColors>()!.borderSubtle,
       borderRadius: BorderRadius.circular(2),
     ),
   );

@@ -28,6 +28,8 @@ import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_p
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
   const WithdrawalScreen({
@@ -560,7 +562,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       }
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.primaryText,
+                      foregroundColor: colors.textPrimary,
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(42, 24),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -627,14 +629,14 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                   Text(
                     '≈ \$$displayAmount',
                     style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: colors.secondaryText),
+                        ?.copyWith(color: colors.textSecondary),
                   ),
                   TextButton(
                     onPressed: hasAvailableBalance
                         ? () => widget.amount.text = availableBalance.value
                         : null,
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.primaryText,
+                      foregroundColor: colors.textPrimary,
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(36, 16),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -653,7 +655,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
           Text(
             widget.error!,
             style: TextStyle(
-              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
+              color: Theme.of(context).extension<AppSemanticColors>()!.danger,
             ),
           ),
         ],
@@ -699,8 +701,8 @@ class _RouteCard extends StatelessWidget {
       key: const ValueKey('withdrawal-route-card'),
       height: 155,
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -744,7 +746,7 @@ class _RouteCard extends StatelessWidget {
               label: AppLocalizations.of(context).signatureFrom,
               value: AppLocalizations.of(context).spotAccount,
               valueKey: const ValueKey('withdrawal-from-value'),
-              icon: SvgPicture.asset(
+              icon: VenueIcon(
                 'assets/figma/funding/venue_bnb_chain_24.svg',
                 width: 24,
                 height: 24,
@@ -802,8 +804,9 @@ class _RouteRow extends StatelessWidget {
                 ),
                 if (showChevron) ...[
                   const SizedBox(width: 8),
-                  SvgPicture.asset(
+                  AppSvgIcon(
                     'assets/figma/funding/chevron_right.svg',
+                    color: context.appColors.iconSecondary,
                     key: chevronKey,
                     width: 20,
                     height: 20,
@@ -836,7 +839,7 @@ class _WithdrawalEstimateCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12),
       ),
       child: _ReviewDetail(
@@ -890,7 +893,7 @@ class _WithdrawalReview extends StatelessWidget {
         Text(
           l10n.youAreSending,
           style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: colors.secondaryText),
+              ?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 4),
         Text(
@@ -905,13 +908,13 @@ class _WithdrawalReview extends StatelessWidget {
         Text(
           '≈ \$${TokenAmountFormatter.formatValue(quote.intent.amount)}',
           style: Theme.of(context).textTheme.bodyLarge
-              ?.copyWith(color: colors.secondaryText),
+              ?.copyWith(color: colors.textSecondary),
         ),
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.subtleSurface,
+            color: colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -956,14 +959,14 @@ class _WithdrawalReview extends StatelessWidget {
         Text(
           l10n.networkFeeCoveredByPlatform,
           style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: colors.secondaryText),
+              ?.copyWith(color: colors.textSecondary),
         ),
         if (error != null) ...[
           const SizedBox(height: 12),
           Text(
             error!,
             style: TextStyle(
-              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
+              color: Theme.of(context).extension<AppSemanticColors>()!.danger,
             ),
           ),
         ],
@@ -1026,19 +1029,16 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                   onPressed: () =>
                       context.go('${AppRoutes.activityPath}?tab=cash'),
                   style: TextButton.styleFrom(
-                    foregroundColor: colors.secondaryText,
+                    foregroundColor: colors.textSecondary,
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  icon: SvgPicture.asset(
+                  icon: AppSvgIcon(
                     'assets/figma/funding/activity.svg',
                     width: 20,
                     height: 20,
-                    colorFilter: ColorFilter.mode(
-                      colors.secondaryText,
-                      BlendMode.srcIn,
-                    ),
+                    color: colors.textSecondary,
                   ),
                   label: Text(l10n.history),
                 ),
@@ -1052,18 +1052,15 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                 decoration: InputDecoration(
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: SvgPicture.asset(
+                    child: AppSvgIcon(
                       'assets/figma/home_markets/search.svg',
                       width: 20,
                       height: 20,
-                      colorFilter: ColorFilter.mode(
-                        colors.primaryText,
-                        BlendMode.srcIn,
-                      ),
+                      color: colors.textPrimary,
                     ),
                   ),
                   hintText: l10n.searchAssets,
-                  fillColor: colors.subtleSurface,
+                  fillColor: colors.surfaceSubtle,
                 ),
               ),
             ),
@@ -1071,7 +1068,7 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
             Text(
               l10n.availableToWithdraw,
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colors.tertiaryText),
+                  ?.copyWith(color: colors.textTertiary),
             ),
             const SizedBox(height: 16),
             Align(
@@ -1189,7 +1186,7 @@ class _AssetRow extends StatelessWidget {
                       if (isBstock)
                         Row(
                           children: [
-                            SvgPicture.asset(
+                            VenueIcon(
                               'assets/figma/home_markets/venue_bnb.svg',
                               width: 14,
                               height: 14,
@@ -1255,7 +1252,7 @@ class _AssetRow extends StatelessWidget {
 }
 
 TextStyle _assetMetaStyle(AppRwaColors colors) =>
-    TextStyle(fontSize: 12, height: 16 / 12, color: colors.secondaryText);
+    TextStyle(fontSize: 12, height: 16 / 12, color: colors.textSecondary);
 
 String? _holdingReturnText(WithdrawableAsset asset) {
   final amount = asset.holdingReturnAmountUsd;
@@ -1286,7 +1283,7 @@ Color _holdingReturnColor(BuildContext context, WithdrawableAsset asset) {
   final value =
       asset.holdingReturnAmountUsd?.value ?? asset.holdingReturnPercent?.value;
   final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-  return value?.startsWith('-') ?? false ? semantic.loss : semantic.success;
+  return value?.startsWith('-') ?? false ? semantic.danger : semantic.success;
 }
 
 class _InputCard extends StatelessWidget {
@@ -1302,8 +1299,8 @@ class _InputCard extends StatelessWidget {
       height: height,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: child,
@@ -1320,7 +1317,7 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+      color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
     ),
   );
 }
@@ -1360,7 +1357,7 @@ class _BreakdownRow extends StatelessWidget {
         label,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           color: mutedLabel
-              ? Theme.of(context).extension<AppRwaColors>()!.secondaryText
+              ? Theme.of(context).extension<AppRwaColors>()!.textSecondary
               : null,
         ),
       ),
@@ -1467,10 +1464,10 @@ class _WithdrawalNetworkMark extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: kind == NetworkKind.arbitrum
-              ? const Color(0xFF2F3749)
-              : const Color(0xFF627EEA),
+              ? AppBrandColors.arbitrum
+              : AppBrandColors.ethereum,
           border: Border.all(
-            color: Theme.of(context).extension<AppRwaColors>()!.border,
+            color: Theme.of(context).extension<AppRwaColors>()!.borderSubtle,
           ),
           borderRadius: BorderRadius.circular(4),
         ),

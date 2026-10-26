@@ -160,8 +160,8 @@ class _RwaTooltipOverlay extends StatelessWidget {
                   if (showBelow)
                     _TooltipArrow(
                       pointsUp: true,
-                      color: colors.surface,
-                      borderColor: borderColor ?? colors.border,
+                      color: colors.surfaceBase,
+                      borderColor: borderColor ?? colors.borderSubtle,
                       alignToCenter: alignToCenter,
                     ),
                   Container(
@@ -169,8 +169,10 @@ class _RwaTooltipOverlay extends StatelessWidget {
                     width: width,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: colors.surface,
-                      border: Border.all(color: borderColor ?? colors.border),
+                      color: colors.surfaceBase,
+                      border: Border.all(
+                        color: borderColor ?? colors.borderSubtle,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: RichText(text: message),
@@ -178,8 +180,8 @@ class _RwaTooltipOverlay extends StatelessWidget {
                   if (!showBelow)
                     _TooltipArrow(
                       pointsUp: false,
-                      color: colors.surface,
-                      borderColor: borderColor ?? colors.border,
+                      color: colors.surfaceBase,
+                      borderColor: borderColor ?? colors.borderSubtle,
                       alignToCenter: alignToCenter,
                     ),
                 ],

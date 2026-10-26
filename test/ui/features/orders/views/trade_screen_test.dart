@@ -1399,7 +1399,10 @@ void main() {
     final dynamic linePainter = tester
         .widget<CustomPaint>(find.byKey(const Key('trade-chart-line-painter')))
         .painter;
-    expect(linePainter.color, const Color(0xFFB3261E));
+    expect(
+      linePainter.color,
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
+    );
 
     final chart = find.byKey(const Key('trade-chart-plot'));
     final bounds = tester.getRect(chart);
@@ -1411,7 +1414,7 @@ void main() {
     expect(find.text('+10%'), findsWidgets);
     expect(
       tester.widget<Text>(_headerPrice(r'$100')).style?.color,
-      const Color(0xFFB3261E),
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
     );
     expect(find.text('-1%'), findsOneWidget);
     expect(find.text(r'US $175'), findsOneWidget);
@@ -1429,7 +1432,7 @@ void main() {
     expect(_headerPrice(r'$100'), findsOneWidget);
     expect(
       tester.widget<Text>(_headerPrice(r'$100')).style?.color,
-      const Color(0xFFB3261E),
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
     );
 
     await tester.tap(find.byTooltip('Candlestick chart'));
@@ -1439,7 +1442,10 @@ void main() {
           find.byKey(const Key('trade-chart-candle-painter')),
         )
         .painter;
-    expect(candlePainter.lossColor, const Color(0xFFB3261E));
+    expect(
+      candlePainter.lossColor,
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
+    );
   });
 
   testWidgets(
@@ -1604,7 +1610,10 @@ void main() {
     );
     final dynamic referencePainter = referencePaint.painter;
     expect(referencePainter.referencePoints, hasLength(2));
-    expect(referencePainter.referenceColor, const Color(0xFF8A8A98));
+    expect(
+      referencePainter.referenceColor,
+      AppTheme.light.extension<AppRwaColors>()!.textTertiary,
+    );
 
     final chart = find.byKey(const Key('trade-chart-plot'));
     final bounds = tester.getRect(chart);
@@ -1620,7 +1629,10 @@ void main() {
       find.byKey(const Key('trade-chart-crosshair')),
     );
     final dynamic crosshairPainter = crosshair.painter;
-    expect(crosshairPainter.color, const Color(0xFF04A08B));
+    expect(
+      crosshairPainter.color,
+      AppTheme.light.extension<AppSemanticColors>()!.success,
+    );
     await gesture.up();
     await tester.pump();
 
@@ -2192,7 +2204,9 @@ void main() {
           .extension<AppSemanticColors>()!;
       expect(
         tester.widget<Text>(labelFinder).style?.color,
-        side == PositionSide.long ? semantic.success : kShortTradeColor,
+        side == PositionSide.long
+            ? semantic.success
+            : AppTheme.light.extension<AppSemanticColors>()!.danger,
       );
     });
   }
@@ -2442,8 +2456,8 @@ void main() {
         ),
       );
       expect(indicator.value, 0.2);
-      expect(indicator.backgroundColor, colors.subtleSurface);
-      expect(indicator.valueColor?.value, colors.selected);
+      expect(indicator.backgroundColor, colors.surfaceSubtle);
+      expect(indicator.valueColor?.value, colors.brandDefault);
       expect(
         tester.getSize(
           find.byKey(const ValueKey('trade-open-order-progress-open-order')),

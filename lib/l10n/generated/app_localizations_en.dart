@@ -1022,6 +1022,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSimplifiedChinese => 'Simplified Chinese';
 
   @override
+  String get settingsDisplayMode => 'Display Mode';
+
+  @override
+  String get displayModeLight => 'Light';
+
+  @override
+  String get displayModeLightDescription =>
+      'Always use light mode on this device';
+
+  @override
+  String get displayModeDark => 'Dark';
+
+  @override
+  String get displayModeDarkDescription =>
+      'Always use dark mode on this device';
+
+  @override
+  String get displayModeSystem => 'System';
+
+  @override
+  String get displayModeSystemDescription =>
+      'Follow this device’s system setting';
+
+  @override
   String get settingsExportPrivateKey => 'Export Private Key';
 
   @override
@@ -2941,4 +2965,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String tradeChartOutsideRange(int count, String types) {
     return '$count $types off-chart';
   }
+
+  @override
+  String get settingsYourAccount => 'Your account';
+
+  @override
+  String get settingsLoginToManageAccount => 'Log in to manage your account';
 }

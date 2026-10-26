@@ -329,6 +329,13 @@
   "settingsLanguage": "语言",
   "languageEnglish": "英语",
   "languageSimplifiedChinese": "简体中文",
+  "settingsDisplayMode": "显示模式",
+  "displayModeLight": "浅色",
+  "displayModeLightDescription": "在此设备上始终使用浅色模式",
+  "displayModeDark": "深色",
+  "displayModeDarkDescription": "在此设备上始终使用深色模式",
+  "displayModeSystem": "系统",
+  "displayModeSystemDescription": "跟随此设备的系统设置",
   "settingsExportPrivateKey": "导出私钥",
   "settingsPrivateKeyWarning": "前往网页登录以导出\n你的私钥",
   "settingsPrivateKeyContinue": "前往网页登录",
@@ -947,14 +954,7 @@
   "tradeMarkersUnavailable": "暂时无法获取交易标记。",
   "liquidationHistoryPartial": "部分强平历史暂不可用。",
   "tradeChartOutsideRange": "{count} 个 {types} 超出图表范围",
-  "@tradeChartOutsideRange": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "types": {
-        "type": "String"
-      }
-    }
-  }
+  "@tradeChartOutsideRange": {"placeholders": {"count": {"type": "int"}, "types": {"type": "String"}}},
+  "settingsYourAccount": "你的账户",
+  "settingsLoginToManageAccount": "登录以管理你的账户"
 }

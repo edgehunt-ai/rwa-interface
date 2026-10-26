@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/auth/authentication.dart';
@@ -20,8 +19,6 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
-import 'package:nobell/ui/core/widgets/account_avatar.dart';
-import 'package:nobell/ui/features/account/providers/account_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -29,6 +26,7 @@ import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -49,9 +47,6 @@ class HomeScreen extends ConsumerWidget {
         : null;
     final portfolio = authenticated
         ? ref.watch(portfolioSummaryProvider)
-        : null;
-    final avatarUri = authenticated
-        ? ref.watch(accountProvider).value?.avatarUri
         : null;
     final portfolioValue = portfolio?.maybeWhen(
       data: (value) => value,
@@ -88,11 +83,8 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             children: [
               _UtilityBar(
-                avatarUri: avatarUri,
                 onSearch: () => context.pushNamed(AppRoutes.marketSearchName),
-                onSettings: authenticated
-                    ? () => context.pushNamed(AppRoutes.settingsName)
-                    : null,
+                onSettings: () => context.pushNamed(AppRoutes.settingsName),
               ),
               const SizedBox(height: 12),
               if (authenticated)
@@ -161,70 +153,51 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class _UtilityBar extends StatelessWidget {
-  const _UtilityBar({
-    required this.onSearch,
-    required this.avatarUri,
-    this.onSettings,
-  });
+  const _UtilityBar({required this.onSearch, required this.onSettings});
+
   final VoidCallback onSearch;
-  final Uri? avatarUri;
-  final VoidCallback? onSettings;
+  final VoidCallback onSettings;
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final colors = context.appColors;
     final l10n = AppLocalizations.of(context);
+    Widget action(String tooltip, String asset, VoidCallback onPressed) =>
+        SizedBox.square(
+          dimension: 44,
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: onPressed,
+            padding: EdgeInsets.zero,
+            style: IconButton.styleFrom(backgroundColor: colors.surfaceBase),
+            icon: AppSvgIcon(
+              asset,
+              color: colors.iconPrimary,
+              width: 20,
+              height: 20,
+            ),
+          ),
+        );
     return SizedBox(
-      height: 40,
+      height: 44,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (onSettings != null)
-            IconButton(
-              tooltip: l10n.openSettings,
-              onPressed: onSettings,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 40, height: 40),
-              icon: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.border),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: AccountAvatar(avatarUri: avatarUri),
-              ),
-            ),
-          SizedBox(
-            width: 100,
-            height: 32,
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/figma/home_markets/nobell-wordmark.svg',
-                key: const Key('home-wordmark'),
-                width: 100,
-                height: 26,
-              ),
-            ),
+          action(
+            l10n.openSettings,
+            'assets/figma/home_markets/settings.svg',
+            onSettings,
           ),
-          if (onSettings == null) const Spacer(),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: colors.surface,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              tooltip: l10n.searchMarkets,
-              onPressed: onSearch,
-              padding: EdgeInsets.zero,
-              icon: SvgPicture.asset(
-                'assets/figma/home_markets/search.svg',
-                width: 20,
-                height: 20,
-              ),
-            ),
+          const AppSvgIcon(
+            'assets/figma/home_markets/nobell-wordmark.svg',
+            key: Key('home-wordmark'),
+            width: 100,
+            height: 26,
+          ),
+          action(
+            l10n.searchMarkets,
+            'assets/figma/home_markets/search.svg',
+            onSearch,
           ),
         ],
       ),
@@ -252,7 +225,7 @@ class _PortfolioCard extends StatelessWidget {
       height: 142,
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -261,7 +234,7 @@ class _PortfolioCard extends StatelessWidget {
           Text(
             AppLocalizations.of(context).homePortfolio,
             style: TextStyle(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontSize: 13,
               height: 18 / 13,
               fontWeight: FontWeight.w500,
@@ -277,7 +250,7 @@ class _PortfolioCard extends StatelessWidget {
               child: AnimatedNumberText(
                 TokenAmountFormatter.formatUsdFixed(portfolio.totalValueUsd),
                 style: TextStyle(
-                  color: colors.primaryText,
+                  color: colors.textPrimary,
                   fontSize: 32,
                   height: 38 / 32,
                   fontWeight: FontWeight.w700,
@@ -287,7 +260,7 @@ class _PortfolioCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (isEmpty)
-            Text('—', style: TextStyle(color: colors.secondaryText))
+            Text('—', style: TextStyle(color: colors.textSecondary))
           else if (pnl != null || pnlPercent != null)
             Text(
               [
@@ -299,7 +272,7 @@ class _PortfolioCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: positive ? semantic.success : semantic.loss,
+                color: positive ? semantic.success : semantic.danger,
                 fontSize: 15,
                 height: 22 / 15,
                 fontWeight: FontWeight.w500,
@@ -309,7 +282,7 @@ class _PortfolioCard extends StatelessWidget {
             Text(
               'No performance yet',
               style: TextStyle(
-                color: colors.secondaryText,
+                color: colors.textSecondary,
                 fontSize: 15,
                 height: 22 / 15,
                 fontWeight: FontWeight.w500,
@@ -365,15 +338,15 @@ class _QuickActions extends StatelessWidget {
         Expanded(
           child: FilledButton.icon(
             onPressed: () => showDepositRoutesSheet(context),
-            icon: SvgPicture.asset(
+            icon: AppSvgIcon(
               'assets/figma/home_markets/deposit.svg',
               width: 20,
               height: 20,
             ),
             label: Text(l10n.deposit),
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(colors.primaryAction),
-              foregroundColor: WidgetStatePropertyAll(colors.onPrimaryAction),
+              backgroundColor: WidgetStatePropertyAll(colors.actionPrimary),
+              foregroundColor: WidgetStatePropertyAll(colors.textInverse),
               padding: const WidgetStatePropertyAll(
                 EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -385,8 +358,9 @@ class _QuickActions extends StatelessWidget {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () => showWithdrawalSourceSheet(context),
-              icon: SvgPicture.asset(
+              icon: AppSvgIcon(
                 'assets/figma/home_markets/withdraw.svg',
+                color: context.appColors.iconPrimary,
                 width: 20,
                 height: 20,
               ),
@@ -424,10 +398,16 @@ class _LoggedOutPrompt extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           child: Ink(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Colors.white, Color(0xFFFFD7F7)],
+                colors: [
+                  colors.surfaceBase,
+                  Color.alphaBlend(
+                    colors.brandDefault.withValues(alpha: 0.14),
+                    colors.surfaceBase,
+                  ),
+                ],
               ),
               borderRadius: BorderRadius.circular(24),
             ),
@@ -456,7 +436,7 @@ class _LoggedOutPrompt extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: colors.secondaryText),
+                                ?.copyWith(color: colors.textSecondary),
                           ),
                         ],
                       ),
@@ -577,7 +557,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
               return Container(
                 height: 240,
                 decoration: BoxDecoration(
-                  color: colors.surface,
+                  color: colors.surfaceBase,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: DesignStateFeedback(
@@ -591,7 +571,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
             return Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: colors.surface,
+                color: colors.surfaceBase,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Column(
@@ -616,11 +596,11 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                         height: 1,
                         indent: 16,
                         endIndent: 16,
-                        color: colors.border,
+                        color: colors.borderSubtle,
                       ),
                   ],
                   if (showViewMore) ...[
-                    Divider(height: 1, color: colors.border),
+                    Divider(height: 1, color: colors.borderSubtle),
                     SizedBox(
                       width: double.infinity,
                       height: 40,
@@ -628,7 +608,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                         key: const Key('home-markets-view-more'),
                         onPressed: () => _openMarkets(selectedTab),
                         style: TextButton.styleFrom(
-                          foregroundColor: colors.secondaryText,
+                          foregroundColor: colors.textSecondary,
                           shape: const RoundedRectangleBorder(),
                           textStyle: const TextStyle(
                             fontSize: 12,

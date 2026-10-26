@@ -57,7 +57,7 @@ class TpSlConsentRow extends StatelessWidget {
                       child: Text(
                         l10n.tpSlRiskAgreementLink,
                         style: TextStyle(
-                          color: colors.primaryText,
+                          color: colors.textPrimary,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -70,7 +70,7 @@ class TpSlConsentRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 18 / 13,
-                color: colors.primaryText,
+                color: colors.textPrimary,
               ),
             ),
           ),
@@ -105,7 +105,7 @@ class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -118,7 +118,7 @@ class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colors.secondaryText.withValues(alpha: .45),
+                  color: colors.textSecondary.withValues(alpha: .45),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -148,7 +148,7 @@ class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
@@ -156,7 +156,7 @@ class _TpSlRiskAgreementSheetState extends State<TpSlRiskAgreementSheet> {
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -223,7 +223,7 @@ class _TpSlAgreementConsentRow extends StatelessWidget {
                   fontSize: 13,
                   height: 18 / 13,
                   fontWeight: FontWeight.w500,
-                  color: colors.primaryText,
+                  color: colors.textPrimary,
                 ),
               ),
             ),

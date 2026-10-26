@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
+import '../theme/app_theme.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 /// A compact back-navigation header whose icon, gap, and title share one tap
 /// target.
@@ -58,8 +61,9 @@ class AppPageHeader extends StatelessWidget {
                   offset: Offset.zero,
                   child: Transform.flip(
                     flipX: true,
-                    child: SvgPicture.asset(
+                    child: AppSvgIcon(
                       'assets/figma/funding/back.svg',
+                      color: context.appColors.iconPrimary,
                       width: 20,
                       height: 20,
                     ),

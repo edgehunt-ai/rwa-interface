@@ -65,7 +65,7 @@ class LoadingSkeleton extends StatelessWidget {
                 ),
                 if (index != visibleRows - 1) ...[
                   const SizedBox(height: 16),
-                  Divider(height: 1, color: colors.border),
+                  Divider(height: 1, color: colors.borderSubtle),
                   const SizedBox(height: 16),
                 ],
               ],
@@ -104,7 +104,7 @@ class SkeletonBlock extends StatelessWidget {
       height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colors.subtleSurface,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(radius),
         ),
       ),

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/limit_price_loss.dart';
@@ -23,6 +22,7 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/rwa_tooltip.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
@@ -30,6 +30,8 @@ import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/data/services/tpsl_risk_consent_service.dart';
 import 'package:nobell/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import 'hip3_confirm_sheet.dart';
 import 'hip3_segmented_control.dart';
@@ -1229,7 +1231,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             isDismissible: true,
             enableDrag: false,
             backgroundColor: Colors.transparent,
-            barrierColor: const Color(0xB3000000),
+            barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.7),
             builder: (_) => Hip3UnifiedAccountSheet(
               onConfirm: () => ref
                   .read(hip3AccountAbstractionCommandProvider)
@@ -1406,7 +1408,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final isShort = _side == TradingSide.short || _reduceOnly;
-    final actionColor = isShort ? kShortTradeColor : semantic.success;
+    final actionColor = isShort ? semantic.danger : semantic.success;
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = _context?.availableMargin;
@@ -1487,7 +1489,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             quantity: limitQuantity,
           );
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -1541,8 +1543,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                             TradingOrderType.limit,
                           ],
                           selected: _type,
-                          selectedColor: colors.surface,
-                          selectedForeground: colors.primaryText,
+                          selectedColor: colors.surfaceBase,
+                          selectedForeground: colors.textPrimary,
                           label: (value) => value == TradingOrderType.market
                               ? l10n.market
                               : l10n.limit,
@@ -1704,7 +1706,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       : null,
                 ),
                 const SizedBox(height: 16),
-                Divider(color: colors.subtleSurface),
+                Divider(color: colors.surfaceSubtle),
                 const SizedBox(height: 16),
                 _Hip3RiskSummary(
                   settlementAsset: settlementAsset,
@@ -1766,8 +1768,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: actionColor,
-                      disabledBackgroundColor: colors.subtleSurface,
-                      disabledForegroundColor: colors.tertiaryText,
+                      disabledBackgroundColor: colors.surfaceSubtle,
+                      disabledForegroundColor: colors.textTertiary,
                     ),
                     key: const Key('hip3-submit-button'),
                     onPressed: _submitting || disabledReason != null
@@ -1782,7 +1784,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: colors.tertiaryText,
+                                  color: colors.textTertiary,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -1823,8 +1825,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image.asset(
-                'assets/figma/trade/order_success.webp',
+              ThemedIllustration(
+                IllustrationAsset.orderSuccess,
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
@@ -2039,7 +2041,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
       _stopLossEnabled ? _stopLoss.text.trim() : null,
     );
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -2073,7 +2075,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                   padding: const EdgeInsets.only(left: 28, top: 4),
                   child: Text(
                     '${widget.symbol}/USDT  ${widget.side == TradingSide.long ? l10n.buy : l10n.sell}',
-                    style: TextStyle(color: colors.secondaryText),
+                    style: TextStyle(color: colors.textSecondary),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -2128,8 +2130,8 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.subtleSurface,
-                          foregroundColor: colors.primaryText,
+                          backgroundColor: colors.surfaceSubtle,
+                          foregroundColor: colors.textPrimary,
                           side: BorderSide.none,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -2141,8 +2143,8 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                       child: FilledButton(
                         key: const Key('hip3-tp-sl-confirm'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: colors.primaryAction,
-                          foregroundColor: colors.onPrimaryAction,
+                          backgroundColor: colors.actionPrimary,
+                          foregroundColor: colors.textInverse,
                         ),
                         onPressed: _consentLoading || errors.isNotEmpty
                             ? null
@@ -2185,7 +2187,7 @@ class _Hip3YourPositionCard extends StatelessWidget {
         ? '—'
         : '${TokenAmountFormatter.formatValue(position.leverage!)}x';
     return Material(
-      color: colors.subtleSurface,
+      color: colors.surfaceSubtle,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         key: const Key('hip3-your-position'),
@@ -2201,7 +2203,7 @@ class _Hip3YourPositionCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     height: 16 / 11,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -2254,6 +2256,7 @@ class _Hip3RiskSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final impacts = execution?.crossLiquidationImpacts ?? const [];
     final liquidationPrice = execution?.liquidationPrice;
     return Column(
@@ -2293,7 +2296,7 @@ class _Hip3RiskSummary extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(context)
                           .extension<AppRwaColors>()!
-                          .secondaryText,
+                          .textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -2309,11 +2312,11 @@ class _Hip3RiskSummary extends StatelessWidget {
                     width: 18,
                     height: 18,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFF7BE5),
+                    decoration: BoxDecoration(
+                      color: colors.brandDefault,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 14),
+                    child: Icon(Icons.add, color: colors.textInverse, size: 14),
                   ),
                 const SizedBox(width: 4),
                 Text(
@@ -2401,7 +2404,7 @@ class _Hip3SheetHeader extends StatelessWidget {
           venue == null ? 'HIP-3' : 'HIP-3 · $venue',
           key: const Key('hip3-product-source'),
           maxWidth: 112,
-          leading: SvgPicture.asset(
+          leading: VenueIcon(
             'assets/figma/home_markets/venue_hyperliquid.svg',
             width: 14,
             height: 14,
@@ -2450,8 +2453,8 @@ class _Hip3Badge extends StatelessWidget {
           : BoxConstraints(maxWidth: maxWidth!),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceSubtle,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -2472,6 +2475,7 @@ class _Hip3TradingSettingsNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = context.semanticColors;
     return Semantics(
       liveRegion: true,
       label: message,
@@ -2480,14 +2484,14 @@ class _Hip3TradingSettingsNotice extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 60),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF7ED),
+          color: semantic.warningSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         alignment: Alignment.centerLeft,
         child: Text(
           message,
-          style: const TextStyle(
-            color: Color(0xFFB45309),
+          style: TextStyle(
+            color: semantic.warning,
             fontSize: 13,
             fontWeight: FontWeight.w500,
             height: 18 / 13,
@@ -2572,7 +2576,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     return Container(
       key: cardKey,
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -2599,8 +2603,8 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: settingsEnabled
-                                  ? colors.primaryText
-                                  : colors.tertiaryText,
+                                  ? colors.textPrimary
+                                  : colors.textTertiary,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -2608,14 +2612,14 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                             Icons.keyboard_arrow_down,
                             size: 18,
                             color: settingsEnabled
-                                ? colors.primaryText
-                                : colors.tertiaryText,
+                                ? colors.textPrimary
+                                : colors.textTertiary,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Container(width: 2, height: 16, color: colors.surface),
+                  Container(width: 2, height: 16, color: colors.surfaceBase),
                   Expanded(
                     child: InkWell(
                       key: const Key('hip3-leverage-toggle'),
@@ -2629,16 +2633,16 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: settingsEnabled
-                                  ? colors.primaryText
-                                  : colors.tertiaryText,
+                                  ? colors.textPrimary
+                                  : colors.textTertiary,
                             ),
                           ),
                           Icon(
                             Icons.keyboard_arrow_down,
                             size: 18,
                             color: settingsEnabled
-                                ? colors.primaryText
-                                : colors.tertiaryText,
+                                ? colors.textPrimary
+                                : colors.textTertiary,
                           ),
                         ],
                       ),
@@ -2647,7 +2651,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(height: 1, color: colors.surface),
+            Container(height: 1, color: colors.surfaceBase),
           ],
           if (limitPrice case final controller?) ...[
             Padding(
@@ -2656,7 +2660,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                 children: [
                   Text(
                     AppLocalizations.of(context).limitPrice,
-                    style: TextStyle(fontSize: 11, color: colors.secondaryText),
+                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -2682,7 +2686,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         hintStyle: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: colors.tertiaryText,
+                          color: colors.textTertiary,
                         ),
                         isDense: true,
                         filled: false,
@@ -2701,7 +2705,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(height: 1, color: colors.surface),
+            Container(height: 1, color: colors.surfaceBase),
           ],
           if (showAmountInput)
             Padding(
@@ -2717,7 +2721,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                             : AppLocalizations.of(context).orderValue,
                         style: TextStyle(
                           fontSize: 11,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                       if (availableMarginLoading)
@@ -2759,7 +2763,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                               ),
                             ],
                             style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(color: colors.primaryText),
+                                ?.copyWith(color: colors.textPrimary),
                             decoration: InputDecoration(
                               hintText: minimumAmount == null
                                   ? '0.0'
@@ -2767,7 +2771,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                                       context,
                                     ).minimumAmountPlaceholder(minimumAmount!),
                               hintStyle: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(color: colors.tertiaryText),
+                                  ?.copyWith(color: colors.textTertiary),
                               filled: false,
                               contentPadding: EdgeInsets.zero,
                               border: InputBorder.none,
@@ -2819,13 +2823,13 @@ class _Hip3AmountRail extends StatelessWidget {
         children: [
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: colors.primaryAction,
-              inactiveTrackColor: colors.surface,
+              activeTrackColor: colors.actionPrimary,
+              inactiveTrackColor: colors.surfaceBase,
               trackHeight: 8,
-              thumbColor: colors.primaryAction,
+              thumbColor: colors.actionPrimary,
               overlayShape: SliderComponentShape.noOverlay,
               tickMarkShape: SliderTickMarkShape.noTickMark,
-              valueIndicatorColor: colors.primaryAction,
+              valueIndicatorColor: colors.actionPrimary,
               showValueIndicator: ShowValueIndicator.onDrag,
             ),
             child: Slider(
@@ -2854,7 +2858,7 @@ class _Hip3AmountRail extends StatelessWidget {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: colors.subtleSurface,
+                              color: colors.surfaceSubtle,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -2906,7 +2910,7 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -2921,7 +2925,7 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: .45),
+                    color: colors.textSecondary.withValues(alpha: .45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -2942,7 +2946,7 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
                   ),
                 ],
               ),
-              Divider(color: colors.subtleSurface),
+              Divider(color: colors.surfaceSubtle),
               const SizedBox(height: 12),
               Text(
                 l10n.chooseMarginMode,
@@ -2957,8 +2961,9 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
                 ),
                 title: l10n.cross,
                 description: l10n.crossMarginDescription,
-                icon: SvgPicture.asset(
+                icon: AppSvgIcon(
                   'assets/figma/trade/margin_mode_cross.svg',
+                  color: context.appColors.iconPrimary,
                   key: const Key('hip3-cross-margin-icon'),
                 ),
                 onTap: () => setState(() => _mode = TradingMarginMode.cross),
@@ -3021,10 +3026,10 @@ class _MarginModeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    const disabledColor = Color(0xFF676776);
-    final optionTextColor = enabled ? colors.primaryText : disabledColor;
+    final disabledColor = colors.textTertiary;
+    final optionTextColor = enabled ? colors.textPrimary : disabledColor;
     final optionDescriptionColor = enabled
-        ? (selected ? colors.primaryText : colors.secondaryText)
+        ? (selected ? colors.textPrimary : colors.textSecondary)
         : disabledColor;
     return Semantics(
       button: enabled,
@@ -3037,7 +3042,7 @@ class _MarginModeOption extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: selected ? colors.selected : colors.subtleSurface,
+            color: selected ? colors.brandDefault : colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -3047,13 +3052,13 @@ class _MarginModeOption extends StatelessWidget {
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: colors.surface,
+                  color: colors.surfaceBase,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: enabled
                     ? icon
                     : ColorFiltered(
-                        colorFilter: const ColorFilter.mode(
+                        colorFilter: ColorFilter.mode(
                           disabledColor,
                           BlendMode.srcIn,
                         ),
@@ -3081,7 +3086,7 @@ class _MarginModeOption extends StatelessWidget {
                 ),
               ),
               if (selected)
-                const Icon(Icons.check_circle, color: Colors.black, size: 20),
+                Icon(Icons.check_circle, color: colors.textInverse, size: 20),
             ],
           ),
         ),
@@ -3130,7 +3135,7 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
         widget.maximumLeverage,
     ];
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -3202,8 +3207,8 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.subtleSurface,
-                          foregroundColor: colors.primaryText,
+                          backgroundColor: colors.surfaceSubtle,
+                          foregroundColor: colors.textPrimary,
                           side: BorderSide.none,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -3214,8 +3219,8 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: colors.primaryAction,
-                          foregroundColor: colors.onPrimaryAction,
+                          backgroundColor: colors.actionPrimary,
+                          foregroundColor: colors.textInverse,
                         ),
                         onPressed:
                             _loading || _leverage == widget.initialLeverage
@@ -3270,13 +3275,13 @@ class _LeverageOption extends StatelessWidget {
           height: 38,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? colors.selected : colors.subtleSurface,
+            color: selected ? colors.brandDefault : colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Text(
             '${value}x',
             style: TextStyle(
-              color: selected ? colors.onPrimaryAction : colors.secondaryText,
+              color: selected ? colors.textInverse : colors.textSecondary,
               fontSize: 15,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             ),
@@ -3324,7 +3329,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
         : nextSide == TradingSide.long
         ? AppLocalizations.of(context).long
         : AppLocalizations.of(context).short;
-    const shortColor = kShortTradeColor;
+    final shortColor = semantic.danger;
     final currentColor = currentSide == TradingSide.long
         ? semantic.success
         : shortColor;
@@ -3336,7 +3341,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
         Expanded(
           child: Text(
             AppLocalizations.of(context).positionWillBe,
-            style: TextStyle(color: colors.secondaryText, fontSize: 13),
+            style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
         ),
         RichText(
@@ -3354,7 +3359,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
               ),
               TextSpan(
                 text: ' → ',
-                style: TextStyle(color: colors.primaryText),
+                style: TextStyle(color: colors.textPrimary),
               ),
               TextSpan(
                 text: '$nextLabel ${_formatPositionUsd(nextValue)}',
@@ -3369,7 +3374,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
           child: Icon(
             Icons.help_outline,
             size: 14,
-            color: colors.secondaryText,
+            color: colors.textSecondary,
           ),
         ),
       ],
@@ -3378,12 +3383,14 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
 
   InlineSpan _positionWillBeTooltip(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    const longColor = Color(0xFF04A08B);
-    const shortColor = kShortTradeColor;
-    final base = const TextStyle(
+    final colors = context.appColors;
+    final semantic = context.semanticColors;
+    final longColor = semantic.success;
+    final shortColor = semantic.danger;
+    final base = TextStyle(
       fontSize: 12,
       height: 16 / 12,
-      color: Color(0xFF676776),
+      color: colors.textSecondary,
     );
     final strong = base.copyWith(fontWeight: FontWeight.w600);
     final currentValue =
@@ -3416,7 +3423,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
         ),
         TextSpan(
           text: ' + ',
-          style: strong.copyWith(color: const Color(0xFF676776)),
+          style: strong.copyWith(color: colors.textSecondary),
         ),
         TextSpan(
           text: '$orderLabel ${_formatPositionUsd(orderValue)}',
@@ -3424,7 +3431,7 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
         ),
         TextSpan(
           text: ' → ',
-          style: strong.copyWith(color: const Color(0xFF676776)),
+          style: strong.copyWith(color: colors.textSecondary),
         ),
         TextSpan(
           text: '$nextLabel ${_formatPositionUsd(nextSignedValue.abs())}',
@@ -3455,7 +3462,7 @@ class _Hip3RiskRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(fontSize: 13, color: colors.secondaryText),
+            style: TextStyle(fontSize: 13, color: colors.textSecondary),
           ),
         ),
         if (loading)
@@ -3504,7 +3511,7 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
       key: widget.cardKey,
-      color: colors.subtleSurface,
+      color: colors.surfaceSubtle,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -3519,7 +3526,7 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
                 Text(
                   widget.label,
                   style: Theme.of(context).textTheme.labelSmall
-                      ?.copyWith(color: colors.secondaryText),
+                      ?.copyWith(color: colors.textSecondary),
                 ),
                 const SizedBox(height: 6),
                 SizedBox(
@@ -3697,7 +3704,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
     return SizedBox(
       height: 543 + MediaQuery.viewPaddingOf(context).bottom,
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -3726,7 +3733,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
               Text(
                 AppLocalizations.of(context).limitPrice,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: colors.tertiaryText),
+                style: TextStyle(color: colors.textTertiary),
               ),
               const SizedBox(height: 8),
               _Hip3CenteredLimitPriceInput(
@@ -3806,7 +3813,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
                             AppLocalizations.of(context).priceDeviation,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: colors.tertiaryText,
+                                  color: colors.textTertiary,
                                   fontWeight: FontWeight.w500,
                                 ),
                           ),
@@ -3816,7 +3823,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
                               Icons.warning_amber_rounded,
                               key: const Key('hip3-limit-price-loss-icon'),
                               size: 16,
-                              color: semantic.loss,
+                              color: semantic.danger,
                             ),
                             const SizedBox(width: 4),
                           ],
@@ -3825,8 +3832,8 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: priceLoss == null
-                                      ? colors.primaryText
-                                      : semantic.loss,
+                                      ? colors.textPrimary
+                                      : semantic.danger,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),

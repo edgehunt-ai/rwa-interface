@@ -46,14 +46,8 @@ Color _markerColor(BuildContext context, TradeChartMarkerKind kind) {
     TradeChartMarkerKind.takeProfit => semantic.success,
     TradeChartMarkerKind.sell ||
     TradeChartMarkerKind.short ||
-    TradeChartMarkerKind.stopLoss =>
-      Theme.of(context).brightness == Brightness.dark
-          ? semantic.loss
-          : kShortTradeColor,
-    TradeChartMarkerKind.liquidation =>
-      Theme.of(context).brightness == Brightness.dark
-          ? Theme.of(context).extension<AppRwaColors>()!.secondaryText
-          : const Color(0xFF686A74),
+    TradeChartMarkerKind.stopLoss => semantic.danger,
+    TradeChartMarkerKind.liquidation => context.appColors.textSecondary,
   };
 }
 
@@ -79,10 +73,10 @@ class _TradeChartPriceLabel extends StatelessWidget {
       decoration: BoxDecoration(
         color: switch (level.kind) {
           TradeChartMarkerKind.takeProfit => semantic.successSoft,
-          TradeChartMarkerKind.stopLoss => semantic.lossSoft,
-          _ => colors.surface,
+          TradeChartMarkerKind.stopLoss => semantic.dangerSoft,
+          _ => colors.surfaceBase,
         },
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(label, style: style),
@@ -235,7 +229,7 @@ class _TradeChartMarkerOverlay extends StatelessWidget {
     final labelStyle = TextStyle(
       fontSize: 10,
       height: 1.4,
-      color: Colors.white,
+      color: context.appColors.textInverse,
       fontWeight: FontWeight.w500,
     );
     final text = TextPainter(

@@ -3,6 +3,8 @@ import 'package:nobell/l10n/generated/app_localizations.dart';
 
 import '../theme/app_theme.dart';
 
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
+
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -38,8 +40,8 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (illustration) ...[
-              Image.asset(
-                'assets/figma/common/empty_state_illustration.webp',
+              ThemedIllustration(
+                IllustrationAsset.emptyState,
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
@@ -66,7 +68,7 @@ class EmptyState extends StatelessWidget {
                 description!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                   fontSize: 15,
                   height: 22 / 15,
                 ),
@@ -100,8 +102,8 @@ class FavoritesEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            'assets/figma/home_markets/favorites_empty_illustration.webp',
+          ThemedIllustration(
+            IllustrationAsset.favoritesEmpty,
             width: 120,
             height: 120,
             fit: BoxFit.contain,
@@ -122,7 +124,7 @@ class FavoritesEmptyState extends StatelessWidget {
             l10n.favoritesEmptyDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontSize: 15,
               height: 22 / 15,
             ),
@@ -136,7 +138,7 @@ class FavoritesEmptyState extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(200, 44),
                 maximumSize: const Size(200, 44),
-                backgroundColor: colors.subtleSurface,
+                backgroundColor: colors.surfaceSubtle,
               ),
               child: Text(l10n.exploreMarkets),
             ),
