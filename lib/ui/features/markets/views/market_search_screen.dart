@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/market_product.dart';
@@ -12,6 +11,7 @@ import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 class MarketDiscoverySearchScreen extends ConsumerStatefulWidget {
   const MarketDiscoverySearchScreen({super.key});
@@ -125,11 +125,12 @@ class _MarketDiscoverySearchScreenState
                 decoration: InputDecoration(
                   fillColor: Theme.of(context)
                       .extension<AppRwaColors>()!
-                      .subtleSurface,
+                      .surfaceSubtle,
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: SvgPicture.asset(
+                    child: AppSvgIcon(
                       'assets/figma/home_markets/search.svg',
+                      color: context.appColors.iconSecondary,
                       width: 20,
                       height: 20,
                     ),
@@ -247,7 +248,7 @@ class _MarketDiscoverySearchScreenState
       Text(
         AppLocalizations.of(context).noRecentSearches,
         style: TextStyle(
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
         ),
       ),
     ],
@@ -382,7 +383,7 @@ class _RecentSearchFallbackTile extends StatelessWidget {
                         ? 'bStocks'
                         : l10n.hip3Perps,
                     style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: colors.secondaryText),
+                        ?.copyWith(color: colors.textSecondary),
                   ),
                 ],
               ),

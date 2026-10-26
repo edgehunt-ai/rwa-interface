@@ -1454,6 +1454,18 @@ abstract class AppLocalizations {
   /// **'Take Profit & stop loss'**
   String get takeProfitStopLossTitle;
 
+  /// No description provided for @tpSlWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Win'**
+  String get tpSlWin;
+
+  /// No description provided for @tpSlLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Loss'**
+  String get tpSlLoss;
+
   /// No description provided for @change.
   ///
   /// In en, this message translates to:
@@ -1960,6 +1972,12 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguage;
 
+  /// No description provided for @settingsLanguageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save language. Please try again.'**
+  String get settingsLanguageSaveFailed;
+
   /// No description provided for @languageEnglish.
   ///
   /// In en, this message translates to:
@@ -1971,6 +1989,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Simplified Chinese'**
   String get languageSimplifiedChinese;
+
+  /// No description provided for @settingsDisplayMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Mode'**
+  String get settingsDisplayMode;
+
+  /// No description provided for @displayModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get displayModeLight;
+
+  /// No description provided for @displayModeLightDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use light mode on this device'**
+  String get displayModeLightDescription;
+
+  /// No description provided for @displayModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get displayModeDark;
+
+  /// No description provided for @displayModeDarkDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use dark mode on this device'**
+  String get displayModeDarkDescription;
+
+  /// No description provided for @displayModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get displayModeSystem;
+
+  /// No description provided for @displayModeSystemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow this device’s system setting'**
+  String get displayModeSystemDescription;
 
   /// No description provided for @settingsExportPrivateKey.
   ///
@@ -2053,7 +2113,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTermsConditions.
   ///
   /// In en, this message translates to:
-  /// **'Terms Of Use'**
+  /// **'Terms of Use'**
   String get settingsTermsConditions;
 
   /// No description provided for @settingsLogOut.
@@ -2487,6 +2547,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HIP-3 Perps'**
   String get hip3Perps;
+
+  /// No description provided for @marketMaxLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {leverage}x'**
+  String marketMaxLeverage(Object leverage);
 
   /// No description provided for @openTradeDetails.
   ///
@@ -3603,6 +3669,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelling…'**
   String get cancelling;
+
+  /// No description provided for @cancellationStatusUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to query the cancellation result because of a network or service error. Refresh the order to check its status.'**
+  String get cancellationStatusUnavailable;
+
+  /// No description provided for @cancellationStatusTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'The cancellation status query timed out. Refresh the order to check its status.'**
+  String get cancellationStatusTimedOut;
+
+  /// No description provided for @cancellationStatusNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to query the cancellation result because of a network connection error. Check your connection and refresh the order.'**
+  String get cancellationStatusNetworkError;
+
+  /// No description provided for @cancellationRequiresReview.
+  ///
+  /// In en, this message translates to:
+  /// **'This cancellation requires manual review. Check pending actions for updates.'**
+  String get cancellationRequiresReview;
 
   /// No description provided for @cancellationPending.
   ///
@@ -5148,6 +5238,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1,000 USDC added to your demo balance'**
   String get reviewDemoFundsAdded;
+
+  /// No description provided for @tradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Markers'**
+  String get tradeMarkers;
+
+  /// No description provided for @hideTradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide markers'**
+  String get hideTradeMarkers;
+
+  /// No description provided for @showTradeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show markers'**
+  String get showTradeMarkers;
+
+  /// No description provided for @tradeMarkersUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade markers are temporarily unavailable.'**
+  String get tradeMarkersUnavailable;
+
+  /// No description provided for @liquidationHistoryPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Some liquidation history is unavailable.'**
+  String get liquidationHistoryPartial;
+
+  /// No description provided for @tradeChartOutsideRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {types} off-chart'**
+  String tradeChartOutsideRange(int count, String types);
+
+  /// No description provided for @settingsYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account'**
+  String get settingsYourAccount;
+
+  /// No description provided for @settingsLoginToManageAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to manage your account'**
+  String get settingsLoginToManageAccount;
 }
 
 class _AppLocalizationsDelegate

@@ -3,23 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'session_scope.dart';
 
-/// The server-owned language preference for the signed-in account.
-///
-/// This is intentionally in-memory only. The account response is the source
-/// of truth, so the setting is shared across devices without stale local data.
+/// The current language survives logout. A manual guest choice takes priority
+/// until it has been saved to the next signed-in account.
 final appLocaleProvider = NotifierProvider<AppLocaleNotifier, Locale?>(
   AppLocaleNotifier.new,
 );
 
 final class AppLocaleNotifier extends Notifier<Locale?> {
+  String? _pendingGuestLanguage;
+
+  String? get pendingGuestLanguage => _pendingGuestLanguage;
+
   @override
   Locale? build() {
-    ref.watch(sessionGenerationProvider);
+    // Clear an unfinished sync on logout or session expiry, retaining the
+    // displayed language without carrying intent into another account.
+    ref.listen(
+      sessionGenerationProvider,
+      (_, _) => _pendingGuestLanguage = null,
+    );
     return null;
   }
 
+  /// Applies a server preference without replacing an unsaved guest choice.
   void setLanguage(String language) {
+    if (_pendingGuestLanguage != null) return;
     state = localeFromLanguageCode(language);
+  }
+
+  void setGuestLanguage(String language) {
+    _pendingGuestLanguage =
+        localeFromLanguageCode(language).languageCode == 'zh' ? 'zh-CN' : 'en';
+    state = localeFromLanguageCode(language);
+  }
+
+  void acknowledgeGuestLanguage(String language) {
+    if (_pendingGuestLanguage == language) _pendingGuestLanguage = null;
   }
 }
 

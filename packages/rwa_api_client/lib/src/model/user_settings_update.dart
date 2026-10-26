@@ -17,6 +17,7 @@ part 'user_settings_update.g.dart';
 /// * [notifyOrderFilled] 
 /// * [notifyOrderFailed] 
 /// * [notifyLiquidationWarning] 
+/// * [notifyDepositCredited] 
 @BuiltValue()
 abstract class UserSettingsUpdate implements Built<UserSettingsUpdate, UserSettingsUpdateBuilder> {
   @BuiltValueField(wireName: r'language')
@@ -34,6 +35,9 @@ abstract class UserSettingsUpdate implements Built<UserSettingsUpdate, UserSetti
 
   @BuiltValueField(wireName: r'notify_liquidation_warning')
   bool? get notifyLiquidationWarning;
+
+  @BuiltValueField(wireName: r'notify_deposit_credited')
+  bool? get notifyDepositCredited;
 
   UserSettingsUpdate._();
 
@@ -90,6 +94,13 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
       yield r'notify_liquidation_warning';
       yield serializers.serialize(
         object.notifyLiquidationWarning,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
+    if (object.notifyDepositCredited != null) {
+      yield r'notify_deposit_credited';
+      yield serializers.serialize(
+        object.notifyDepositCredited,
         specifiedType: const FullType.nullable(bool),
       );
     }
@@ -155,6 +166,14 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
           ) as bool?;
           if (valueDes == null) continue;
           result.notifyLiquidationWarning = valueDes;
+          break;
+        case r'notify_deposit_credited':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.notifyDepositCredited = valueDes;
           break;
         default:
           unhandled.add(key);

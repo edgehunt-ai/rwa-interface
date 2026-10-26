@@ -35,7 +35,7 @@ class _MarketCountdownDotState extends State<MarketCountdownDot>
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).extension<AppRwaColors>()!.primaryAction;
+    final color = Theme.of(context).extension<AppRwaColors>()!.actionPrimary;
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) => Container(
@@ -47,7 +47,7 @@ class _MarketCountdownDotState extends State<MarketCountdownDot>
           color: color,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
+              color: context.appColors.overlayScrim.withValues(
                 alpha: Curves.easeInOut.transform(_controller.value) * 0.1,
               ),
               spreadRadius: 3,

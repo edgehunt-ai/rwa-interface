@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
@@ -10,6 +9,8 @@ import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 Future<void> showWithdrawalSourceSheet(BuildContext context) =>
     showModalBottomSheet<void>(
@@ -65,7 +66,7 @@ class WithdrawalSourcePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.black45,
+    backgroundColor: AppColorTokens.light.overlayScrim.withValues(alpha: 0.45),
     body: const SafeArea(
       top: false,
       child: Align(
@@ -101,7 +102,7 @@ class WithdrawalSourceSheetView extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       clipBehavior: Clip.antiAlias,
       child: SafeArea(
@@ -117,7 +118,7 @@ class WithdrawalSourceSheetView extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.subtleSurface,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -135,19 +136,16 @@ class WithdrawalSourceSheetView extends StatelessWidget {
                     key: const Key('withdrawal-source-history'),
                     onPressed: onHistory,
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.secondaryText,
+                      foregroundColor: colors.textSecondary,
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    icon: SvgPicture.asset(
+                    icon: AppSvgIcon(
                       'assets/figma/funding/activity.svg',
                       width: 20,
                       height: 20,
-                      colorFilter: ColorFilter.mode(
-                        colors.secondaryText,
-                        BlendMode.srcIn,
-                      ),
+                      color: colors.textSecondary,
                     ),
                     label: Text(l10n.history),
                   ),
@@ -170,7 +168,7 @@ class WithdrawalSourceSheetView extends StatelessWidget {
               Text(
                 l10n.withdrawFromQuestion,
                 style: Theme.of(context).textTheme.bodyLarge
-                    ?.copyWith(color: colors.secondaryText),
+                    ?.copyWith(color: colors.textSecondary),
               ),
               const SizedBox(height: 12),
               Row(
@@ -247,13 +245,13 @@ class _WithdrawalSourceOption extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 152),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.border),
+          border: Border.all(color: colors.borderSubtle),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(width: 40, height: 40, child: SvgPicture.asset(iconAsset)),
+            SizedBox(width: 40, height: 40, child: VenueIcon(iconAsset)),
             const SizedBox(height: 12),
             Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
             Text(
@@ -261,17 +259,17 @@ class _WithdrawalSourceOption extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colors.secondaryText),
+                  ?.copyWith(color: colors.textSecondary),
             ),
             const SizedBox(height: 8),
-            Divider(color: colors.subtleSurface),
+            Divider(color: colors.surfaceSubtle),
             const SizedBox(height: 8),
             Row(
               children: [
                 Text(
                   '${l10n.available}:',
                   style: Theme.of(context).textTheme.labelSmall
-                      ?.copyWith(color: colors.secondaryText),
+                      ?.copyWith(color: colors.textSecondary),
                 ),
                 const SizedBox(width: 4),
                 if (availableLoading)
@@ -288,7 +286,7 @@ class _WithdrawalSourceOption extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall
-                          ?.copyWith(color: colors.secondaryText),
+                          ?.copyWith(color: colors.textSecondary),
                     ),
                   ),
               ],
@@ -315,7 +313,7 @@ Widget withdrawalSourceSheetPreview() => MaterialApp(
   ],
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
-    backgroundColor: Colors.black45,
+    backgroundColor: AppColorTokens.light.overlayScrim.withValues(alpha: 0.45),
     body: Align(
       alignment: Alignment.bottomCenter,
       child: WithdrawalSourceSheetView(

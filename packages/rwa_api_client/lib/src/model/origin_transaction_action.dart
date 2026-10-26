@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
 import 'package:rwa_api_client/src/model/transfer_action_status.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -26,6 +27,7 @@ part 'origin_transaction_action.g.dart';
 /// * [validUntil] 
 /// * [status] 
 /// * [gasPayment] 
+/// * [gasPaymentMode] - Server-selected publication mode; not a fee estimate. Clients must not infer sponsorship or native permission when absent.
 /// * [recipient] 
 /// * [refundAddress] 
 @BuiltValue()
@@ -70,6 +72,11 @@ abstract class OriginTransactionAction implements Built<OriginTransactionAction,
 
   @BuiltValueField(wireName: r'gas_payment')
   GasPaymentQuote? get gasPayment;
+
+  /// Server-selected publication mode; not a fee estimate. Clients must not infer sponsorship or native permission when absent.
+  @BuiltValueField(wireName: r'gas_payment_mode')
+  GasPaymentMode? get gasPaymentMode;
+  // enum gasPaymentModeEnum {  app_sponsored,  user_paid_native,  };
 
   @BuiltValueField(wireName: r'recipient')
   String get recipient;
@@ -160,6 +167,13 @@ class _$OriginTransactionActionSerializer implements PrimitiveSerializer<OriginT
       yield serializers.serialize(
         object.gasPayment,
         specifiedType: const FullType(GasPaymentQuote),
+      );
+    }
+    if (object.gasPaymentMode != null) {
+      yield r'gas_payment_mode';
+      yield serializers.serialize(
+        object.gasPaymentMode,
+        specifiedType: const FullType(GasPaymentMode),
       );
     }
     yield r'recipient';
@@ -279,6 +293,14 @@ class _$OriginTransactionActionSerializer implements PrimitiveSerializer<OriginT
           ) as GasPaymentQuote?;
           if (valueDes == null) continue;
           result.gasPayment.replace(valueDes);
+          break;
+        case r'gas_payment_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(GasPaymentMode),
+          ) as GasPaymentMode?;
+          if (valueDes == null) continue;
+          result.gasPaymentMode = valueDes;
           break;
         case r'recipient':
           final valueDes = serializers.deserialize(

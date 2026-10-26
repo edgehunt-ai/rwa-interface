@@ -229,6 +229,7 @@ automatic summary. The result is also updated in a single PR comment. See
 - [Passkey configuration](docs/passkeys.md)
 - [Native performance testing](docs/performance.md) (Chinese)
 - [Push notification setup](docs/push-notifications.md)
+- [Theme tokens and dark mode](docs/theme-tokens.md)
 - [Flutter documentation](https://docs.flutter.dev/)
 
 ## Security

@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstocks_cancellation_policy.g.dart';
 
-/// BstocksCancellationPolicy
+/// GTC holds no app token reservation. Insufficient funds/allowance cancels only after a fresh full-quantity route meets the limit. Expiry cancellation is independent of price and venue readiness. Chain evidence is required before exposing cancelled status.
 ///
 /// Properties:
 /// * [insufficientBalance] 

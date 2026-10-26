@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_source_balance_snapshot.g.dart';
 
-/// FundingSourceBalanceSnapshot
+/// Observed source balance bound to the selected route. BSC56/97/31337 sources or bStocks targets use the full actual balance without pending-operation deductions. Other-chain non-bStocks/HIP3 reservations still apply; freshness and execution binding remain mandatory. 
 ///
 /// Properties:
 /// * [walletId] 

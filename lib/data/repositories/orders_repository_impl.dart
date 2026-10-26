@@ -441,6 +441,7 @@ TradingOrder mapOrder(api.Order value) => switch (value.oneOf.value) {
 };
 
 TradingOrder _mapBstockOrder(api.BstockOrder value) => TradingOrder(
+  fills: _mapFills(value.fills),
   nextAction: value.nextAction == null
       ? null
       : mapBstocksOrderAction(value.nextAction!),
@@ -495,6 +496,7 @@ TradingOrder _mapBstockOrder(api.BstockOrder value) => TradingOrder(
 );
 
 TradingOrder _mapPerpOrder(api.PerpOrder value) => TradingOrder(
+  fills: _mapFills(value.fills),
   walletActionBlocker: value.walletActionBlocker.name,
   productId: value.productId,
   tpSl: value.tpSl == null || value.tpSl!.enabled == false
@@ -542,6 +544,22 @@ TradingOrder _mapPerpOrder(api.PerpOrder value) => TradingOrder(
   createdAt: value.createdAt.toUtc(),
   updatedAt: value.updatedAt?.toUtc(),
 );
+
+List<TradingOrderFill> _mapFills(Iterable<api.OrderFill>? fills) => [
+  for (final fill in fills ?? const <api.OrderFill>[])
+    TradingOrderFill(
+      id: fill.fillId,
+      price: DecimalValue(fill.price, unit: 'price'),
+      quantity: DecimalValue(fill.quantity, unit: 'quantity'),
+      executedAt: fill.executedAt.toUtc(),
+      side: switch (fill.side) {
+        api.OrderFillSideEnum.buy => TradingSide.buy,
+        api.OrderFillSideEnum.sell => TradingSide.sell,
+        _ => null,
+      },
+      positionEffect: fill.positionEffect,
+    ),
+];
 
 BstocksOrderAction mapBstocksOrderAction(api.OrderAction value) =>
     BstocksOrderAction(

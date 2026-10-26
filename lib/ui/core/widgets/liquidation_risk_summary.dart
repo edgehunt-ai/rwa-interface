@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 enum LiquidationRiskLevel { safe, caution, high, unknown }
 
@@ -116,7 +116,7 @@ class _LiquidationRiskSummaryCardState
               affectedLabel: affectedLabel,
               palette: palette,
               expanded: _expanded,
-              secondaryTextColor: colors.secondaryText,
+              secondaryTextColor: colors.textSecondary,
             ),
             if (_expanded) ...[
               const SizedBox(height: 8),
@@ -160,11 +160,11 @@ class _SummaryHeader extends StatelessWidget {
       AnimatedRotation(
         turns: expanded ? .5 : 0,
         duration: const Duration(milliseconds: 160),
-        child: SvgPicture.asset(
+        child: AppSvgIcon(
           _chevronDownIcon,
           width: 14,
           height: 14,
-          colorFilter: ColorFilter.mode(secondaryTextColor, BlendMode.srcIn),
+          color: secondaryTextColor,
         ),
       ),
     ],
@@ -181,7 +181,7 @@ class _DetailsCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: colors.subtleSurface,
+      color: colors.surfaceSubtle,
       borderRadius: BorderRadius.circular(8),
     ),
     child: Column(
@@ -190,7 +190,7 @@ class _DetailsCard extends StatelessWidget {
           _PositionRow(position: positions[index], colors: colors),
           if (index != positions.length - 1) ...[
             const SizedBox(height: 8),
-            Container(height: 1, color: colors.surface),
+            Container(height: 1, color: colors.surfaceBase),
             const SizedBox(height: 8),
           ],
         ],
@@ -236,7 +236,7 @@ class _PositionRow extends StatelessWidget {
                       position.title,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: colors.primaryText,
+                        color: colors.textPrimary,
                         fontSize: 13,
                         height: 16 / 13,
                         fontWeight: FontWeight.w500,
@@ -251,7 +251,7 @@ class _PositionRow extends StatelessWidget {
               Text(
                 '${l10n.marketPriceShort} ${_price(position.marketPrice, l10n.unavailable)}',
                 style: TextStyle(
-                  color: colors.tertiaryText,
+                  color: colors.textTertiary,
                   fontSize: 11,
                   height: 18 / 11,
                 ),
@@ -294,18 +294,18 @@ class _PositionValues extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final muted = TextStyle(
-      color: colors.tertiaryText,
+      color: colors.textTertiary,
       fontSize: 11,
       height: 18 / 11,
     );
     final previousValue = TextStyle(
-      color: colors.tertiaryText,
+      color: colors.textTertiary,
       fontSize: 11,
       height: 18 / 11,
       fontWeight: FontWeight.w600,
     );
     final value = TextStyle(
-      color: colors.primaryText,
+      color: colors.textPrimary,
       fontSize: 11,
       height: 18 / 11,
       fontWeight: FontWeight.w600,
@@ -393,12 +393,7 @@ class _RiskIcon extends StatelessWidget {
     if (asset == null) {
       return Icon(Icons.info_outline, size: 14, color: palette.foreground);
     }
-    return SvgPicture.asset(
-      asset,
-      width: 14,
-      height: 14,
-      colorFilter: ColorFilter.mode(palette.foreground, BlendMode.srcIn),
-    );
+    return AppSvgIcon(asset, width: 14, height: 14, color: palette.foreground);
   }
 }
 
@@ -418,28 +413,29 @@ final class _RiskPalette {
   static _RiskPalette from(BuildContext context, LiquidationRiskLevel level) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     return switch (level) {
       LiquidationRiskLevel.safe => _RiskPalette(
-        foreground: Color(0xFF04A08B),
-        background: Color(0xFFE9F8F4),
+        foreground: semantic.success,
+        background: semantic.successSoft,
         iconAsset: _safeRiskIcon,
         label: l10n.safe,
       ),
       LiquidationRiskLevel.caution => _RiskPalette(
-        foreground: Color(0xFFB45309),
-        background: Color(0xFFFFF7ED),
+        foreground: semantic.warning,
+        background: semantic.warningSoft,
         iconAsset: _cautionRiskIcon,
         label: l10n.liquidationRisk,
       ),
       LiquidationRiskLevel.high => _RiskPalette(
-        foreground: Color(0xFFDE596E),
-        background: Color(0xFFFFF0F2),
+        foreground: semantic.danger,
+        background: semantic.dangerSoft,
         iconAsset: _highRiskIcon,
         label: l10n.highLiquidationRisk,
       ),
       LiquidationRiskLevel.unknown => _RiskPalette(
-        foreground: colors.secondaryText,
-        background: colors.subtleSurface,
+        foreground: colors.textSecondary,
+        background: colors.surfaceSubtle,
         iconAsset: null,
         label: l10n.unavailable,
       ),

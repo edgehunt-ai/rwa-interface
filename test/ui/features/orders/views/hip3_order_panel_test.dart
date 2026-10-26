@@ -222,7 +222,7 @@ void main() {
       expect(tester.getSize(marker), const Size(6, 6));
       final decoration =
           tester.widget<Container>(marker).decoration! as BoxDecoration;
-      expect(decoration.color, colors.subtleSurface);
+      expect(decoration.color, colors.surfaceSubtle);
     }
 
     expect(
@@ -1567,6 +1567,162 @@ void main() {
     expect(find.text('Position TP/SL'), findsNothing);
   });
 
+  for (final side in [TradingSide.long, TradingSide.short]) {
+    testWidgets('opening Win / Loss ratios calculate ${side.name} triggers', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async =>
+                  MarketSnapshot(price: DecimalValue('100')),
+            ),
+          ],
+          child: _app(Hip3OrderPanel(initialSide: side)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Win'), findsOneWidget);
+      expect(find.text('Loss'), findsOneWidget);
+      expect(find.text('Change'), findsNothing);
+      for (final (leg, key, rises) in [
+        ('take-profit', 'opening-protection-0', side == TradingSide.long),
+        ('stop-loss', 'opening-protection-2', side == TradingSide.short),
+      ]) {
+        await tester.enterText(find.byKey(Key('opening-$leg-percent')), '10');
+        await tester.pump();
+        final price = double.parse(
+          tester.widget<TextField>(find.byKey(Key(key))).controller!.text,
+        );
+        expect(price, rises ? 110 : 90);
+      }
+    });
+  }
+
+  for (final side in [TradingSide.long, TradingSide.short]) {
+    for (final take in [true, false]) {
+      final rises = (side == TradingSide.long) == take;
+      final leg = take ? 'take-profit' : 'stop-loss';
+      final error =
+          '${take ? 'Take-profit' : 'Stop-loss'} price must be ${rises ? 'above' : 'below'} the reference price.';
+      testWidgets(
+        'opening ${side.name} $leg shows and clears direction errors while typing',
+        (tester) async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                marketSnapshotProvider.overrideWith(
+                  (ref, product) async =>
+                      MarketSnapshot(price: DecimalValue('100')),
+                ),
+              ],
+              child: _app(Hip3OrderPanel(initialSide: side)),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+          await tester.pumpAndSettle();
+          final price = find.byKey(
+            Key(take ? 'opening-protection-0' : 'opening-protection-2'),
+          );
+          final ratio = find.byKey(Key('opening-$leg-percent'));
+          await tester.enterText(price, rises ? '90' : '110');
+          await tester.pumpAndSettle();
+          expect(find.text(error), findsOneWidget);
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.byKey(const Key('hip3-tp-sl-confirm')),
+                )
+                .onPressed,
+            isNull,
+          );
+          expect(tester.widget<TextField>(ratio).controller!.text, isEmpty);
+          expect(
+            tester.widget<TextField>(price).controller!.text,
+            rises ? '90' : '110',
+          );
+
+          await tester.enterText(price, rises ? '110' : '90');
+          await tester.pumpAndSettle();
+          expect(find.text(error), findsNothing);
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.byKey(const Key('hip3-tp-sl-confirm')),
+                )
+                .onPressed,
+            isNotNull,
+          );
+          expect(tester.widget<TextField>(ratio).controller!.text, '10');
+        },
+      );
+    }
+  }
+
+  for (final dragged in [true, false]) {
+    testWidgets(
+      'opening order sends ${dragged ? 'dragged integer' : 'manual decimal'} trigger prices',
+      (tester) async {
+        final orders = _CapturingHip3Orders();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              ordersRepositoryProvider.overrideWithValue(orders),
+              marketSnapshotProvider.overrideWith(
+                (ref, product) async =>
+                    MarketSnapshot(price: DecimalValue('100.75')),
+              ),
+            ],
+            child: _app(const Hip3OrderPanel()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField).first, '100');
+        await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+        await tester.pumpAndSettle();
+        for (final take in [true, false]) {
+          if (dragged) {
+            final key = take ? 'take-profit-ruler' : 'stop-loss-ruler';
+            tester.widget<TpSlTickRuler>(find.byKey(Key(key))).onChanged(10.99);
+            await tester.pump();
+          } else {
+            await tester.enterText(
+              find.byKey(
+                Key(take ? 'opening-protection-0' : 'opening-protection-2'),
+              ),
+              take ? '110.123456789' : '90.123456789',
+            );
+          }
+        }
+        final checkbox = find.byKey(const Key('tpsl-risk-checkbox'));
+        if (tester.widget<Checkbox>(checkbox).value != true) {
+          await tester.ensureVisible(checkbox);
+          await tester.tap(checkbox);
+          await tester.pumpAndSettle();
+        }
+        await tester.ensureVisible(find.byKey(const Key('hip3-tp-sl-confirm')));
+        await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+        final protection = orders.intent?.openingProtection;
+        expect(protection, isNotNull);
+        expect(
+          protection!.takeProfit!.triggerPrice.value,
+          dragged ? '110' : '110.123456789',
+        );
+        expect(
+          protection.stopLoss!.triggerPrice.value,
+          dragged ? '90' : '90.123456789',
+        );
+      },
+    );
+  }
+
   testWidgets(
     'TP/SL add opens the localized price editor and slider updates price',
     (tester) async {
@@ -1583,7 +1739,7 @@ void main() {
       await tester.pump();
       await tester.drag(
         find.byKey(const Key('take-profit-ruler')),
-        const Offset(80, 0),
+        const Offset(-80, 0),
       );
       await tester.pump();
       expect(
@@ -2200,11 +2356,11 @@ void main() {
     ).extension<AppRwaColors>()!;
     expect(
       tester.widget<Text>(find.text('Liquidation Price')).style?.color,
-      colors.secondaryText,
+      colors.textSecondary,
     );
     expect(
       tester.widget<Text>(find.text('Margin Required')).style?.color,
-      colors.secondaryText,
+      colors.textSecondary,
     );
 
     final liquidationRow = tester.getRect(

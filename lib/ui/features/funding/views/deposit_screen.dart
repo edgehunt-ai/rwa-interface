@@ -16,8 +16,10 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 Future<void> showDepositRoutesSheet(BuildContext context) =>
     showModalBottomSheet<void>(
@@ -38,7 +40,7 @@ class DepositRoutesSheet extends ConsumerWidget {
     return SafeArea(
       top: false,
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: SingleChildScrollView(
           child: Padding(
@@ -52,7 +54,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                     height: 4,
                     width: 40,
                     decoration: BoxDecoration(
-                      color: colors.subtleSurface,
+                      color: colors.surfaceSubtle,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -74,13 +76,14 @@ class DepositRoutesSheet extends ConsumerWidget {
                         router.go('${AppRoutes.activityPath}?tab=cash');
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: colors.secondaryText,
+                        foregroundColor: colors.textSecondary,
                         padding: EdgeInsets.zero,
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      icon: SvgPicture.asset(
+                      icon: AppSvgIcon(
                         'assets/figma/funding/activity.svg',
+                        color: context.appColors.iconPrimary,
                         width: 20,
                         height: 20,
                       ),
@@ -96,7 +99,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   l10n.depositChooseRoute,
-                  style: TextStyle(color: colors.secondaryText),
+                  style: TextStyle(color: colors.textSecondary),
                 ),
                 const SizedBox(height: 12),
                 routes.when(
@@ -200,7 +203,7 @@ class _DepositRouteTile extends ConsumerWidget {
           height: 72,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            border: Border.all(color: colors.border),
+            border: Border.all(color: colors.borderSubtle),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -223,15 +226,16 @@ class _DepositRouteTile extends ConsumerWidget {
                         route.chain == 'BSC' ? 'bStocks' : l10n.hip3Perps,
                       ),
                       style: TextStyle(
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-              SvgPicture.asset(
+              AppSvgIcon(
                 'assets/figma/funding/chevron_right.svg',
+                color: context.appColors.iconSecondary,
                 width: 20,
                 height: 20,
               ),
@@ -258,7 +262,7 @@ class _AllAssetsTile extends StatelessWidget {
         height: 72,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.border),
+          border: Border.all(color: colors.borderSubtle),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -276,13 +280,14 @@ class _AllAssetsTile extends StatelessWidget {
                   ),
                   Text(
                     l10n.allSupportedAssetsDescription,
-                    style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                    style: TextStyle(color: colors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
             ),
-            SvgPicture.asset(
+            AppSvgIcon(
               'assets/figma/funding/chevron_right.svg',
+              color: context.appColors.iconSecondary,
               width: 20,
               height: 20,
             ),
@@ -434,7 +439,7 @@ class _DepositReceivedSheet extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -447,7 +452,7 @@ class _DepositReceivedSheet extends StatelessWidget {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: .45),
+                    color: colors.textSecondary.withValues(alpha: .45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -458,8 +463,8 @@ class _DepositReceivedSheet extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              Image.asset(
-                'assets/figma/funding/deposit_received.webp',
+              ThemedIllustration(
+                IllustrationAsset.depositReceived,
                 width: 120,
                 height: 120,
               ),
@@ -484,7 +489,7 @@ class _DepositReceivedSheet extends StatelessWidget {
                     l10n.depositReceivedDescription,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                       fontSize: 15,
                       height: 22 / 15,
                     ),
@@ -506,7 +511,7 @@ class _DepositReceivedSheet extends StatelessWidget {
                   '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${networkDisplayName(change.chain)})',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                     fontSize: 13,
                     height: 18 / 13,
                     fontWeight: FontWeight.w500,
@@ -530,9 +535,9 @@ class _DepositReceivedSheet extends StatelessWidget {
                     key: const ValueKey('deposit-received-maybe-later'),
                     onPressed: () => Navigator.of(context).pop(false),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: colors.subtleSurface,
-                      foregroundColor: colors.primaryText,
-                      side: BorderSide(color: colors.border),
+                      backgroundColor: colors.surfaceSubtle,
+                      foregroundColor: colors.textPrimary,
+                      side: BorderSide(color: colors.borderSubtle),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -580,14 +585,22 @@ class _DepositInstructions extends StatelessWidget {
             width: 176,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colors.subtleSurface,
+              color: colors.surfaceSubtle,
               borderRadius: BorderRadius.circular(12),
             ),
             child: QrImageView(
               key: const ValueKey('deposit-qr'),
               data: instruction.address,
               size: 160,
-              backgroundColor: colors.subtleSurface,
+              backgroundColor: colors.surfaceSubtle,
+              eyeStyle: QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: colors.textPrimary,
+              ),
+              dataModuleStyle: QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: colors.textPrimary,
+              ),
               semanticsLabel: l10n.depositQrCode,
             ),
           ),
@@ -599,8 +612,8 @@ class _DepositInstructions extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 64),
           padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
           decoration: BoxDecoration(
-            color: colors.subtleSurface,
-            border: Border.all(color: colors.border),
+            color: colors.surfaceSubtle,
+            border: Border.all(color: colors.borderSubtle),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Align(
@@ -711,7 +724,7 @@ Widget? _depositNetworkMenuIcon(String network) {
       width: 16,
       height: 16,
       decoration: BoxDecoration(
-        color: isArbitrum ? const Color(0xFF2F3749) : const Color(0xFF627EEA),
+        color: isArbitrum ? AppBrandColors.arbitrum : AppBrandColors.ethereum,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
@@ -750,14 +763,14 @@ class _RouteDetails extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.routeDetails, style: TextStyle(color: colors.secondaryText)),
+        Text(l10n.routeDetails, style: TextStyle(color: colors.textSecondary)),
         const SizedBox(height: 4),
         Text(
           l10n.sendTokenOnChainOnly(
             instruction.token,
             networkDisplayName(instruction.chain),
           ),
-          style: TextStyle(color: colors.secondaryText, fontSize: 12),
+          style: TextStyle(color: colors.textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 12),
         _DetailRow(
@@ -807,7 +820,7 @@ class _DetailRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(label, style: TextStyle(color: colors.secondaryText)),
+          child: Text(label, style: TextStyle(color: colors.textSecondary)),
         ),
         trailing ??
             Text(value!, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -893,8 +906,8 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
                 ),
                 const SizedBox(height: 60),
                 Center(
-                  child: Image.asset(
-                    'assets/figma/funding/deposit_empty.webp',
+                  child: ThemedIllustration(
+                    IllustrationAsset.depositEmpty,
                     width: 120,
                     height: 120,
                   ),
@@ -912,7 +925,7 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
-                        .primaryText,
+                        .textPrimary,
                     fontSize: 12,
                   ),
                 ),
@@ -947,8 +960,8 @@ class _DepositSelectionCard extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceBase,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -959,7 +972,7 @@ class _DepositSelectionCard extends StatelessWidget {
             value: chain == null
                 ? 'Choose Network'
                 : networkDisplayName(chain!),
-            valueColor: colors.primaryText,
+            valueColor: colors.textPrimary,
             icon: chain == null ? null : _depositNetworkIcon(chain!),
             showArrow: chain == null,
             arrowKey: const ValueKey('deposit-network-selector-arrow'),
@@ -970,14 +983,14 @@ class _DepositSelectionCard extends StatelessWidget {
             optionLabelBuilder: networkDisplayName,
             onSelected: onChainSelected,
           ),
-          Divider(height: 1, color: colors.subtleSurface),
+          Divider(height: 1, color: colors.surfaceSubtle),
           _SelectionRow(
             key: const ValueKey('deposit-token-selector'),
             label: AppLocalizations.of(context).token,
             value: token ?? 'Choose network first',
             valueColor: chain == null
-                ? colors.secondaryText
-                : colors.primaryText,
+                ? colors.textSecondary
+                : colors.textPrimary,
             icon: token == null ? null : _depositTokenIcon(token!),
             showArrow: token == null,
             arrowKey: const ValueKey('deposit-token-selector-arrow'),
@@ -1059,8 +1072,9 @@ class _SelectionRow extends StatelessWidget {
             ),
             if (showArrow) ...[
               const SizedBox(width: 8),
-              SvgPicture.asset(
+              AppSvgIcon(
                 'assets/figma/funding/chevron_right.svg',
+                color: context.appColors.iconSecondary,
                 key: arrowKey,
                 width: 20,
                 height: 20,
@@ -1097,11 +1111,11 @@ class _SelectionRow extends StatelessWidget {
         if (row.attached && overlay.attached) lastPosition = position();
         return lastPosition;
       },
-      color: colors.surface,
+      color: colors.surfaceBase,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: colors.border),
+        side: BorderSide(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(12),
       ),
       constraints: const BoxConstraints.tightFor(width: 240),
@@ -1119,7 +1133,7 @@ class _SelectionRow extends StatelessWidget {
                 constraints: const BoxConstraints(minHeight: 44),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: option == selectedValue ? colors.selectedSoft : null,
+                  color: option == selectedValue ? colors.brandSoft : null,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1133,8 +1147,10 @@ class _SelectionRow extends StatelessWidget {
                         optionLabelBuilder?.call(option) ?? option,
                         style: TextStyle(
                           color: option == selectedValue
-                              ? colors.primaryText
-                              : colors.secondaryText,
+                              ? Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer
+                              : colors.textSecondary,
                           fontSize: 15,
                           height: 22 / 15,
                           fontWeight: option == selectedValue

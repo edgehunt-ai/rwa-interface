@@ -20,6 +20,7 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
@@ -1019,9 +1020,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   Widget _form(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final success = Theme.of(context).extension<AppSemanticColors>()!.success;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final isBuy = side == TradingSide.buy;
-    final actionColor = isBuy ? success : kShortTradeColor;
+    final actionColor = isBuy ? semantic.success : semantic.danger;
     final settlementToken = ref
         .watch(bstocksSettlementTokenProvider)
         .requireValue!;
@@ -1159,7 +1160,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 values: const [TradingSide.buy, TradingSide.sell],
                 selected: side,
                 selectedColor: actionColor,
-                selectedForeground: Colors.white,
+                selectedForeground: colors.textInverse,
                 label: (value) =>
                     value == TradingSide.buy ? l10n.buy : l10n.sell,
                 onChanged: (value) {
@@ -1217,7 +1218,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             height: 93,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             decoration: BoxDecoration(
-              color: colors.subtleSurface,
+              color: colors.surfaceSubtle,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -1232,7 +1233,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           ? l10n.orderValue
                           : l10n.amount,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -1312,7 +1313,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           if (type == TradingOrderType.limit) ...[
             if (showFee) ...[
               const SizedBox(height: 16),
-              Divider(color: colors.subtleSurface),
+              Divider(color: colors.surfaceSubtle),
               const SizedBox(height: 14),
               _AnimatedAmountSummaryRow(
                 label: l10n.estimatedFee,
@@ -1336,7 +1337,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     ),
             ),
             const SizedBox(height: 16),
-            Divider(color: colors.subtleSurface),
+            Divider(color: colors.surfaceSubtle),
             const SizedBox(height: 14),
             SlippageRow(
               value: slippage,
@@ -1376,7 +1377,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               key: const Key('bstocks-primary-order-action'),
               style: FilledButton.styleFrom(
                 backgroundColor: actionColor,
-                foregroundColor: Colors.white,
+                foregroundColor: colors.textInverse,
               ),
               onPressed: reviewing || hasExplicitInvalidAmount ? null : _review,
               child: reviewing
@@ -1404,10 +1405,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final approvalRequired = current.approvalRequired;
     final confirmationAction = approvalRequired ? l10n.approve : action;
     final actionColor = approvalRequired
-        ? colors.primaryAction
+        ? colors.actionPrimary
         : isBuy
         ? semantic.success
-        : kShortTradeColor;
+        : semantic.danger;
     final settlementAsset = _settlementAssetForInput;
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
     final fee = current.fee;
@@ -1439,7 +1440,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             width: 32,
             height: 4,
             decoration: BoxDecoration(
-              color: colors.secondaryText.withValues(alpha: 0.45),
+              color: colors.textSecondary.withValues(alpha: 0.45),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1457,7 +1458,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
         const SizedBox(height: 12),
-        Divider(color: colors.subtleSurface),
+        Divider(color: colors.surfaceSubtle),
         const SizedBox(height: 16),
         Text(
           '$confirmationAction ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? l10n.market : l10n.limit}',
@@ -1601,8 +1602,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Image.asset(
-          'assets/figma/trade/order_success.webp',
+        ThemedIllustration(
+          IllustrationAsset.orderSuccess,
           width: 120,
           height: 120,
           fit: BoxFit.contain,
@@ -1643,8 +1644,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Image.asset(
-        'assets/figma/trade/order_submitting.webp',
+      ThemedIllustration(
+        IllustrationAsset.orderSubmitting,
         width: 120,
         height: 120,
         fit: BoxFit.contain,
@@ -1660,7 +1661,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         AppLocalizations.of(context).submittingOrderDescription,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
         ),
       ),
     ],
@@ -1762,7 +1763,7 @@ class _ChoiceRow<T> extends StatelessWidget {
         height: 44,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: colors.subtleSurface,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
@@ -1776,7 +1777,7 @@ class _ChoiceRow<T> extends StatelessWidget {
               height: 36,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: selectedColor ?? colors.surface,
+                  color: selectedColor ?? colors.surfaceBase,
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -1808,8 +1809,8 @@ class _ChoiceRow<T> extends StatelessWidget {
                                   .copyWith(
                                     color: selected == values[index]
                                         ? selectedForeground ??
-                                              colors.primaryText
-                                        : colors.secondaryText,
+                                              colors.textPrimary
+                                        : colors.textSecondary,
                                     fontWeight: selected == values[index]
                                         ? FontWeight.w600
                                         : FontWeight.w500,
@@ -1853,10 +1854,10 @@ class _PercentageSlider extends StatelessWidget {
             children: [
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: colors.primaryAction,
-                  inactiveTrackColor: colors.surface,
+                  activeTrackColor: colors.actionPrimary,
+                  inactiveTrackColor: colors.surfaceBase,
                   trackHeight: 8,
-                  thumbColor: colors.primaryAction,
+                  thumbColor: colors.actionPrimary,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 0,
                   ),
@@ -1877,7 +1878,7 @@ class _PercentageSlider extends StatelessWidget {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: colors.subtleSurface,
+                        color: colors.surfaceSubtle,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -1891,14 +1892,14 @@ class _PercentageSlider extends StatelessWidget {
                     height: 18,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: colors.primaryAction,
-                      border: Border.all(color: colors.surface, width: 2),
+                      color: colors.actionPrimary,
+                      border: Border.all(color: colors.surfaceBase, width: 2),
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Text(
                       '${value.round()}%',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colors.textInverse,
                         fontSize: 12,
                         height: 1,
                         fontWeight: FontWeight.w600,
@@ -1928,12 +1929,12 @@ class _OutlinedSummaryRow extends StatelessWidget {
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Text(label, style: TextStyle(color: colors.secondaryText)),
+          Text(label, style: TextStyle(color: colors.textSecondary)),
           const SizedBox(width: 12),
           Expanded(
             child: Align(alignment: Alignment.centerRight, child: value),
@@ -1961,7 +1962,10 @@ class _SummaryRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
+          child: Text(
+            label,
+            style: TextStyle(color: context.appColors.textSecondary),
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -2000,7 +2004,10 @@ class _AnimatedAmountSummaryRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
+          child: Text(
+            label,
+            style: TextStyle(color: context.appColors.textSecondary),
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -2080,10 +2087,7 @@ class _MarketPriceSummaryRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(color: Color(0xFF676776)),
-            ),
+            child: Text(label, style: TextStyle(color: colors.textSecondary)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -2100,14 +2104,14 @@ class _MarketPriceSummaryRow extends StatelessWidget {
                       children: [
                         Text(
                           TokenAmountFormatter.formatUsd(original),
-                          style: TextStyle(color: colors.secondaryText),
+                          style: TextStyle(color: colors.textSecondary),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: Icon(
                             Icons.arrow_forward,
                             size: 14,
-                            color: colors.secondaryText,
+                            color: colors.textSecondary,
                           ),
                         ),
                         AnimatedNumberText(
@@ -2170,9 +2174,9 @@ class _BstocksConfirmationConversion extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: Theme.of(context).extension<AppRwaColors>()!.canvas,
+          color: Theme.of(context).extension<AppRwaColors>()!.surfaceCanvas,
           border: Border.all(
-            color: Theme.of(context).extension<AppRwaColors>()!.surface,
+            color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
             width: 4,
           ),
           shape: BoxShape.circle,
@@ -2180,7 +2184,7 @@ class _BstocksConfirmationConversion extends StatelessWidget {
         child: Icon(
           Icons.arrow_forward,
           size: 16,
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
         ),
       ),
     ],
@@ -2206,7 +2210,7 @@ class _BstocksConfirmationAmountCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 74),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.canvas,
+        color: colors.surfaceCanvas,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -2254,7 +2258,7 @@ class _BstocksConfirmationAmountCard extends StatelessWidget {
                 ? const Key('bstocks-confirmation-receive-symbol')
                 : null,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colors.secondaryText,
+              color: colors.textSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2330,7 +2334,7 @@ class _LimitInputState extends State<_LimitInput> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
       key: widget.cardKey,
-      color: colors.subtleSurface,
+      color: colors.surfaceSubtle,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -2345,7 +2349,7 @@ class _LimitInputState extends State<_LimitInput> {
                 Text(
                   widget.label,
                   style: Theme.of(context).textTheme.labelSmall
-                      ?.copyWith(color: colors.secondaryText),
+                      ?.copyWith(color: colors.textSecondary),
                 ),
                 const SizedBox(height: 6),
                 SizedBox(
@@ -2480,7 +2484,7 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
       height: 543 + bottomInset,
       child: Material(
         key: const Key('bstocks-limit-price-sheet'),
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         clipBehavior: Clip.antiAlias,
         child: Padding(
@@ -2515,7 +2519,7 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
                 AppLocalizations.of(context).limitPrice,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colors.tertiaryText,
+                  color: colors.textTertiary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2530,7 +2534,7 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
                   child: Material(
                     color: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: colors.border),
+                      side: BorderSide(color: colors.borderSubtle),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: InkWell(
@@ -2591,8 +2595,8 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
                         value: formatLimitPriceDeviation(_deviation),
                         showWarning: priceLoss != null,
                         valueColor: priceLoss == null
-                            ? colors.primaryText
-                            : semantic.loss,
+                            ? colors.textPrimary
+                            : semantic.danger,
                       ),
                     ),
                   ),
@@ -2710,7 +2714,7 @@ class _LimitPriceFact extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: colors.tertiaryText,
+            color: colors.textTertiary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -2727,7 +2731,7 @@ class _LimitPriceFact extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: valueColor ?? colors.primaryText,
+            color: valueColor ?? colors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -39,8 +39,8 @@ class _OrderTypeTabsPreviewState extends State<_OrderTypeTabsPreview> {
       width: 151,
       values: const [TradingOrderType.market, TradingOrderType.limit],
       selected: _type,
-      selectedColor: colors.surface,
-      selectedForeground: colors.primaryText,
+      selectedColor: colors.surfaceBase,
+      selectedForeground: colors.textPrimary,
       label: (value) =>
           value == TradingOrderType.market ? l10n.market : l10n.limit,
       onChanged: (value) => setState(() => _type = value),

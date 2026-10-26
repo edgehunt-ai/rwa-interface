@@ -5,6 +5,8 @@ import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/auth/identity_auth_gateway.dart';
+import '../../../../domain/auth/authentication.dart';
+import '../../session/providers/authentication_provider.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/account_deletion.dart';
 import '../../../../domain/models/registered_device.dart';
@@ -13,6 +15,14 @@ import '../../../../domain/models/wallet.dart';
 
 final accountProvider = FutureProvider.autoDispose<UserAccount>((ref) {
   ref.watch(sessionGenerationProvider);
+  // A quick sign-out/sign-in can retain this provider through its disposal
+  // grace period. Never reuse the previous session's account response.
+  ref.watch(
+    authenticationProvider.select(
+      (state) =>
+          state is AuthenticationAuthenticated ? state.session.sessionId : null,
+    ),
+  );
   return ref.watch(accountRepositoryProvider).getAccount();
 });
 

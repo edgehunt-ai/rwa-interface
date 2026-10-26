@@ -48,28 +48,50 @@ void main() {
     );
   }
 
-  test('logout clears language before restoring another account', () async {
-    final repository = _SessionRepository()..savedLanguage = 'zh-CN';
-    final container = _container(
-      FakeIdentityAuthGateway(
-        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
-      ),
-      repository,
-    );
-    final subscription = container.listen(appLocaleProvider, (_, _) {});
-    addTearDown(subscription.close);
-    final notifier = container.read(authenticationProvider.notifier);
-    await notifier.bootstrap();
-    expect(container.read(appLocaleProvider), const Locale('zh'));
+  test(
+    'logout retains language until another account restores its preference',
+    () async {
+      final repository = _SessionRepository()..savedLanguage = 'zh-CN';
+      final container = _container(
+        FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        ),
+        repository,
+      );
+      final subscription = container.listen(appLocaleProvider, (_, _) {});
+      addTearDown(subscription.close);
+      final notifier = container.read(authenticationProvider.notifier);
+      await notifier.bootstrap();
+      expect(container.read(appLocaleProvider), const Locale('zh'));
 
-    await notifier.logout();
-    await container.pump();
-    expect(container.read(appLocaleProvider), isNull);
+      await notifier.logout();
+      await container.pump();
+      expect(container.read(appLocaleProvider), const Locale('zh'));
 
-    repository.savedLanguage = 'en';
-    await notifier.bootstrap();
-    expect(container.read(appLocaleProvider), const Locale('en'));
-  });
+      repository.savedLanguage = 'en';
+      await notifier.bootstrap();
+      expect(container.read(appLocaleProvider), const Locale('en'));
+    },
+  );
+
+  test(
+    'bootstrap preserves a manual guest language until account synchronization',
+    () async {
+      final container = _container(
+        FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        ),
+        _SessionRepository()..savedLanguage = 'en',
+      );
+      container.read(appLocaleProvider.notifier).setGuestLanguage('zh-CN');
+      await container.read(authenticationProvider.notifier).bootstrap();
+      expect(container.read(appLocaleProvider), const Locale('zh'));
+      expect(
+        container.read(appLocaleProvider.notifier).pendingGuestLanguage,
+        'zh-CN',
+      );
+    },
+  );
 
   test('bootstrap restores identity and establishes product session', () async {
     final gateway = FakeIdentityAuthGateway(

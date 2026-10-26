@@ -1,12 +1,17 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 String marketProductGroupForTab(String tab) => switch (tab) {
   'Favorites' => 'favorites',
@@ -154,15 +159,15 @@ class _RankingTab extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: selected ? colors.primaryText : colors.secondaryText,
-        backgroundColor: selected ? colors.subtleSurface : Colors.transparent,
+        foregroundColor: selected ? colors.textPrimary : colors.textSecondary,
+        backgroundColor: selected ? colors.surfaceSubtle : Colors.transparent,
         minimumSize: Size(0, height),
         maximumSize: Size(double.infinity, height),
         padding: const EdgeInsets.symmetric(horizontal: 8),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: StadiumBorder(
           side: BorderSide(
-            color: selected ? Colors.transparent : colors.border,
+            color: selected ? Colors.transparent : colors.borderSubtle,
           ),
         ),
         textStyle: const TextStyle(
@@ -210,8 +215,8 @@ class MarketProductFilter extends StatelessWidget {
                     onPressed: () => onChanged(kind),
                     style: TextButton.styleFrom(
                       foregroundColor: selected
-                          ? colors.primaryText
-                          : colors.secondaryText,
+                          ? colors.textPrimary
+                          : colors.textSecondary,
                       minimumSize: Size(0, tabHeight),
                       padding: EdgeInsets.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -235,7 +240,7 @@ class MarketProductFilter extends StatelessWidget {
                           height: 2,
                           decoration: BoxDecoration(
                             color: selected
-                                ? colors.selected
+                                ? colors.brandDefault
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(1),
                           ),
@@ -248,6 +253,33 @@ class MarketProductFilter extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Display-only max leverage badge for HIP-3 products, mirroring the
+/// `Financial List Row` design. Trading limits still come from the latest
+/// trading context, never from this listing metadata.
+class MarketMaxLeverageBadge extends StatelessWidget {
+  const MarketMaxLeverageBadge({super.key, required this.leverage});
+
+  final String leverage;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.surfaceSubtle,
+        border: Border.all(color: colors.borderSubtle),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        AppLocalizations.of(context).marketMaxLeverage(leverage),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -293,10 +325,24 @@ class MarketProductRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  product.symbol,
-                  style: Theme.of(context).textTheme.bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        product.symbol,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    if (product.maxLeverage case final maxLeverage?) ...[
+                      const SizedBox(width: 4),
+                      MarketMaxLeverageBadge(
+                        key: ValueKey('market-max-leverage-${product.symbol}'),
+                        leverage: maxLeverage,
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -306,11 +352,11 @@ class MarketProductRow extends StatelessWidget {
                         product.name,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall
-                            ?.copyWith(color: colors.secondaryText),
+                            ?.copyWith(color: colors.textSecondary),
                       ),
                     ),
                     const SizedBox(width: 4),
-                    SvgPicture.asset(
+                    VenueIcon(
                       product.kind == MarketProductKind.bstock
                           ? 'assets/figma/home_markets/venue_bnb.svg'
                           : 'assets/figma/home_markets/venue_hyperliquid.svg',
@@ -323,7 +369,7 @@ class MarketProductRow extends StatelessWidget {
                           ? 'bStocks'
                           : l10n.hip3Perps,
                       style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: colors.secondaryText),
+                          ?.copyWith(color: colors.textSecondary),
                     ),
                   ],
                 ),
@@ -347,14 +393,14 @@ class MarketProductRow extends StatelessWidget {
                   key: ValueKey('market-volume-${product.symbol}'),
                   comparisonValue: turnover?.value,
                   style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: colors.secondaryText),
+                      ?.copyWith(color: colors.textSecondary),
                 )
               else if (product.change24hPercent != null)
                 AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(product.change24hPercent!),
                   key: ValueKey('market-change-${product.symbol}'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: positive ? semantic.success : semantic.loss,
+                    color: positive ? semantic.success : semantic.danger,
                   ),
                 ),
             ],
@@ -470,7 +516,7 @@ class MarketAssetMark extends StatelessWidget {
       alignment: Alignment.center,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         shape: borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: borderRadius == null
             ? null
@@ -483,7 +529,7 @@ class MarketAssetMark extends StatelessWidget {
         borderRadius: borderRadius == null
             ? null
             : BorderRadius.circular(borderRadius!),
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: !hasLogo
           ? fallback
@@ -510,22 +556,35 @@ class _MarketNetworkLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Uri.tryParse(url)?.path.toLowerCase().endsWith('.svg') ?? false) {
-      return SvgPicture.network(
-        url,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        placeholderBuilder: (_) => fallback,
-        errorBuilder: (_, _, _) => fallback,
+      return FutureBuilder<Uint8List>(
+        key: ValueKey('market-network-logo-$url'),
+        future: DefaultCacheManager()
+            .getSingleFile(url)
+            .then((file) => file.readAsBytes()),
+        builder: (context, snapshot) {
+          final bytes = snapshot.data;
+          if (bytes == null) return fallback;
+          return SvgPicture.memory(
+            bytes,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => fallback,
+          );
+        },
       );
     }
-    return Image.network(
-      url,
+    return CachedNetworkImage(
+      imageUrl: url,
       key: ValueKey('market-network-logo-$url'),
       width: size,
       height: size,
       fit: BoxFit.contain,
-      errorBuilder: (_, _, _) => fallback,
+      // The URL is the cache identity, so a newly returned URL never reuses
+      // the previous image (including when the widget is rebuilt).
+      cacheKey: url,
+      placeholder: (_, _) => fallback,
+      errorWidget: (_, _, _) => fallback,
     );
   }
 }

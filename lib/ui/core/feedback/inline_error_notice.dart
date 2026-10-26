@@ -19,14 +19,14 @@ class InlineErrorNotice extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 40, maxHeight: 160),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: semantic.loss.withValues(alpha: 0.1),
+          color: semantic.danger.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: SingleChildScrollView(
           child: Text(
             message,
             style: TextStyle(
-              color: semantic.loss,
+              color: semantic.danger,
               fontSize: 12,
               height: 16 / 12,
             ),

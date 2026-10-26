@@ -127,6 +127,9 @@ const BstockOrderCancellationReasonEnum
 const BstockOrderCancellationReasonEnum
     _$bstockOrderCancellationReasonEnum_insufficientAllowance =
     const BstockOrderCancellationReasonEnum._('insufficientAllowance');
+const BstockOrderCancellationReasonEnum
+    _$bstockOrderCancellationReasonEnum_expired =
+    const BstockOrderCancellationReasonEnum._('expired');
 
 BstockOrderCancellationReasonEnum _$bstockOrderCancellationReasonEnumValueOf(
     String name) {
@@ -137,6 +140,8 @@ BstockOrderCancellationReasonEnum _$bstockOrderCancellationReasonEnumValueOf(
       return _$bstockOrderCancellationReasonEnum_insufficientBalance;
     case 'insufficientAllowance':
       return _$bstockOrderCancellationReasonEnum_insufficientAllowance;
+    case 'expired':
+      return _$bstockOrderCancellationReasonEnum_expired;
     default:
       throw ArgumentError(name);
   }
@@ -148,6 +153,7 @@ final BuiltSet<BstockOrderCancellationReasonEnum>
   _$bstockOrderCancellationReasonEnum_userCancelled,
   _$bstockOrderCancellationReasonEnum_insufficientBalance,
   _$bstockOrderCancellationReasonEnum_insufficientAllowance,
+  _$bstockOrderCancellationReasonEnum_expired,
 ]);
 
 Serializer<BstockOrderFundingModeEnum> _$bstockOrderFundingModeEnumSerializer =
@@ -290,11 +296,13 @@ class _$BstockOrderCancellationReasonEnumSerializer
     'userCancelled': 'user_cancelled',
     'insufficientBalance': 'insufficient_balance',
     'insufficientAllowance': 'insufficient_allowance',
+    'expired': 'expired',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'user_cancelled': 'userCancelled',
     'insufficient_balance': 'insufficientBalance',
     'insufficient_allowance': 'insufficientAllowance',
+    'expired': 'expired',
   };
 
   @override
@@ -319,6 +327,8 @@ class _$BstockOrderCancellationReasonEnumSerializer
 class _$BstockOrder extends BstockOrder {
   @override
   final BstocksTimeInForce? timeInForce;
+  @override
+  final DateTime? expiresAt;
   @override
   final String? quantity;
   @override
@@ -424,6 +434,7 @@ class _$BstockOrder extends BstockOrder {
 
   _$BstockOrder._(
       {this.timeInForce,
+      this.expiresAt,
       this.quantity,
       required this.orderId,
       this.currentActionId,
@@ -486,6 +497,7 @@ class _$BstockOrder extends BstockOrder {
     if (identical(other, this)) return true;
     return other is BstockOrder &&
         timeInForce == other.timeInForce &&
+        expiresAt == other.expiresAt &&
         quantity == other.quantity &&
         orderId == other.orderId &&
         currentActionId == other.currentActionId &&
@@ -541,6 +553,7 @@ class _$BstockOrder extends BstockOrder {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, expiresAt.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, currentActionId.hashCode);
@@ -598,6 +611,7 @@ class _$BstockOrder extends BstockOrder {
   String toString() {
     return (newBuiltValueToStringHelper(r'BstockOrder')
           ..add('timeInForce', timeInForce)
+          ..add('expiresAt', expiresAt)
           ..add('quantity', quantity)
           ..add('orderId', orderId)
           ..add('currentActionId', currentActionId)
@@ -662,6 +676,10 @@ class BstockOrderBuilder
   BstocksTimeInForce? get timeInForce => _$this._timeInForce;
   set timeInForce(covariant BstocksTimeInForce? timeInForce) =>
       _$this._timeInForce = timeInForce;
+
+  DateTime? _expiresAt;
+  DateTime? get expiresAt => _$this._expiresAt;
+  set expiresAt(covariant DateTime? expiresAt) => _$this._expiresAt = expiresAt;
 
   String? _quantity;
   String? get quantity => _$this._quantity;
@@ -918,6 +936,7 @@ class BstockOrderBuilder
     final $v = _$v;
     if ($v != null) {
       _timeInForce = $v.timeInForce;
+      _expiresAt = $v.expiresAt;
       _quantity = $v.quantity;
       _orderId = $v.orderId;
       _currentActionId = $v.currentActionId;
@@ -992,6 +1011,7 @@ class BstockOrderBuilder
       _$result = _$v ??
           _$BstockOrder._(
             timeInForce: timeInForce,
+            expiresAt: expiresAt,
             quantity: quantity,
             orderId: BuiltValueNullFieldError.checkNotNull(
                 orderId, r'BstockOrder', 'orderId'),

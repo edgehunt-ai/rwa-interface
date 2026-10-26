@@ -65,13 +65,13 @@ class LimitPriceLossNotice extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: semantic.lossSoft,
+        color: semantic.dangerSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         message,
         style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: semantic.loss, fontWeight: FontWeight.w500),
+            ?.copyWith(color: semantic.danger, fontWeight: FontWeight.w500),
       ),
     );
   }

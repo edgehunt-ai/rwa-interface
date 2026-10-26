@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import '../../../core/theme/app_theme.dart';
 
@@ -33,8 +33,8 @@ class TransferAccountPair extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 78),
         padding: EdgeInsets.fromLTRB(receiveSide ? 28 : 12, 12, 12, 12),
         decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border.all(color: colors.border),
+          color: colors.surfaceBase,
+          border: Border.all(color: colors.borderSubtle),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -44,14 +44,14 @@ class TransferAccountPair extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colors.secondaryText),
+                  ?.copyWith(color: colors.textSecondary),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 SizedBox.square(
                   dimension: 24,
-                  child: SvgPicture.asset(
+                  child: VenueIcon(
                     isSpot
                         ? 'assets/figma/funding/venue_bnb_chain_24.svg'
                         : 'assets/figma/home_markets/venue_hyperliquid.svg',
@@ -99,8 +99,8 @@ class TransferAccountPair extends StatelessWidget {
           onPressed: onSwap,
           icon: const Icon(Icons.arrow_forward, size: 16),
           style: IconButton.styleFrom(
-            backgroundColor: colors.surface,
-            side: BorderSide(color: colors.border),
+            backgroundColor: colors.surfaceBase,
+            side: BorderSide(color: colors.borderSubtle),
             minimumSize: const Size(28, 28),
             fixedSize: const Size(28, 28),
             padding: EdgeInsets.zero,

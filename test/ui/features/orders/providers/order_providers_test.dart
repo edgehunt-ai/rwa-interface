@@ -695,6 +695,67 @@ void main() {
     expect(execution.key, scopedIdempotencyKey('hip3-cancel-perp-1'));
   });
   test(
+    'cancellation state tracks orders independently and shares active work',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final cancellations = container.read(orderCancellationsProvider.notifier);
+      final firstCompletion = Completer<void>();
+      final secondCompletion = Completer<void>();
+      final first = cancellations.run('first', () => firstCompletion.future);
+      final duplicate = cancellations.run('first', () async {
+        fail('An active cancellation must not be submitted again');
+      });
+      final second = cancellations.run('second', () => secondCompletion.future);
+      expect(container.read(orderCancellationsProvider), {'first', 'second'});
+      firstCompletion.complete();
+      await Future.wait([first, duplicate]);
+      expect(container.read(orderCancellationsProvider), {'second'});
+      secondCompletion.complete();
+      await second;
+      expect(container.read(orderCancellationsProvider), isEmpty);
+    },
+  );
+  test(
+    'old cancellation completion cannot clear a new session loading state',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final oldCompletion = Completer<void>();
+      final oldRequest = container
+          .read(orderCancellationsProvider.notifier)
+          .run('order-1', () => oldCompletion.future);
+      expect(container.read(orderCancellationsProvider), {'order-1'});
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      expect(container.read(orderCancellationsProvider), isEmpty);
+      final newCompletion = Completer<void>();
+      final newRequest = container
+          .read(orderCancellationsProvider.notifier)
+          .run('order-1', () => newCompletion.future);
+      oldCompletion.complete();
+      await oldRequest;
+      expect(container.read(orderCancellationsProvider), {'order-1'});
+      newCompletion.complete();
+      await newRequest;
+      expect(container.read(orderCancellationsProvider), isEmpty);
+    },
+  );
+  test('a cancellation failure clears loading and allows a retry', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final cancellations = container.read(orderCancellationsProvider.notifier);
+    final failure = StateError('Cancellation is unavailable');
+    await expectLater(
+      cancellations.run('order-1', () => throw failure),
+      throwsA(same(failure)),
+    );
+    expect(container.read(orderCancellationsProvider), isEmpty);
+    var retried = false;
+    await cancellations.run('order-1', () async => retried = true);
+    expect(retried, isTrue);
+    expect(container.read(orderCancellationsProvider), isEmpty);
+  });
+  test(
     '20 concurrent submits share one request and one idempotency key',
     () async {
       final repository = _OrdersRepository();

@@ -33,7 +33,7 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
-                        .secondaryText,
+                        .textSecondary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -56,7 +56,7 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .extension<AppRwaColors>()!
-                      .subtleSurface,
+                      .surfaceSubtle,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: _SummaryRow(
@@ -106,10 +106,10 @@ class _Step extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 14,
-          backgroundColor: active ? colors.primaryAction : colors.subtleSurface,
+          backgroundColor: active ? colors.actionPrimary : colors.surfaceSubtle,
           child: Text(
             number,
-            style: TextStyle(color: active ? colors.onPrimaryAction : null),
+            style: TextStyle(color: active ? colors.textInverse : null),
           ),
         ),
         if (label.isNotEmpty) ...[const SizedBox(width: 8), Text(label)],
@@ -137,7 +137,7 @@ class _FundingRoute extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).extension<AppRwaColors>()!.border,
+          color: Theme.of(context).extension<AppRwaColors>()!.borderSubtle,
         ),
         borderRadius: BorderRadius.circular(14),
       ),
@@ -147,7 +147,7 @@ class _FundingRoute extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).extension<AppRwaColors>()!.subtleSurface,
+              color: Theme.of(context).extension<AppRwaColors>()!.surfaceSubtle,
               borderRadius: BorderRadius.circular(12),
             ),
           ),

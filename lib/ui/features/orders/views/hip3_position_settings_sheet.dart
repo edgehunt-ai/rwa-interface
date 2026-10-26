@@ -87,7 +87,7 @@ class _Hip3PositionSettingsSheetState
         ? null
         : ref.watch(positionLeverageContextProvider(productId));
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -262,7 +262,7 @@ class _SettingsContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.secondaryText,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: 40),
@@ -270,7 +270,7 @@ class _SettingsContent extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF7ED),
+              color: context.semanticColors.warningSoft,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
@@ -335,7 +335,7 @@ class _LeverageOption extends StatelessWidget {
         height: 38,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? colors.selected : colors.subtleSurface,
+          color: selected ? colors.brandDefault : colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Text(
@@ -344,7 +344,7 @@ class _LeverageOption extends StatelessWidget {
             fontSize: 15,
             height: 22 / 15,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected ? colors.primaryText : colors.secondaryText,
+            color: selected ? colors.textPrimary : colors.textSecondary,
           ),
         ),
       ),
@@ -372,9 +372,9 @@ class _MarginModeCard extends StatelessWidget {
         height: 88,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colors.subtleSurface,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(14),
-          border: selected ? Border.all(color: colors.primaryText) : null,
+          border: selected ? Border.all(color: colors.textPrimary) : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +384,7 @@ class _MarginModeCard extends StatelessWidget {
                 Icon(
                   selected ? Icons.check_circle : Icons.radio_button_unchecked,
                   size: 16,
-                  color: selected ? colors.primaryText : colors.secondaryText,
+                  color: selected ? colors.textPrimary : colors.textSecondary,
                 ),
                 const SizedBox(width: 4),
                 Text(

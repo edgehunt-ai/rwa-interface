@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/app/providers/locale_provider.dart';
+import 'package:nobell/app/providers/locale_sync_provider.dart';
 import 'package:nobell/app/providers/push_notification_providers.dart';
+import 'package:nobell/app/providers/theme_mode_provider.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
@@ -12,16 +15,23 @@ import 'package:nobell/ui/core/motion/launch_animation.dart';
 import 'package:nobell/ui/core/layout/foldable_adaptive_shell.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/positions/views/hip3_confirmation_host.dart';
+import 'package:nobell/ui/core/feedback/error_message.dart';
 
 class AppRoot extends StatelessWidget {
-  AppRoot({super.key, GoRouter? router})
+  AppRoot({super.key, GoRouter? router, this.initialThemeMode})
     : router = router ?? AppRouter.create();
 
   final GoRouter router;
+  final ThemeMode? initialThemeMode;
 
   @override
-  Widget build(BuildContext context) =>
-      ProviderScope(child: _AppView(router: router));
+  Widget build(BuildContext context) => ProviderScope(
+    overrides: [
+      if (initialThemeMode != null)
+        initialThemeModeProvider.overrideWithValue(initialThemeMode),
+    ],
+    child: _AppView(router: router),
+  );
 }
 
 final class _AppView extends ConsumerStatefulWidget {
@@ -46,7 +56,26 @@ final class _AppViewState extends ConsumerState<_AppView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(accountLocaleSyncProvider);
+    ref.listen<AsyncValue<void>>(accountLocaleSyncProvider, (_, next) {
+      if (!next.hasError) return;
+      final context = _messengerKey.currentContext;
+      if (context == null) return;
+      final l10n = AppLocalizations.of(context);
+      _messengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage(next.error!, fallback: l10n.settingsUnavailable),
+          ),
+          action: SnackBarAction(
+            label: l10n.retry,
+            onPressed: () => ref.invalidate(accountLocaleSyncProvider),
+          ),
+        ),
+      );
+    });
     final locale = ref.watch<Locale?>(appLocaleProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
     final authentication = ref.watch(authenticationProvider);
     final appReady = authentication is! AuthenticationInitializing;
     ref.listen<AuthenticationState>(authenticationProvider, (_, next) {
@@ -65,12 +94,28 @@ final class _AppViewState extends ConsumerState<_AppView> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.light,
+      themeMode: themeMode,
       routerConfig: widget.router,
-      builder: (context, child) => LaunchAnimationGate(
-        ready: appReady,
-        child: FoldableAdaptiveShell(
-          child: Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        // Keep the status bar legible as the appearance changes. Without a
+        // theme-owned AppBar most screens would keep the platform default,
+        // which is unreadable on the dark canvas.
+        value:
+            (Theme.of(context).brightness == Brightness.dark
+                    ? SystemUiOverlayStyle.light
+                    : SystemUiOverlayStyle.dark)
+                .copyWith(
+                  statusBarColor: Colors.transparent,
+                  systemNavigationBarColor: Theme.of(context)
+                      .scaffoldBackgroundColor,
+                ),
+        child: LaunchAnimationGate(
+          ready: appReady,
+          child: FoldableAdaptiveShell(
+            child: Hip3ConfirmationHost(
+              child: child ?? const SizedBox.shrink(),
+            ),
+          ),
         ),
       ),
       locale: locale,

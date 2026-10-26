@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/services/market_search_history_service.dart';
@@ -13,6 +15,7 @@ import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/repositories/markets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
@@ -22,6 +25,99 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets(
+      'market venue badges use layered theme colors in ${mode.name}',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            Column(
+              children: [
+                MarketProductRow(product: _testProduct('NVDA')),
+                MarketProductRow(
+                  product: _testProduct('TSLA', kind: MarketProductKind.perp),
+                ),
+              ],
+            ),
+            themeMode: mode,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(VenueIcon), findsNWidgets(2));
+        for (final badge in find.byType(VenueIcon).evaluate()) {
+          final picture = tester.widget<SvgPicture>(
+            find.descendant(
+              of: find.byWidget(badge.widget),
+              matching: find.byType(SvgPicture),
+            ),
+          );
+          expect(
+            (picture.bytesLoader as SvgAssetLoader).colorMapper,
+            isNotNull,
+          );
+          expect(picture.colorFilter, isNull);
+          expect(
+            tester.getSize(find.byWidget(badge.widget)),
+            const Size.square(14),
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('HIP-3 rows show the listing max leverage badge', (tester) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct(
+            'TSLA',
+            kind: MarketProductKind.perp,
+            maxLeverage: '10',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Max 10x'), findsOneWidget);
+  });
+
+  testWidgets('the max leverage badge follows the active locale', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct(
+            'TSLA',
+            kind: MarketProductKind.perp,
+            maxLeverage: '10',
+          ),
+        ),
+        locale: const Locale('zh'),
+      ),
+    );
+
+    expect(find.text('最高 10x'), findsOneWidget);
+    expect(find.text('Max 10x'), findsNothing);
+  });
+
+  testWidgets('rows without listing leverage never show a badge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketProductRow(
+          product: _testProduct('NVDA', kind: MarketProductKind.perp),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Max '), findsNothing);
+    expect(find.textContaining('最高 '), findsNothing);
+  });
+
   testWidgets('market asset mark prefers a remote logo', (tester) async {
     const logoUrl =
         'data:image/png;base64,'
@@ -31,11 +127,10 @@ void main() {
       buildTestApp(const MarketAssetMark(symbol: 'NVDA', logoUrl: logoUrl)),
     );
 
-    final image = tester.widget<Image>(
+    final image = tester.widget<CachedNetworkImage>(
       find.byKey(const ValueKey('market-network-logo-$logoUrl')),
     );
-    expect(image.image, isA<NetworkImage>());
-    expect((image.image as NetworkImage).url, logoUrl);
+    expect(image.imageUrl, logoUrl);
     // The outline must not inset the square image inside the circular clip;
     // that intersection would leave flat edges on solid-background logos.
     final logoBounds = tester.getRect(
@@ -109,7 +204,7 @@ void main() {
     expect(popular.style?.shape?.resolve({}), isA<StadiumBorder>());
     expect(
       popular.style?.backgroundColor?.resolve({}),
-      AppTheme.light.extension<AppRwaColors>()!.subtleSurface,
+      AppTheme.light.extension<AppRwaColors>()!.surfaceSubtle,
     );
   });
 
@@ -665,6 +760,7 @@ Widget _marketApp(Widget home) => MaterialApp(
 MarketProduct _testProduct(
   String symbol, {
   MarketProductKind kind = MarketProductKind.bstock,
+  String? maxLeverage,
 }) => MarketProduct(
   symbol: symbol,
   name: symbol,
@@ -673,6 +769,7 @@ MarketProduct _testProduct(
   settlementAsset: 'USDC',
   network: 'BSC',
   tradable: true,
+  maxLeverage: maxLeverage,
 );
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {

@@ -23,7 +23,7 @@ class SlippageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const secondaryLabelColor = Color(0xFF676776);
+    final secondaryLabelColor = context.appColors.textSecondary;
     return Padding(
       padding: EdgeInsets.zero,
       child: Row(
@@ -31,7 +31,7 @@ class SlippageRow extends StatelessWidget {
           Expanded(
             child: Text(
               AppLocalizations.of(context).slippage,
-              style: const TextStyle(color: secondaryLabelColor),
+              style: TextStyle(color: secondaryLabelColor),
             ),
           ),
           IconButton(
@@ -77,7 +77,7 @@ Future<double?> showSlippageSheet({
   context: context,
   isScrollControlled: true,
   backgroundColor: Colors.transparent,
-  barrierColor: Colors.black.withValues(alpha: 0.44),
+  barrierColor: context.appColors.overlayScrim.withValues(alpha: 0.44),
   builder: (_) => SlippageSheet(initialValue: initialValue, inputKey: inputKey),
 );
 
@@ -115,7 +115,7 @@ class _SlippageSheetState extends State<SlippageSheet> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
       key: const Key('slippage-sheet'),
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       clipBehavior: Clip.antiAlias,
       child: SafeArea(
@@ -172,7 +172,7 @@ class _SlippageSheetState extends State<SlippageSheet> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -183,7 +183,7 @@ class _SlippageSheetState extends State<SlippageSheet> {
                       style: TextStyle(
                         fontSize: 11,
                         height: 14 / 11,
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -217,7 +217,7 @@ class _SlippageSheetState extends State<SlippageSheet> {
                                 fontSize: 15,
                                 height: 22 / 15,
                                 fontWeight: FontWeight.w600,
-                                color: colors.primaryText,
+                                color: colors.textPrimary,
                               ),
                               decoration: const InputDecoration(
                                 isDense: true,
@@ -237,7 +237,7 @@ class _SlippageSheetState extends State<SlippageSheet> {
                               fontSize: 15,
                               height: 22 / 15,
                               fontWeight: FontWeight.w600,
-                              color: colors.secondaryText,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
@@ -268,12 +268,12 @@ class _SlippageSheetState extends State<SlippageSheet> {
                       key: ValueKey('slippage-preset-${_presetLabel(option)}'),
                       showCheckmark: false,
                       selected: _presetSelected(option),
-                      selectedColor: colors.primaryAction,
-                      backgroundColor: colors.surface,
+                      selectedColor: colors.actionPrimary,
+                      backgroundColor: colors.surfaceBase,
                       side: BorderSide(
                         color: _presetSelected(option)
-                            ? colors.primaryAction
-                            : colors.border,
+                            ? colors.actionPrimary
+                            : colors.borderSubtle,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -294,8 +294,8 @@ class _SlippageSheetState extends State<SlippageSheet> {
                               height: 22 / 15,
                               fontWeight: FontWeight.w600,
                               color: _presetSelected(option)
-                                  ? colors.onPrimaryAction
-                                  : colors.primaryText,
+                                  ? colors.textInverse
+                                  : colors.textPrimary,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -306,8 +306,8 @@ class _SlippageSheetState extends State<SlippageSheet> {
                               height: 22 / 15,
                               fontWeight: FontWeight.w600,
                               color: _presetSelected(option)
-                                  ? colors.onPrimaryAction
-                                  : colors.secondaryText,
+                                  ? colors.textInverse
+                                  : colors.textSecondary,
                             ),
                           ),
                         ],
@@ -333,8 +333,8 @@ class _SlippageSheetState extends State<SlippageSheet> {
                     child: OutlinedButton(
                       key: const Key('slippage-cancel'),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: colors.subtleSurface,
-                        side: BorderSide(color: colors.border),
+                        backgroundColor: colors.surfaceSubtle,
+                        side: BorderSide(color: colors.borderSubtle),
                       ),
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(l10n.cancel),

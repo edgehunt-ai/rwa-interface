@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/rwa_tooltip.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 class MarketListDataSource extends StatelessWidget {
   const MarketListDataSource({
@@ -28,7 +28,7 @@ class MarketListDataSource extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           height: 14 / 11,
-          color: Theme.of(context).extension<AppRwaColors>()!.tertiaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textTertiary,
         ),
       ),
     );
@@ -50,7 +50,7 @@ class TradeMarketDataSource extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.tertiaryText,
+              color: colors.textTertiary,
             ),
           ),
         ),
@@ -64,21 +64,18 @@ class TradeMarketDataSource extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               height: 16 / 12,
-              color: colors.secondaryText,
+              color: colors.textSecondary,
             ),
           ),
           child: Semantics(
             button: true,
             label: l10n.marketDataSourceBinance,
-            child: SvgPicture.asset(
+            child: AppSvgIcon(
               'assets/figma/common/market_data_info.svg',
               key: const Key('market-data-source-info'),
               width: 14,
               height: 14,
-              colorFilter: ColorFilter.mode(
-                colors.tertiaryText,
-                BlendMode.srcIn,
-              ),
+              color: colors.textTertiary,
             ),
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../../../../app/routing/routes.dart';
 import '../../../../domain/models/api_failure.dart';
@@ -16,6 +17,9 @@ import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/network/network_icon_assets.dart';
 import '../../../core/theme/app_theme.dart';
+
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
+
 import '../../funding/providers/funding_transfer_providers.dart';
 
 class OrderFundingSheet extends ConsumerStatefulWidget {
@@ -177,7 +181,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
     return PopScope(
       canPop: !_busy || _transferSubmitted,
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         clipBehavior: Clip.antiAlias,
         child: SafeArea(
@@ -192,7 +196,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 const SizedBox(height: 16),
                 _Steps(current: _transferStep ? 2 : 1),
                 const SizedBox(height: 16),
-                Divider(height: 1, color: colors.subtleSurface),
+                Divider(height: 1, color: colors.surfaceSubtle),
                 const SizedBox(height: 16),
                 if (_transferStep && _pending)
                   OrderFundingPendingContent(
@@ -278,7 +282,7 @@ class _DragHandle extends StatelessWidget {
         width: 32,
         height: 4,
         decoration: BoxDecoration(
-          color: colors.secondaryText.withValues(alpha: .45),
+          color: colors.textSecondary.withValues(alpha: .45),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -336,14 +340,14 @@ class _Circle extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: active ? colors.primaryAction : colors.subtleSurface,
+        color: active ? colors.actionPrimary : colors.surfaceSubtle,
       ),
       child: DefaultTextStyle(
         style: TextStyle(
           fontSize: 13,
           height: 18 / 13,
           fontWeight: FontWeight.w600,
-          color: active ? colors.onPrimaryAction : colors.tertiaryText,
+          color: active ? colors.textInverse : colors.textTertiary,
         ),
         child: child,
       ),
@@ -406,7 +410,7 @@ class _PrepareContent extends StatelessWidget {
             fontSize: 13,
             height: 18 / 13,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
           ),
         ),
         const SizedBox(height: 12),
@@ -474,7 +478,7 @@ class _Breakdown extends StatelessWidget {
       key: const Key('order-funding-breakdown'),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        border: Border.all(color: colors.border),
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -499,7 +503,7 @@ class _Breakdown extends StatelessWidget {
             positions: sourcePositions,
           ),
           const SizedBox(height: 12),
-          Container(height: 1, color: colors.border),
+          Container(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 12),
           _FundingSummaryRow(
             label: l10n.stillNeeded,
@@ -539,7 +543,7 @@ class _FundingSummaryRow extends StatelessWidget {
                 fontSize: emphasized ? 13 : 12,
                 height: 18 / (emphasized ? 13 : 12),
                 fontWeight: emphasized ? FontWeight.w600 : FontWeight.w500,
-                color: emphasized ? colors.primaryText : colors.secondaryText,
+                color: emphasized ? colors.textPrimary : colors.textSecondary,
               ),
             ),
           ),
@@ -589,7 +593,7 @@ class _OtherAssetsRow extends StatelessWidget {
                 fontSize: 12,
                 height: 18 / 12,
                 fontWeight: FontWeight.w500,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -635,7 +639,7 @@ class _OtherAssetsRow extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 height: 14 / 11,
-                                color: colors.secondaryText,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
@@ -676,7 +680,7 @@ class _SourceTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colors.subtleSurface,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -686,10 +690,10 @@ class _SourceTile extends StatelessWidget {
               height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: colors.surface,
+                color: colors.surfaceBase,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: SvgPicture.asset(iconAsset, width: 20, height: 20),
+              child: AppSvgIcon(iconAsset, width: 20, height: 20),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -716,15 +720,16 @@ class _SourceTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            SvgPicture.asset(
+            AppSvgIcon(
               'assets/figma/funding/chevron_right.svg',
+              color: context.appColors.iconSecondary,
               width: 20,
               height: 20,
             ),
@@ -933,8 +938,8 @@ class OrderFundingPendingContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Image.asset(
-          'assets/figma/trade/funding_pending.webp',
+        ThemedIllustration(
+          IllustrationAsset.fundingPending,
           width: 120,
           height: 120,
         ),
@@ -953,7 +958,7 @@ class OrderFundingPendingContent extends StatelessWidget {
           l10n.bridgeInProgress,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: colors.secondaryText,
+            color: colors.textSecondary,
             fontSize: 12,
             height: 16 / 12,
           ),
@@ -992,10 +997,10 @@ class OrderStatusSecondaryButton extends StatelessWidget {
         key: buttonKey,
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: colors.primaryText,
-          backgroundColor: colors.subtleSurface,
+          foregroundColor: colors.textPrimary,
+          backgroundColor: colors.surfaceSubtle,
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          side: BorderSide(color: colors.border),
+          side: BorderSide(color: colors.borderSubtle),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -1029,7 +1034,7 @@ class _AssetsCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: ColoredBox(
-        color: colors.canvas,
+        color: colors.surfaceCanvas,
         child: Column(
           children: [
             _FundingLegs(
@@ -1131,7 +1136,7 @@ class _AssetRow extends StatelessWidget {
       height: 63,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colors.surface)),
+        border: Border(bottom: BorderSide(color: colors.surfaceBase)),
       ),
       child: Row(
         children: [
@@ -1151,7 +1156,7 @@ class _AssetRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       height: 18 / 13,
-                      color: colors.primaryText,
+                      color: colors.textPrimary,
                     ),
                     children: [
                       TextSpan(
@@ -1164,7 +1169,7 @@ class _AssetRow extends StatelessWidget {
                             : ' (${networkDisplayName(network)})',
                         style: TextStyle(
                           fontSize: 11,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],
@@ -1179,7 +1184,7 @@ class _AssetRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     height: 14 / 11,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -1191,8 +1196,8 @@ class _AssetRow extends StatelessWidget {
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: colors.subtleSurface,
-              border: Border.all(color: colors.border),
+              color: colors.surfaceSubtle,
+              border: Border.all(color: colors.borderSubtle),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -1241,7 +1246,7 @@ class _TargetAssetRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     height: 18 / 13,
-                    color: colors.primaryText,
+                    color: colors.textPrimary,
                   ),
                   children: [
                     TextSpan(
@@ -1253,7 +1258,7 @@ class _TargetAssetRow extends StatelessWidget {
                         text: ' (${networkDisplayName(network!)})',
                         style: TextStyle(
                           fontSize: 11,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                   ],
@@ -1299,7 +1304,11 @@ class _RouteAssetIcon extends StatelessWidget {
             Positioned(
               left: 13,
               top: 27,
-              child: Container(width: 2, height: 18, color: colors.border),
+              child: Container(
+                width: 2,
+                height: 18,
+                color: colors.borderSubtle,
+              ),
             ),
           _TokenIcon(asset: asset),
           if (_networkAssetPath(network) != null)
@@ -1367,8 +1376,8 @@ class _NetworkIcon extends StatelessWidget {
         vertical: size * 0.125,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF2F3749),
-        border: Border.all(color: colors.border, width: size / 16),
+        color: AppBrandColors.arbitrum,
+        border: Border.all(color: colors.borderSubtle, width: size / 16),
         borderRadius: BorderRadius.circular(size / 4),
       ),
       child: SvgPicture.asset(path),
@@ -1433,7 +1442,7 @@ class _InfoRow extends StatelessWidget {
                 fontSize: 13,
                 height: 18 / 13,
                 fontWeight: FontWeight.w500,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ],

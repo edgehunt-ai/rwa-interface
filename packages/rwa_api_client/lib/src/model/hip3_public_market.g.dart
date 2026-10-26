@@ -81,6 +81,9 @@ abstract class Hip3PublicMarketBuilder {
   String? get settlementAsset;
   set settlementAsset(String? settlementAsset);
 
+  String? get maxLeverage;
+  set maxLeverage(String? maxLeverage);
+
   bool? get tradable;
   set tradable(bool? tradable);
 
@@ -98,6 +101,8 @@ class _$$Hip3PublicMarket extends $Hip3PublicMarket {
   @override
   final String settlementAsset;
   @override
+  final String? maxLeverage;
+  @override
   final bool tradable;
   @override
   final String? unavailableReason;
@@ -111,6 +116,7 @@ class _$$Hip3PublicMarket extends $Hip3PublicMarket {
       required this.venue,
       required this.environment,
       required this.settlementAsset,
+      this.maxLeverage,
       required this.tradable,
       this.unavailableReason})
       : super._();
@@ -130,6 +136,7 @@ class _$$Hip3PublicMarket extends $Hip3PublicMarket {
         venue == other.venue &&
         environment == other.environment &&
         settlementAsset == other.settlementAsset &&
+        maxLeverage == other.maxLeverage &&
         tradable == other.tradable &&
         unavailableReason == other.unavailableReason;
   }
@@ -141,6 +148,7 @@ class _$$Hip3PublicMarket extends $Hip3PublicMarket {
     _$hash = $jc(_$hash, venue.hashCode);
     _$hash = $jc(_$hash, environment.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
+    _$hash = $jc(_$hash, maxLeverage.hashCode);
     _$hash = $jc(_$hash, tradable.hashCode);
     _$hash = $jc(_$hash, unavailableReason.hashCode);
     _$hash = $jf(_$hash);
@@ -154,6 +162,7 @@ class _$$Hip3PublicMarket extends $Hip3PublicMarket {
           ..add('venue', venue)
           ..add('environment', environment)
           ..add('settlementAsset', settlementAsset)
+          ..add('maxLeverage', maxLeverage)
           ..add('tradable', tradable)
           ..add('unavailableReason', unavailableReason))
         .toString();
@@ -184,6 +193,11 @@ class $Hip3PublicMarketBuilder
   set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
+  String? _maxLeverage;
+  String? get maxLeverage => _$this._maxLeverage;
+  set maxLeverage(covariant String? maxLeverage) =>
+      _$this._maxLeverage = maxLeverage;
+
   bool? _tradable;
   bool? get tradable => _$this._tradable;
   set tradable(covariant bool? tradable) => _$this._tradable = tradable;
@@ -204,6 +218,7 @@ class $Hip3PublicMarketBuilder
       _venue = $v.venue;
       _environment = $v.environment;
       _settlementAsset = $v.settlementAsset;
+      _maxLeverage = $v.maxLeverage;
       _tradable = $v.tradable;
       _unavailableReason = $v.unavailableReason;
       _$v = null;
@@ -235,6 +250,7 @@ class $Hip3PublicMarketBuilder
               environment, r'$Hip3PublicMarket', 'environment'),
           settlementAsset: BuiltValueNullFieldError.checkNotNull(
               settlementAsset, r'$Hip3PublicMarket', 'settlementAsset'),
+          maxLeverage: maxLeverage,
           tradable: BuiltValueNullFieldError.checkNotNull(
               tradable, r'$Hip3PublicMarket', 'tradable'),
           unavailableReason: unavailableReason,

@@ -212,11 +212,59 @@ void main() {
     expect(find.text(r'$100'), findsOneWidget);
     expect(find.text('20'), findsNothing);
   });
+
+  for (final decimals in [6, 18]) {
+    testWidgets(
+      'withdrawal picker displays balances beyond $decimals token decimals',
+      (tester) async {
+        await _pumpAvailableWithdrawal(
+          tester,
+          available: '20',
+          balance: '100.1234567890123456789',
+          decimals: decimals,
+          showSelector: true,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('USDC'), findsOneWidget);
+        expect(find.text('100.123457'), findsOneWidget);
+        expect(find.text(r'$100'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'withdrawal displays availability beyond $decimals token decimals without changing Max',
+      (tester) async {
+        const available = '20.1234567890123456789';
+        await _pumpAvailableWithdrawal(
+          tester,
+          available: available,
+          decimals: decimals,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Available 20.123457 USDC'), findsOneWidget);
+        await tester.tap(find.widgetWithText(TextButton, 'Max'));
+        await tester.pump();
+        expect(
+          tester
+              .widget<TextField>(
+                find.byKey(const ValueKey('withdrawal-amount-field')),
+              )
+              .controller!
+              .text,
+          available,
+        );
+      },
+    );
+  }
 }
 
 Future<void> _pumpAvailableWithdrawal(
   WidgetTester tester, {
   required String? available,
+  String balance = '100',
+  int decimals = 18,
   bool showSelector = false,
 }) async {
   await configureDisplay(tester, size: const Size(800, 1000));
@@ -228,12 +276,12 @@ Future<void> _pumpAvailableWithdrawal(
             WithdrawableAsset(
               symbol: 'USDC',
               chain: 'BSC',
-              balance: DecimalValue('100', asset: 'USDC', unit: 'token'),
+              balance: DecimalValue(balance, asset: 'USDC', unit: 'token'),
               availableBalance: available == null
                   ? null
                   : DecimalValue(available, asset: 'USDC', unit: 'token'),
               valueUsd: DecimalValue('100', asset: 'USD', unit: 'fiat'),
-              decimals: 18,
+              decimals: decimals,
               withdrawable: true,
             ),
           ],

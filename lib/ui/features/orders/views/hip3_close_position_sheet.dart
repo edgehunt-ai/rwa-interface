@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
@@ -323,9 +323,9 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     };
     final pnl = preview?.estimatedRealizedPnl;
     final pnlColor = pnl == null
-        ? colors.primaryText
+        ? colors.textPrimary
         : pnl.value.startsWith('-')
-        ? semantic.loss
+        ? semantic.danger
         : semantic.success;
     final productSource = position.productId
         ?.split(':')
@@ -334,7 +334,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
         .toUpperCase();
 
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -354,7 +354,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    color: colors.textSecondary.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -375,7 +375,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                   ),
                   _CloseTag(
                     label: 'HIP-3 Perps',
-                    leading: SvgPicture.asset(
+                    leading: VenueIcon(
                       'assets/figma/home_markets/venue_hyperliquid.svg',
                       width: 14,
                       height: 14,
@@ -426,8 +426,8 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                       TradingOrderType.limit,
                     ],
                     selected: _type,
-                    selectedColor: colors.surface,
-                    selectedForeground: colors.primaryText,
+                    selectedColor: colors.surfaceBase,
+                    selectedForeground: colors.textPrimary,
                     label: (value) => value == TradingOrderType.market
                         ? l10n.market
                         : l10n.limit,
@@ -448,7 +448,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: colors.subtleSurface,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Column(
@@ -459,7 +459,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -475,17 +475,17 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                           fontSize: 15,
                           height: 22 / 15,
                           fontWeight: FontWeight.w600,
-                          color: colors.primaryText,
+                          color: colors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: '0.0',
-                          hintStyle: TextStyle(color: colors.tertiaryText),
+                          hintStyle: TextStyle(color: colors.textTertiary),
                           suffixText: 'USDC',
                           suffixStyle: TextStyle(
                             fontSize: 15,
                             height: 22 / 15,
                             fontWeight: FontWeight.w600,
-                            color: colors.primaryText,
+                            color: colors.textPrimary,
                           ),
                           isDense: true,
                           filled: false,
@@ -507,7 +507,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.subtleSurface,
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -520,7 +520,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                           style: TextStyle(
                             fontSize: 11,
                             height: 14 / 11,
-                            color: colors.secondaryText,
+                            color: colors.textSecondary,
                           ),
                         ),
                         const Spacer(),
@@ -555,17 +555,17 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                         height: 26 / 20,
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.2,
-                        color: colors.primaryText,
+                        color: colors.textPrimary,
                       ),
                       decoration: InputDecoration(
                         hintText: '0.0',
-                        hintStyle: TextStyle(color: colors.tertiaryText),
+                        hintStyle: TextStyle(color: colors.textTertiary),
                         suffixText: position.symbol,
                         suffixStyle: TextStyle(
                           fontSize: 15,
                           height: 22 / 15,
                           fontWeight: FontWeight.w600,
-                          color: colors.primaryText,
+                          color: colors.textPrimary,
                         ),
                         isDense: true,
                         filled: false,
@@ -586,7 +586,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Divider(color: colors.subtleSurface),
+              Divider(color: colors.surfaceSubtle),
               const SizedBox(height: 12),
               _CloseSummaryRow(
                 label: l10n.value,
@@ -632,7 +632,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                           : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 48),
-                        backgroundColor: colors.subtleSurface,
+                        backgroundColor: colors.surfaceSubtle,
                       ),
                       child: Text(l10n.back),
                     ),
@@ -692,8 +692,8 @@ class _CloseTag extends StatelessWidget {
       height: 22,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceSubtle,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -734,12 +734,12 @@ class _ClosePercentageSlider extends StatelessWidget {
             children: [
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: colors.primaryAction,
-                  inactiveTrackColor: colors.surface,
-                  disabledActiveTrackColor: colors.tertiaryText,
-                  disabledInactiveTrackColor: colors.surface,
+                  activeTrackColor: colors.actionPrimary,
+                  inactiveTrackColor: colors.surfaceBase,
+                  disabledActiveTrackColor: colors.textTertiary,
+                  disabledInactiveTrackColor: colors.surfaceBase,
                   trackHeight: 8,
-                  thumbColor: colors.primaryAction,
+                  thumbColor: colors.actionPrimary,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 0,
                   ),
@@ -761,7 +761,7 @@ class _ClosePercentageSlider extends StatelessWidget {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: colors.subtleSurface,
+                        color: colors.surfaceSubtle,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -775,8 +775,8 @@ class _ClosePercentageSlider extends StatelessWidget {
                     height: 18,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: colors.primaryAction,
-                      border: Border.all(color: colors.surface, width: 2),
+                      color: colors.actionPrimary,
+                      border: Border.all(color: colors.surfaceBase, width: 2),
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Text(
@@ -785,7 +785,7 @@ class _ClosePercentageSlider extends StatelessWidget {
                         fontSize: 12,
                         height: 16 / 12,
                         fontWeight: FontWeight.w600,
-                        color: colors.onPrimaryAction,
+                        color: colors.textInverse,
                       ),
                     ),
                   ),
@@ -826,7 +826,7 @@ class _CloseSummaryRow extends StatelessWidget {
                 fontSize: 13,
                 height: 18 / 13,
                 fontWeight: FontWeight.w500,
-                color: colors.secondaryText,
+                color: colors.textSecondary,
               ),
             ),
           ),

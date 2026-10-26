@@ -8,6 +8,32 @@ import '../../../helpers/test_app.dart';
 void main() {
   tearDown(AppToast.dismiss);
 
+  testWidgets('persistent failures stay visible until manually closed', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        Builder(
+          builder: (context) => FilledButton(
+            onPressed: () => AppToast.showFailure(
+              context,
+              'Manual review required',
+              persistent: true,
+            ),
+            child: const Text('Show failure'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Show failure'));
+    await tester.pump();
+    await tester.pump(const Duration(minutes: 1));
+    expect(find.text('Manual review required'), findsOneWidget);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pump();
+    expect(find.text('Manual review required'), findsNothing);
+  });
+
   testWidgets('shows and replaces a top success message', (tester) async {
     await tester.pumpWidget(
       buildTestApp(

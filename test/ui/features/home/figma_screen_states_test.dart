@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nobell/app.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/config/privy_configuration.dart';
@@ -23,11 +27,15 @@ import 'package:nobell/domain/repositories/session_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
+import 'package:nobell/ui/features/account/providers/account_providers.dart';
+import 'package:nobell/ui/features/account/views/settings_screen.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -36,6 +44,166 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final dependencyReload in [false, true]) {
+    testWidgets(
+      'Home keeps loaded funds during ${dependencyReload ? 'dependency reload' : 'refresh'}',
+      (tester) async {
+        await configureDisplay(tester, size: const Size(393, 852));
+        SharedPreferences.setMockInitialValues({});
+        final responses = <Completer<Portfolio>>[];
+        final container = ProviderContainer(
+          overrides: [
+            authenticatedStateOverride,
+            portfolioRepositoryProvider.overrideWith(
+              (_) => _DeferredPortfolio(responses),
+            ),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+        );
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: buildTestApp(const HomeScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(LoadingSkeleton), findsOneWidget);
+        expect(find.text('Withdraw'), findsNothing);
+
+        responses.single.complete(await _Portfolio().getSummary());
+        await tester.pumpAndSettle();
+        expect(find.text(r'$12,580.42'), findsOneWidget);
+        expect(find.text('Withdraw'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+
+        if (dependencyReload) {
+          container.invalidate(portfolioRepositoryProvider);
+        } else {
+          container.invalidate(portfolioSummaryProvider);
+        }
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(responses, hasLength(2));
+        expect(container.read(portfolioSummaryProvider).isLoading, isTrue);
+        expect(find.text(r'$12,580.42'), findsOneWidget);
+        expect(find.text(r'+$248.32 (+2.01%) Today'), findsOneWidget);
+        expect(find.text('Withdraw'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+
+        responses.last.complete(
+          Portfolio(
+            totalValueUsd: DecimalValue('13000', asset: 'USD', unit: 'fiat'),
+            availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(r'$13,000.00'), findsOneWidget);
+        expect(find.byType(LoadingSkeleton), findsNothing);
+        expect(tester.takeException(), isNull);
+        await _disposeContainerAfterWidgets(tester, container);
+      },
+    );
+  }
+
+  for (final language in ['en', 'zh-CN']) {
+    testWidgets('app startup applies account $language on the home screen', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      SharedPreferences.setMockInitialValues({});
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final account = _Account(language: language);
+      final router = AppRouter.create();
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            identityAuthGatewayProvider.overrideWithValue(
+              FakeIdentityAuthGateway(
+                restoredPrincipal: const IdentityPrincipal('home-user'),
+              ),
+            ),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            sessionRepositoryProvider.overrideWithValue(
+              _Session(language: language == 'en' ? 'zh-CN' : 'en'),
+            ),
+            walletsRepositoryProvider.overrideWithValue(_Wallets()),
+            accountRepositoryProvider.overrideWithValue(account),
+            portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+          child: AppRoot(router: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(SettingsScreen), findsNothing);
+      final homeContext = tester.element(find.byType(HomeScreen));
+      expect(
+        Localizations.localeOf(homeContext).languageCode,
+        language == 'en' ? 'en' : 'zh',
+      );
+      expect(
+        find.text(AppLocalizations.of(homeContext).deposit),
+        findsOneWidget,
+      );
+
+      account.language = language == 'en' ? 'zh-CN' : 'en';
+      ProviderScope.containerOf(homeContext).invalidate(accountProvider);
+      await tester.pumpAndSettle();
+      expect(
+        Localizations.localeOf(homeContext).languageCode,
+        language == 'en' ? 'zh' : 'en',
+      );
+      expect(find.byType(SettingsScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('quick action icons match their labels in ${mode.name} mode', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+          child: buildTestApp(const HomeScreen(), themeMode: mode),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final label in ['Deposit', 'Withdraw']) {
+        final button = label == 'Deposit'
+            ? find.widgetWithText(FilledButton, label)
+            : find.widgetWithText(OutlinedButton, label);
+        final svg = tester.widget<SvgPicture>(
+          find.descendant(of: button, matching: find.byType(SvgPicture)),
+        );
+        final textColor = DefaultTextStyle.of(tester.element(find.text(label)))
+            .style
+            .color;
+        expect(
+          (svg.bytesLoader as SvgAssetLoader).theme!.currentColor,
+          textColor,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
     'failed restore offers retry and recovers without opening login',
     (tester) async {
@@ -235,7 +403,7 @@ void main() {
         final semantic = AppTheme.light.extension<AppSemanticColors>()!;
         expect(
           tester.widget<Text>(performance).style?.color,
-          scenario.loss ? semantic.loss : semantic.success,
+          scenario.loss ? semantic.danger : semantic.success,
         );
       } else {
         expect(find.textContaining('Today'), findsNothing);
@@ -355,7 +523,112 @@ void main() {
     await _disposeContainerAfterWidgets(tester, container);
   });
 
-  testWidgets('account avatar opens settings', (tester) async {
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets('guest opens settings from home in ${mode.name} mode', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      await configureDisplay(tester, size: const Size(393, 852));
+      final router = AppRouter.create();
+      addTearDown(router.dispose);
+      var personalRequests = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticationProvider.overrideWithBuild(
+              (_, _) => const AuthenticationUnauthenticated(),
+            ),
+            identityAuthGatewayProvider.overrideWithValue(
+              FakeIdentityAuthGateway(),
+            ),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+            accountProvider.overrideWith((_) async {
+              personalRequests++;
+              throw StateError('Guest must not load an account');
+            }),
+            passkeyProvider.overrideWithBuild((_, _) async {
+              personalRequests++;
+              throw StateError('Guest must not load a Passkey');
+            }),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: mode,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final settings = find.byTooltip('Open settings');
+      final search = find.byTooltip('Search markets');
+      expect(tester.getSize(settings), const Size(44, 44));
+      expect(tester.getSize(search), const Size(44, 44));
+      expect(
+        tester.getCenter(find.byKey(const Key('home-wordmark'))).dx,
+        393 / 2,
+      );
+      final icon = tester.widget<SvgPicture>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is SvgPicture &&
+              widget.bytesLoader is SvgAssetLoader &&
+              (widget.bytesLoader as SvgAssetLoader).assetName ==
+                  'assets/figma/home_markets/settings.svg',
+        ),
+      );
+      expect(icon.width, 20);
+      expect(icon.height, 20);
+      expect(
+        (icon.bytesLoader as SvgAssetLoader).theme!.currentColor,
+        (mode == ThemeMode.dark ? AppTheme.dark : AppTheme.light)
+            .extension<AppRwaColors>()!
+            .iconPrimary,
+      );
+      await tester.tap(settings);
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(find.byType(PrivyLoginScreen), findsNothing);
+      expect(find.text('Your account'), findsOneWidget);
+      for (final label in [
+        'Language',
+        'Display Mode',
+        'Terms of Use',
+        'Privacy Policy',
+        'Check for Updates',
+        'App Version',
+        'Cache Size',
+      ]) {
+        expect(find.text(label), findsOneWidget);
+      }
+      for (final label in [
+        'Passkey',
+        'Export Private Key',
+        'Log Out',
+        'Delete Account',
+      ]) {
+        expect(find.text(label), findsNothing);
+      }
+      expect(personalRequests, 0);
+      await tester.tap(find.text('Terms of Use'));
+      await tester.pumpAndSettle();
+      expect(find.text('Terms of Use'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Log in'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PrivyLoginScreen), findsOneWidget);
+      expect(personalRequests, 0);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('settings icon opens account settings', (tester) async {
     final router = AppRouter.create();
     addTearDown(router.dispose);
     final container = await _authenticatedContainer(account: _Account());
@@ -587,6 +860,22 @@ Future<ProviderContainer> _authenticatedContainer({
   return container;
 }
 
+final class _DeferredPortfolio implements PortfolioRepository {
+  _DeferredPortfolio(this.responses);
+
+  final List<Completer<Portfolio>> responses;
+
+  @override
+  Future<Portfolio> getSummary() {
+    final response = Completer<Portfolio>();
+    responses.add(response);
+    return response.future;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 final class _Portfolio implements PortfolioRepository {
   _Portfolio({this.summary});
   final Portfolio? summary;
@@ -713,14 +1002,18 @@ final class _ManyMarkets implements MarketsRepository {
 }
 
 final class _Account implements AccountRepository {
+  _Account({this.language = 'en'});
+
+  String language;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   @override
-  Future<UserAccount> getAccount() async => const UserAccount(
+  Future<UserAccount> getAccount() async => UserAccount(
     userId: 'user-1',
     displayName: 'Ada',
     settings: UserPreferences(
-      language: 'en',
+      language: language,
       pushEnabled: true,
       notifyOrderFilled: true,
       notifyOrderFailed: true,
@@ -745,6 +1038,10 @@ final class _Account implements AccountRepository {
 }
 
 final class _Session implements SessionRepository {
+  _Session({this.language = 'en'});
+
+  final String language;
+
   @override
   Future<ProductSession> createOrRestore({
     String? language,
@@ -755,11 +1052,11 @@ final class _Session implements SessionRepository {
     expiresAt: DateTime.utc(2027),
     generation: generation,
     accountCreated: true,
-    account: const UserAccount(
+    account: UserAccount(
       userId: 'home-user',
       displayName: 'Ada',
       settings: UserPreferences(
-        language: 'en',
+        language: this.language,
         pushEnabled: false,
         notifyOrderFilled: true,
         notifyOrderFailed: true,

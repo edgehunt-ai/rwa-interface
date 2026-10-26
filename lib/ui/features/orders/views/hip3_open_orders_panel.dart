@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/order_intent.dart';
@@ -140,27 +141,45 @@ class Hip3OpenOrderCard extends ConsumerStatefulWidget {
 }
 
 class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
-  bool _busy = false;
   String? _message;
   Future<void> _cancel() async {
-    if (_busy) return;
-    setState(() {
-      _busy = true;
-      _message = null;
-    });
+    if (ref.read(orderCancellationsProvider).contains(widget.order.orderId)) {
+      return;
+    }
+    // The card is disposed when switching tabs. Keep feedback attached to the
+    // app overlay while the session-owned command continues in the background.
+    final toastContext = Overlay.of(context, rootOverlay: true).context;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final generation = ref.read(sessionGenerationProvider);
+    final l10n = AppLocalizations.of(context);
+    setState(() => _message = null);
     try {
       await ref.read(orderCommandProvider.notifier).cancel(widget.order);
-      if (mounted) {
-        AppToast.showSuccess(
-          context,
-          AppLocalizations.of(context).cancellationSubmitted,
-        );
-        widget.onChanged();
+      if (toastContext.mounted &&
+          container.read(sessionGenerationProvider) == generation) {
+        AppToast.showSuccess(toastContext, l10n.cancellationSubmitted);
+        if (mounted) widget.onChanged();
       }
-    } on Hip3ExecutionPending {
-      if (mounted) {
-        setState(
-          () => _message = AppLocalizations.of(context).cancellationPending,
+    } on Hip3ExecutionPending catch (pending) {
+      if (toastContext.mounted &&
+          container.read(sessionGenerationProvider) == generation) {
+        final message = pending.requiresReview
+            ? l10n.cancellationRequiresReview
+            : switch (pending.failure) {
+                TimeoutFailure() => l10n.cancellationStatusTimedOut,
+                NetworkFailure() => l10n.cancellationStatusNetworkError,
+                _ => l10n.cancellationStatusUnavailable,
+              };
+        final detail = switch (pending.failure) {
+          NetworkFailure(userAction: null) ||
+          TimeoutFailure(userAction: null) => null,
+          final failure? => hip3ErrorMessage(toastContext, failure),
+          _ => pending.reason?.trim(),
+        };
+        AppToast.showFailure(
+          toastContext,
+          detail == null || detail.isEmpty ? message : '$message\n$detail',
+          persistent: true,
         );
       }
     } on Object catch (error) {
@@ -173,14 +192,15 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final order = widget.order;
+    final busy = ref.watch(
+      orderCancellationsProvider.select((ids) => ids.contains(order.orderId)),
+    );
     final conditional = order.conditional;
     final l10n = AppLocalizations.of(context);
     final role = conditional == null
@@ -192,9 +212,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
           };
     final isDirectionalLimit =
         conditional == null && order.type == TradingOrderType.limit;
+    final semantic = context.semanticColors;
     final directionColor = order.side == TradingSide.long
-        ? const Color(0xFF04A08B)
-        : kShortTradeColor;
+        ? semantic.success
+        : semantic.danger;
     final badge = isDirectionalLimit
         ? '${order.side == TradingSide.long ? l10n.long : l10n.short} / $role'
         : role;
@@ -222,10 +243,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final totalQuantity = order.quantity?.value ?? conditional?.quantity ?? '—';
     final filledQuantity = order.filledQuantity?.value ?? '0';
-    final price =
-        conditional?.triggerPrice.value ??
-        order.limitPrice?.value ??
-        l10n.market;
+    final orderPrice = conditional?.triggerPrice ?? order.limitPrice;
+    final price = orderPrice == null
+        ? l10n.market
+        : TokenAmountFormatter.formatValue(orderPrice);
     final hasProtectionException =
         conditional != null &&
         (order.isTerminal || conditional.activationStatus != 'active');
@@ -233,7 +254,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -268,7 +289,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                           decoration: BoxDecoration(
                             color: isDirectionalLimit
                                 ? directionColor.withValues(alpha: 0.1)
-                                : colors.border,
+                                : colors.borderSubtle,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -290,7 +311,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 14 / 11,
-                              color: colors.tertiaryText,
+                              color: colors.textTertiary,
                             ),
                           ),
                         ),
@@ -302,11 +323,11 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               SizedBox(
                 height: 28,
                 child: OutlinedButton(
-                  onPressed: _busy || order.isTerminal ? null : _cancel,
+                  onPressed: busy || order.isTerminal ? null : _cancel,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 28),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    backgroundColor: colors.subtleSurface,
+                    backgroundColor: colors.surfaceSubtle,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -316,7 +337,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  child: _busy
+                  child: busy
                       ? const SizedBox.square(
                           dimension: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
@@ -347,7 +368,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
-                          color: colors.tertiaryText,
+                          color: colors.textTertiary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -362,9 +383,9 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                               child: LinearProgressIndicator(
                                 value: progress,
                                 minHeight: 8,
-                                backgroundColor: colors.subtleSurface,
+                                backgroundColor: colors.surfaceSubtle,
                                 valueColor: AlwaysStoppedAnimation(
-                                  colors.primaryAction,
+                                  colors.actionPrimary,
                                 ),
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
@@ -395,7 +416,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
-                color: colors.subtleSurface,
+                color: colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -405,7 +426,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       l10n.openOrderTpSlPending,
                       style: TextStyle(
                         fontSize: 11,
-                        color: colors.tertiaryText,
+                        color: colors.textTertiary,
                       ),
                     ),
                   ),
@@ -431,13 +452,13 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       style: TextStyle(
                         fontSize: 12,
                         height: 18 / 12,
-                        color: colors.primaryText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     child: Icon(
                       Icons.help_outline,
                       size: 14,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                       semanticLabel: l10n.openOrderTpSlPending,
                     ),
                   ),
@@ -459,7 +480,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       'inactive' => l10n.protectionInactive,
                       _ => l10n.protectionStatusUnknown,
                     },
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
           ],
           if (conditional?.warningCode ==
@@ -468,7 +489,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 l10n.parentCancelledProtectionWarning,
-                style: TextStyle(fontSize: 12, color: colors.secondaryText),
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
               ),
             ),
           if (_message != null)
@@ -502,7 +523,7 @@ class _OrderMetric extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.tertiaryText,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: 4),

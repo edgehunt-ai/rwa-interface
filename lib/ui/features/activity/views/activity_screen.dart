@@ -18,11 +18,14 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/core/widgets/app_filter_menu.dart';
 import 'package:nobell/ui/features/activity/providers/activity_provider.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
+import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 /// A reloadable destination for a record anywhere in the activity feed.
 class ActivityDetailScreen extends ConsumerWidget {
@@ -324,8 +327,8 @@ class _LoggedOutActivity extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/figma/common/sign_in_illustration.webp',
+              ThemedIllustration(
+                IllustrationAsset.signIn,
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
@@ -341,7 +344,7 @@ class _LoggedOutActivity extends StatelessWidget {
                 AppLocalizations.of(context).accountActivityAppearHere,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: colors.secondaryText),
+                    ?.copyWith(color: colors.textSecondary),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -422,7 +425,7 @@ class _Tab extends StatelessWidget {
                     fontSize: 13,
                     height: 18 / 13,
                     fontWeight: FontWeight.w500,
-                    color: selected ? colors.primaryText : colors.secondaryText,
+                    color: selected ? colors.textPrimary : colors.textSecondary,
                   ),
                 ),
                 const Spacer(),
@@ -431,7 +434,7 @@ class _Tab extends StatelessWidget {
                   curve: Curves.easeOutCubic,
                   height: 2,
                   width: selected ? 24 : 0,
-                  color: selected ? colors.selected : Colors.transparent,
+                  color: selected ? colors.brandDefault : Colors.transparent,
                 ),
               ],
             ),
@@ -671,9 +674,9 @@ class _ActivityRow extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final statusColor = switch (record.status) {
       ActivityState.success => semantic.success,
-      ActivityState.failed => semantic.loss,
+      ActivityState.failed => semantic.danger,
       ActivityState.pending => semantic.warning,
-      _ => colors.secondaryText,
+      _ => colors.textSecondary,
     };
     return _ExpandableActivityRow(
       key: ValueKey(record.id),
@@ -832,7 +835,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                             Container(
                               width: 1,
                               height: 8,
-                              color: colors.subtleSurface,
+                              color: colors.surfaceSubtle,
                             ),
                             const SizedBox(width: 4),
                           ],
@@ -887,7 +890,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   height: 16 / 12,
-                                  color: colors.secondaryText,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -900,7 +903,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
               ),
             ),
             if (expanded) _ActivityDetails(record: record),
-            Container(height: 1, color: colors.subtleSurface),
+            Container(height: 1, color: colors.surfaceSubtle),
           ],
         ),
       ),
@@ -916,23 +919,24 @@ class _TypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
     final direction = label.split(' / ').first;
     final isSell = direction == l10n.sell || direction == l10n.short;
     final badgeColor = order
         ? (positive == true
-              ? const Color(0xFF04A08B)
+              ? semantic.success
               : direction == l10n.close
-              ? colors.secondaryText
+              ? colors.textSecondary
               : (isSell || direction == l10n.stopLoss)
-              ? kShortTradeColor
-              : const Color(0xFF04A08B))
-        : colors.secondaryText;
+              ? semantic.danger
+              : semantic.success)
+        : colors.textSecondary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: order ? badgeColor.withValues(alpha: .12) : colors.subtleSurface,
-        border: order ? null : Border.all(color: colors.border),
+        color: order ? badgeColor.withValues(alpha: .12) : colors.surfaceSubtle,
+        border: order ? null : Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
@@ -960,7 +964,7 @@ class _NetworkPath extends StatelessWidget {
             child: Icon(
               Icons.arrow_forward,
               size: 12,
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+              color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
             ),
           ),
         Tooltip(
@@ -978,6 +982,7 @@ class _NetworkIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brandOnColor = context.appColors.textInverse;
     final asset = networkIconAssetPath(network);
     return asset != null
         ? SvgPicture.asset(asset, width: 14, height: 14)
@@ -986,9 +991,9 @@ class _NetworkIcon extends StatelessWidget {
             height: 14,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF8247E5),
+              color: AppBrandColors.polygon,
             ),
-            child: const Icon(Icons.link, size: 9, color: Colors.white),
+            child: Icon(Icons.link, size: 9, color: brandOnColor),
           );
   }
 }
@@ -1004,7 +1009,7 @@ class _VenueLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SvgPicture.asset(
+        VenueIcon(
           isPerp
               ? 'assets/figma/home_markets/venue_hyperliquid.svg'
               : 'assets/figma/home_markets/venue_bnb.svg',
@@ -1017,7 +1022,7 @@ class _VenueLabel extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             height: 16 / 12,
-            color: colors.secondaryText,
+            color: colors.textSecondary,
           ),
         ),
       ],
@@ -1047,7 +1052,7 @@ class _NetworkLabel extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
-                color: colors.primaryText,
+                color: colors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1193,7 +1198,7 @@ class _DetailRow extends StatelessWidget {
             fontSize: 12,
             height: 16 / 12,
             fontWeight: FontWeight.w500,
-            color: colors.secondaryText,
+            color: colors.textSecondary,
           ),
         ),
         const SizedBox(width: 12),
@@ -1215,7 +1220,7 @@ class _DetailRow extends StatelessWidget {
                     fontSize: 12,
                     height: 16 / 12,
                     fontWeight: FontWeight.w600,
-                    color: colors.primaryText,
+                    color: colors.textPrimary,
                   ),
                 ),
         ),
@@ -1335,14 +1340,11 @@ class _TransactionExplorerLink extends StatelessWidget {
       message: label,
       child: InkWell(
         onTap: () => _open(context),
-        child: SvgPicture.asset(
+        child: AppSvgIcon(
           'assets/figma/common/activity_open_transaction.svg',
           width: 14,
           height: 14,
-          colorFilter: ColorFilter.mode(
-            Theme.of(context).extension<AppRwaColors>()!.primaryText,
-            BlendMode.srcIn,
-          ),
+          color: Theme.of(context).extension<AppRwaColors>()!.textPrimary,
         ),
       ),
     ),
@@ -1385,12 +1387,12 @@ class _CompactCopyValue extends StatelessWidget {
                   fontSize: 12,
                   height: 16 / 12,
                   fontWeight: FontWeight.w600,
-                  color: colors.primaryText,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.copy_outlined, size: 14, color: colors.primaryText),
+            Icon(Icons.copy_outlined, size: 14, color: colors.textPrimary),
           ],
         ),
       ),

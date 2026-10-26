@@ -101,7 +101,7 @@ void main() {
   }
 
   for (final entry in [
-    ('/terms', 'Term of Use'),
+    ('/terms', 'Terms of Use'),
     ('/privacy', 'Privacy Policy'),
   ]) {
     testWidgets('${entry.$1} is publicly accessible without signing in', (
@@ -144,7 +144,7 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final entry in [
-      ('Terms', LegalDocument.terms, 'Term of Use'),
+      ('Terms', LegalDocument.terms, 'Terms of Use'),
       ('Privacy', LegalDocument.privacy, 'Privacy Policy'),
     ]) {
       final footer = find

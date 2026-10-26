@@ -46,8 +46,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     // Each visit creates new protection; existing orders remain independent.
     _takeProfit = TextEditingController();
     _stopLoss = TextEditingController();
+    _takeProfit.addListener(_onProtectionPriceChanged);
+    _stopLoss.addListener(_onProtectionPriceChanged);
     _quantity.text = absoluteQuantity(widget.position.quantity.value);
     _loadConsent();
+  }
+
+  void _onProtectionPriceChanged() {
+    if (mounted) setState(() => _error = null);
   }
 
   /// Both triggers are set relative to what the position is worth now.
@@ -57,6 +63,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
 
   @override
   void dispose() {
+    _takeProfit.removeListener(_onProtectionPriceChanged);
+    _stopLoss.removeListener(_onProtectionPriceChanged);
     _takeProfit.dispose();
     _stopLoss.dispose();
     _quantity.dispose();
@@ -137,7 +145,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     return null;
   }
 
-  String? _inputError(int sizeDecimals) {
+  String? _priceInputError() {
     final l10n = AppLocalizations.of(context);
     final takeProfit = _takeProfitTrigger;
     final stopLoss = _stopLossTrigger;
@@ -151,8 +159,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         return '${entry.key}: ${l10n.tpSlInvalidPrice}';
       }
     }
-    if (_directionError(takeProfit, stopLoss) case final error?) return error;
-    if (prices.isNotEmpty && _fixedQuantity) {
+    return _directionError(takeProfit, stopLoss);
+  }
+
+  String? _inputError(int sizeDecimals) {
+    final l10n = AppLocalizations.of(context);
+    if (_priceInputError() case final error?) return error;
+    if ((_takeProfitTrigger != null || _stopLossTrigger != null) &&
+        _fixedQuantity) {
       try {
         requireWithinPosition(
           _quantity.text.trim(),
@@ -373,11 +387,12 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     final rulesError = productId == null || sizeDecimalsState?.hasError == true
         ? l10n.hip3TradingContextUnavailable
         : null;
+    final priceError = _priceInputError();
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Material(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: SafeArea(
           top: false,
@@ -423,7 +438,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                           fontSize: 13,
                           height: 18 / 13,
                           fontWeight: FontWeight.w500,
-                          color: colors.secondaryText,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -434,10 +449,13 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                 const SizedBox(height: 16),
                 TpSlEditorCard(
                   title: l10n.takeProfit,
+                  isLong: widget.position.side == PositionSide.long,
+                  isTakeProfit: true,
                   controller: _takeProfit,
                   enabled: _takeProfitEnabled,
                   referencePrice: _positionReference,
                   inputKey: const Key('position-protection-take-profit'),
+                  changeKey: const Key('position-take-profit-percent'),
                   rulerKey: const Key('position-take-profit-ruler'),
                   onEnabledChanged: locked
                       ? null
@@ -446,10 +464,13 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                 const SizedBox(height: 12),
                 TpSlEditorCard(
                   title: l10n.stopLoss,
+                  isLong: widget.position.side == PositionSide.long,
+                  isTakeProfit: false,
                   controller: _stopLoss,
                   enabled: _stopLossEnabled,
                   referencePrice: _positionReference,
                   inputKey: const Key('position-protection-stop-loss'),
+                  changeKey: const Key('position-stop-loss-percent'),
                   rulerKey: const Key('position-stop-loss-ruler'),
                   onEnabledChanged: locked
                       ? null
@@ -486,9 +507,13 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     }
                   },
                 ),
-                if (_error != null || rulesError != null) ...[
+                if (_error != null ||
+                    rulesError != null ||
+                    priceError != null) ...[
                   const SizedBox(height: 20),
-                  TpSlInlineError(messages: [?_error, ?rulesError]),
+                  TpSlInlineError(
+                    messages: {?priceError, ?_error, ?rulesError}.toList(),
+                  ),
                   const SizedBox(height: 8),
                 ] else
                   const SizedBox(height: 20),
@@ -497,8 +522,8 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.subtleSurface,
-                          foregroundColor: colors.primaryText,
+                          backgroundColor: colors.surfaceSubtle,
+                          foregroundColor: colors.textPrimary,
                           side: BorderSide.none,
                         ),
                         onPressed: _submitting
@@ -511,14 +536,16 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: colors.primaryAction,
-                          foregroundColor: colors.onPrimaryAction,
+                          backgroundColor: colors.actionPrimary,
+                          foregroundColor: colors.textInverse,
                         ),
                         onPressed: _submitting || waiting
                             ? null
                             : retryResult != null
                             ? () => _resumeProtection(retryResult)
-                            : _consentLoading || sizeDecimals == null
+                            : _consentLoading ||
+                                  sizeDecimals == null ||
+                                  priceError != null
                             ? null
                             : () => _save(sizeDecimals),
                         child: _submitting || waiting
@@ -555,8 +582,8 @@ class _SideBadge extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final (label, tone) = switch (side) {
       PositionSide.long => (l10n.long, semantic.success),
-      PositionSide.short => (l10n.short, kShortTradeColor),
-      PositionSide.none => ('—', colors.secondaryText),
+      PositionSide.short => (l10n.short, semantic.danger),
+      PositionSide.none => ('—', colors.textSecondary),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

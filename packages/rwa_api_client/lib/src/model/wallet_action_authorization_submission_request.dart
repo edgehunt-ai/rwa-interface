@@ -6,39 +6,39 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'sponsored_wallet_action_execution_submission_request.g.dart';
+part 'wallet_action_authorization_submission_request.g.dart';
 
-/// SponsoredWalletActionExecutionSubmissionRequest
+/// WalletActionAuthorizationSubmissionRequest
 ///
 /// Properties:
 /// * [privyAuthorizationSignature] - Opaque signature produced by the Privy SDK for the exact `privy_authorization_payload`. The API relays it synchronously and must never persist, log or echo the signature. 
 @BuiltValue()
-abstract class SponsoredWalletActionExecutionSubmissionRequest implements Built<SponsoredWalletActionExecutionSubmissionRequest, SponsoredWalletActionExecutionSubmissionRequestBuilder> {
+abstract class WalletActionAuthorizationSubmissionRequest implements Built<WalletActionAuthorizationSubmissionRequest, WalletActionAuthorizationSubmissionRequestBuilder> {
   /// Opaque signature produced by the Privy SDK for the exact `privy_authorization_payload`. The API relays it synchronously and must never persist, log or echo the signature. 
   @BuiltValueField(wireName: r'privy_authorization_signature')
   String get privyAuthorizationSignature;
 
-  SponsoredWalletActionExecutionSubmissionRequest._();
+  WalletActionAuthorizationSubmissionRequest._();
 
-  factory SponsoredWalletActionExecutionSubmissionRequest([void updates(SponsoredWalletActionExecutionSubmissionRequestBuilder b)]) = _$SponsoredWalletActionExecutionSubmissionRequest;
+  factory WalletActionAuthorizationSubmissionRequest([void updates(WalletActionAuthorizationSubmissionRequestBuilder b)]) = _$WalletActionAuthorizationSubmissionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(SponsoredWalletActionExecutionSubmissionRequestBuilder b) => b;
+  static void _defaults(WalletActionAuthorizationSubmissionRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SponsoredWalletActionExecutionSubmissionRequest> get serializer => _$SponsoredWalletActionExecutionSubmissionRequestSerializer();
+  static Serializer<WalletActionAuthorizationSubmissionRequest> get serializer => _$WalletActionAuthorizationSubmissionRequestSerializer();
 }
 
-class _$SponsoredWalletActionExecutionSubmissionRequestSerializer implements PrimitiveSerializer<SponsoredWalletActionExecutionSubmissionRequest> {
+class _$WalletActionAuthorizationSubmissionRequestSerializer implements PrimitiveSerializer<WalletActionAuthorizationSubmissionRequest> {
   @override
-  final Iterable<Type> types = const [SponsoredWalletActionExecutionSubmissionRequest, _$SponsoredWalletActionExecutionSubmissionRequest];
+  final Iterable<Type> types = const [WalletActionAuthorizationSubmissionRequest, _$WalletActionAuthorizationSubmissionRequest];
 
   @override
-  final String wireName = r'SponsoredWalletActionExecutionSubmissionRequest';
+  final String wireName = r'WalletActionAuthorizationSubmissionRequest';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    SponsoredWalletActionExecutionSubmissionRequest object, {
+    WalletActionAuthorizationSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'privy_authorization_signature';
@@ -51,7 +51,7 @@ class _$SponsoredWalletActionExecutionSubmissionRequestSerializer implements Pri
   @override
   Object serialize(
     Serializers serializers,
-    SponsoredWalletActionExecutionSubmissionRequest object, {
+    WalletActionAuthorizationSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
@@ -62,7 +62,7 @@ class _$SponsoredWalletActionExecutionSubmissionRequestSerializer implements Pri
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required SponsoredWalletActionExecutionSubmissionRequestBuilder result,
+    required WalletActionAuthorizationSubmissionRequestBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -85,12 +85,12 @@ class _$SponsoredWalletActionExecutionSubmissionRequestSerializer implements Pri
   }
 
   @override
-  SponsoredWalletActionExecutionSubmissionRequest deserialize(
+  WalletActionAuthorizationSubmissionRequest deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = SponsoredWalletActionExecutionSubmissionRequestBuilder();
+    final result = WalletActionAuthorizationSubmissionRequestBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

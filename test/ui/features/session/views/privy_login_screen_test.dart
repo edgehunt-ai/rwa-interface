@@ -80,18 +80,28 @@ void main() {
       find.byKey(const Key('login-backdrop')),
     );
     final decoration = backdrop.decoration as BoxDecoration;
+    final colors = AppTheme.light.extension<AppRwaColors>()!;
     expect(
       decoration.gradient,
-      const LinearGradient(
+      LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFFF9D6E8),
-          Color(0xFFF6DFEC),
-          Color(0xFFF2E5EF),
-          Color(0xFFF7F0F6),
+          Color.alphaBlend(
+            colors.brandDefault.withValues(alpha: 0.18),
+            colors.surfaceCanvas,
+          ),
+          Color.alphaBlend(
+            colors.brandDefault.withValues(alpha: 0.12),
+            colors.surfaceCanvas,
+          ),
+          Color.alphaBlend(
+            colors.brandDefault.withValues(alpha: 0.07),
+            colors.surfaceCanvas,
+          ),
+          colors.surfaceCanvas,
         ],
-        stops: [0, .36, .72, 1],
+        stops: const [0, .36, .72, 1],
       ),
     );
 
@@ -102,7 +112,10 @@ void main() {
     final terms = tester.widget<Text>(
       find.text('By using this app, you agree to the Terms & Privacy.'),
     );
-    expect(terms.style?.color, const Color(0xFF616370));
+    expect(
+      terms.style?.color,
+      AppTheme.light.extension<AppRwaColors>()!.textSecondary,
+    );
     final termsSpan = terms.textSpan! as TextSpan;
     expect(termsSpan.children?[1].style?.fontWeight, FontWeight.w600);
     expect(termsSpan.children?[2].style?.fontWeight, FontWeight.w400);

@@ -127,6 +127,8 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
   @override
   final BstocksTimeInForce? timeInForce;
   @override
+  final DateTime? expiresAt;
+  @override
   final String? amount;
   @override
   final String? quantity;
@@ -149,6 +151,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
       required this.side,
       required this.type,
       this.timeInForce,
+      this.expiresAt,
       this.amount,
       this.quantity,
       this.limitPrice,
@@ -174,6 +177,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
         side == other.side &&
         type == other.type &&
         timeInForce == other.timeInForce &&
+        expiresAt == other.expiresAt &&
         amount == other.amount &&
         quantity == other.quantity &&
         limitPrice == other.limitPrice &&
@@ -190,6 +194,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
     _$hash = $jc(_$hash, side.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, expiresAt.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
@@ -208,6 +213,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
           ..add('side', side)
           ..add('type', type)
           ..add('timeInForce', timeInForce)
+          ..add('expiresAt', expiresAt)
           ..add('amount', amount)
           ..add('quantity', quantity)
           ..add('limitPrice', limitPrice)
@@ -243,6 +249,10 @@ class BstockCreateOrderRequestBuilder
   BstocksTimeInForce? get timeInForce => _$this._timeInForce;
   set timeInForce(BstocksTimeInForce? timeInForce) =>
       _$this._timeInForce = timeInForce;
+
+  DateTime? _expiresAt;
+  DateTime? get expiresAt => _$this._expiresAt;
+  set expiresAt(DateTime? expiresAt) => _$this._expiresAt = expiresAt;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -281,6 +291,7 @@ class BstockCreateOrderRequestBuilder
       _side = $v.side;
       _type = $v.type;
       _timeInForce = $v.timeInForce;
+      _expiresAt = $v.expiresAt;
       _amount = $v.amount;
       _quantity = $v.quantity;
       _limitPrice = $v.limitPrice;
@@ -319,6 +330,7 @@ class BstockCreateOrderRequestBuilder
             type: BuiltValueNullFieldError.checkNotNull(
                 type, r'BstockCreateOrderRequest', 'type'),
             timeInForce: timeInForce,
+            expiresAt: expiresAt,
             amount: amount,
             quantity: quantity,
             limitPrice: limitPrice,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
@@ -83,11 +84,10 @@ void main() {
       ),
     );
 
-    final image = tester.widget<Image>(find.byType(Image));
-    expect(
-      (image.image as NetworkImage).url,
-      'https://cdn.example.com/product.png',
+    final image = tester.widget<CachedNetworkImage>(
+      find.byType(CachedNetworkImage),
     );
+    expect(image.imageUrl, 'https://cdn.example.com/product.png');
     expect(
       tester.widget<MarketAssetMark>(find.byType(MarketAssetMark)).logoText,
       'API',

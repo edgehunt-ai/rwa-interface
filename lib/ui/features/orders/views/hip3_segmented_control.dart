@@ -37,7 +37,7 @@ class Hip3SegmentedControl<T> extends StatelessWidget {
         height: 44,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: colors.subtleSurface,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
@@ -86,8 +86,8 @@ class Hip3SegmentedControl<T> extends StatelessWidget {
                                   .copyWith(
                                     color: selected == values[index]
                                         ? selectedForeground ??
-                                              colors.onPrimaryAction
-                                        : colors.secondaryText,
+                                              colors.textInverse
+                                        : colors.textSecondary,
                                     fontWeight: selected == values[index]
                                         ? FontWeight.w600
                                         : FontWeight.w500,

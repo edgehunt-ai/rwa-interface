@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -17,6 +17,9 @@ import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/theme/app_theme.dart';
+
+import 'package:nobell/ui/core/widgets/themed_illustration.dart';
+
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/motion/animated_number_text.dart';
 import '../../../../domain/models/decimal_value.dart';
@@ -269,13 +272,13 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     final execution = _preview.hip3Execution;
     final isLong = _preview.intent.side == TradingSide.long;
     final direction = isLong ? l10n.long : l10n.short;
-    final actionColor = isLong ? semantic.success : kShortTradeColor;
+    final actionColor = isLong ? semantic.success : semantic.danger;
     final unusable = _unusableReason();
     final message = _error ?? unusable;
     final busy = _submitting || _refreshing;
     if (_submitting) return _submittingView(context);
     return Material(
-      color: colors.surface,
+      color: colors.surfaceBase,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
@@ -290,7 +293,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    color: colors.textSecondary.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -309,11 +312,11 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                     height: 26 / 20,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
-                    color: colors.primaryText,
+                    color: colors.textPrimary,
                   ),
                 ),
               const SizedBox(height: 16),
-              Container(height: 1, color: colors.subtleSurface),
+              Container(height: 1, color: colors.surfaceSubtle),
               const SizedBox(height: 16),
               if (execution != null) ...[
                 Text(
@@ -323,7 +326,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                     fontSize: 13,
                     height: 18 / 13,
                     fontWeight: FontWeight.w500,
-                    color: colors.primaryText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -356,8 +359,8 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                   key: const Key('hip3-confirm-button'),
                   style: FilledButton.styleFrom(
                     backgroundColor: actionColor,
-                    disabledBackgroundColor: colors.subtleSurface,
-                    disabledForegroundColor: colors.tertiaryText,
+                    disabledBackgroundColor: colors.surfaceSubtle,
+                    disabledForegroundColor: colors.textTertiary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -392,7 +395,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     return PopScope(
       canPop: false,
       child: Material(
-        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: SafeArea(
           top: false,
@@ -402,8 +405,8 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Image.asset(
-                  'assets/figma/trade/order_submitting.webp',
+                ThemedIllustration(
+                  IllustrationAsset.orderSubmitting,
                   width: 120,
                   height: 120,
                   fit: BoxFit.contain,
@@ -420,7 +423,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
-                        .secondaryText,
+                        .textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -446,7 +449,7 @@ class _SizeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.canvas,
+        color: colors.surfaceCanvas,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -457,7 +460,7 @@ class _SizeCard extends StatelessWidget {
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w600,
-              color: colors.primaryText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -470,20 +473,20 @@ class _SizeCard extends StatelessWidget {
               height: 26 / 20,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
-              color: colors.primaryText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: colors.surface,
+              color: colors.surfaceBase,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(
+                AppSvgIcon(
                   'assets/figma/trade/order_margin.svg',
                   width: 12,
                   height: 12,
@@ -498,7 +501,7 @@ class _SizeCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     height: 14 / 11,
-                    color: colors.secondaryText,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -643,7 +646,7 @@ class _TermRow extends StatelessWidget {
                   fontSize: 13,
                   height: 18 / 13,
                   fontWeight: FontWeight.w500,
-                  color: colors.secondaryText,
+                  color: colors.textSecondary,
                 ),
               ),
             ),
@@ -656,7 +659,7 @@ class _TermRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (icon case final path?) ...[
-                  SvgPicture.asset(path, width: 12, height: 12),
+                  AppSvgIcon(path, width: 12, height: 12),
                   const SizedBox(width: 4),
                 ],
                 if (leadingValue case final leading?)
@@ -666,7 +669,7 @@ class _TermRow extends StatelessWidget {
                       fontSize: 13,
                       height: 18 / 13,
                       fontWeight: FontWeight.w600,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                     ),
                   ),
                 Flexible(
@@ -678,7 +681,7 @@ class _TermRow extends StatelessWidget {
                             fontSize: 13,
                             height: 18 / 13,
                             fontWeight: FontWeight.w600,
-                            color: colors.primaryText,
+                            color: colors.textPrimary,
                           ),
                         )
                       : AnimatedNumberText(
@@ -691,7 +694,7 @@ class _TermRow extends StatelessWidget {
                             fontSize: 13,
                             height: 18 / 13,
                             fontWeight: FontWeight.w600,
-                            color: colors.primaryText,
+                            color: colors.textPrimary,
                           ),
                         ),
                 ),

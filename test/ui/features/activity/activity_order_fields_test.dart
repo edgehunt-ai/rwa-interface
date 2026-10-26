@@ -601,7 +601,7 @@ void main() {
     _expectBadgeColor(
       tester,
       'Close',
-      AppTheme.light.extension<AppRwaColors>()!.secondaryText,
+      AppTheme.light.extension<AppRwaColors>()!.textSecondary,
     );
 
     await tester.tap(find.text('SNDK'));
@@ -670,8 +670,16 @@ void main() {
 
     expect(find.text('Stop loss'), findsOneWidget);
     expect(find.text('Buy / Limit Price'), findsOneWidget);
-    _expectBadgeColor(tester, 'Stop loss', kShortTradeColor);
-    _expectBadgeColor(tester, 'Buy / Limit Price', const Color(0xFF04A08B));
+    _expectBadgeColor(
+      tester,
+      'Stop loss',
+      AppTheme.light.extension<AppSemanticColors>()!.danger,
+    );
+    _expectBadgeColor(
+      tester,
+      'Buy / Limit Price',
+      AppTheme.light.extension<AppSemanticColors>()!.success,
+    );
 
     await tester.tap(find.text('AAPL'));
     await tester.pumpAndSettle();

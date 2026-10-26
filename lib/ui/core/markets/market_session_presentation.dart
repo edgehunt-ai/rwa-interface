@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
 String marketSessionLabel(AppLocalizations l10n, MarketSessionKind kind) =>
@@ -25,14 +26,15 @@ String marketSessionAsset(MarketSessionKind kind) => switch (kind) {
   _ => 'assets/figma/trade/session_pre_after.svg',
 };
 
-Color marketSessionColor(MarketSessionKind kind) => switch (kind) {
-  MarketSessionKind.regular => const Color(0xFFB9F34A),
-  MarketSessionKind.premarket ||
-  MarketSessionKind.afterHours => const Color(0xFFFF9654),
-  MarketSessionKind.overnight => const Color(0xFF2690E6),
-  MarketSessionKind.weekend ||
-  MarketSessionKind.holiday => const Color(0xFF9292A0),
-};
+Color marketSessionColor(AppRwaColors colors, MarketSessionKind kind) =>
+    switch (kind) {
+      MarketSessionKind.regular => colors.illustrationLime,
+      MarketSessionKind.premarket ||
+      MarketSessionKind.afterHours => colors.illustrationOrange,
+      MarketSessionKind.overnight => colors.illustrationSky,
+      MarketSessionKind.weekend ||
+      MarketSessionKind.holiday => colors.textTertiary,
+    };
 
 MarketSessionSegment? currentMarketSegment(MarketHours hours) {
   final now = DateTime.now().toUtc();
@@ -125,6 +127,7 @@ class MarketSessionBadge extends StatelessWidget {
   const MarketSessionBadge({
     required this.hours,
     this.compact = false,
+    this.loading = false,
     super.key,
   });
 
@@ -132,9 +135,18 @@ class MarketSessionBadge extends StatelessWidget {
 
   /// The tighter pill the trade screen's navigation bar uses.
   final bool compact;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
+    if (loading && hours == null) {
+      return SkeletonBlock(
+        key: const Key('market-session-skeleton'),
+        width: 72,
+        height: compact ? 20 : 32,
+        radius: compact ? 8 : 16,
+      );
+    }
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final value = hours;
@@ -145,15 +157,15 @@ class MarketSessionBadge extends StatelessWidget {
     final style = TextStyle(
       fontSize: 11,
       height: 16 / 11,
-      color: colors.primaryText,
+      color: colors.textPrimary,
     );
     return Container(
       constraints: BoxConstraints(minHeight: compact ? 0 : 32),
       padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 10, vertical: 2),
       decoration: BoxDecoration(
         color: value == null
-            ? colors.subtleSurface
-            : marketSessionColor(value.current).withValues(alpha: .1),
+            ? colors.surfaceSubtle
+            : marketSessionColor(colors, value.current).withValues(alpha: .1),
         borderRadius: BorderRadius.circular(compact ? 8 : 999),
       ),
       child: Row(

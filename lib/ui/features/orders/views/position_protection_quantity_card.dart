@@ -31,14 +31,14 @@ class PositionProtectionQuantityCard extends StatelessWidget {
       height: 22 / 17,
       fontWeight: FontWeight.w600,
       letterSpacing: -0.1,
-      color: colors.primaryText,
+      color: colors.textPrimary,
     );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
+        color: colors.surfaceSubtle,
+        border: Border.all(color: colors.borderSubtle),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -67,7 +67,7 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                     style: style,
                     decoration: InputDecoration(
                       hintText: l10n.quantity,
-                      hintStyle: style.copyWith(color: colors.tertiaryText),
+                      hintStyle: style.copyWith(color: colors.textTertiary),
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                       filled: false,
@@ -109,10 +109,10 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: colors.primaryAction,
-                        inactiveTrackColor: colors.surface,
-                        disabledActiveTrackColor: colors.tertiaryText,
-                        disabledInactiveTrackColor: colors.surface,
+                        activeTrackColor: colors.actionPrimary,
+                        inactiveTrackColor: colors.surfaceBase,
+                        disabledActiveTrackColor: colors.textTertiary,
+                        disabledInactiveTrackColor: colors.surfaceBase,
                         trackHeight: 8,
                         thumbShape: SliderComponentShape.noThumb,
                         overlayShape: SliderComponentShape.noOverlay,
@@ -137,7 +137,7 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: colors.subtleSurface,
+                              color: colors.surfaceSubtle,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -152,9 +152,12 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: onPercentageChanged == null
-                                ? colors.tertiaryText
-                                : colors.primaryAction,
-                            border: Border.all(color: colors.surface, width: 2),
+                                ? colors.textTertiary
+                                : colors.actionPrimary,
+                            border: Border.all(
+                              color: colors.surfaceBase,
+                              width: 2,
+                            ),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -163,7 +166,7 @@ class PositionProtectionQuantityCard extends StatelessWidget {
                               fontSize: 12,
                               height: 16 / 12,
                               fontWeight: FontWeight.w600,
-                              color: colors.onPrimaryAction,
+                              color: colors.textInverse,
                             ),
                           ),
                         ),

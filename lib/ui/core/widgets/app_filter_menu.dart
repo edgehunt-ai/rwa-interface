@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 
 import '../theme/app_theme.dart';
 
@@ -40,7 +40,7 @@ class AppFilterMenu<T> extends StatelessWidget {
       ),
       child: PopupMenuButton<int>(
         tooltip: label,
-        color: colors.surface,
+        color: colors.surfaceBase,
         constraints: const BoxConstraints.tightFor(width: 168),
         menuPadding: const EdgeInsets.all(4),
         offset: const Offset(0, 40),
@@ -57,12 +57,17 @@ class AppFilterMenu<T> extends StatelessWidget {
                   height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: entry.value.value == value
-                        ? colors.selectedSoft
-                        : null,
+                    color: entry.value.value == value ? colors.brandSoft : null,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(entry.value.label),
+                  child: Text(
+                    entry.value.label,
+                    style: TextStyle(
+                      color: entry.value.value == value
+                          ? Theme.of(context).colorScheme.onSecondaryContainer
+                          : colors.textPrimary,
+                    ),
+                  ),
                 ),
               ),
             )
@@ -94,10 +99,10 @@ class _FilterButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: colors.surface,
-          disabledBackgroundColor: colors.surface,
-          disabledForegroundColor: colors.primaryText,
-          side: BorderSide(color: colors.border),
+          backgroundColor: colors.surfaceBase,
+          disabledBackgroundColor: colors.surfaceBase,
+          disabledForegroundColor: colors.textPrimary,
+          side: BorderSide(color: colors.borderSubtle),
           textStyle: const TextStyle(
             fontSize: 13,
             height: 18 / 13,
@@ -110,8 +115,9 @@ class _FilterButton extends StatelessWidget {
             Flexible(
               child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
-            SvgPicture.asset(
+            AppSvgIcon(
               'assets/figma/home_markets/chevron_down.svg',
+              color: context.appColors.iconSecondary,
               width: 20,
               height: 20,
             ),

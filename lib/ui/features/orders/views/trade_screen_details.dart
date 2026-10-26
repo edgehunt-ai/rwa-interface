@@ -85,8 +85,8 @@ class _Details extends ConsumerWidget {
                             fontSize: 13,
                             height: 18 / 13,
                             color: activeTab == tab
-                                ? colors.primaryText
-                                : colors.secondaryText,
+                                ? colors.textPrimary
+                                : colors.textSecondary,
                             fontWeight: activeTab == tab
                                 ? FontWeight.w600
                                 : FontWeight.w500,
@@ -108,7 +108,7 @@ class _Details extends ConsumerWidget {
                             width: 24,
                             height: 2,
                             decoration: BoxDecoration(
-                              color: colors.selected,
+                              color: colors.brandDefault,
                               borderRadius: BorderRadius.circular(1),
                             ),
                           ),
@@ -145,7 +145,6 @@ class _Details extends ConsumerWidget {
             positions: positionState,
             kind: kind,
             symbol: symbol,
-            productId: selectedProductId,
             positionCardKey: positionCardKey,
             targetPositionId: targetPositionId,
           ),
@@ -332,7 +331,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -390,7 +389,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 14 / 11,
-                              color: colors.tertiaryText,
+                              color: colors.textTertiary,
                             ),
                           ),
                         ),
@@ -409,7 +408,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 28),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    backgroundColor: colors.subtleSurface,
+                    backgroundColor: colors.surfaceSubtle,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -466,7 +465,7 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
                         style: TextStyle(
                           fontSize: 11,
                           height: 14 / 11,
-                          color: colors.tertiaryText,
+                          color: colors.textTertiary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -484,9 +483,9 @@ class _OpenOrderCardState extends State<_OpenOrderCard> {
                               child: LinearProgressIndicator(
                                 value: progress ?? 0,
                                 minHeight: 8,
-                                backgroundColor: colors.subtleSurface,
+                                backgroundColor: colors.surfaceSubtle,
                                 valueColor: AlwaysStoppedAnimation(
-                                  colors.selected,
+                                  colors.brandDefault,
                                 ),
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
@@ -533,7 +532,7 @@ class _TradeMetric extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           height: 14 / 11,
-          color: Theme.of(context).extension<AppRwaColors>()!.tertiaryText,
+          color: Theme.of(context).extension<AppRwaColors>()!.textTertiary,
         ),
       ),
       const SizedBox(height: 4),
@@ -556,14 +555,12 @@ class _PositionTab extends ConsumerWidget {
     required this.positions,
     required this.kind,
     required this.symbol,
-    required this.productId,
     required this.positionCardKey,
     required this.targetPositionId,
   });
   final AsyncValue<DomainPage<Position>> positions;
   final MarketProductKind kind;
   final String symbol;
-  final String? productId;
   final GlobalKey positionCardKey;
   final String? targetPositionId;
 
@@ -602,7 +599,6 @@ class _PositionTab extends ConsumerWidget {
                   position,
                   key: ValueKey('trade-position-card-${position.positionId}'),
                   kind: kind,
-                  productId: productId,
                 ),
               ),
           ],
@@ -613,34 +609,24 @@ class _PositionTab extends ConsumerWidget {
 }
 
 class _PositionCard extends StatelessWidget {
-  const _PositionCard(
-    this.position, {
-    super.key,
-    required this.kind,
-    required this.productId,
-  });
+  const _PositionCard(this.position, {super.key, required this.kind});
   final Position position;
   final MarketProductKind kind;
-  final String? productId;
 
   @override
   Widget build(BuildContext context) => switch (kind) {
     MarketProductKind.perp => _Hip3PositionSummaryCard(position: position),
-    _ => _BstocksPositionSummaryCard(position: position, productId: productId),
+    _ => _BstocksPositionSummaryCard(position: position),
   };
 }
 
-class _BstocksPositionSummaryCard extends ConsumerWidget {
-  const _BstocksPositionSummaryCard({
-    required this.position,
-    required this.productId,
-  });
+class _BstocksPositionSummaryCard extends StatelessWidget {
+  const _BstocksPositionSummaryCard({required this.position});
 
   final Position position;
-  final String? productId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -650,19 +636,11 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
       colors: colors,
       semantic: semantic,
     );
-    final availabilityProductId = position.productId ?? productId;
-    final availabilityState = availabilityProductId == null
-        ? null
-        : ref.watch(bstocksSellAvailabilityProvider(availabilityProductId));
-    final availability = availabilityState?.value;
-    final availabilityLoading =
-        availability == null && availabilityState?.isLoading == true;
-
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -686,7 +664,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               const SizedBox(width: 8),
               _Hip3SourceChip(
                 label: '${l10n.spot} · BNB Smart Chain',
-                backgroundColor: const Color(0x1AEDBC04),
+                backgroundColor: colors.illustrationLime.withValues(alpha: 0.1),
                 leading: SvgPicture.asset(
                   'assets/figma/common/network_bsc.svg',
                   width: 14,
@@ -702,7 +680,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.tertiaryText,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: 4),
@@ -754,24 +732,6 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _Hip3MetricRow(
-            metrics: [
-              _Hip3Metric(
-                l10n.available,
-                _formatTokenQuantity(availability?.quantity),
-                loading: availabilityLoading,
-                skeletonKey: const Key('bstocks-available-loading'),
-              ),
-              _Hip3Metric(
-                l10n.unavailable,
-                _formatTokenQuantity(availability?.unavailableQuantity),
-                loading: availabilityLoading,
-                skeletonKey: const Key('bstocks-unavailable-loading'),
-              ),
-              const _Hip3Metric('', ''),
-            ],
-          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -809,8 +769,8 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
     );
     final sideColor = switch (position.side) {
       PositionSide.long => semantic.success,
-      PositionSide.short => kShortTradeColor,
-      PositionSide.none => colors.secondaryText,
+      PositionSide.short => semantic.danger,
+      PositionSide.none => colors.textSecondary,
     };
     final source = position.productId?.split(':').first.trim().toUpperCase();
     final marginMode = switch (position.marginMode) {
@@ -828,7 +788,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceBase,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -875,16 +835,18 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
                   if (source != null && source.isNotEmpty) ...[
                     _Hip3SourceChip(
                       label: source,
-                      backgroundColor: colors.subtleSurface.withValues(
+                      backgroundColor: colors.surfaceSubtle.withValues(
                         alpha: 0.1,
                       ),
-                      borderColor: colors.border,
+                      borderColor: colors.borderSubtle,
                     ),
                     const SizedBox(width: 4),
                   ],
                   _Hip3SourceChip(
                     label: 'HIP-3 · ARB',
-                    backgroundColor: const Color(0x1A4F9EE9),
+                    backgroundColor: colors.illustrationSky.withValues(
+                      alpha: 0.1,
+                    ),
                     leading: SvgPicture.asset(
                       'assets/figma/funding/arbitrum.svg',
                       width: 14,
@@ -902,7 +864,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 14 / 11,
-              color: colors.tertiaryText,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: 4),
@@ -973,7 +935,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
               Expanded(
                 child: _Hip3ActionButton(
                   label: l10n.close,
-                  foregroundColor: semantic.loss,
+                  foregroundColor: semantic.danger,
                   onPressed: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
@@ -1017,8 +979,8 @@ Color _valueColor({
   required AppRwaColors colors,
   required AppSemanticColors semantic,
 }) {
-  if (value == null) return colors.primaryText;
-  return value.value.startsWith('-') ? semantic.loss : semantic.success;
+  if (value == null) return colors.textPrimary;
+  return value.value.startsWith('-') ? semantic.danger : semantic.success;
 }
 
 String _formatUsd(DecimalValue? value) =>
@@ -1026,9 +988,6 @@ String _formatUsd(DecimalValue? value) =>
 
 String _formatUsdFixed2(DecimalValue? value) =>
     value == null ? '—' : TokenAmountFormatter.formatUsdFixed(value);
-
-String _formatTokenQuantity(DecimalValue? value) =>
-    value == null ? '—' : TokenAmountFormatter.formatDecimal(value);
 
 String _formatSignedUsdFixed2(DecimalValue? value) {
   if (value == null) return '—';
@@ -1081,19 +1040,11 @@ class _Hip3SourceChip extends StatelessWidget {
 }
 
 class _Hip3Metric {
-  const _Hip3Metric(
-    this.label,
-    this.value, {
-    this.valueColor,
-    this.loading = false,
-    this.skeletonKey,
-  });
+  const _Hip3Metric(this.label, this.value, {this.valueColor});
 
   final String label;
   final String value;
   final Color? valueColor;
-  final bool loading;
-  final Key? skeletonKey;
 }
 
 class _Hip3MetricRow extends StatelessWidget {
@@ -1124,32 +1075,24 @@ class _Hip3MetricRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       height: 14 / 11,
-                      color: colors.tertiaryText,
+                      color: colors.textTertiary,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (metrics[index].loading)
-                    SkeletonBlock(
-                      key: metrics[index].skeletonKey,
-                      width: 48,
-                      height: 14,
-                      radius: 4,
-                    )
-                  else
-                    Text(
-                      metrics[index].value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: index == metrics.length - 1
-                          ? TextAlign.end
-                          : TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 16 / 12,
-                        fontWeight: FontWeight.w600,
-                        color: metrics[index].valueColor,
-                      ),
+                  Text(
+                    metrics[index].value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: index == metrics.length - 1
+                        ? TextAlign.end
+                        : TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      fontWeight: FontWeight.w600,
+                      color: metrics[index].valueColor,
                     ),
+                  ),
                 ],
               ),
             ),
@@ -1179,9 +1122,9 @@ class _Hip3ActionButton extends StatelessWidget {
         minimumSize: const Size(0, 36),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        backgroundColor: colors.subtleSurface,
-        foregroundColor: foregroundColor ?? colors.primaryText,
-        side: BorderSide(color: colors.border),
+        backgroundColor: colors.surfaceSubtle,
+        foregroundColor: foregroundColor ?? colors.textPrimary,
+        side: BorderSide(color: colors.borderSubtle),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(
           fontSize: 13,
@@ -1208,7 +1151,7 @@ class _DetailsCard extends ConsumerWidget {
       marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
     );
     final snapshot = snapshotState.value;
-    final loading = snapshotState.isLoading;
+    final loading = snapshotState.isLoading && snapshot == null;
     final referencePrice = snapshot?.referencePrice;
     final reference = referencePrice == null
         ? '—'
@@ -1273,13 +1216,13 @@ class _DetailsCard extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   snapshot!.assetBadge!,
-                  style: TextStyle(fontSize: 12, color: colors.secondaryText),
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
                 ),
               ],
               const SizedBox(height: 4),
               Text(
                 snapshot?.assetDescription ?? '—',
-                style: TextStyle(fontSize: 13, color: colors.secondaryText),
+                style: TextStyle(fontSize: 13, color: colors.textSecondary),
               ),
               const SizedBox(height: 16),
               if (snapshot?.assetRights.isNotEmpty == true)
@@ -1332,7 +1275,7 @@ class _DetailsSurface extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
+      color: Theme.of(context).extension<AppRwaColors>()!.surfaceBase,
       borderRadius: BorderRadius.circular(14),
     ),
     child: child,
@@ -1354,7 +1297,7 @@ class _AssetRightsRow extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 13,
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            color: Theme.of(context).extension<AppRwaColors>()!.textSecondary,
           ),
         ),
         Text(
@@ -1387,15 +1330,15 @@ class _TradeActions extends StatelessWidget {
       child: Container(
         height: 80,
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-        color: Theme.of(context).extension<AppRwaColors>()!.canvas,
+        color: context.appColors.surfaceCanvas,
         child: Row(
           children: [
             Expanded(
               child: FilledButton(
                 onPressed: onBuy,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF04A08B),
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.semanticColors.success,
+                  foregroundColor: context.appColors.textInverse,
                 ),
                 child: Text(primaryLabel),
               ),
@@ -1405,8 +1348,8 @@ class _TradeActions extends StatelessWidget {
               child: FilledButton(
                 onPressed: onSell,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE55770),
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.semanticColors.danger,
+                  foregroundColor: context.appColors.textInverse,
                 ),
                 child: Text(secondaryLabel),
               ),
@@ -1427,7 +1370,7 @@ class MarketHoursSheet extends ConsumerWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final state = ref.watch(marketHoursProvider);
     return ColoredBox(
-      color: Colors.black54,
+      color: colors.overlayScrim.withValues(alpha: 0.54),
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Material(
@@ -1445,7 +1388,7 @@ class MarketHoursSheet extends ConsumerWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: colors.subtleSurface,
+                        color: colors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1471,7 +1414,7 @@ class MarketHoursSheet extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 22 / 15,
-                      color: colors.secondaryText,
+                      color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1609,7 +1552,7 @@ class _MarketSession extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colors.subtleSurface)),
+        border: Border(bottom: BorderSide(color: colors.surfaceSubtle)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1632,23 +1575,23 @@ class _MarketSession extends StatelessWidget {
                       liquidity,
                       style: TextStyle(
                         fontSize: 12,
-                        color: colors.secondaryText,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 4),
                     _LiquidityBars(
                       activeBars: activeBars,
                       color: switch (liquidityTone) {
-                        _LiquidityTone.high => const Color(0xFFB9F34A),
-                        _LiquidityTone.medium => const Color(0xFFFF9654),
-                        _LiquidityTone.low => const Color(0xFFFF7BE5),
+                        _LiquidityTone.high => colors.illustrationLime,
+                        _LiquidityTone.medium => colors.illustrationOrange,
+                        _LiquidityTone.low => colors.brandDefault,
                       },
                     ),
                   ],
                 ),
                 Text(
                   schedule,
-                  style: TextStyle(fontSize: 12, color: colors.secondaryText),
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
                 ),
                 if (isCurrent &&
                     opensAt != null &&
@@ -1678,7 +1621,7 @@ class _MarketSession extends StatelessWidget {
               width: 4,
               height: 48,
               decoration: BoxDecoration(
-                color: colors.primaryAction,
+                color: colors.actionPrimary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1756,7 +1699,7 @@ class _SessionCountdownState extends State<_SessionCountdown> {
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w600,
-              color: colors.primaryText,
+              color: colors.textPrimary,
             ),
           ),
         ),
@@ -1776,7 +1719,7 @@ class _LiquidityBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inactive = Theme.of(context).extension<AppRwaColors>()!.border;
+    final inactive = Theme.of(context).extension<AppRwaColors>()!.borderSubtle;
     return Row(
       children: List.generate(
         3,

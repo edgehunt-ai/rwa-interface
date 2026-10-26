@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_source_position_snapshot.g.dart';
 
-/// Immutable account-position evidence frozen into one allocation leg.
+/// Account-position evidence for one allocation leg. For BSC56/97/31337 sources or a bStocks target, reserved_amount is zero and available_amount is the full observed total without pending-operation deductions. Other-chain non-bStocks/HIP3 reservations retain their scope. Historical snapshots remain readable; source identity, observation time and frozen route binding still control execution, and an available balance never guarantees future delivery. 
 ///
 /// Properties:
 /// * [positionId] - Account-scoped opaque source-position identifier.

@@ -103,15 +103,11 @@ void main() {
             (widget) =>
                 widget is Container &&
                 widget.decoration is BoxDecoration &&
-                (widget.decoration! as BoxDecoration).color ==
-                    colors.selectedSoft,
+                (widget.decoration! as BoxDecoration).color == colors.brandSoft,
           ),
         ),
       );
-      expect(
-        (highlight.decoration! as BoxDecoration).color,
-        colors.selectedSoft,
-      );
+      expect((highlight.decoration! as BoxDecoration).color, colors.brandSoft);
       for (final token in ['USDC', 'USDT', 'ETH', 'BNB']) {
         final icon = find.descendant(
           of: _tokenOption(token),
@@ -161,12 +157,26 @@ void main() {
           (widget) =>
               widget is Container &&
               widget.decoration is BoxDecoration &&
-              (widget.decoration! as BoxDecoration).color ==
-                  colors.selectedSoft,
+              (widget.decoration! as BoxDecoration).color == colors.brandSoft,
         ),
       ),
       findsOneWidget,
     );
+    final text = tester.widget<RichText>(
+      find.descendant(
+        of: _networkOption('Arbitrum'),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is RichText && widget.text.toPlainText() == 'Arbitrum',
+        ),
+      ),
+    );
+    final foreground = text.text.style!.color!;
+    final background = colors.brandSoft;
+    final contrast =
+        (background.computeLuminance() + 0.05) /
+        (foreground.computeLuminance() + 0.05);
+    expect(contrast, greaterThanOrEqualTo(4.5));
     await tester.tap(_networkOption('Arbitrum'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
