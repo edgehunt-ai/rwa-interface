@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nobell/app.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
 import 'package:nobell/app/config/privy_configuration.dart';
@@ -24,6 +25,8 @@ import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
+import 'package:nobell/ui/features/account/providers/account_providers.dart';
+import 'package:nobell/ui/features/account/views/settings_screen.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
@@ -36,6 +39,69 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final language in ['en', 'zh-CN']) {
+    testWidgets('app startup applies account $language on the home screen', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      SharedPreferences.setMockInitialValues({});
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final account = _Account(language: language);
+      final router = AppRouter.create();
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            identityAuthGatewayProvider.overrideWithValue(
+              FakeIdentityAuthGateway(
+                restoredPrincipal: const IdentityPrincipal('home-user'),
+              ),
+            ),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            sessionRepositoryProvider.overrideWithValue(
+              _Session(language: language == 'en' ? 'zh-CN' : 'en'),
+            ),
+            walletsRepositoryProvider.overrideWithValue(_Wallets()),
+            accountRepositoryProvider.overrideWithValue(account),
+            portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+          child: AppRoot(router: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(SettingsScreen), findsNothing);
+      final homeContext = tester.element(find.byType(HomeScreen));
+      expect(
+        Localizations.localeOf(homeContext).languageCode,
+        language == 'en' ? 'en' : 'zh',
+      );
+      expect(
+        find.text(AppLocalizations.of(homeContext).deposit),
+        findsOneWidget,
+      );
+
+      account.language = language == 'en' ? 'zh-CN' : 'en';
+      ProviderScope.containerOf(homeContext).invalidate(accountProvider);
+      await tester.pumpAndSettle();
+      expect(
+        Localizations.localeOf(homeContext).languageCode,
+        language == 'en' ? 'zh' : 'en',
+      );
+      expect(find.byType(SettingsScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
   testWidgets(
     'failed restore offers retry and recovers without opening login',
     (tester) async {
@@ -713,14 +779,18 @@ final class _ManyMarkets implements MarketsRepository {
 }
 
 final class _Account implements AccountRepository {
+  _Account({this.language = 'en'});
+
+  String language;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   @override
-  Future<UserAccount> getAccount() async => const UserAccount(
+  Future<UserAccount> getAccount() async => UserAccount(
     userId: 'user-1',
     displayName: 'Ada',
     settings: UserPreferences(
-      language: 'en',
+      language: language,
       pushEnabled: true,
       notifyOrderFilled: true,
       notifyOrderFailed: true,
@@ -745,6 +815,10 @@ final class _Account implements AccountRepository {
 }
 
 final class _Session implements SessionRepository {
+  _Session({this.language = 'en'});
+
+  final String language;
+
   @override
   Future<ProductSession> createOrRestore({
     String? language,
@@ -755,11 +829,11 @@ final class _Session implements SessionRepository {
     expiresAt: DateTime.utc(2027),
     generation: generation,
     accountCreated: true,
-    account: const UserAccount(
+    account: UserAccount(
       userId: 'home-user',
       displayName: 'Ada',
       settings: UserPreferences(
-        language: 'en',
+        language: this.language,
         pushEnabled: false,
         notifyOrderFilled: true,
         notifyOrderFailed: true,

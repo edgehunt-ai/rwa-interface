@@ -38,13 +38,6 @@ class SettingsScreen extends ConsumerWidget {
     final clearingCache = ref.watch(cacheCommandProvider).isLoading;
     final installedAppInfo = ref.watch(installedAppInfoProvider);
     final checkingForUpdate = ref.watch(appUpdateCommandProvider).isLoading;
-    ref.listen<AsyncValue<UserAccount>>(accountProvider, (_, next) {
-      next.whenData(
-        (account) => ref
-            .read<AppLocaleNotifier>(appLocaleProvider.notifier)
-            .setLanguage(account.settings.language),
-      );
-    });
     return Scaffold(
       body: SafeArea(
         child: Column(

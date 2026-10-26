@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/app/providers/locale_provider.dart';
+import 'package:nobell/app/providers/locale_sync_provider.dart';
 import 'package:nobell/app/providers/push_notification_providers.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/domain/auth/authentication.dart';
@@ -46,6 +47,7 @@ final class _AppViewState extends ConsumerState<_AppView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(accountLocaleSyncProvider);
     final locale = ref.watch<Locale?>(appLocaleProvider);
     final authentication = ref.watch(authenticationProvider);
     final appReady = authentication is! AuthenticationInitializing;
