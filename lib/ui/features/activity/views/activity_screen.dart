@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nobell/ui/core/feedback/provider_refresh.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
@@ -143,7 +144,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     setState(_resetPagination);
     final provider = activityProvider(_filter(null));
     ref.invalidate(provider);
-    await ref.read(provider.future);
+    await waitForProviderRefresh(ref.read(provider.future));
   }
 
   void _loadMore(String cursor) {

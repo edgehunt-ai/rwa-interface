@@ -191,6 +191,26 @@ void main() {
     expect(sanitized.tags, {'operation': 'sign_in'});
   });
 
+  test('removes OAuth credentials from event values and diagnostic contexts', () {
+    const message =
+        'OAuth exchange failed: refresh_token=demo-refresh-token clientSecret=demo-client-secret';
+    final event = SentryEvent(
+      message: SentryMessage(message),
+      exceptions: [SentryException(type: 'PrivyAuthException', value: message)],
+      contexts: Contexts()..['privy_auth'] = {'safe_message': message},
+    );
+    final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+    for (final value in [
+      sanitized.message!.formatted,
+      sanitized.exceptions!.single.value!,
+      (sanitized.contexts['privy_auth'] as Map)['safe_message'] as String,
+    ]) {
+      expect(value, contains('OAuth exchange failed'));
+      expect(value, isNot(contains('demo-refresh-token')));
+      expect(value, isNot(contains('demo-client-secret')));
+    }
+  });
+
   test('keeps only safe structured breadcrumb fields', () {
     final event = SentryEvent(
       breadcrumbs: [

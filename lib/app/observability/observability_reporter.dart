@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import 'business_failure_diagnostics.dart';
+
 abstract interface class ObservabilityReporter {
   Future<void> setUserId(String userId);
   Future<void> clearUser();
@@ -245,10 +247,13 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
       );
       return;
     }
+    final diagnostics = businessFailureDiagnostics(error);
+    final errorType = diagnostics?.type ?? error.runtimeType.toString();
     final errorContext = <String, String>{
       ...context,
       'failure_kind': failureKind,
-      'error_type': error.runtimeType.toString(),
+      'error_type': errorType,
+      ...?diagnostics?.context,
     };
     recordOperation(
       operation,
@@ -267,7 +272,9 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
             ..fingerprint = issueFingerprint(
               operation,
               failureKind,
-              classifier: error.runtimeType.toString(),
+              classifier: diagnostics == null
+                  ? errorType
+                  : '$errorType:${diagnostics.classifier}',
             )
             ..setContexts('business_operation', {
               'operation': operation,

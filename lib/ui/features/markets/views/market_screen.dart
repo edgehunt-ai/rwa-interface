@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/ui/core/feedback/provider_refresh.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/markets/market_data_source.dart';
@@ -67,7 +68,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       )),
     );
     ref.invalidate(marketProductFeedProvider(query));
-    await ref.read(marketProductFeedProvider(query).future);
+    await waitForProviderRefresh(
+      ref.read(marketProductFeedProvider(query).future),
+    );
   }
 
   void _resetScroll() {

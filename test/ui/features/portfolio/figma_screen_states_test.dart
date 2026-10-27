@@ -10,6 +10,7 @@ import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/order.dart';
@@ -35,6 +36,54 @@ import 'package:nobell/ui/features/portfolio/views/assets_screen.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final fails in [false, true]) {
+    testWidgets(
+      'Assets refresh ${fails ? 'failure' : 'success'} after leaving does not access ref',
+      (tester) async {
+        final response = Completer<Portfolio>();
+        final repository = _Portfolio();
+        var calls = 0;
+        final container = ProviderContainer(
+          retry: (_, _) => null,
+          overrides: [
+            authenticatedStateOverride,
+            portfolioRepositoryProvider.overrideWithValue(repository),
+            portfolioSummaryProvider.overrideWith((ref) {
+              return ++calls == 1 ? repository.getSummary() : response.future;
+            }),
+          ],
+        );
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: buildTestApp(const AssetsScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final refresh = tester
+            .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+            .onRefresh();
+        await tester.pump();
+        await tester.pumpWidget(const SizedBox.shrink());
+        if (fails) {
+          response.completeError(
+            const ServerFailure(
+              statusCode: 503,
+              code: 'portfolio_update_delayed',
+              message: 'Portfolio update is delayed.',
+            ),
+          );
+        } else {
+          response.complete(await repository.getSummary());
+        }
+        await tester.pump();
+        await refresh;
+        expect(tester.takeException(), isNull);
+        container.dispose();
+      },
+    );
+  }
+
   for (final kind in MarketProductKind.values) {
     testWidgets(
       'Assets opens the ${kind.name} holding with its product tab selected',

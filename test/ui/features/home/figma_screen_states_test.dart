@@ -12,6 +12,7 @@ import 'package:nobell/app/config/privy_configuration.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/portfolio.dart';
@@ -44,6 +45,50 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'failed pull refresh shows the API reason and finishes normally',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      SharedPreferences.setMockInitialValues({});
+      var calls = 0;
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          authenticatedStateOverride,
+          portfolioSummaryProvider.overrideWith((ref) async {
+            if (++calls > 1) {
+              throw const ServerFailure(
+                statusCode: 503,
+                code: 'portfolio_refresh_delayed',
+                message: 'Portfolio update is delayed. Try again shortly.',
+              );
+            }
+            return _Portfolio().getSummary();
+          }),
+          marketsRepositoryProvider.overrideWithValue(_Markets()),
+        ],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final refresh = tester
+          .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+          .onRefresh();
+      await tester.pumpAndSettle();
+      await refresh;
+      expect(
+        find.text('Portfolio update is delayed. Try again shortly.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await _disposeContainerAfterWidgets(tester, container);
+    },
+  );
+
   for (final dependencyReload in [false, true]) {
     testWidgets(
       'Home keeps loaded funds during ${dependencyReload ? 'dependency reload' : 'refresh'}',
