@@ -1,5 +1,6 @@
 // Legal copy and typography from the supplied Figma documents.
 // Updated from the 10.20 Privacy Policy & Terms of Use Figma section.
+// Privacy copy synced with the 27 October 2026 NoBell Privacy Policy in Notion.
 // Keep page titles in the existing localized screen header.
 import 'package:flutter/material.dart';
 
@@ -2157,6 +2158,11 @@ const privacyParagraphs = <LegalParagraph>[
       ),
     ],
     size: 20,
+    bottom: 8,
+  ),
+  LegalParagraph(
+    [TextSpan(text: "Last Updated: 27 October 2026")],
+    size: 12,
     bottom: 16,
   ),
   LegalParagraph([
@@ -2177,7 +2183,7 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We collect information you provide directly to us when you:",
+      text: "We collect information that you provide directly to us when you:",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -2185,7 +2191,7 @@ const privacyParagraphs = <LegalParagraph>[
     TextSpan(text: "Create an account or profile"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Use our services, including transaction data"),
+    TextSpan(text: "Use our services, including when conducting transactions"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
@@ -2207,20 +2213,23 @@ const privacyParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Device information (operating system, hardware model, device identifiers)",
-    ),
-  ], bullet: true),
-  LegalParagraph([
-    TextSpan(text: "Log information (IP address, browser type, pages visited)"),
-  ], bullet: true),
-  LegalParagraph([
-    TextSpan(
-      text: "Location information when you use our app (if you've granted permission)",
+      text: "Device information, such as your operating system, hardware model, and device identifiers",
     ),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Blockchain transaction information (which is publicly available)",
+      text: "Log information, such as your IP address, browser type, and pages visited",
+    ),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(
+      text: "Location information when you use our app, if you have granted permission",
+    ),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(
+      text:
+          "Blockchain transaction information, which may be publicly available",
     ),
   ], bullet: true),
   LegalParagraph(
@@ -2257,11 +2266,11 @@ const privacyParagraphs = <LegalParagraph>[
     TextSpan(text: "Prevent fraudulent transactions and enhance security"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Monitor and analyze trends, usage, and activities"),
+    TextSpan(text: "Monitor and analyse trends, usage, and activities"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Personalize your experience and provide content and features",
+      text: "Personalise your experience and provide relevant content and features",
     ),
   ], bullet: true),
   LegalParagraph(
@@ -2278,11 +2287,11 @@ const privacyParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "We may share your information with:")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "Service providers who perform services on our behalf"),
+    TextSpan(text: "Service providers that perform services on our behalf"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Financial institutions and payment processors to facilitate transactions",
+      text: "Financial institutions and payment processors that facilitate transactions",
     ),
   ], bullet: true),
   LegalParagraph([
@@ -2292,18 +2301,18 @@ const privacyParagraphs = <LegalParagraph>[
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Law enforcement, government officials, or other third parties when required by law",
+      text: "Law enforcement agencies, government officials, or other third parties where required by law",
     ),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Other users as directed by you (such as public transaction information)",
+      text: "Other users at your direction, including through publicly available transaction information",
     ),
   ], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "We may also share aggregated or de-identified information, which cannot reasonably be used to identify you.",
+      text: "We may also share aggregated or de-identified information that cannot reasonably be used to identify you.",
     ),
   ]),
   LegalParagraph(
@@ -2319,7 +2328,7 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no security system is impenetrable, and we cannot guarantee the security of our systems or your information.",
+      text: "We take reasonable measures to help protect your personal information against loss, theft, misuse, unauthorised access, disclosure, alteration, and destruction. However, no security system is impenetrable, and we cannot guarantee the security of our systems or your information.",
     ),
   ]),
   LegalParagraph(
@@ -2364,7 +2373,56 @@ const privacyParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "6. International Data Transfers",
+        text: "6. Account and Data Deletion",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 15,
+    top: 24,
+    bottom: 16,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "You may request the deletion of your NoBell account and associated personal data by sending an email to ",
+    ),
+    TextSpan(
+      text: "contact@nobell.global",
+      style: TextStyle(fontWeight: FontWeight.w600),
+    ),
+    TextSpan(text: " with the subject line "),
+    TextSpan(
+      text: "“Account Deletion Request.”",
+      style: TextStyle(fontWeight: FontWeight.w600),
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Please include the email address registered with your account and any other information reasonably required for us to identify your account and verify that the request was made by the account holder. For security reasons, we may request additional verification before processing the request. You should never provide your private key, seed phrase, or wallet recovery phrase.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Once your request has been verified, we will delete or anonymise your account and associated personal data within 30 days, unless the information must be retained for legal, regulatory, fraud-prevention, security, dispute-resolution, or financial record-keeping purposes.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Information that we are legally required to retain may be kept for up to five years after your account is closed, or for a longer period where required by applicable law. Residual copies stored in backup systems may remain for up to 90 days before being securely deleted or overwritten.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Deleting your NoBell account will not delete transaction information that has already been recorded on a public blockchain. Public blockchain records are not controlled by NoBell and generally cannot be changed or deleted.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "7. International Data Transfers",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2380,7 +2438,7 @@ const privacyParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "7. Changes to this Privacy Policy",
+        text: "8. Changes to This Privacy Policy",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2390,13 +2448,13 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with additional notice.",
+      text: "We may update this Privacy Policy from time to time. If we make changes, we will notify you by revising the “Last Updated” date at the top of this Privacy Policy. In some cases, we may also provide additional notice.",
     ),
   ]),
   LegalParagraph(
     [
       TextSpan(
-        text: "8. Contact Us",
+        text: "9. Contact Us",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2406,7 +2464,15 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "If you have any questions about this Privacy Policy, please contact us at contact@nobell.global .",
+      text: "If you have any questions about this Privacy Policy or wish to submit an account or data deletion request, please contact us at:",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(text: "Email: "),
+    TextSpan(
+      text: "contact@nobell.global",
+      style: TextStyle(fontWeight: FontWeight.w600),
     ),
   ]),
 ];
