@@ -32,10 +32,9 @@ env:
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
   PRIVY_EXPORT_URL: ${{ vars.PRIVY_EXPORT_URL }}
   APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-  ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-  ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-  ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-  ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  # Public certificate identities, never secrets. It must list the Play app
+  # signing certificate and the upload certificate used for release APKs.
+  ANDROID_SHA256_CERT_FINGERPRINTS: ${{ vars.ANDROID_SHA256_CERT_FINGERPRINTS }}
   IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'global.nobell.app' }}
   ANDROID_PACKAGE_NAME: ${{ vars.ANDROID_PACKAGE_NAME || 'global.nobell.app' }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -56,12 +55,6 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Setup Java for Android certificate inspection
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - name: Validate deployment configuration
         shell: bash
         run: |
@@ -69,10 +62,7 @@ jobs:
           for key in \
             PRIVY_APP_ID \
             PRIVY_EXPORT_URL \
-            ANDROID_KEYSTORE_BASE64 \
-            ANDROID_KEYSTORE_PASSWORD \
-            ANDROID_KEY_ALIAS \
-            ANDROID_KEY_PASSWORD \
+            ANDROID_SHA256_CERT_FINGERPRINTS \
             VERCEL_ORG_ID \
             VERCEL_PROJECT_ID \
             VERCEL_TOKEN; do

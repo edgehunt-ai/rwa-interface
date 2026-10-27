@@ -100,6 +100,30 @@ kotlin {
     }
 }
 
+// Play rejects bundles signed with the debug certificate, but only after
+// upload. Keep the local `flutter run --release` fallback above, and refuse to
+// package a release bundle without release signing credentials.
+val releaseSigningEnvironment = listOf(
+    "ANDROID_KEYSTORE_PATH",
+    "ANDROID_KEYSTORE_PASSWORD",
+    "ANDROID_KEY_ALIAS",
+    "ANDROID_KEY_PASSWORD",
+)
+// `bundleRelease` is only a lifecycle task, so guard the tasks that actually
+// package and sign the variant.
+tasks.matching { it.name.endsWith("ReleaseBundle") }
+    .configureEach {
+        doFirst {
+            val missing = releaseSigningEnvironment.filter {
+                System.getenv(it).isNullOrBlank()
+            }
+            check(missing.isEmpty()) {
+                "Release bundles require signing credentials; missing: " +
+                    missing.joinToString()
+            }
+        }
+    }
+
 flutter {
     source = "../.."
 }

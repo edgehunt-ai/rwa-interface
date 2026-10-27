@@ -24,18 +24,28 @@ Debug、Profile、Release 均使用 `Runner.entitlements` 中的关联域名。
 ## 导出站点部署
 
 导出站点构建时自动生成 `.well-known` 文件并复制到 `dist`。正式的 GitHub
-Actions 部署要求导出 URL 和现有 Android 发布 Secret；iOS 关联文件按需配置：
+Actions 部署要求导出 URL 和证书指纹；iOS 关联文件按需配置：
 
 | Actions Variable | 用途 |
 |---|---|
 | `PRIVY_EXPORT_URL` | 导出站点的稳定 HTTPS URL，必须与 App 构建一致 |
 | `APPLE_TEAM_ID` | 可选；Apple Developer Team ID，用于生成 iOS AASA 文件 |
-| `ANDROID_KEYSTORE_BASE64` 等 | 复用现有 Android 发布 Secret，部署时自动读取证书指纹；无需另填指纹 |
+| `ANDROID_SHA256_CERT_FINGERPRINTS` | 必填；逗号分隔的公开 SHA-256 指纹列表 |
 
 当前 iOS Bundle ID 和 Android package name 均为 `global.nobell.app`。生成器
 也支持 `IOS_BUNDLE_ID`、`ANDROID_PACKAGE_NAME` 覆盖。不要新增或提交证书私钥。
-Android 应使用实际安装包的签名；Google Play 分发时使用 App Signing 证书，
-本地调试需要包含对应调试证书指纹。
+
+`ANDROID_SHA256_CERT_FINGERPRINTS` 必须覆盖用户实际会安装的每一种签名：
+
+- Google Play 分发时使用 App Signing 证书（Console → 测试和发布 → 应用完整性 →
+  应用签名），该指纹只在首次上传 AAB 之后才存在。
+- GitHub Release 与本地 release 构建使用上传密钥证书（CI keystore）。
+- 两者都必须列出，否则对应渠道的 Passkey 会静默失效。
+
+部署站点不再读取 keystore，因此 web 部署流程不持有任何签名私钥。指纹是公开
+信息，可直接放在 Actions Variables。更换上传密钥或做 app signing key upgrade
+后需同步更新该变量并重新部署。
+
 关联声明同时包含 Privy Android 设置指南要求的
 `delegate_permission/common.handle_all_urls` 和凭证共享使用的
 `delegate_permission/common.get_login_creds`。
@@ -45,16 +55,18 @@ Android 应使用实际安装包的签名；Google Play 分发时使用 App Sign
 修改生成器后需重新部署导出站点，确认线上关联 JSON 包含这两个 relation。
 App 的 origin 参数修复也需重新构建安装；仅修改站点无法修正已发布的 APK。
 
-设置 `APPLE_TEAM_ID` 后才生成 `/.well-known/apple-app-site-association`；部署任务会
-从 Android keystore 自动生成 `/.well-known/assetlinks.json`。未配置 Apple Team ID
-不会影响 Android 关联文件生成。
+设置 `APPLE_TEAM_ID` 后才生成 `/.well-known/apple-app-site-association`；
+`ANDROID_SHA256_CERT_FINGERPRINTS` 非空时才生成 `/.well-known/assetlinks.json`。
+未配置 Apple Team ID 不会影响 Android 关联文件生成。
 
 Vercel 的 prebuilt 配置让实际文件优先返回，两个文件使用 `application/json`，
 缺失的 `.well-known` 路径返回 404，不落到导出页的 HTML。
 
-本地验证构建：
+本地验证构建（将示例替换为完整的实际 SHA-256 指纹；`export` 让后续构建也能
+读取同一份配置）：
 
 ```bash
+export ANDROID_SHA256_CERT_FINGERPRINTS='AB:CD:...'
 node --env-file=.env scripts/generate-passkey-association-files.mjs
 npm run privy:export:build
 node --test scripts/generate-passkey-association-files.test.mjs scripts/sync-privy-url-scheme.test.mjs
@@ -69,3 +81,9 @@ node --test scripts/generate-passkey-association-files.test.mjs scripts/sync-pri
 
 浏览器通过 Privy 弹窗认证，WebAuthn 凭证受浏览器实际站点 origin 限制。
 原生端的 RP 配置不会让另一个域名上的网页自动获得这些凭证。
+
+Play 版本与 GitHub Release APK 使用不同签名证书，两者无法互相覆盖安装，
+切换渠道需卸载重装。`release.yml` 只产出 `--split-per-abi` 的 arm64 与
+x86_64 APK（versionCode 带 ABI 前缀，如 `2026`）；不要改发通用 APK，也不
+要加 `-P force-version-code-ignoring-abi=true`，否则同一渠道内的版本号会
+回落到 AAB 的纯 build number，导致升级失败。

@@ -131,7 +131,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   android-release:
-    name: Android Release APK
+    name: Android Release APK and App Bundle
     needs:
       - detect-release
     if: needs.detect-release.outputs.should_build == 'true'
@@ -215,6 +215,8 @@ jobs:
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
           --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
           --dart-define=SENTRY_RELEASE="nobell@${{ needs.detect-release.outputs.version }}"
+      # Collect the APKs before building the bundle: rebuilding a release
+      # variant rewrites shared intermediates.
       - name: Collect split APKs
         shell: bash
         run: |
@@ -222,14 +224,65 @@ jobs:
           mkdir -p build/release-assets
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/release-assets/nobell-android-arm64-v8a.apk
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/release-assets/nobell-android-x86_64.apk
+      - name: Build Android App Bundle for Google Play
+        shell: bash
+        run: >-
+          flutter build appbundle --release --obfuscate
+          --dart-define-from-file=.env.ci
+          --split-debug-info=build/symbols/android-bundle
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="nobell@${{ needs.detect-release.outputs.version }}"
+      - name: Verify App Bundle signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle=build/app/outputs/bundle/release/app-release.aab
+          test -s "$bundle"
+          jarsigner -verify "$bundle" >/dev/null
+          # Play rejects debug-signed bundles only at upload time; fail here.
+          keytool -printcert -jarfile "$bundle" | tee "$RUNNER_TEMP/aab-signing.txt"
+          if grep -qi "CN=Android Debug" "$RUNNER_TEMP/aab-signing.txt"; then
+            echo "App bundle is signed with the debug certificate." >&2
+            exit 1
+          fi
+      - name: Verify App Bundle structure and 16 KB compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Pin both the tool version and its downloaded bytes.
+          bundletool="$RUNNER_TEMP/bundletool-all-1.18.2.jar"
+          curl --fail --location --retry 3 \
+            --output "$bundletool" \
+            https://github.com/google/bundletool/releases/download/1.18.2/bundletool-all-1.18.2.jar
+          printf '%s  %s\n' \
+            378b5434cd1378bef6b2bc527b8c7f0ff2584b273830335bce54d6d0813c8584 \
+            "$bundletool" | sha256sum --check --status
+          sdkmanager 'build-tools;36.0.0' >/dev/null
+          python3 scripts/verify_android_bundle.py \
+            --bundle build/app/outputs/bundle/release/app-release.aab \
+            --bundletool "$bundletool" \
+            --zipalign "$ANDROID_HOME/build-tools/36.0.0/zipalign"
+      - name: Collect App Bundle and R8 mapping
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp build/app/outputs/bundle/release/app-release.aab build/release-assets/nobell-android.aab
+          # Play needs this to deobfuscate Java/Kotlin stack traces in Vitals.
+          cp build/app/outputs/mapping/release/mapping.txt build/release-assets/nobell-android-mapping.txt
       - name: Record Android artifact sizes
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "## Android artifact sizes"
-            du -h build/release-assets/*.apk
+            du -h build/release-assets/*.apk build/release-assets/*.aab
           } >> "$GITHUB_STEP_SUMMARY"
+      # The APK and bundle builds each write their own obfuscation map, so they
+      # use sibling symbol directories. The plugin scans the workspace for
+      # app*.symbols files and uploads every one it finds.
       - name: Upload Android Dart symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
@@ -241,6 +294,8 @@ jobs:
           name: nobell-android
           path: |
             build/release-assets/*.apk
+            build/release-assets/*.aab
+            build/release-assets/*mapping.txt
           if-no-files-found: error
           retention-days: 7
 
@@ -403,6 +458,8 @@ jobs:
           gh release create "$TAG" \
             release-assets/nobell-android-arm64-v8a.apk \
             release-assets/nobell-android-x86_64.apk \
+            release-assets/nobell-android.aab \
+            release-assets/nobell-android-mapping.txt \
             release-assets/nobell-ios-unsigned.ipa \
             --title "$TAG" \
             --notes-file release-notes.md \
