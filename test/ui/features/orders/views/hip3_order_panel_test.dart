@@ -2825,6 +2825,63 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final fails in [false, true]) {
+    testWidgets(
+      'HIP-3 ignores a late ${fails ? 'failure' : 'quote'} after disposal',
+      (tester) async {
+        final gate = Completer<void>();
+        final orders = _ExecutableHip3Orders(
+          previewError: fails
+              ? const ServerFailure(
+                  statusCode: 503,
+                  code: 'postgres',
+                  message: 'Database unavailable',
+                )
+              : null,
+        )..previewGate = gate;
+        final reporter = _RecordingReporter();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+            child: _app(const Hip3OrderPanel(), observability: reporter),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField).first, '100');
+        await tester.pump(const Duration(milliseconds: 301));
+        expect(orders.previewRequests, 1);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        gate.complete();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 6));
+
+        expect(tester.takeException(), isNull);
+        expect(orders.previewRequests, 1);
+        expect(reporter.operations, isEmpty);
+      },
+    );
+  }
+
+  testWidgets('HIP-3 cancels a pending quote debounce on disposal', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 6));
+
+    expect(orders.previewRequests, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('HIP-3 does not overlap slow poll requests', (tester) async {
     final orders = _ExecutableHip3Orders();
     await tester.pumpWidget(
