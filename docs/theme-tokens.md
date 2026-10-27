@@ -59,6 +59,14 @@ use the previous system appearance. Native code requires a full rebuild/install.
 Verify native synchronization on an Android 12+ device with
 `flutter test integration_test/launch_appearance_test.dart -d <device-id>`.
 
+Native launch artwork follows the same pink (light) / white (dark) colours as
+`AppLaunchMark`. Android selects `drawable-night-*`; iOS selects the dark
+appearance in the `LaunchImage` asset catalog. All images are transparent so
+the native launch background remains visible, including inside the mark.
+Regenerate both platforms from `assets/launch/surface/first-frame.svg` with
+`node scripts/generate-native-launch-assets.mjs` (requires ImageMagick with SVG
+and WebP support).
+
 ## Guardrails
 
 - `test/ui/core/theme/theme_token_usage_test.dart` fails if any file under
