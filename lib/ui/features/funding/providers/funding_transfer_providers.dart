@@ -197,8 +197,11 @@ final class FundingTransferCommands {
     final required = session.requiredTargetBalance;
     final available = session.targetAvailableAmount;
     if (required == null || available == null) return remaining;
+    final negatedAvailable = available.startsWith('-')
+        ? available.substring(1)
+        : '-$available';
     final gap = DecimalValue(required)
-        .plusMagnitude(DecimalValue('-$available'));
+        .plusMagnitude(DecimalValue(negatedAvailable));
     return gap.compareMagnitudeTo(remaining) > 0 ? gap : remaining;
   }
 

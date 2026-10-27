@@ -3004,15 +3004,41 @@ void main() {
     },
   );
 
-  testWidgets(
-    'bStocks shows the real shortfall when a blocked session reports zero remaining',
-    (tester) async {
+  for (final scenario in [
+    (
+      name: 'the actual balance gap when the server reports zero remaining',
+      available: '7.362461',
+      remaining: '0',
+      shortfall: '0.137539',
+    ),
+    (
+      name: 'the actual balance gap for a negative target balance',
+      available: '-1',
+      remaining: '0',
+      shortfall: '8.5',
+    ),
+    (
+      name: 'the actual balance gap for a signed zero target balance',
+      available: '-0.000000',
+      remaining: '0',
+      shortfall: '7.5',
+    ),
+    (
+      name: 'the larger server-reported shortfall',
+      available: '7.362461',
+      remaining: '2',
+      shortfall: '2',
+    ),
+  ]) {
+    testWidgets('bStocks blocked session shows ${scenario.name}', (
+      tester,
+    ) async {
       final funding = _FundingPlanRepository(
         _readyFundingPlan,
         canConfirmTransfer: false,
         requiredTargetBalance: '7.5',
-        targetAvailableAmount: '7.362461',
-        remainingMinimumTopUp: '0',
+        targetAvailableAmount: scenario.available,
+        remainingMinimumTopUp: scenario.remaining,
       );
       await tester.pumpWidget(
         ProviderScope(
@@ -3034,12 +3060,25 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, '7.5');
       await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-      await _pumpUntilFound(tester, find.text('Add 0.137539 USDT from:'));
+      await _pumpUntilFound(
+        tester,
+        find.text('Add ${scenario.shortfall} USDT from:'),
+      );
 
+      expect(find.textContaining('Invalid decimal value'), findsNothing);
       expect(find.text('Add 0 USDT from:'), findsNothing);
-      expect(find.text('0.137539 USDT'), findsOneWidget);
-    },
-  );
+      final shortfallRow = find
+          .ancestor(of: find.text('Still needed'), matching: find.byType(Row))
+          .first;
+      expect(
+        find.descendant(
+          of: shortfallRow,
+          matching: find.text('${scenario.shortfall} USDT'),
+        ),
+        findsOneWidget,
+      );
+    });
+  }
 
   testWidgets(
     'transfer flow renders the server-selected source through review',
