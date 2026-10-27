@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/ui/core/feedback/provider_refresh.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
@@ -74,7 +75,9 @@ class _MarketDiscoverySearchScreenState
       )),
     );
     ref.invalidate(marketProductFeedProvider(feedQuery));
-    await ref.read(marketProductFeedProvider(feedQuery).future);
+    await waitForProviderRefresh(
+      ref.read(marketProductFeedProvider(feedQuery).future),
+    );
   }
 
   @override

@@ -156,6 +156,20 @@ npm run api:update:branch -- feat/example
 GitHub Actions 会在 push 和 pull request 上运行 Flutter 质量门禁。移动端发布从通过
 检查的 `main` revision 构建，Flutter Web 应用和私钥导出页使用各自独立的 workflow。
 
+Android 发布任务同时产出 Google Play App Bundle（`nobell-android.aab`）、用于直接
+分发的 split APK，以及供 Play Vitals 还原的 R8 mapping。上传时使用发布签名密钥，
+并确保 `ANDROID_SHA256_CERT_FINGERPRINTS` 同时包含 Play 应用签名证书与上传密钥
+证书，见 [Passkey 配置](../passkeys.md)。
+
+发布前，Android 任务使用固定版本且校验 SHA-256 的 bundletool 验证 AAB 结构，
+检查 16 KB 打包配置和所有 64 位原生库的 ELF 对齐，再生成 split APK，检查其中的
+原生库，并使用 `zipalign -c -P 16` 检查 ZIP 对齐。如果依赖不兼容，发布会
+失败。校验脚本的回归测试也在 CI 中运行：
+
+```sh
+python3 -m unittest discover -s scripts -p 'verify_android_bundle_test.py'
+```
+
 原生性能 CI 使用 Android profile 模式测量页面加载、滚动、产品详情、报价、订单预览、
 提交和撤单。测试使用固定 repository 数据，不会发送真实订单。Artifact 包含交互式
 HTML、完整 PNG 长截图、机器参数、原生帧耗时、可选基线对比和自动总结，并会更新到

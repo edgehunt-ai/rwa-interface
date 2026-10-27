@@ -12,6 +12,7 @@ import 'package:nobell/app/config/privy_configuration.dart';
 import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/portfolio.dart';
@@ -44,6 +45,50 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'failed pull refresh shows the API reason and finishes normally',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(393, 852));
+      SharedPreferences.setMockInitialValues({});
+      var calls = 0;
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          authenticatedStateOverride,
+          portfolioSummaryProvider.overrideWith((ref) async {
+            if (++calls > 1) {
+              throw const ServerFailure(
+                statusCode: 503,
+                code: 'portfolio_refresh_delayed',
+                message: 'Portfolio update is delayed. Try again shortly.',
+              );
+            }
+            return _Portfolio().getSummary();
+          }),
+          marketsRepositoryProvider.overrideWithValue(_Markets()),
+        ],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final refresh = tester
+          .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+          .onRefresh();
+      await tester.pumpAndSettle();
+      await refresh;
+      expect(
+        find.text('Portfolio update is delayed. Try again shortly.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await _disposeContainerAfterWidgets(tester, container);
+    },
+  );
+
   for (final dependencyReload in [false, true]) {
     testWidgets(
       'Home keeps loaded funds during ${dependencyReload ? 'dependency reload' : 'refresh'}',
@@ -216,6 +261,7 @@ void main() {
                 AuthenticationFailureCode.backendSession,
                 retryable: true,
                 requestId: 'restore-request',
+                reason: 'Sign-in service is temporarily unavailable (503).',
               ),
             ),
           ),
@@ -243,6 +289,11 @@ void main() {
 
       expect(find.text('Ready when you are'), findsNothing);
       expect(find.text('Log in'), findsNothing);
+      expect(
+        find.text('Sign-in service is temporarily unavailable (503).'),
+        findsOneWidget,
+      );
+      expect(find.text('Check your connection and try again.'), findsNothing);
       expect(find.textContaining('restore-request'), findsOneWidget);
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
@@ -257,6 +308,59 @@ void main() {
       await _disposeContainerAfterWidgets(tester, container);
     },
   );
+
+  for (final code in [
+    AuthenticationFailureCode.provider,
+    AuthenticationFailureCode.network,
+    AuthenticationFailureCode.expired,
+  ]) {
+    testWidgets(
+      '${code.name} before identity restoration keeps guest home and login available',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        await configureDisplay(tester, size: const Size(393, 852));
+        final failure = IdentityFailure(code, retryable: true);
+        final gateway = FakeIdentityAuthGateway()..initializeFailure = failure;
+        final container = ProviderContainer(
+          overrides: [
+            identityAuthGatewayProvider.overrideWithValue(gateway),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            portfolioSummaryProvider.overrideWith((_) {
+              fail('Guest home must not request a portfolio.');
+            }),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+        );
+        await container.read(authenticationProvider.notifier).bootstrap();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: buildTestApp(const HomeScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Ready when you are'), findsOneWidget);
+        expect(find.text('Log in'), findsWidgets);
+        expect(find.text('Retry'), findsNothing);
+        expect(find.text('Check your connection and try again.'), findsNothing);
+        expect(
+          (container.read(
+            authenticationProvider,
+          ) as AuthenticationFailed).failure,
+          same(failure),
+        );
+
+        await tester.tap(find.text('Ready when you are'));
+        await tester.pumpAndSettle();
+        expect(find.byType(PrivyLoginScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await _disposeContainerAfterWidgets(tester, container);
+      },
+    );
+  }
 
   testWidgets('terminal restoration failure keeps login available', (
     tester,

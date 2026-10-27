@@ -1,5 +1,7 @@
 // Legal copy and typography from the supplied Figma documents.
-// Preserve source placeholders until approved replacement copy is supplied.
+// Updated from the 10.20 Privacy Policy & Terms of Use Figma section.
+// Privacy copy synced with the 27 October 2026 NoBell Privacy Policy in Notion.
+// Keep page titles in the existing localized screen header.
 import 'package:flutter/material.dart';
 
 class LegalParagraph {
@@ -28,31 +30,28 @@ const termsParagraphs = <LegalParagraph>[
     size: 20,
     bottom: 8,
   ),
-  LegalParagraph([TextSpan(text: "Last Updated: [●]")], size: 12, bottom: 16),
+  LegalParagraph(
+    [TextSpan(text: "Last Updated: 27 October 2026")],
+    size: 12,
+    bottom: 16,
+  ),
   LegalParagraph([
     TextSpan(
-      text: "These Terms of Use (“Terms”) govern your access to and use of the XYZ mobile application, website, software, interfaces, tools, content, and related services made available by or on behalf of ",
+      text: "These Terms of Use (“Terms”) govern your access to and use of the NoBell mobile application, website, software, interfaces, tools, content, and related services (collectively, the “Interface”). The Interface is made available by or on behalf of ",
     ),
     TextSpan(
-      text: "[XYZ Legal Entity Name]",
-      style: TextStyle(fontWeight: FontWeight.w600),
-    ),
-    TextSpan(text: ", a company incorporated in "),
-    TextSpan(
-      text: "[Jurisdiction]",
+      text: "TECHNOVA LABS PTE. LTD",
       style: TextStyle(fontWeight: FontWeight.w600),
     ),
     TextSpan(
-      text: " (“Company”, “XYZ”, “we”, “us”, or “our”) (collectively, the “Interface”).",
+      text: "., a company incorporated in Singapore that operates the NoBell brand (“Company”, “NoBell”, “we”, “us”, or “our”).",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "Please read these Terms carefully before accessing or using the Interface. By downloading, accessing, connecting a wallet to, or otherwise using the Interface, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree to these Terms, you must not access or use the Interface.",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "For purposes of these Terms, “you” and “your” mean the individual or entity accessing or using the Interface. If you use the Interface on behalf of a company or other legal entity, you represent and warrant that you are duly authorised to bind that entity to these Terms, and all references to “you” shall include that entity.",
@@ -97,7 +96,7 @@ const termsParagraphs = <LegalParagraph>[
       style: TextStyle(fontWeight: FontWeight.w600),
     ),
     TextSpan(
-      text: " means any third-party decentralized exchange, liquidity provider, market maker, protocol, trading venue, automated market maker, order book, aggregator, or other source of liquidity or trading quotes accessible through the Interface, including any liquidity provided by XYZ or its affiliates.",
+      text: " means any third-party decentralized exchange, liquidity provider, market maker, protocol, trading venue, automated market maker, order book, aggregator, or other source of liquidity or trading quotes accessible through the Interface, including any liquidity provided by NoBell or its affiliates.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -155,23 +154,23 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(a) you are at least the age of majority in your jurisdiction of residence;",
+      text: "1. you are at least the age of majority in your jurisdiction of residence;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) you have the legal capacity and authority to enter into these Terms;",
+      text: "2. you have the legal capacity and authority to enter into these Terms;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(c) your use of the Interface is permitted under all laws and regulations applicable to you; and",
+      text: "3. your use of the Interface is permitted under all laws and regulations applicable to you; and",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(d) you are not a Prohibited Person.")]),
+  LegalParagraph([TextSpan(text: "4. you are not a Prohibited Person.")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
@@ -194,28 +193,27 @@ const termsParagraphs = <LegalParagraph>[
       text: "A “Prohibited Person” means any individual or entity that:",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(a) appears on, or is owned or controlled by a person appearing on, any applicable sanctions or restricted-party list maintained by the United Nations, United States, European Union, United Kingdom, or other applicable governmental authority;",
+      text: "1. appears on, or is owned or controlled by a person appearing on, any applicable sanctions or restricted-party list maintained by the United Nations, United States, European Union, United Kingdom, or other applicable governmental authority;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) is located, organised, incorporated, or resident in a jurisdiction subject to comprehensive economic or trade sanctions or other restrictions applicable to the Company;",
+      text: "2. is located, organised, incorporated, or resident in a jurisdiction subject to comprehensive economic or trade sanctions or other restrictions applicable to the Company;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(c) is otherwise prohibited from accessing or using the Interface under applicable law; or",
+      text: "3. is otherwise prohibited from accessing or using the Interface under applicable law; or",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(d) accesses or uses the Interface on behalf of, or for the benefit of, any person described above.",
+      text: "4. accesses or uses the Interface on behalf of, or for the benefit of, any person described above.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -249,7 +247,23 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "3. DESCRIPTION OF XYZ",
+        text: "2.3 Compliance Checks",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "The Company may request information or documents, screen wallet addresses and transactions, and apply other compliance controls where reasonably necessary to comply with law, manage risk, or protect the Interface. You agree to provide accurate and complete information in response to any lawful request. The Company may refuse, restrict, or discontinue access if required information is not provided or if the Company reasonably identifies legal, sanctions, fraud, security, or other material risk.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "3. DESCRIPTION OF NoBell",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -259,7 +273,7 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ provides a non-custodial mobile trading interface that enables users to access and interact with supported blockchain-based trading markets and protocols.",
+      text: "The Company provides NoBell as a non-custodial mobile trading interface that enables users to access and interact with supported blockchain-based trading markets and protocols.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -267,43 +281,49 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(a) spot trading of digital assets and Tokenized Securities;",
+      text: "1. spot trading of digital assets and Tokenized Securities;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) Perpetual Contracts made available through third-party protocols;",
+      text: "2. Perpetual Contracts made available through third-party protocols;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(c) liquidity and trading quotes from multiple Liquidity Sources;",
+      text: "3. liquidity and trading quotes from multiple Liquidity Sources;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(d) market data, asset information, prices, charts, transaction estimates, and other trading-related information; and",
+      text: "4. market data, asset information, prices, charts, transaction estimates, and other trading-related information; and",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(e) other trading-related functionality introduced by the Company from time to time.",
+      text: "5. other trading-related functionality introduced by the Company from time to time.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ is not itself the underlying blockchain network or Protocol through which a transaction is ultimately recorded or settled.",
+      text: "NoBell is not itself the underlying blockchain network or Protocol through which a transaction is ultimately recorded or settled.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Except where expressly stated otherwise in these Terms, XYZ does not take custody of your assets or private keys.",
+      text: "Unless expressly stated otherwise, the Company is not a bank, broker, dealer, securities exchange, clearing agency, custodian, investment adviser, portfolio manager, or fiduciary. The Interface does not constitute an offer, solicitation, or recommendation by the Company to enter into any transaction where such activity would be unlawful.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Except where expressly stated otherwise in these Terms, NoBell does not take custody of your assets or private keys.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -323,7 +343,7 @@ const termsParagraphs = <LegalParagraph>[
     top: 24,
     bottom: 16,
   ),
-  LegalParagraph([TextSpan(text: "XYZ operates on a non-custodial basis.")]),
+  LegalParagraph([TextSpan(text: "NoBell operates on a non-custodial basis.")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
@@ -345,19 +365,24 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Once a blockchain transaction has been signed and submitted, it may be irreversible and may not be capable of being cancelled, reversed, or recovered by XYZ.",
+      text: "Once a blockchain transaction has been signed and submitted, it may be irreversible and may not be capable of being cancelled, reversed, or recovered by NoBell.",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "You acknowledge that XYZ does not guarantee the successful execution, confirmation, settlement, or reversibility of any transaction.",
+      text: "You acknowledge that NoBell does not guarantee the successful execution, confirmation, settlement, or reversibility of any transaction.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "You are responsible for maintaining records of your transactions and complying with any tax, reporting, accounting, or regulatory obligations applicable to you.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Third-party wallet providers may impose separate terms and may collect or process information independently. The Company is not responsible for the operation or security of any third-party wallet.",
     ),
   ]),
   LegalParagraph(
@@ -373,13 +398,13 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ may aggregate trading liquidity and quotes from multiple Liquidity Sources.",
+      text: "NoBell may aggregate trading liquidity and quotes from multiple Liquidity Sources.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The Interface may compare available quotes, prices, liquidity, fees, estimated slippage, price impact, and other execution parameters and may route a transaction to a Liquidity Source based on the routing methodology implemented by XYZ.",
+      text: "The Interface may compare available quotes, prices, liquidity, fees, estimated slippage, price impact, and other execution parameters and may route a transaction to a Liquidity Source based on the routing methodology implemented by NoBell.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -389,35 +414,27 @@ const termsParagraphs = <LegalParagraph>[
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) quoted price;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) available liquidity;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(c) estimated price impact;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(d) fees;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(e) expected execution quality;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(f) network and protocol conditions;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(g) transaction size;")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(h) asset and market availability; and")]),
-  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([TextSpan(text: "1. quoted price;")]),
+  LegalParagraph([TextSpan(text: "2. available liquidity;")]),
+  LegalParagraph([TextSpan(text: "3. estimated price impact;")]),
+  LegalParagraph([TextSpan(text: "4. fees;")]),
+  LegalParagraph([TextSpan(text: "5. expected execution quality;")]),
+  LegalParagraph([TextSpan(text: "6. network and protocol conditions;")]),
+  LegalParagraph([TextSpan(text: "7. transaction size;")]),
+  LegalParagraph([TextSpan(text: "8. asset and market availability; and")]),
   LegalParagraph([
-    TextSpan(text: "(i) other technical or commercial considerations."),
+    TextSpan(text: "9. other technical or commercial considerations."),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The Liquidity Source selected by XYZ may change between the time a quote is displayed and the time a transaction is executed.",
+      text: "The Liquidity Source selected by NoBell may change between the time a quote is displayed and the time a transaction is executed.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not guarantee that the selected Liquidity Source will provide the best price or best execution available across every market, venue, protocol, or liquidity source.",
+      text: "NoBell does not guarantee that the selected Liquidity Source will provide the best price or best execution available across every market, venue, protocol, or liquidity source.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -435,7 +452,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "5.1 XYZ and Affiliate Liquidity",
+        text: "5.1 NoBell and Affiliate Liquidity",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -445,13 +462,13 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ, its affiliates, or entities associated with XYZ may, from time to time, provide liquidity, submit quotes, participate as a liquidity provider, or otherwise make liquidity available for transactions initiated through the Interface.",
+      text: "NoBell, its affiliates, or entities associated with NoBell may, from time to time, provide liquidity, submit quotes, participate as a liquidity provider, or otherwise make liquidity available for transactions initiated through the Interface.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Accordingly, XYZ or its affiliates may have an economic interest in the execution of certain transactions.",
+      text: "Accordingly, NoBell or its affiliates may have an economic interest in the execution of certain transactions.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -463,13 +480,13 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Where XYZ or an affiliate provides liquidity, the transaction may be routed to such liquidity in accordance with the applicable routing methodology.",
+      text: "Where NoBell or an affiliate provides liquidity, the transaction may be routed to such liquidity in accordance with the applicable routing methodology.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The existence of XYZ or affiliate liquidity does not mean that XYZ guarantees execution at the best price available across all third-party markets or venues.",
+      text: "The existence of NoBell or affiliate liquidity does not mean that NoBell guarantees execution at the best price available across all third-party markets or venues.",
     ),
   ]),
   LegalParagraph(
@@ -500,7 +517,6 @@ const termsParagraphs = <LegalParagraph>[
       text: "You are solely responsible for reviewing the transaction details before signing or approving a transaction.",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "A displayed quote does not constitute a binding offer or guarantee of execution.",
@@ -509,19 +525,23 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "Transactions may:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• fail;")]),
-  LegalParagraph([TextSpan(text: "• revert;")]),
-  LegalParagraph([TextSpan(text: "• be delayed;")]),
-  LegalParagraph([TextSpan(text: "• be partially executed;")]),
-  LegalParagraph([TextSpan(text: "• execute at a different price;")]),
+  LegalParagraph([TextSpan(text: "fail;")], bullet: true),
+  LegalParagraph([TextSpan(text: "revert;")], bullet: true),
+  LegalParagraph([TextSpan(text: "be delayed;")], bullet: true),
+  LegalParagraph([TextSpan(text: "be partially executed;")], bullet: true),
   LegalParagraph([
-    TextSpan(text: "• incur greater slippage than estimated; or"),
-  ]),
-  LegalParagraph([TextSpan(text: "• become unavailable before execution.")]),
+    TextSpan(text: "execute at a different price;"),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "incur greater slippage than estimated; or"),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "become unavailable before execution."),
+  ], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not guarantee successful execution or any specific execution price.",
+      text: "NoBell does not guarantee successful execution or any specific execution price.",
     ),
   ]),
   LegalParagraph(
@@ -577,7 +597,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
-        text: "7.2 XYZ Is Not the Issuer",
+        text: "7.2 NoBell Is Not the Issuer",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -587,41 +607,37 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "Unless expressly stated otherwise, XYZ is not the issuer, sponsor, custodian, administrator, broker, transfer agent, or legal owner of the underlying securities associated with any Tokenized Security.",
+      text: "Unless expressly stated otherwise, NoBell is not the issuer, sponsor, custodian, administrator, broker, transfer agent, or legal owner of the underlying securities associated with any Tokenized Security.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "XYZ does not guarantee:")]),
+  LegalParagraph([TextSpan(text: "NoBell does not guarantee:")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(a) the existence or value of the underlying security;"),
+    TextSpan(text: "1. the existence or value of the underlying security;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) the solvency or performance of the issuer or any relevant intermediary;",
+      text: "2. the solvency or performance of the issuer or any relevant intermediary;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(
-      text: "(c) the maintenance of any particular backing arrangement;",
-    ),
+    TextSpan(text: "3. the maintenance of any particular backing arrangement;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(d) the ability to redeem a Tokenized Security;"),
+    TextSpan(text: "4. the ability to redeem a Tokenized Security;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(
-      text: "(e) the continued availability of a Tokenized Security; or",
-    ),
+    TextSpan(text: "5. the continued availability of a Tokenized Security; or"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(f) that the Tokenized Security will trade at or near the value of the underlying security.",
+      text: "6. that the Tokenized Security will trade at or near the value of the underlying security.",
     ),
   ]),
   LegalParagraph(
@@ -643,21 +659,23 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "Differences may arise from:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• market hours;")]),
-  LegalParagraph([TextSpan(text: "• liquidity conditions;")]),
-  LegalParagraph([TextSpan(text: "• trading venue differences;")]),
-  LegalParagraph([TextSpan(text: "• blockchain activity;")]),
-  LegalParagraph([TextSpan(text: "• supply and demand;")]),
-  LegalParagraph([TextSpan(text: "• currency conversion;")]),
-  LegalParagraph([TextSpan(text: "• fees;")]),
-  LegalParagraph([TextSpan(text: "• oracle or pricing mechanisms;")]),
-  LegalParagraph([TextSpan(text: "• issuer arrangements;")]),
-  LegalParagraph([TextSpan(text: "• market fragmentation; or")]),
-  LegalParagraph([TextSpan(text: "• other factors.")]),
+  LegalParagraph([TextSpan(text: "market hours;")], bullet: true),
+  LegalParagraph([TextSpan(text: "liquidity conditions;")], bullet: true),
+  LegalParagraph([TextSpan(text: "trading venue differences;")], bullet: true),
+  LegalParagraph([TextSpan(text: "blockchain activity;")], bullet: true),
+  LegalParagraph([TextSpan(text: "supply and demand;")], bullet: true),
+  LegalParagraph([TextSpan(text: "currency conversion;")], bullet: true),
+  LegalParagraph([TextSpan(text: "fees;")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "oracle or pricing mechanisms;"),
+  ], bullet: true),
+  LegalParagraph([TextSpan(text: "issuer arrangements;")], bullet: true),
+  LegalParagraph([TextSpan(text: "market fragmentation; or")], bullet: true),
+  LegalParagraph([TextSpan(text: "other factors.")], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not guarantee that the price of any Tokenized Security will track the underlying security accurately or continuously.",
+      text: "NoBell does not guarantee that the price of any Tokenized Security will track the underlying security accurately or continuously.",
     ),
   ]),
   LegalParagraph(
@@ -685,7 +703,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not guarantee any particular treatment of corporate actions.",
+      text: "NoBell does not guarantee any particular treatment of corporate actions.",
     ),
   ]),
   LegalParagraph(
@@ -762,19 +780,21 @@ const termsParagraphs = <LegalParagraph>[
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• contract specifications;")]),
-  LegalParagraph([TextSpan(text: "• oracle mechanisms;")]),
-  LegalParagraph([TextSpan(text: "• leverage limits;")]),
-  LegalParagraph([TextSpan(text: "• margin requirements;")]),
-  LegalParagraph([TextSpan(text: "• funding parameters;")]),
-  LegalParagraph([TextSpan(text: "• open interest caps;")]),
-  LegalParagraph([TextSpan(text: "• fees;")]),
-  LegalParagraph([TextSpan(text: "• market status; and")]),
-  LegalParagraph([TextSpan(text: "• trading or settlement mechanisms.")]),
+  LegalParagraph([TextSpan(text: "contract specifications;")], bullet: true),
+  LegalParagraph([TextSpan(text: "oracle mechanisms;")], bullet: true),
+  LegalParagraph([TextSpan(text: "leverage limits;")], bullet: true),
+  LegalParagraph([TextSpan(text: "margin requirements;")], bullet: true),
+  LegalParagraph([TextSpan(text: "funding parameters;")], bullet: true),
+  LegalParagraph([TextSpan(text: "open interest caps;")], bullet: true),
+  LegalParagraph([TextSpan(text: "fees;")], bullet: true),
+  LegalParagraph([TextSpan(text: "market status; and")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "trading or settlement mechanisms."),
+  ], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not control the underlying protocol or the market deployer.",
+      text: "NoBell does not control the underlying protocol or the market deployer.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -887,7 +907,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ cannot guarantee continued availability or trading of any Perpetual Contract.",
+      text: "NoBell cannot guarantee continued availability or trading of any Perpetual Contract.",
     ),
   ]),
   LegalParagraph(
@@ -909,31 +929,35 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "These may include:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• blockchain networks;")]),
-  LegalParagraph([TextSpan(text: "• decentralized exchanges;")]),
-  LegalParagraph([TextSpan(text: "• liquidity providers;")]),
-  LegalParagraph([TextSpan(text: "• market makers;")]),
-  LegalParagraph([TextSpan(text: "• aggregators;")]),
-  LegalParagraph([TextSpan(text: "• Hyperliquid and HIP-3 markets;")]),
-  LegalParagraph([TextSpan(text: "• Tokenized Security issuers;")]),
-  LegalParagraph([TextSpan(text: "• wallets;")]),
-  LegalParagraph([TextSpan(text: "• RPC providers;")]),
-  LegalParagraph([TextSpan(text: "• oracle providers;")]),
-  LegalParagraph([TextSpan(text: "• market-data providers;")]),
-  LegalParagraph([TextSpan(text: "• bridges;")]),
-  LegalParagraph([TextSpan(text: "• infrastructure providers;")]),
-  LegalParagraph([TextSpan(text: "• analytics providers; and")]),
+  LegalParagraph([TextSpan(text: "blockchain networks;")], bullet: true),
+  LegalParagraph([TextSpan(text: "decentralized exchanges;")], bullet: true),
+  LegalParagraph([TextSpan(text: "liquidity providers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "market makers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "aggregators;")], bullet: true),
   LegalParagraph([
-    TextSpan(text: "• other third-party applications or protocols."),
-  ]),
+    TextSpan(text: "Hyperliquid and HIP-3 markets;"),
+  ], bullet: true),
+  LegalParagraph([TextSpan(text: "Tokenized Security issuers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "wallets;")], bullet: true),
+  LegalParagraph([TextSpan(text: "RPC providers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "oracle providers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "market-data providers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "bridges;")], bullet: true),
+  LegalParagraph([TextSpan(text: "infrastructure providers;")], bullet: true),
+  LegalParagraph([TextSpan(text: "analytics providers; and")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "other third-party applications or protocols."),
+  ], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "Third-Party Services are operated independently from XYZ."),
+    TextSpan(
+      text: "Third-Party Services are operated independently from NoBell.",
+    ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not own, operate, control, or guarantee the performance, availability, accuracy, security, liquidity, pricing, or reliability of Third-Party Services unless expressly stated otherwise.",
+      text: "NoBell does not own, operate, control, or guarantee the performance, availability, accuracy, security, liquidity, pricing, or reliability of Third-Party Services unless expressly stated otherwise.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -951,7 +975,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ shall not be responsible for losses arising from or relating to Third-Party Services, including failures, exploits, hacks, smart-contract vulnerabilities, oracle failures, liquidity failures, market suspensions, or changes to third-party protocols.",
+      text: "NoBell shall not be responsible for losses arising from or relating to Third-Party Services, including failures, exploits, hacks, smart-contract vulnerabilities, oracle failures, liquidity failures, market suspensions, or changes to third-party protocols.",
     ),
   ]),
   LegalParagraph(
@@ -971,24 +995,24 @@ const termsParagraphs = <LegalParagraph>[
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) blockchain network fees or gas fees;")]),
+  LegalParagraph([TextSpan(text: "1. blockchain network fees or gas fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) Protocol fees;")]),
+  LegalParagraph([TextSpan(text: "2. Protocol fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(c) trading fees;")]),
+  LegalParagraph([TextSpan(text: "3. trading fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(d) liquidity-provider fees;")]),
+  LegalParagraph([TextSpan(text: "4. liquidity-provider fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(e) aggregator or routing fees;")]),
+  LegalParagraph([TextSpan(text: "5. aggregator or routing fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(f) bridge fees;")]),
+  LegalParagraph([TextSpan(text: "6. bridge fees;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(g) funding payments;")]),
+  LegalParagraph([TextSpan(text: "7. funding payments;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(h) spreads or price impact; and")]),
+  LegalParagraph([TextSpan(text: "8. spreads or price impact; and")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(i) other fees charged by Third-Party Services."),
+    TextSpan(text: "9. other fees charged by Third-Party Services."),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
@@ -999,19 +1023,35 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Fees charged by Third-Party Services may change without notice to XYZ.",
+      text: "Fees charged by Third-Party Services may change without notice to NoBell.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ may receive fees, rebates, spreads, commissions, liquidity incentives, or other economic benefits from certain transactions, Liquidity Sources, or Third-Party Services.",
+      text: "NoBell may receive fees, rebates, spreads, commissions, liquidity incentives, or other economic benefits from certain transactions, Liquidity Sources, or Third-Party Services.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "Where applicable, the Interface may disclose such fees or economic arrangements.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "10.1 Taxes",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "You are solely responsible for determining, reporting, and paying all taxes, duties, levies, or other governmental charges arising from your use of the Interface or any transaction. The Company does not provide tax advice and may make reports or withhold amounts where required by applicable law.",
     ),
   ]),
   LegalParagraph(
@@ -1167,7 +1207,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "If your private keys, seed phrase, device, or authentication credentials are compromised or lost, XYZ may not be able to recover your assets.",
+      text: "If your private keys, seed phrase, device, or authentication credentials are compromised or lost, NoBell may not be able to recover your assets.",
     ),
   ]),
   LegalParagraph(
@@ -1195,7 +1235,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The issuer, custodian, underlying asset, redemption mechanism, and regulatory structure may involve risks beyond XYZ's control.",
+      text: "The issuer, custodian, underlying asset, redemption mechanism, and regulatory structure may involve risks beyond NoBell’s control.",
     ),
   ]),
   LegalParagraph(
@@ -1261,7 +1301,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "XYZ does not recommend that you buy, sell, hold, or otherwise transact in any asset or financial instrument.",
+      text: "NoBell does not recommend that you buy, sell, hold, or otherwise transact in any asset or financial instrument.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1283,18 +1323,19 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ may attempt to route transactions to a Liquidity Source based on its applicable routing methodology.",
+      text: "NoBell may attempt to route transactions to a Liquidity Source based on its applicable routing methodology.",
     ),
   ]),
+  LegalParagraph([TextSpan(text: "However, NoBell does not guarantee:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "However, XYZ does not guarantee:")]),
-  LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• the best available price;")]),
-  LegalParagraph([TextSpan(text: "• the lowest fees;")]),
-  LegalParagraph([TextSpan(text: "• the lowest slippage;")]),
-  LegalParagraph([TextSpan(text: "• the deepest liquidity;")]),
-  LegalParagraph([TextSpan(text: "• successful execution; or")]),
-  LegalParagraph([TextSpan(text: "• execution at any particular price.")]),
+  LegalParagraph([TextSpan(text: "the best available price;")], bullet: true),
+  LegalParagraph([TextSpan(text: "the lowest fees;")], bullet: true),
+  LegalParagraph([TextSpan(text: "the lowest slippage;")], bullet: true),
+  LegalParagraph([TextSpan(text: "the deepest liquidity;")], bullet: true),
+  LegalParagraph([TextSpan(text: "successful execution; or")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "execution at any particular price."),
+  ], bullet: true),
   LegalParagraph(
     [
       TextSpan(
@@ -1308,7 +1349,7 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ may suspend, restrict, modify, or discontinue any asset, market, liquidity source, trading pair, or feature at any time.",
+      text: "NoBell may suspend, restrict, modify, or discontinue any asset, market, liquidity source, trading pair, or feature at any time.",
     ),
   ]),
   LegalParagraph(
@@ -1326,72 +1367,72 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(a) engage in unlawful, fraudulent, deceptive, or prohibited activities;",
+      text: "1. engage in unlawful, fraudulent, deceptive, or prohibited activities;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) violate applicable sanctions or regulatory restrictions;",
+      text: "2. violate applicable sanctions or regulatory restrictions;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(c) circumvent geographic or eligibility restrictions;"),
+    TextSpan(text: "3. circumvent geographic or eligibility restrictions;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(d) manipulate markets or trading activity;"),
+    TextSpan(text: "4. manipulate markets or trading activity;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(e) engage in wash trading, spoofing, front-running, sandwich attacks, or other abusive conduct;",
+      text: "5. engage in wash trading, spoofing, front-running, sandwich attacks, or other abusive conduct;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(f) exploit vulnerabilities in XYZ, any Protocol, blockchain network, or Third-Party Service;",
+      text: "6. exploit vulnerabilities in NoBell, any Protocol, blockchain network, or Third-Party Service;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(g) introduce malware or malicious code;")]),
+  LegalParagraph([TextSpan(text: "7. introduce malware or malicious code;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(h) interfere with the operation of the Interface or any underlying network;",
+      text: "8. interfere with the operation of the Interface or any underlying network;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text:
-          "(i) use unauthorised bots, scripts, crawlers, or automated systems;",
+          "9. use unauthorised bots, scripts, crawlers, or automated systems;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(j) scrape, copy, index, or reproduce Interface data without permission;",
+      text: "10. scrape, copy, index, or reproduce Interface data without permission;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(k) impersonate another person or entity;")]),
+  LegalParagraph([TextSpan(text: "11. impersonate another person or entity;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(l) provide false or misleading information;"),
+    TextSpan(text: "12. provide false or misleading information;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(m) use the Interface to facilitate money laundering, terrorist financing, sanctions evasion, or other unlawful activity; or",
+      text: "13. use the Interface to facilitate money laundering, terrorist financing, sanctions evasion, or other unlawful activity; or",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(n) engage in any conduct that, in the Company's reasonable judgment, creates material legal, regulatory, technical, security, or reputational risk.",
+      text: "14. engage in any conduct that, in the Company’s reasonable judgment, creates material legal, regulatory, technical, security, or reputational risk.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1425,29 +1466,45 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "You must not:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) copy or reproduce the Interface;")]),
+  LegalParagraph([TextSpan(text: "1. copy or reproduce the Interface;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) modify or create derivative works;")]),
+  LegalParagraph([TextSpan(text: "2. modify or create derivative works;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(c) distribute or commercially exploit the Interface;"),
+    TextSpan(text: "3. distribute or commercially exploit the Interface;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(d) reverse engineer or decompile the software;"),
+    TextSpan(text: "4. reverse engineer or decompile the software;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(e) remove proprietary notices; or")]),
+  LegalParagraph([TextSpan(text: "5. remove proprietary notices; or")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(f) use automated systems to access the Interface without authorisation.",
+      text: "6. use automated systems to access the Interface without authorisation.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "All rights not expressly granted are reserved by the Company.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "13.1 Feedback",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "If you submit ideas, suggestions, or other feedback regarding the Interface, you grant the Company a worldwide, perpetual, irrevocable, royalty-free, transferable, and sublicensable right to use, reproduce, modify, distribute, and otherwise exploit that feedback without restriction or compensation to you. This does not permit the Company to identify you publicly without your consent.",
     ),
   ]),
   LegalParagraph(
@@ -1463,7 +1520,7 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "XYZ may from time to time offer promotional campaigns, rebates, rewards, referral programmes, trading incentives, or similar benefits (“Rewards”).",
+      text: "NoBell may from time to time offer promotional campaigns, rebates, rewards, referral programmes, trading incentives, or similar benefits (“Rewards”).",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1508,25 +1565,25 @@ const termsParagraphs = <LegalParagraph>[
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(a) your access to or use of the Interface;"),
+    TextSpan(text: "1. your access to or use of the Interface;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) your breach of these Terms;")]),
+  LegalParagraph([TextSpan(text: "2. your breach of these Terms;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(c) your violation of applicable law;")]),
+  LegalParagraph([TextSpan(text: "3. your violation of applicable law;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(d) any transaction initiated or approved by you;"),
+    TextSpan(text: "4. any transaction initiated or approved by you;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(e) your use of any Third-Party Service; or"),
+    TextSpan(text: "5. your use of any Third-Party Service; or"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text:
-          "(f) any fraud, negligence, misconduct, or misrepresentation by you.",
+          "6. any fraud, negligence, misconduct, or misrepresentation by you.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1552,42 +1609,50 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "This includes losses relating to:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• profits;")]),
-  LegalParagraph([TextSpan(text: "• revenue;")]),
-  LegalParagraph([TextSpan(text: "• goodwill;")]),
-  LegalParagraph([TextSpan(text: "• data;")]),
-  LegalParagraph([TextSpan(text: "• digital assets;")]),
-  LegalParagraph([TextSpan(text: "• trading opportunities;")]),
-  LegalParagraph([TextSpan(text: "• market movements;")]),
-  LegalParagraph([TextSpan(text: "• transaction failures;")]),
-  LegalParagraph([TextSpan(text: "• liquidation;")]),
-  LegalParagraph([TextSpan(text: "• slippage;")]),
-  LegalParagraph([TextSpan(text: "• price differences;")]),
-  LegalParagraph([TextSpan(text: "• smart-contract exploits;")]),
-  LegalParagraph([TextSpan(text: "• blockchain failures;")]),
-  LegalParagraph([TextSpan(text: "• third-party failures;")]),
-  LegalParagraph([TextSpan(text: "• oracle failures;")]),
-  LegalParagraph([TextSpan(text: "• liquidity failures;")]),
-  LegalParagraph([TextSpan(text: "• hacking or security incidents; or")]),
-  LegalParagraph([TextSpan(text: "• regulatory changes.")]),
+  LegalParagraph([TextSpan(text: "profits;")], bullet: true),
+  LegalParagraph([TextSpan(text: "revenue;")], bullet: true),
+  LegalParagraph([TextSpan(text: "goodwill;")], bullet: true),
+  LegalParagraph([TextSpan(text: "data;")], bullet: true),
+  LegalParagraph([TextSpan(text: "digital assets;")], bullet: true),
+  LegalParagraph([TextSpan(text: "trading opportunities;")], bullet: true),
+  LegalParagraph([TextSpan(text: "market movements;")], bullet: true),
+  LegalParagraph([TextSpan(text: "transaction failures;")], bullet: true),
+  LegalParagraph([TextSpan(text: "liquidation;")], bullet: true),
+  LegalParagraph([TextSpan(text: "slippage;")], bullet: true),
+  LegalParagraph([TextSpan(text: "price differences;")], bullet: true),
+  LegalParagraph([TextSpan(text: "smart-contract exploits;")], bullet: true),
+  LegalParagraph([TextSpan(text: "blockchain failures;")], bullet: true),
+  LegalParagraph([TextSpan(text: "third-party failures;")], bullet: true),
+  LegalParagraph([TextSpan(text: "oracle failures;")], bullet: true),
+  LegalParagraph([TextSpan(text: "liquidity failures;")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "hacking or security incidents; or"),
+  ], bullet: true),
+  LegalParagraph([TextSpan(text: "regulatory changes.")], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The Company's aggregate liability arising out of or relating to these Terms or the Interface shall not exceed the greater of:",
+      text: "The Company’s aggregate liability arising out of or relating to these Terms or the Interface shall not exceed the greater of:",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) USD 100; or")]),
+  LegalParagraph([TextSpan(text: "1. USD 100; or")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(b) the total amount actually paid by you to the Company for use of the Interface during the three (3) months preceding the event giving rise to the claim.",
+      text: "2. the total amount actually paid by you to the Company for use of the Interface during the three (3) months preceding the event giving rise to the claim.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "Nothing in these Terms excludes or limits liability that cannot lawfully be excluded or limited.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "If applicable law gives you non-waivable consumer rights or remedies, those rights and remedies remain unaffected.",
     ),
   ]),
   LegalParagraph(
@@ -1613,50 +1678,52 @@ const termsParagraphs = <LegalParagraph>[
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "• merchantability;")]),
-  LegalParagraph([TextSpan(text: "• fitness for a particular purpose;")]),
-  LegalParagraph([TextSpan(text: "• accuracy;")]),
-  LegalParagraph([TextSpan(text: "• availability;")]),
-  LegalParagraph([TextSpan(text: "• reliability;")]),
-  LegalParagraph([TextSpan(text: "• security;")]),
-  LegalParagraph([TextSpan(text: "• non-infringement; and")]),
-  LegalParagraph([TextSpan(text: "• title.")]),
+  LegalParagraph([TextSpan(text: "merchantability;")], bullet: true),
+  LegalParagraph([
+    TextSpan(text: "fitness for a particular purpose;"),
+  ], bullet: true),
+  LegalParagraph([TextSpan(text: "accuracy;")], bullet: true),
+  LegalParagraph([TextSpan(text: "availability;")], bullet: true),
+  LegalParagraph([TextSpan(text: "reliability;")], bullet: true),
+  LegalParagraph([TextSpan(text: "security;")], bullet: true),
+  LegalParagraph([TextSpan(text: "non-infringement; and")], bullet: true),
+  LegalParagraph([TextSpan(text: "title.")], bullet: true),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "The Company does not warrant that:")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(a) the Interface will always be available;"),
+    TextSpan(text: "1. the Interface will always be available;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) the Interface will be error-free;")]),
+  LegalParagraph([TextSpan(text: "2. the Interface will be error-free;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(c) transactions will execute successfully;"),
+    TextSpan(text: "3. transactions will execute successfully;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(d) displayed prices or market information will be accurate or current;",
+      text: "4. displayed prices or market information will be accurate or current;",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(e) any asset or market will remain available;"),
+    TextSpan(text: "5. any asset or market will remain available;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "(f) any Liquidity Source will remain available;"),
+    TextSpan(text: "6. any Liquidity Source will remain available;"),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(g) any Tokenized Security will maintain its value or tracking relationship; or",
+      text: "7. any Tokenized Security will maintain its value or tracking relationship; or",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(h) any Perpetual Contract will remain available or operate without interruption.",
+      text: "8. any Perpetual Contract will remain available or operate without interruption.",
     ),
   ]),
   LegalParagraph(
@@ -1676,21 +1743,21 @@ const termsParagraphs = <LegalParagraph>[
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) you have breached these Terms;")]),
+  LegalParagraph([TextSpan(text: "1. you have breached these Terms;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) your use violates applicable law;")]),
+  LegalParagraph([TextSpan(text: "2. your use violates applicable law;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(c) you are a Prohibited Person;")]),
+  LegalParagraph([TextSpan(text: "3. you are a Prohibited Person;")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(d) your activity creates legal, regulatory, security, technical, or reputational risk; or",
+      text: "4. your activity creates legal, regulatory, security, technical, or reputational risk; or",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "(e) suspension or termination is necessary to protect the Company, its users, or Third-Party Services.",
+      text: "5. suspension or termination is necessary to protect the Company, its users, or Third-Party Services.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1736,22 +1803,17 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "Notices shall be sent to:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([
-    TextSpan(
-      text: "[Legal / Compliance Email]",
-      style: TextStyle(fontWeight: FontWeight.w600),
-    ),
-  ]),
+  LegalParagraph([TextSpan(text: "contact@nobell.global")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([TextSpan(text: "The notice must include:")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(a) your name;")]),
+  LegalParagraph([TextSpan(text: "1. your name;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(b) your contact information;")]),
+  LegalParagraph([TextSpan(text: "2. your contact information;")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(c) a description of the Dispute; and")]),
+  LegalParagraph([TextSpan(text: "3. a description of the Dispute; and")]),
   LegalParagraph([TextSpan(text: "​")]),
-  LegalParagraph([TextSpan(text: "(d) the resolution sought.")]),
+  LegalParagraph([TextSpan(text: "4. the resolution sought.")]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
@@ -1762,7 +1824,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([
     TextSpan(text: "These Terms shall be governed by the laws of "),
     TextSpan(
-      text: "[Governing Law Jurisdiction]",
+      text: "Singapore",
       style: TextStyle(fontWeight: FontWeight.w600),
     ),
     TextSpan(text: ", without regard to conflict-of-law principles."),
@@ -1770,27 +1832,34 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Any Dispute not resolved through the above process shall be finally resolved by arbitration administered by ",
+      text: "Any Dispute not resolved through the above process shall be finally resolved by arbitration administered by the ",
     ),
     TextSpan(
-      text: "[Arbitration Institution]",
+      text: "Singapore International Arbitration Centre (SIAC)",
       style: TextStyle(fontWeight: FontWeight.w600),
     ),
-    TextSpan(text: " in accordance with its applicable rules."),
+    TextSpan(
+      text: " in accordance with the SIAC Rules in force when the arbitration is commenced, which rules are incorporated into this Section by reference.",
+    ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(text: "The seat of arbitration shall be "),
     TextSpan(
-      text: "[Arbitration Seat]",
+      text: "Singapore.",
       style: TextStyle(fontWeight: FontWeight.w600),
     ),
-    TextSpan(text: "."),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "The arbitration shall be conducted in English before a sole arbitrator unless otherwise required by the applicable arbitration rules.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Nothing in this Section prevents either party from seeking urgent interim or injunctive relief from a court of competent jurisdiction. To the extent a Dispute is not subject to arbitration, the courts of Singapore shall have exclusive jurisdiction, except where applicable law requires otherwise.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1846,7 +1915,7 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Material changes may be communicated through the Interface, website, or other reasonable means.",
+      text: "Material changes may be communicated through the Interface, website, email, or other reasonable means. Unless otherwise stated, amended Terms take effect when published. Changes will not apply retroactively where prohibited by law.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -1868,13 +1937,13 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "You may not assign or transfer your rights or obligations under these Terms without the Company's prior written consent.",
+      text: "You may not assign or transfer your rights or obligations under these Terms without the Company’s prior written consent.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "The Company may assign these Terms to an affiliate, successor, purchaser, or other entity in connection with a merger, acquisition, restructuring, or transfer of the Company's business or assets.",
+      text: "The Company may assign these Terms to an affiliate, successor, purchaser, or other entity in connection with a merger, acquisition, restructuring, or transfer of the Company’s business or assets.",
     ),
   ]),
   LegalParagraph(
@@ -1930,6 +1999,54 @@ const termsParagraphs = <LegalParagraph>[
   LegalParagraph(
     [
       TextSpan(
+        text: "Privacy",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "The Company’s collection and use of personal data in connection with the Interface are described in the privacy notice made available through the Interface or the official NoBell website. Third-Party Services may process personal data under their own privacy notices. You should review those notices before using the relevant Third-Party Service.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "Electronic Communications",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "You consent to receive agreements, notices, disclosures, and other communications electronically, including through the Interface, the official NoBell website, or email. You are responsible for keeping your contact details current and for maintaining access to compatible hardware and software.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "App Store Terms",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 14,
+    top: 16,
+    bottom: 12,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "If you obtain the Interface through an app store or distribution platform, your use may also be subject to that platform’s terms. To the extent required by those terms, the platform provider is not a party to these Terms and is not responsible for the Interface, support, maintenance, warranties, claims, or intellectual property matters relating to the Interface, except as required by applicable law.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
         text: "Force Majeure",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
@@ -1959,7 +2076,6 @@ const termsParagraphs = <LegalParagraph>[
       text: "Nothing in these Terms creates a partnership, joint venture, agency, employment, fiduciary, brokerage, advisory, or other similar relationship between you and the Company.",
     ),
   ]),
-  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
       text: "You act solely on your own behalf and have no authority to bind the Company.",
@@ -1978,7 +2094,7 @@ const termsParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "Notices to you may be provided through the Interface, the official XYZ website, email, or other communication channels designated by the Company.",
+      text: "Notices to you may be provided through the Interface, the official NoBell website, email, or other communication channels designated by the Company.",
     ),
   ]),
   LegalParagraph([TextSpan(text: "​")]),
@@ -2003,6 +2119,34 @@ const termsParagraphs = <LegalParagraph>[
       text: "Provisions concerning intellectual property, risk disclosures, indemnification, limitation of liability, disclaimers, dispute resolution, governing law, and any other provisions that by their nature should survive termination shall survive termination of these Terms.",
     ),
   ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "21. CONTACT US",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 15,
+    top: 24,
+    bottom: 16,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "Questions, complaints, and legal notices regarding these Terms may be sent to:",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "TECHNOVA LABS PTE. LTD.",
+      style: TextStyle(fontWeight: FontWeight.w600),
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([TextSpan(text: "3 Fraser Street, #04-23A, DUO Tower")]),
+  LegalParagraph([TextSpan(text: "Singapore")]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([TextSpan(text: "Email: contact@nobell.global")]),
 ];
 
 const privacyParagraphs = <LegalParagraph>[
@@ -2014,11 +2158,16 @@ const privacyParagraphs = <LegalParagraph>[
       ),
     ],
     size: 20,
+    bottom: 8,
+  ),
+  LegalParagraph(
+    [TextSpan(text: "Last Updated: 27 October 2026")],
+    size: 12,
     bottom: 16,
   ),
   LegalParagraph([
     TextSpan(
-      text: "This Privacy Policy explains how Nobell collects, uses, and shares your personal information. We take your privacy seriously and are committed to protecting your personal data.",
+      text: "This Privacy Policy explains how TECHNOVA LABS PTE. LTD., operating under the NoBell brand (“NoBell”, “we”, “us”, or “our”), collects, uses, and shares your personal information. We take your privacy seriously and are committed to protecting your personal data.",
     ),
   ]),
   LegalParagraph(
@@ -2034,15 +2183,15 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We collect information you provide directly to us when you:",
+      text: "We collect information that you provide directly to us when you:",
     ),
-    TextSpan(text: "\n"),
   ]),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(text: "Create an account or profile"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Use our services, including transaction data"),
+    TextSpan(text: "Use our services, including when conducting transactions"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
@@ -2060,24 +2209,27 @@ const privacyParagraphs = <LegalParagraph>[
     TextSpan(
       text: "We also automatically collect certain information when you use our services, including:",
     ),
-    TextSpan(text: "\n"),
   ]),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "Device information (operating system, hardware model, device identifiers)",
-    ),
-  ], bullet: true),
-  LegalParagraph([
-    TextSpan(text: "Log information (IP address, browser type, pages visited)"),
-  ], bullet: true),
-  LegalParagraph([
-    TextSpan(
-      text: "Location information when you use our app (if you've granted permission)",
+      text: "Device information, such as your operating system, hardware model, and device identifiers",
     ),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Blockchain transaction information (which is publicly available)",
+      text: "Log information, such as your IP address, browser type, and pages visited",
+    ),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(
+      text: "Location information when you use our app, if you have granted permission",
+    ),
+  ], bullet: true),
+  LegalParagraph([
+    TextSpan(
+      text:
+          "Blockchain transaction information, which may be publicly available",
     ),
   ], bullet: true),
   LegalParagraph(
@@ -2091,10 +2243,8 @@ const privacyParagraphs = <LegalParagraph>[
     top: 24,
     bottom: 16,
   ),
-  LegalParagraph([
-    TextSpan(text: "We use the information we collect to:"),
-    TextSpan(text: "\n"),
-  ]),
+  LegalParagraph([TextSpan(text: "We use the information we collect to:")]),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(text: "Provide, maintain, and improve our services"),
   ], bullet: true),
@@ -2116,11 +2266,11 @@ const privacyParagraphs = <LegalParagraph>[
     TextSpan(text: "Prevent fraudulent transactions and enhance security"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Monitor and analyze trends, usage, and activities"),
+    TextSpan(text: "Monitor and analyse trends, usage, and activities"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Personalize your experience and provide content and features",
+      text: "Personalise your experience and provide relevant content and features",
     ),
   ], bullet: true),
   LegalParagraph(
@@ -2134,16 +2284,14 @@ const privacyParagraphs = <LegalParagraph>[
     top: 24,
     bottom: 16,
   ),
+  LegalParagraph([TextSpan(text: "We may share your information with:")]),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "We may share your information with:"),
-    TextSpan(text: "\n"),
-  ]),
-  LegalParagraph([
-    TextSpan(text: "Service providers who perform services on our behalf"),
+    TextSpan(text: "Service providers that perform services on our behalf"),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Financial institutions and payment processors to facilitate transactions",
+      text: "Financial institutions and payment processors that facilitate transactions",
     ),
   ], bullet: true),
   LegalParagraph([
@@ -2153,18 +2301,18 @@ const privacyParagraphs = <LegalParagraph>[
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Law enforcement, government officials, or other third parties when required by law",
+      text: "Law enforcement agencies, government officials, or other third parties where required by law",
     ),
   ], bullet: true),
   LegalParagraph([
     TextSpan(
-      text: "Other users as directed by you (such as public transaction information)",
+      text: "Other users at your direction, including through publicly available transaction information",
     ),
-    TextSpan(text: "\n"),
   ], bullet: true),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "We may also share aggregated or de-identified information, which cannot reasonably be used to identify you.",
+      text: "We may also share aggregated or de-identified information that cannot reasonably be used to identify you.",
     ),
   ]),
   LegalParagraph(
@@ -2180,7 +2328,7 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no security system is impenetrable, and we cannot guarantee the security of our systems or your information.",
+      text: "We take reasonable measures to help protect your personal information against loss, theft, misuse, unauthorised access, disclosure, alteration, and destruction. However, no security system is impenetrable, and we cannot guarantee the security of our systems or your information.",
     ),
   ]),
   LegalParagraph(
@@ -2196,36 +2344,36 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "Depending on your location, you may have certain rights regarding your personal information, including:",
+      text: "Depending on your location, you may have certain rights regarding your personal information, including the right to:",
     ),
-    TextSpan(text: "\n"),
   ]),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
-    TextSpan(text: "Access to your personal information"),
+    TextSpan(text: "Access your personal information"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Correction of inaccurate or incomplete information"),
+    TextSpan(text: "Correct inaccurate or incomplete information"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Deletion of your personal information"),
+    TextSpan(text: "Request the deletion of your personal information"),
   ], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Restriction of processing of your personal information"),
+    TextSpan(text: "Restrict the processing of your personal information"),
   ], bullet: true),
-  LegalParagraph([TextSpan(text: "Data portability")], bullet: true),
+  LegalParagraph([TextSpan(text: "Request data portability")], bullet: true),
   LegalParagraph([
-    TextSpan(text: "Objection to processing"),
-    TextSpan(text: "\n"),
+    TextSpan(text: "Object to the processing of your personal information"),
   ], bullet: true),
+  LegalParagraph([TextSpan(text: "​")]),
   LegalParagraph([
     TextSpan(
-      text: "To exercise these rights, please contact us using the details provided in the \"Contact Us\" section.",
+      text: "To exercise these rights, please contact us using the details provided in the “Contact Us” section.",
     ),
   ]),
   LegalParagraph(
     [
       TextSpan(
-        text: "6. International Data Transfers",
+        text: "6. Account and Data Deletion",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2235,13 +2383,46 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We may transfer your personal information to countries other than the one in which you live. We deploy appropriate safeguards when we transfer personal data.",
+      text: "You may request the deletion of your NoBell account and associated personal data by sending an email to ",
+    ),
+    TextSpan(
+      text: "contact@nobell.global",
+      style: TextStyle(fontWeight: FontWeight.w600),
+    ),
+    TextSpan(text: " with the subject line "),
+    TextSpan(
+      text: "“Account Deletion Request.”",
+      style: TextStyle(fontWeight: FontWeight.w600),
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Please include the email address registered with your account and any other information reasonably required for us to identify your account and verify that the request was made by the account holder. For security reasons, we may request additional verification before processing the request. You should never provide your private key, seed phrase, or wallet recovery phrase.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Once your request has been verified, we will delete or anonymise your account and associated personal data within 30 days, unless the information must be retained for legal, regulatory, fraud-prevention, security, dispute-resolution, or financial record-keeping purposes.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Information that we are legally required to retain may be kept for up to five years after your account is closed, or for a longer period where required by applicable law. Residual copies stored in backup systems may remain for up to 90 days before being securely deleted or overwritten.",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(
+      text: "Deleting your NoBell account will not delete transaction information that has already been recorded on a public blockchain. Public blockchain records are not controlled by NoBell and generally cannot be changed or deleted.",
     ),
   ]),
   LegalParagraph(
     [
       TextSpan(
-        text: "7. Changes to this Privacy Policy",
+        text: "7. International Data Transfers",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2251,13 +2432,13 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with additional notice.",
+      text: "We may transfer your personal information to countries other than the country in which you live. We implement appropriate safeguards when transferring personal data, as required by applicable law.",
     ),
   ]),
   LegalParagraph(
     [
       TextSpan(
-        text: "8. Contact Us",
+        text: "8. Changes to This Privacy Policy",
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
     ],
@@ -2267,7 +2448,31 @@ const privacyParagraphs = <LegalParagraph>[
   ),
   LegalParagraph([
     TextSpan(
-      text: "If you have any questions about this Privacy Policy, please contact us at xxx mail.",
+      text: "We may update this Privacy Policy from time to time. If we make changes, we will notify you by revising the “Last Updated” date at the top of this Privacy Policy. In some cases, we may also provide additional notice.",
+    ),
+  ]),
+  LegalParagraph(
+    [
+      TextSpan(
+        text: "9. Contact Us",
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ],
+    size: 15,
+    top: 24,
+    bottom: 16,
+  ),
+  LegalParagraph([
+    TextSpan(
+      text: "If you have any questions about this Privacy Policy or wish to submit an account or data deletion request, please contact us at:",
+    ),
+  ]),
+  LegalParagraph([TextSpan(text: "​")]),
+  LegalParagraph([
+    TextSpan(text: "Email: "),
+    TextSpan(
+      text: "contact@nobell.global",
+      style: TextStyle(fontWeight: FontWeight.w600),
     ),
   ]),
 ];

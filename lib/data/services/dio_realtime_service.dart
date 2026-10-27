@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
@@ -35,19 +37,55 @@ final class DioRealtimeService
   final int maxDeliveredEventIds;
 
   @override
-  Stream<RealtimeEnvelope> subscribe({required Set<String> channels}) async* {
-    yield* _subscribe(channels: channels);
+  Stream<RealtimeEnvelope> subscribe({required Set<String> channels}) =>
+      _withCancellation(
+        (cancelToken) =>
+            _subscribe(channels: channels, cancelToken: cancelToken),
+      );
+
+  /// Unlike async*'s onCancel, this callback runs while a request is pending.
+  /// Abort the transport before awaiting the generator's cancellation so late
+  /// failures cannot escape through StreamSubscription.cancel().
+  Stream<RealtimeEnvelope> _withCancellation(
+    Stream<RealtimeEnvelope> Function(CancelToken) create,
+  ) {
+    final cancelToken = CancelToken();
+    StreamSubscription<RealtimeEnvelope>? subscription;
+    late final StreamController<RealtimeEnvelope> controller;
+    controller = StreamController<RealtimeEnvelope>(
+      onListen: () {
+        subscription = create(cancelToken).listen(
+          controller.add,
+          onError: controller.addError,
+          onDone: controller.close,
+        );
+      },
+      onCancel: () {
+        cancelToken.cancel('SSE subscription closed');
+        return subscription?.cancel();
+      },
+      onPause: () => subscription?.pause(),
+      onResume: () => subscription?.resume(),
+    );
+    return controller.stream;
   }
 
   Stream<RealtimeEnvelope> _subscribe({
     required Set<String> channels,
+    required CancelToken cancelToken,
     String? initialCursor,
   }) async* {
     final canonicalChannels = _canonicalizeChannels(channels);
     String? lastEventId = initialCursor;
     final deliveredEventIds = _RecentEventIds(maxDeliveredEventIds);
     for (var attempt = 0; attempt <= _policy.maxAttempts; attempt++) {
-      final cancelToken = CancelToken();
+      if (cancelToken.isCancelled) return;
+      final attemptToken = CancelToken();
+      final cancellation = cancelToken.whenCancel.asStream().listen((_) {
+        if (!attemptToken.isCancelled) {
+          attemptToken.cancel('SSE subscription closed');
+        }
+      });
       try {
         final response = await _dio.get<ResponseBody>(
           '/v1/events',
@@ -60,7 +98,7 @@ final class DioRealtimeService
               'Last-Event-ID': ?lastEventId,
             },
           ),
-          cancelToken: cancelToken,
+          cancelToken: attemptToken,
         );
         final body = response.data;
         if (body == null) throw const DecodingFailure();
@@ -74,28 +112,79 @@ final class DioRealtimeService
           if (event.eventName == 'resync_required') return;
         }
         if (attempt == _policy.maxAttempts) return;
-        await _delay(_policy.delayFor(attempt));
-      } on DioException catch (error) {
-        if (CancelToken.isCancel(error)) return;
+      } on DioException catch (error, stackTrace) {
+        if (cancelToken.isCancelled || CancelToken.isCancel(error)) return;
         if (attempt == _policy.maxAttempts) {
-          throw const ApiFailureMapper().fromDio(error);
+          yield* Stream<RealtimeEnvelope>.error(
+            await _mapStreamFailure(error),
+            stackTrace,
+          );
+          return;
         }
-        await _delay(_policy.delayFor(attempt));
-      } on ApiFailure {
-        rethrow;
-      } on Object catch (error) {
+      } on ApiFailure catch (error, stackTrace) {
+        if (cancelToken.isCancelled) return;
+        yield* Stream<RealtimeEnvelope>.error(error, stackTrace);
+        return;
+      } on Object catch (error, stackTrace) {
+        if (cancelToken.isCancelled) return;
         // Once Dio has returned a streaming response, socket failures surface
         // from ResponseBody.stream instead of as DioException instances.
         if (attempt == _policy.maxAttempts) {
-          throw NetworkFailure(userAction: error.toString());
+          yield* Stream<RealtimeEnvelope>.error(
+            NetworkFailure(userAction: error.toString()),
+            stackTrace,
+          );
+          return;
         }
-        await _delay(_policy.delayFor(attempt));
       } finally {
-        if (!cancelToken.isCancelled) {
-          cancelToken.cancel('SSE subscription closed');
+        // Dispose this response before backoff/retry, including unfinished HTTP
+        // error bodies. Detach the parent listener so completed attempts are
+        // not retained for the lifetime of a successful SSE connection.
+        if (!attemptToken.isCancelled) {
+          attemptToken.cancel('SSE attempt closed');
         }
+        await cancellation.cancel();
       }
+      await _waitToReconnect(attempt, cancelToken);
     }
+  }
+
+  Future<void> _waitToReconnect(int attempt, CancelToken cancelToken) =>
+      Future.any([
+        _delay(_policy.delayFor(attempt)),
+        cancelToken.whenCancel.then<void>((_) {}),
+      ]);
+
+  Future<ApiFailure> _mapStreamFailure(DioException error) async {
+    final response = error.response;
+    final body = response?.data;
+    if (response == null || body is! ResponseBody) {
+      return const ApiFailureMapper().fromDio(error);
+    }
+
+    // ResponseType.stream also leaves unsuccessful HTTP bodies as streams.
+    // Decode only a bounded error envelope; never surface a raw response body.
+    Object? data;
+    try {
+      final bytes = await body.stream
+          .timeout(const Duration(seconds: 5))
+          .expand((chunk) => chunk)
+          .take(64 * 1024)
+          .toList();
+      data = jsonDecode(utf8.decode(bytes));
+    } on Object {
+      // Retain HTTP status and request ID if the error envelope is unreadable.
+    }
+    return const ApiFailureMapper().fromDio(
+      error.copyWith(
+        response: Response<Object?>(
+          requestOptions: response.requestOptions,
+          statusCode: response.statusCode,
+          headers: response.headers,
+          data: data,
+        ),
+      ),
+    );
   }
 
   @override
@@ -103,6 +192,13 @@ final class DioRealtimeService
     required Set<String> channels,
     String? cursor,
     int limit = 50,
+  }) => _replay(channels: channels, cursor: cursor, limit: limit);
+
+  Future<RealtimeReplayPage> _replay({
+    required Set<String> channels,
+    String? cursor,
+    int limit = 50,
+    CancelToken? cancelToken,
   }) async {
     final apiClient = systemApi;
     if (apiClient == null) {
@@ -114,6 +210,7 @@ final class DioRealtimeService
         channels: canonicalChannels,
         cursor: cursor,
         limit: limit,
+        cancelToken: cancelToken,
       );
       final page = response.data;
       if (page == null) throw const DecodingFailure();
@@ -132,35 +229,59 @@ final class DioRealtimeService
   Stream<RealtimeEnvelope> subscribeWithRecovery({
     required Set<String> channels,
     required Future<void> Function() refreshSnapshot,
-  }) async* {
-    var cursor = '';
-    while (true) {
-      var resync = false;
-      await for (final event in _subscribe(
-        channels: channels,
-        initialCursor: cursor.isEmpty ? null : cursor,
-      )) {
-        yield event;
-        if (event.eventName == 'resync_required') {
-          cursor = event.eventId;
-          resync = true;
-          break;
-        }
-      }
-      if (!resync) return;
+  }) => _withCancellation(
+    (cancelToken) => _subscribeWithRecovery(
+      channels: channels,
+      refreshSnapshot: refreshSnapshot,
+      cancelToken: cancelToken,
+    ),
+  );
 
-      await refreshSnapshot();
-      do {
-        final page = await replay(channels: channels, cursor: cursor);
-        if (page.resyncRequired) {
-          await refreshSnapshot();
-        }
-        for (final event in page.items) {
+  Stream<RealtimeEnvelope> _subscribeWithRecovery({
+    required Set<String> channels,
+    required Future<void> Function() refreshSnapshot,
+    required CancelToken cancelToken,
+  }) async* {
+    try {
+      var cursor = '';
+      while (!cancelToken.isCancelled) {
+        var resync = false;
+        await for (final event in _subscribe(
+          channels: channels,
+          cancelToken: cancelToken,
+          initialCursor: cursor.isEmpty ? null : cursor,
+        )) {
           yield event;
+          if (event.eventName == 'resync_required') {
+            cursor = event.eventId;
+            resync = true;
+            break;
+          }
         }
-        cursor = page.nextCursor;
-        if (!page.hasMore && !page.resyncRequired) break;
-      } while (true);
+        if (!resync) return;
+
+        await refreshSnapshot();
+        if (cancelToken.isCancelled) return;
+        do {
+          final page = await _replay(
+            channels: channels,
+            cursor: cursor,
+            cancelToken: cancelToken,
+          );
+          if (cancelToken.isCancelled) return;
+          if (page.resyncRequired) {
+            await refreshSnapshot();
+          }
+          for (final event in page.items) {
+            yield event;
+          }
+          cursor = page.nextCursor;
+          if (!page.hasMore && !page.resyncRequired) break;
+        } while (true);
+      }
+    } on Object catch (error, stackTrace) {
+      if (cancelToken.isCancelled) return;
+      yield* Stream<RealtimeEnvelope>.error(error, stackTrace);
     }
   }
 

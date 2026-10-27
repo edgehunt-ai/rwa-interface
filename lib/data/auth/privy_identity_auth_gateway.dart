@@ -8,6 +8,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/security/sensitive_text.dart';
 import '../../domain/models/wallet_action_execution.dart';
 import '../../domain/models/api_failure.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
@@ -814,12 +815,11 @@ final class PrivyIdentityAuthGateway
     required _PrivyProviderDiagnostic providerDiagnostic,
   }) {
     final normalized = message.toLowerCase();
-    final reason = operation.startsWith('passkey_')
-        ? _sanitizeDiagnosticMessage(
-            message.split('\n').first,
-            redactCodes: false,
-          ).trim()
-        : null;
+    final safeReason = _sanitizeDiagnosticMessage(
+      message.split('\n').first,
+      redactCodes: codeOperation || operation == 'request_email_code',
+    ).trim();
+    final reason = safeReason.isEmpty ? null : safeReason;
     late final IdentityFailure failure;
     if (normalized.contains('network') || normalized.contains('timeout')) {
       failure = IdentityFailure(
@@ -916,26 +916,7 @@ final class PrivyIdentityAuthGateway
     String value, {
     bool redactCodes = true,
   }) {
-    final sanitized = value
-        .replaceAll(RegExp(r'\b[^\s@]+@[^\s@]+\b'), '<redacted-email>')
-        .replaceAll(
-          RegExp(r'Bearer\s+\S+', caseSensitive: false),
-          'Bearer <redacted>',
-        )
-        .replaceAll(
-          RegExp(
-            r'([?&](?:access_token|authorization|code|id_token|state|token)=)[^&#\s]+',
-            caseSensitive: false,
-          ),
-          r'$1<redacted>',
-        )
-        .replaceAll(
-          RegExp(
-            r'("(?:access_token|authorization|code|id_token|state|token)"\s*:\s*")[^"]+',
-            caseSensitive: false,
-          ),
-          r'$1<redacted>',
-        );
+    final sanitized = SensitiveTextRedactor.redact(value);
     return redactCodes
         ? sanitized.replaceAll(RegExp(r'\b\d{4,10}\b'), '<redacted-code>')
         : sanitized;

@@ -11,6 +11,7 @@ import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 import '../../../../app/routing/routes.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../domain/auth/authentication.dart';
+import '../../../../domain/security/sensitive_text.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../../core/theme/app_theme.dart';
@@ -1018,7 +1019,7 @@ class _LoginFailure extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final message = switch (failure.code) {
+    final fallback = switch (failure.code) {
       AuthenticationFailureCode.invalidInput => l10n.enterValidEmail,
       AuthenticationFailureCode.invalidCode => l10n.invalidConfirmationCode,
       AuthenticationFailureCode.network => l10n.networkUnavailableRetry,
@@ -1033,6 +1034,14 @@ class _LoginFailure extends StatelessWidget {
         l10n.privyPlatformUnsupported,
       AuthenticationFailureCode.provider => l10n.privyUnavailable,
     };
+    final reason = failure.reason == null
+        ? null
+        : SensitiveTextRedactor.redact(failure.reason!).trim();
+    final message = reason == null || reason.isEmpty
+        ? fallback
+        : failure.code == AuthenticationFailureCode.browserUnavailable
+        ? '$reason\n$fallback'
+        : reason;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(

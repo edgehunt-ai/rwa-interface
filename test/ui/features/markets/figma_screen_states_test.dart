@@ -25,6 +25,53 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'leaving markets during a failed refresh does not leak disposal errors',
+    (tester) async {
+      final refreshFailure = Completer<DomainPage<MarketProduct>>();
+      var calls = 0;
+      final container = ProviderContainer(
+        retry: (_, _) => const Duration(seconds: 10),
+        overrides: [
+          marketRankingTabProvider.overrideWithBuild((_, _) => 'Popular'),
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith((ref, query) {
+            if (++calls == 1) {
+              return Future.value(DomainPage(items: [_testProduct('NVDA')]));
+            }
+            return refreshFailure.future;
+          }),
+        ],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: _marketApp(const MarketScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final refresh = tester
+          .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+          .onRefresh();
+      refreshFailure.completeError(
+        StateError('Market data is temporarily unavailable'),
+      );
+      await tester.pump();
+      await tester.pump();
+      const query = (
+        query: null,
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      );
+      expect(container.read(marketProductsProvider(query)).retrying, isTrue);
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+      await refresh;
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final mode in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets(
       'market venue badges use layered theme colors in ${mode.name}',

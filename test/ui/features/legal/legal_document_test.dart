@@ -194,11 +194,11 @@ void main() {
       ),
     );
     await tester.scrollUntilVisible(
-      find.text('8. Contact Us'),
+      find.text('9. Contact Us'),
       500,
       maxScrolls: 100,
     );
-    expect(find.text('8. Contact Us'), findsOneWidget);
+    expect(find.text('9. Contact Us'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

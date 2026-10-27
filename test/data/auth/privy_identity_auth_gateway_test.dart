@@ -397,7 +397,7 @@ void main() {
         authState: const Unauthenticated(),
         oauth: _FakeOAuth(
           loginResult: const Failure(
-            PrivyException('Failed to launch OAuth browser'),
+            PrivyException('Failed to launch OAuth browser [50152]'),
           ),
         ),
       ),
@@ -407,14 +407,105 @@ void main() {
     await expectLater(
       gateway.loginWithOAuth('google'),
       throwsA(
+        isA<IdentityFailure>()
+            .having(
+              (failure) => failure.code,
+              'code',
+              AuthenticationFailureCode.browserUnavailable,
+            )
+            .having(
+              (failure) => failure.reason,
+              'reason',
+              'Failed to launch OAuth browser [50152]',
+            ),
+      ),
+    );
+  });
+
+  test('OAuth failure preserves its cause without credentials or stack', () async {
+    final gateway = PrivyIdentityAuthGateway(
+      createPrivy: (_) => _FakePrivy(
+        authState: const Unauthenticated(),
+        oauth: _FakeOAuth(
+          loginResult: const Failure(
+            PrivyException(
+              'Failed to launch OAuth browser: no supported browser. '
+              'token=oauth-secret password="secret phrase" '
+              'https://example.test/callback?code=auth-code&state=session-state\n'
+              'at internal.stack(frame)',
+            ),
+          ),
+        ),
+      ),
+    );
+    await gateway.initialize(configuration);
+    await expectLater(
+      gateway.loginWithOAuth('google'),
+      throwsA(
         isA<IdentityFailure>().having(
-          (failure) => failure.code,
-          'code',
-          AuthenticationFailureCode.browserUnavailable,
+          (failure) => failure.reason,
+          'safe reason',
+          'Failed to launch OAuth browser: no supported browser. '
+              'token=<redacted> password=<redacted> '
+              'https://example.test/callback?code=<redacted>&state=<redacted>',
         ),
       ),
     );
   });
+
+  test(
+    'OAuth credentials are removed from both visible reason and diagnostics',
+    () async {
+      String? diagnostic;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: const Unauthenticated(),
+          oauth: _FakeOAuth(
+            loginResult: const Failure(
+              PrivyException(
+                'OAuth exchange failed [50152]: '
+                'client_secret=demo-client-secret refresh_token=demo-refresh-token '
+                '{"clientSecret":"demo-json-secret"} '
+                'https://example.test/?refreshToken=demo-query-token&provider=google',
+              ),
+            ),
+          ),
+        ),
+        reportDiagnostic:
+            ({
+              required operation,
+              required message,
+              required failureCode,
+              required providerError,
+              providerFlow,
+              providerStage,
+            }) {
+              diagnostic = message;
+            },
+      );
+      await gateway.initialize(configuration);
+      IdentityFailure? failure;
+      try {
+        await gateway.loginWithOAuth('google');
+      } on IdentityFailure catch (error) {
+        failure = error;
+      }
+      expect(failure, isNotNull);
+      expect(failure!.reason, contains('OAuth exchange failed [50152]'));
+      expect(diagnostic, contains('OAuth exchange failed'));
+      for (final message in [failure.reason!, diagnostic!]) {
+        for (final secret in [
+          'demo-client-secret',
+          'demo-refresh-token',
+          'demo-json-secret',
+          'demo-query-token',
+        ]) {
+          expect(message, isNot(contains(secret)));
+        }
+        expect(message, contains('provider=google'));
+      }
+    },
+  );
 
   test(
     'Passkey login and binding use the HTTPS origin required by Privy',

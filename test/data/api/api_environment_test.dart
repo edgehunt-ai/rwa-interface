@@ -7,7 +7,7 @@ void main() {
 
     expect(environment.connectTimeout, const Duration(seconds: 7));
     expect(environment.sendTimeout, const Duration(seconds: 10));
-    expect(environment.receiveTimeout, const Duration(seconds: 15));
+    expect(environment.receiveTimeout, Duration.zero);
   });
 
   test('rejects missing and relative URLs', () {

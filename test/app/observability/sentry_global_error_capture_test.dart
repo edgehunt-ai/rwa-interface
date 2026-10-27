@@ -7,6 +7,9 @@ import 'package:nobell/app/observability/observability_config.dart';
 import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/observability/sentry_bootstrap.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 // The SDK exposes OnErrorIntegration publicly but keeps its dispatcher adapter internal.
 // ignore: implementation_imports
@@ -82,6 +85,94 @@ void main() {
       'duration_ms': 125,
     });
   });
+
+  test(
+    'pending cancellation retains its cause with a stable release identity',
+    () async {
+      final fixture = await _initializeSentry();
+      SentryObservabilityReporter().recordError(
+        operation: 'cancel_order',
+        error: const Hip3ExecutionPending(
+          'order-1',
+          'action-1',
+          requiresReview: true,
+          reason: 'Venue confirmation delayed token=secret-token',
+          failure: ServerFailure(
+            statusCode: 503,
+            code: 'venue_unavailable',
+            requestId: 'request-1',
+          ),
+        ),
+      );
+      await fixture.transport.waitForEventCount(1);
+      final event = fixture.transport.events.single;
+      expect(event.exceptions!.single.type, 'Hip3ExecutionPending');
+      expect(
+        event.exceptions!.single.value,
+        'Venue confirmation delayed token=<redacted>',
+      );
+      expect(event.fingerprint!.last, 'Hip3ExecutionPending:manual_review');
+      expect(
+        event.contexts['business_operation'],
+        containsPair('action_id', 'action-1'),
+      );
+      expect(
+        event.contexts['business_operation'],
+        containsPair('request_id', 'request-1'),
+      );
+      expect(
+        event.contexts['business_operation'],
+        containsPair('http_status', '503'),
+      );
+      expect(
+        event.contexts['business_operation'],
+        containsPair('requires_review', 'true'),
+      );
+    },
+  );
+
+  test(
+    'quote changes and signing failures have readable release diagnostics',
+    () async {
+      final fixture = await _initializeSentry();
+      final reporter = SentryObservabilityReporter();
+      reporter.recordError(
+        operation: 'hip3_withdrawal_prepare',
+        error: const Hip3WithdrawalQuoteChanged(),
+      );
+      await fixture.transport.waitForEventCount(1);
+      final quote = fixture.transport.events.single;
+      expect(quote.exceptions!.single.type, 'Hip3WithdrawalQuoteChanged');
+      expect(
+        quote.exceptions!.single.value,
+        contains('Refresh and review before signing'),
+      );
+      expect(
+        quote.fingerprint!.last,
+        'Hip3WithdrawalQuoteChanged:quote_changed',
+      );
+
+      reporter.recordError(
+        operation: 'hip3_withdrawal_submit',
+        error: const Hip3SigningFailure(
+          Hip3SigningFailureCode.actionNotReady,
+          reason: 'Action expired. Bearer signing-secret',
+          failureCode: 'action_expired',
+        ),
+      );
+      await fixture.transport.waitForEventCount(2);
+      final signing = fixture.transport.events.last;
+      expect(signing.exceptions!.single.type, 'Hip3SigningFailure');
+      expect(
+        signing.exceptions!.single.value,
+        'Action expired. Bearer <redacted>',
+      );
+      expect(
+        signing.contexts['business_operation'],
+        containsPair('failure_code', 'action_expired'),
+      );
+    },
+  );
 
   test('reports safe decoding diagnostics without response content', () async {
     final fixture = await _initializeSentry();

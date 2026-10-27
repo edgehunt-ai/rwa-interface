@@ -42,6 +42,23 @@ test('generates native associations with independent iOS and Android identities'
   }]);
 });
 
+test('lists the Play app signing and upload certificates from the environment', async (t) => {
+  const outputDirectory = await fixture(t);
+  // Play re-signs downloaded builds, so the stored app signing certificate and
+  // the CI upload certificate must both be associated with the package.
+  const upload = Array(32).fill('CD').join(':');
+  await generatePasskeyAssociationFiles({
+    outputDirectory,
+    environment: {
+      PRIVY_EXPORT_URL: 'https://keys.example.test',
+      ANDROID_SHA256_CERT_FINGERPRINTS:
+        `  ${fingerprint.toLowerCase()},${upload.toLowerCase()} `,
+    },
+  });
+  const android = JSON.parse(await readFile(join(outputDirectory, 'assetlinks.json'), 'utf8'));
+  assert.deepEqual(android[0].target.sha256_cert_fingerprints, [fingerprint, upload]);
+});
+
 test('supports one configured platform and removes stale associations on rebuild', async (t) => {
   const outputDirectory = await fixture(t);
   const environment = {

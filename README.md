@@ -216,6 +216,22 @@ GitHub Actions runs the Flutter quality gate for pushes and pull requests.
 Mobile releases are built from successful `main` revisions, while the Flutter
 Web app and private-key export page use their dedicated workflows.
 
+The Android release job produces a Google Play App Bundle (`nobell-android.aab`),
+split APKs for direct distribution, and the R8 mapping for Play Vitals. Upload
+the bundle with the release signing key, and keep
+`ANDROID_SHA256_CERT_FINGERPRINTS` listing both the Play app signing certificate
+and the upload certificate; see [Passkey configuration](docs/passkeys.md).
+
+Before publishing, the Android job validates the AAB with a pinned bundletool,
+checks its 16 KB packaging configuration and every 64-bit native library's ELF
+alignment, then generates split APKs and checks their native libraries and ZIP
+alignment with `zipalign -c -P 16`. An incompatible dependency fails the release.
+The verifier's regression tests run in CI:
+
+```sh
+python3 -m unittest discover -s scripts -p 'verify_android_bundle_test.py'
+```
+
 Native performance CI runs Android in profile mode and measures page loading,
 scrolling, product details, quotes, order previews, submissions, and
 cancellations. It uses fixed repository data and never sends a real order. The

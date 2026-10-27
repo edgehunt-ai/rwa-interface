@@ -27,6 +27,92 @@ import '../../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'login shows the SDK cause and status without OAuth credentials',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(
+        ProviderScope(
+          child: buildTestApp(
+            const PrivyLoginScreen(
+              authentication: AuthenticationUnauthenticated(
+                failure: IdentityFailure(
+                  AuthenticationFailureCode.provider,
+                  retryable: true,
+                  reason:
+                      'OAuth exchange failed [50152]: '
+                      'client_secret=demo-client-secret refreshToken=demo-refresh-token',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'OAuth exchange failed [50152]: client_secret=<redacted> refreshToken=<redacted>',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('demo-client-secret'), findsNothing);
+      expect(find.textContaining('demo-refresh-token'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('OAuth browser failure shows its reason and keeps email usable', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationUnauthenticated(
+              failure: IdentityFailure(
+                AuthenticationFailureCode.browserUnavailable,
+                retryable: true,
+                reason: 'No supported browser is installed.',
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('No supported browser is installed.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Check that your browser and network'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<InkWell>(
+            find
+                .ancestor(
+                  of: find.text('Google'),
+                  matching: find.byType(InkWell),
+                )
+                .first,
+          )
+          .onTap,
+      isNotNull,
+    );
+    await tester.tap(find.byType(TextField));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('backend session failure exposes a retry action', (tester) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(

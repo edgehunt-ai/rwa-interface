@@ -15,6 +15,7 @@ import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/feedback/empty_state.dart';
 import 'package:nobell/ui/core/feedback/failure_state.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/feedback/provider_refresh.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
@@ -42,7 +43,9 @@ class HomeScreen extends ConsumerWidget {
     final initializing = authentication is AuthenticationInitializing;
     final restoreFailure =
         authentication is AuthenticationFailed &&
-            authentication.failure.retryable
+            authentication.failure.retryable &&
+            authentication.failure.code ==
+                AuthenticationFailureCode.backendSession
         ? authentication.failure
         : null;
     final portfolio = authenticated
@@ -78,7 +81,7 @@ class HomeScreen extends ConsumerWidget {
             if (authenticated) {
               refreshes.add(ref.refresh(portfolioSummaryProvider.future));
             }
-            await Future.wait(refreshes);
+            await waitForProviderRefresh(Future.wait(refreshes));
           },
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -97,7 +100,7 @@ class HomeScreen extends ConsumerWidget {
                     title: AppLocalizations.of(context).portfolioUnavailable,
                     description: AppLocalizations.of(context)
                         .checkConnectionRetry,
-                    onRetry: () => ref.refresh(portfolioSummaryProvider.future),
+                    onRetry: () => ref.invalidate(portfolioSummaryProvider),
                   ),
                   data: (value) => _PortfolioCard(portfolio: value),
                 )
@@ -105,11 +108,9 @@ class HomeScreen extends ConsumerWidget {
                 const _HomeStateCard()
               else if (restoreFailure != null)
                 FailureState(
-                  description:
-                      restoreFailure.code ==
-                          AuthenticationFailureCode.backendSession
-                      ? AppLocalizations.of(context).backendSessionFailed
-                      : AppLocalizations.of(context).checkConnectionRetry,
+                  error: restoreFailure,
+                  description: AppLocalizations.of(context)
+                      .backendSessionFailed,
                   supportingMessage: restoreFailure.requestId == null
                       ? null
                       : AppLocalizations.of(context)

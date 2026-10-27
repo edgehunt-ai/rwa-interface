@@ -39,6 +39,7 @@ import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import '../../../core/feedback/error_message.dart';
+import '../../../core/feedback/provider_refresh.dart';
 
 class AssetsScreen extends ConsumerStatefulWidget {
   const AssetsScreen({super.key});
@@ -103,15 +104,18 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
       _nextHoldingCursor = null;
       _nextOrderCursor = null;
     });
-    await Future.wait([
-      ref.refresh(portfolioSummaryProvider.future),
-      ref.refresh(tradingAccountsProvider.future),
-      ref.refresh(portfolioRailAllocationProvider.future),
-      ref.refresh(holdingsProvider(null).future),
-      ref.refresh(spotPortfolioAssetsProvider.future),
-      if (tab == _AssetTab.perps)
-        ref.refresh(perpsOpenOrdersProvider(null).future),
-    ]);
+    await waitForProviderRefresh(
+      Future.wait([
+        ref.refresh(portfolioSummaryProvider.future),
+        ref.refresh(tradingAccountsProvider.future),
+        ref.refresh(portfolioRailAllocationProvider.future),
+        ref.refresh(holdingsProvider(null).future),
+        ref.refresh(spotPortfolioAssetsProvider.future),
+        if (tab == _AssetTab.perps)
+          ref.refresh(perpsOpenOrdersProvider(null).future),
+      ]),
+    );
+    if (!mounted) return;
     ref.invalidate(activeHip3ActionsProvider);
     if (tab != _AssetTab.perps) ref.invalidate(perpsOpenOrdersProvider);
   }
@@ -206,8 +210,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                       state: DesignState.failure,
                       title: l10n.assetsUnavailable,
                       message: l10n.pullToRefreshRetry,
-                      onRetry: () =>
-                          ref.refresh(portfolioSummaryProvider.future),
+                      onRetry: () => ref.invalidate(portfolioSummaryProvider),
                     ),
                     data: (value) => _isEmptyPortfolio(value)
                         ? const _EmptyAssets()

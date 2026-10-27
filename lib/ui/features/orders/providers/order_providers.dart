@@ -22,10 +22,14 @@ import '../../portfolio/providers/portfolio_providers.dart';
 import '../../../../domain/models/resource_result.dart';
 
 final hip3OpeningContextProvider = FutureProvider.autoDispose
-    .family<Hip3OpeningContext, String>((ref, product) {
-      ref.watch(sessionGenerationProvider);
-      return ref.watch(hip3OpeningRepositoryProvider).context(product);
-    });
+    .family<Hip3OpeningContext, String>(
+      (ref, product) {
+        ref.watch(sessionGenerationProvider);
+        return ref.watch(hip3OpeningRepositoryProvider).context(product);
+      },
+      // The order form owns timed recovery and must see each failure promptly.
+      retry: (_, _) => null,
+    );
 
 final ordersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
@@ -198,7 +202,7 @@ final orderPreviewProvider = FutureProvider.autoDispose
         // A new quote must not reuse an expired immutable server preview.
         idempotencyKey: newIdempotencyKey(),
       );
-    });
+    }, retry: (_, _) => null);
 
 final hip3ActionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {

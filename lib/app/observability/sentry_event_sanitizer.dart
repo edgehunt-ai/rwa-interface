@@ -1,5 +1,8 @@
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/security/sensitive_text.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
+import 'business_failure_diagnostics.dart';
 
 /// Last-line defence for telemetry emitted by the SDK or future integrations.
 abstract final class SentryEventSanitizer {
@@ -41,6 +44,13 @@ abstract final class SentryEventSanitizer {
   };
 
   static SentryEvent sanitize(SentryEvent event, Hint _) {
+    final diagnostics = businessFailureDiagnostics(event.throwable);
+    if (diagnostics != null) {
+      for (final exception in event.exceptions ?? const <SentryException>[]) {
+        exception.type = diagnostics.type;
+        exception.value = diagnostics.message;
+      }
+    }
     if (event.throwable case final ApiFailure failure) {
       for (final exception in event.exceptions ?? const <SentryException>[]) {
         exception.type = 'ApiFailure.${failure.kind.name}';
@@ -112,45 +122,7 @@ abstract final class SentryEventSanitizer {
     return event;
   }
 
-  static String redact(String value) => value
-      .replaceAll(RegExp(r'\b[^\s@]+@[^\s@]+\b'), '<redacted-email>')
-      .replaceAll(
-        RegExp(r'Bearer\s+\S+', caseSensitive: false),
-        'Bearer <redacted>',
-      )
-      .replaceAllMapped(
-        RegExp(
-          '"($_sensitiveValueKeyPattern)"\\s*:\\s*"[^"]*"',
-          caseSensitive: false,
-        ),
-        (match) => '"${match.group(1)}":"<redacted>"',
-      )
-      .replaceAllMapped(
-        RegExp(
-          '\\b($_sensitiveValueKeyPattern)\\b\\s*([=:])\\s*(["\'])[^"\']*\\3',
-          caseSensitive: false,
-        ),
-        (match) => '${match.group(1)}${match.group(2)}<redacted>',
-      )
-      .replaceAllMapped(
-        RegExp(
-          '\\b($_sensitiveValueKeyPattern)\\b\\s*([=:])\\s*[^\\s,&]+',
-          caseSensitive: false,
-        ),
-        (match) => '${match.group(1)}${match.group(2)}<redacted>',
-      )
-      .replaceAllMapped(
-        RegExp(
-          '([?&](?:$_sensitiveValueKeyPattern)=)[^&#\\s]+',
-          caseSensitive: false,
-        ),
-        (match) => '${match.group(1)}<redacted>',
-      );
-
-  static const _sensitiveValueKeyPattern =
-      'access_token|authorization|code|id_token|state|token|signature|address|'
-      'private[_-]?key|mnemonic|seed(?:[_-]?phrase)?|password|passphrase|'
-      'client[_-]?secret|api[_-]?key|secret';
+  static String redact(String value) => SensitiveTextRedactor.redact(value);
 
   static Map<String, Object?>? _safePrivyAuth(Object? context) {
     final result = _safeMap(context, _privyAuthKeys);
@@ -199,6 +171,9 @@ abstract final class SentryEventSanitizer {
     'duration_ms',
     'failure_kind',
     'error_type',
+    'requires_review',
+    'failure_code',
+    'retryable',
     'request_id',
     'http_status',
     'api_code',
