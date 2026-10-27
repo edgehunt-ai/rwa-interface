@@ -2682,6 +2682,271 @@ void main() {
     expect(find.text('10 USDC'), findsOneWidget);
   });
 
+  testWidgets('HIP-3 polls fresh quotes for unchanged valid inputs', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders(changingRequoteValues: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 6));
+    expect(orders.previews, 0);
+
+    final input = find.byType(TextField).first;
+    await tester.enterText(input, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previews, 1);
+    expect(find.text('90 USDC'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previews, 2);
+    expect(orders.previewKeys.toSet(), hasLength(2));
+    expect(find.text('91 USDC'), findsOneWidget);
+    expect(find.text('11 USDC'), findsOneWidget);
+    expect(tester.widget<TextField>(input).controller!.text, '100');
+
+    await tester.enterText(input, '1');
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    expect(orders.previews, 2);
+  });
+
+  testWidgets(
+    'HIP-3 keeps polling after failures and clears only quote errors',
+    (tester) async {
+      const reason = 'required service is unavailable';
+      final orders = _ExecutableHip3Orders(
+        previewError: const ServerFailure(
+          statusCode: 503,
+          code: 'unavailable',
+          message: reason,
+        ),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+          child: _app(const Hip3OrderPanel()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final input = find.byType(TextField).first;
+      await tester.enterText(input, '100');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(find.text(reason), findsOneWidget);
+
+      // Recovery remains active beyond Riverpod's default retry limit.
+      for (var attempt = 0; attempt < 11; attempt++) {
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text(reason), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+        expect(find.text(reason), findsOneWidget);
+      }
+      expect(orders.previewRequests, greaterThan(10));
+      orders.previewError = null;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(find.text(reason), findsNothing);
+      expect(find.text('90 USDC'), findsOneWidget);
+      expect(tester.widget<TextField>(input).controller!.text, '100');
+    },
+  );
+
+  testWidgets('HIP-3 automatically recovers a failed trading context', (
+    tester,
+  ) async {
+    final opening = _Opening(failing: true);
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel(), opening: opening),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('required service is unavailable'), findsOneWidget);
+    final input = find.byType(TextField).first;
+    await tester.enterText(input, '100');
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    expect(opening.contextCalls, 2);
+    expect(orders.previewRequests, 0);
+    expect(find.text('required service is unavailable'), findsOneWidget);
+
+    opening.failing = false;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('required service is unavailable'), findsNothing);
+    expect(find.text('10 USDC'), findsOneWidget);
+    expect(tester.widget<TextField>(input).controller!.text, '100');
+  });
+
+  testWidgets('HIP-3 pauses polling in the background and stops on disposal', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previews, 1);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump(const Duration(seconds: 12));
+    expect(orders.previews, 1);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previews, 2);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 12));
+    expect(orders.previews, 2);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('HIP-3 does not overlap slow poll requests', (tester) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    final gate = Completer<void>();
+    orders.previewGate = gate;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    expect(orders.previewRequests, 2);
+    for (var tick = 0; tick < 3; tick++) {
+      await tester.pump(const Duration(seconds: 3));
+    }
+    expect(orders.previewRequests, 2);
+    gate.complete();
+    await tester.pumpAndSettle();
+    orders.previewGate = null;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previewRequests, 3);
+  });
+
+  testWidgets('HIP-3 ignores a slow poll for inputs the user has changed', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders(marginFollowsInput: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final input = find.byType(TextField).first;
+    await tester.enterText(input, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('10 USDC'), findsOneWidget);
+
+    final gate = Completer<void>();
+    orders.previewGate = gate;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    expect(orders.previewRequests, 2);
+    orders.previewGate = null;
+    await tester.enterText(input, '200');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('20 USDC'), findsOneWidget);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('20 USDC'), findsOneWidget);
+    expect(find.text('10 USDC'), findsNothing);
+    expect(tester.widget<TextField>(input).controller!.text, '200');
+  });
+
+  testWidgets('HIP-3 successful polls preserve order operation failures', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders(changingRequoteValues: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel(), funding: _FailingOrderFunding()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-submit-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Funding is temporarily unavailable'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previews, 2);
+    expect(find.text('11 USDC'), findsOneWidget);
+    expect(find.text('Funding is temporarily unavailable'), findsOneWidget);
+  });
+
+  testWidgets('HIP-3 pauses form polling behind its confirmation sheet', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-submit-button')));
+    await tester.pumpAndSettle();
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    final before = orders.previewRequests;
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pump(const Duration(milliseconds: 301));
+    expect(orders.previewRequests, before);
+
+    Navigator.of(tester.element(find.byType(Hip3ConfirmSheet))).pop();
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(orders.previewRequests, greaterThan(before));
+  });
+
   testWidgets('HIP-3 leverage sheet retains a confirmed selection', (
     tester,
   ) async {
@@ -3196,7 +3461,7 @@ final class _Opening implements Hip3OpeningRepository {
     this.contextGate,
   });
   final int maximum;
-  final bool failing;
+  bool failing;
   final String maximumNotional;
   final String minimumNotional;
   final String? marketOrderMinimumLong;
@@ -3219,7 +3484,11 @@ final class _Opening implements Hip3OpeningRepository {
     contextCalls++;
     if (contextCalls == blockedContextCall) await contextGate?.future;
     if (failing) {
-      throw const ServerFailure(statusCode: 503, code: 'unavailable');
+      throw const ServerFailure(
+        statusCode: 503,
+        code: 'unavailable',
+        message: 'required service is unavailable',
+      );
     }
     return _context(productOrSymbol);
   }
@@ -3307,6 +3576,18 @@ final class _DelayedOpening implements Hip3OpeningRepository {
   );
 }
 
+final class _FailingOrderFunding extends FundedRepository {
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async => throw const ServerFailure(
+    statusCode: 503,
+    code: 'unavailable',
+    message: 'Funding is temporarily unavailable',
+  );
+}
+
 final class _ExecutableHip3Orders implements OrdersRepository {
   _ExecutableHip3Orders({
     this.expired = false,
@@ -3317,6 +3598,8 @@ final class _ExecutableHip3Orders implements OrdersRepository {
     this.holdRequote,
     this.changingRequoteValues = false,
     this.createError,
+    this.previewError,
+    this.marginFollowsInput = false,
   });
   final bool expired;
   final bool missingExecution;
@@ -3332,7 +3615,12 @@ final class _ExecutableHip3Orders implements OrdersRepository {
   final Completer<void>? holdRequote;
   final bool changingRequoteValues;
   final Object? createError;
+  Object? previewError;
+  final bool marginFollowsInput;
+  Completer<void>? previewGate;
+  var previewRequests = 0;
   var previews = 0;
+  final previewKeys = <String>[];
 
   final intents = <OrderIntent>[];
 
@@ -3341,6 +3629,10 @@ final class _ExecutableHip3Orders implements OrdersRepository {
     OrderIntent intent, {
     required String idempotencyKey,
   }) async {
+    previewRequests++;
+    previewKeys.add(idempotencyKey);
+    if (previewGate case final gate?) await gate.future;
+    if (previewError case final error?) throw error;
     intents.add(intent);
     if (previews > 0 && holdRequote != null) await holdRequote!.future;
     final refreshingWithNewValues = changingRequoteValues && previews > 0;
@@ -3363,7 +3655,11 @@ final class _ExecutableHip3Orders implements OrdersRepository {
               slippage: intent.slippage?.value ?? '1',
               missingLiquidationPrice: missingLiquidationPrice,
               notional: refreshingWithNewValues ? '101' : '100',
-              marginRequired: refreshingWithNewValues ? '11' : '10',
+              marginRequired: marginFollowsInput
+                  ? (double.parse(intent.amount!.value) / 10).toString()
+                  : refreshingWithNewValues
+                  ? '11'
+                  : '10',
               estimatedFee: refreshingWithNewValues ? '0.06' : '0.05',
               liquidationPrice: refreshingWithNewValues ? '91' : '90',
             ),

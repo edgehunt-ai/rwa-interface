@@ -34,6 +34,7 @@ import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 import 'package:nobell/ui/core/widgets/venue_icon.dart';
 
 import 'hip3_confirm_sheet.dart';
+import 'hip3_order_messages.dart';
 import 'hip3_segmented_control.dart';
 import 'hip3_cross_liquidation_impacts_card.dart';
 import 'order_funding_sheet.dart';
@@ -72,9 +73,11 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
   ConsumerState<Hip3OrderPanel> createState() => _Hip3OrderPanelState();
 }
 
-class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
+class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
+    with WidgetsBindingObserver {
   /// Timeout for the optional product quote that backs the limit-price ruler.
   static const _marketPriceRequestTimeout = Duration(seconds: 10);
+  static const _quoteRefreshInterval = Duration(seconds: 3);
 
   final _amount = TextEditingController();
   final _orderValue = TextEditingController();
@@ -102,6 +105,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _confirmationFromFunding = false;
   var _settingsUpdating = false;
   String? _error;
+  String? _quoteError;
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
   var _quoteLoading = false;
@@ -110,7 +114,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   TradingOrder? _submitted;
   String? _pendingOrderId;
   Timer? _quoteDebounce;
+  Timer? _quotePoll;
   var _quoteGeneration = 0;
+  var _quoteRequestsInFlight = 0;
+  var _contextGeneration = 0;
 
   MarketProductRef get _marketProductRef =>
       MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp);
@@ -118,6 +125,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startQuotePolling();
     _side = widget.initialSide;
     _reduceOnly = widget.initialReduceOnly;
     _amount.addListener(_onAmountChanged);
@@ -140,6 +149,50 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _loadContext();
       }
     });
+  }
+
+  bool get _canRefreshQuote {
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    return mounted &&
+        (lifecycle == null || lifecycle == AppLifecycleState.resumed) &&
+        ModalRoute.of(context)?.isCurrent != false &&
+        !_submitting &&
+        !_settingsUpdating &&
+        !_fundingRechecking &&
+        _preview == null &&
+        _submitted == null;
+  }
+
+  void _startQuotePolling() {
+    _quotePoll ??= Timer.periodic(_quoteRefreshInterval, (_) => _pollQuote());
+  }
+
+  void _pollQuote() {
+    if (!_canRefreshQuote ||
+        _contextLoading ||
+        _quoteLoading ||
+        _quoteRequestsInFlight > 0) {
+      return;
+    }
+    if (_context == null || _context!.isExpired) {
+      unawaited(_loadContext(preserveSettings: _context != null));
+    } else {
+      _scheduleQuote(refresh: true);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startQuotePolling();
+      _pollQuote();
+    } else {
+      _quotePoll?.cancel();
+      _quotePoll = null;
+      _quoteDebounce?.cancel();
+      ++_quoteGeneration;
+      _quoteLoading = false;
+    }
   }
 
   void _onLimitPriceChanged() {
@@ -314,8 +367,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
   }
 
-  Future<void> _loadContext() async {
+  Future<void> _loadContext({bool preserveSettings = false}) async {
     final generation = ref.read(sessionGenerationProvider);
+    final request = ++_contextGeneration;
+    bool isCurrent() =>
+        mounted &&
+        request == _contextGeneration &&
+        ref.read(sessionGenerationProvider) == generation;
     setState(() => _contextLoading = true);
     try {
       ref.invalidate(
@@ -324,17 +382,19 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       final context = await ref.read(
         hip3OpeningContextProvider(widget.productId ?? widget.symbol).future,
       );
-      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      if (!isCurrent()) return;
       setState(() {
         _context = context;
         _contextError = null;
-        _leverage = context.currentLeverage ?? 20;
-        _marginMode = context.currentMarginMode;
-        _error = null;
+        if (!preserveSettings) {
+          _leverage = context.currentLeverage ?? 20;
+          _marginMode = context.currentMarginMode;
+        }
       });
       _truncateLimitQuantity(context.sizeDecimals);
-      _scheduleQuote();
+      _scheduleQuote(refresh: true);
     } on Hip3ActionPending catch (pending, stackTrace) {
+      if (!isCurrent()) return;
       ref
           .read(observabilityReporterProvider)
           .recordError(
@@ -346,6 +406,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         setState(() => _error = '调整尚未确认，请在待处理操作中继续：${pending.actionId}');
       }
     } on Object catch (error, stackTrace) {
+      if (!isCurrent()) return;
       // Without a context there is no quote and no submission; surface it
       // instead of leaving the panel silently inert.
       ref
@@ -358,15 +419,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(() {
           _contextError = error;
-          _error = _specificErrorMessage(
-            error,
-            fallback: AppLocalizations.of(context)
-                .hip3TradingContextUnavailable,
-          );
         });
       }
     } finally {
-      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+      if (isCurrent()) {
         setState(() => _contextLoading = false);
       }
     }
@@ -449,6 +505,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _quotePoll?.cancel();
     _quoteDebounce?.cancel();
     _amount.removeListener(_onAmountChanged);
     _orderValue.removeListener(_onOrderValueChanged);
@@ -588,30 +646,44 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _scheduleQuote();
   }
 
-  void _scheduleQuote() {
+  void _scheduleQuote({bool refresh = false}) {
     _syncPercentageFromAmount();
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
     final intent = _intentFromFields();
+    final canQuote =
+        _context != null && intent != null && _amountError() == null;
     _protectionReferenceNotifier.value = _protectionReference();
     // Update the entered amount/unit immediately, even before a quote returns.
     setState(() {
       if (_quotePreview?.intent.fingerprint != intent?.fingerprint) {
         _quotePreview = null;
+        if (!refresh) _quoteError = null;
       }
-      _quoteLoading = _context != null && intent != null;
+      _quoteLoading = canQuote;
     });
-    if (_context == null || intent == null || _amountError() != null) return;
+    if (!canQuote) return;
     _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
+      if (!_canRefreshQuote || generation != _quoteGeneration) {
+        if (mounted && generation == _quoteGeneration) {
+          setState(() => _quoteLoading = false);
+        }
+        return;
+      }
+      _quoteRequestsInFlight++;
       try {
+        // A poll must bypass the family cache even when the inputs are stable.
+        if (refresh) ref.invalidate(orderPreviewProvider(intent));
         final quote = await ref.read(orderPreviewProvider(intent).future);
         if (mounted && generation == _quoteGeneration) {
           setState(() {
             _quotePreview = quote;
             _quoteLoading = false;
+            _quoteError = null;
           });
         }
       } on Object catch (error, stackTrace) {
+        if (!mounted || generation != _quoteGeneration) return;
         ref
             .read(observabilityReporterProvider)
             .recordError(
@@ -623,12 +695,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           setState(() {
             _quotePreview = null;
             _quoteLoading = false;
-            _error = _specificErrorMessage(
+            _quoteError = _specificErrorMessage(
               error,
               fallback: 'Unable to refresh the HIP-3 preview.',
             );
           });
         }
+      } finally {
+        _quoteRequestsInFlight--;
       }
     });
   }
@@ -647,14 +721,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
               ),
           stackTrace: StackTrace.current,
         );
-    final message = _specificErrorMessage(
-      _contextError ??
-          StateError(
-            'HIP-3 trading context is unavailable for ${widget.symbol}',
-          ),
-      fallback: AppLocalizations.of(context).hip3TradingContextUnavailable,
-    );
-    setState(() => _error = message);
+    setState(() {
+      _contextError ??= StateError(
+        'HIP-3 trading context is unavailable for ${widget.symbol}',
+      );
+    });
   }
 
   DecimalValue? get _minimumOrderNotional {
@@ -1337,6 +1408,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   String _specificErrorMessage(Object error, {String? fallback}) {
+    while (error is ProviderException) {
+      error = error.exception;
+    }
     if (error is ApiFailure) {
       return apiFailureMessage(
         error,
@@ -1359,8 +1433,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (previous == next) return;
       _quoteDebounce?.cancel();
       ++_quoteGeneration;
+      ++_contextGeneration;
       setState(() {
         _context = null;
+        _contextLoading = true;
+        _contextError = null;
+        _quoteError = null;
+        _quoteLoading = false;
         _preview = null;
         _quotePreview = null;
         _submitted = null;
@@ -1415,7 +1494,19 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final tradingSettingsEnabled = _context?.tradingSettingsEnabled ?? true;
     _schedulePendingPercentageSync(availableBalance);
     final protectionErrors = _openingProtectionValidationErrors();
-    final formError = protectionErrors.firstOrNull ?? _amountError() ?? _error;
+    final contextError = _contextError;
+    final formError =
+        protectionErrors.firstOrNull ??
+        _amountError() ??
+        _error ??
+        (contextError == null
+            ? null
+            : hip3ErrorMessage(
+                context,
+                contextError,
+                fallback: l10n.hip3TradingContextUnavailable,
+              )) ??
+        _quoteError;
     final disabledReason = _disabledReason(l10n);
     final visibleError = _isObviousInputError(formError, l10n)
         ? null
