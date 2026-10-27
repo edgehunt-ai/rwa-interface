@@ -3,7 +3,9 @@ final class ApiEnvironment {
     required this.baseUrl,
     this.connectTimeout = const Duration(seconds: 7),
     this.sendTimeout = const Duration(seconds: 10),
-    this.receiveTimeout = const Duration(seconds: 15),
+    // Dio treats zero as unlimited: wait for the server's response while
+    // retaining separate limits for establishing and sending the request.
+    this.receiveTimeout = Duration.zero,
   });
 
   factory ApiEnvironment.fromEnvironment() {
