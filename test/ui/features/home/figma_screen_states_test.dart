@@ -216,6 +216,7 @@ void main() {
                 AuthenticationFailureCode.backendSession,
                 retryable: true,
                 requestId: 'restore-request',
+                reason: 'Sign-in service is temporarily unavailable (503).',
               ),
             ),
           ),
@@ -243,6 +244,11 @@ void main() {
 
       expect(find.text('Ready when you are'), findsNothing);
       expect(find.text('Log in'), findsNothing);
+      expect(
+        find.text('Sign-in service is temporarily unavailable (503).'),
+        findsOneWidget,
+      );
+      expect(find.text('Check your connection and try again.'), findsNothing);
       expect(find.textContaining('restore-request'), findsOneWidget);
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
@@ -257,6 +263,59 @@ void main() {
       await _disposeContainerAfterWidgets(tester, container);
     },
   );
+
+  for (final code in [
+    AuthenticationFailureCode.provider,
+    AuthenticationFailureCode.network,
+    AuthenticationFailureCode.expired,
+  ]) {
+    testWidgets(
+      '${code.name} before identity restoration keeps guest home and login available',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        await configureDisplay(tester, size: const Size(393, 852));
+        final failure = IdentityFailure(code, retryable: true);
+        final gateway = FakeIdentityAuthGateway()..initializeFailure = failure;
+        final container = ProviderContainer(
+          overrides: [
+            identityAuthGatewayProvider.overrideWithValue(gateway),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            portfolioSummaryProvider.overrideWith((_) {
+              fail('Guest home must not request a portfolio.');
+            }),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+        );
+        await container.read(authenticationProvider.notifier).bootstrap();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: buildTestApp(const HomeScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Ready when you are'), findsOneWidget);
+        expect(find.text('Log in'), findsWidgets);
+        expect(find.text('Retry'), findsNothing);
+        expect(find.text('Check your connection and try again.'), findsNothing);
+        expect(
+          (container.read(
+            authenticationProvider,
+          ) as AuthenticationFailed).failure,
+          same(failure),
+        );
+
+        await tester.tap(find.text('Ready when you are'));
+        await tester.pumpAndSettle();
+        expect(find.byType(PrivyLoginScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await _disposeContainerAfterWidgets(tester, container);
+      },
+    );
+  }
 
   testWidgets('terminal restoration failure keeps login available', (
     tester,

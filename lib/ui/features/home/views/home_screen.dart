@@ -42,7 +42,9 @@ class HomeScreen extends ConsumerWidget {
     final initializing = authentication is AuthenticationInitializing;
     final restoreFailure =
         authentication is AuthenticationFailed &&
-            authentication.failure.retryable
+            authentication.failure.retryable &&
+            authentication.failure.code ==
+                AuthenticationFailureCode.backendSession
         ? authentication.failure
         : null;
     final portfolio = authenticated
@@ -105,11 +107,9 @@ class HomeScreen extends ConsumerWidget {
                 const _HomeStateCard()
               else if (restoreFailure != null)
                 FailureState(
-                  description:
-                      restoreFailure.code ==
-                          AuthenticationFailureCode.backendSession
-                      ? AppLocalizations.of(context).backendSessionFailed
-                      : AppLocalizations.of(context).checkConnectionRetry,
+                  error: restoreFailure,
+                  description: AppLocalizations.of(context)
+                      .backendSessionFailed,
                   supportingMessage: restoreFailure.requestId == null
                       ? null
                       : AppLocalizations.of(context)
