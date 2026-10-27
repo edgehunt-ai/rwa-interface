@@ -170,7 +170,7 @@ final class FundingTransferCommands {
         plan: FundingPlan(
           planId: session.sessionId,
           tradePreviewId: '',
-          shortfall: DecimalValue(session.remainingMinimumTopUp ?? '0'),
+          shortfall: _blockedShortfall(session),
           requiredTargetAmount: session.requiredTargetBalance == null
               ? null
               : DecimalValue(session.requiredTargetBalance!),
@@ -188,6 +188,21 @@ final class FundingTransferCommands {
       plan: plan,
       canConfirmTransfer: session.canConfirmTransfer,
     );
+  }
+
+  // The server's remaining top-up is derived from the stored selection, so it
+  // can read zero while the target balance is still below the requirement.
+  DecimalValue _blockedShortfall(FundingSessionSummary session) {
+    final remaining = DecimalValue(session.remainingMinimumTopUp ?? '0');
+    final required = session.requiredTargetBalance;
+    final available = session.targetAvailableAmount;
+    if (required == null || available == null) return remaining;
+    final negatedAvailable = available.startsWith('-')
+        ? available.substring(1)
+        : '-$available';
+    final gap = DecimalValue(required)
+        .plusMagnitude(DecimalValue(negatedAvailable));
+    return gap.compareMagnitudeTo(remaining) > 0 ? gap : remaining;
   }
 
   Future<FundingPlan> transferSession({
