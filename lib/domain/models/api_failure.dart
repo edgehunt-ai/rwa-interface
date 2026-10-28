@@ -88,7 +88,7 @@ final class ServerFailure extends ApiFailure {
     409 => FailureKind.conflict,
     422 => FailureKind.validation,
     429 => FailureKind.rateLimited,
-    503 => FailureKind.unavailable,
+    500 || 502 || 503 || 504 => FailureKind.unavailable,
     _ => FailureKind.unknown,
   };
 

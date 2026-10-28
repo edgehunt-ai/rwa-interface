@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/observability_providers.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/app/providers/session_scope.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/hip3_action_pending.dart';
@@ -19,6 +22,47 @@ import 'package:nobell/domain/repositories/positions_repository.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 
 void main() {
+  for (final code in [
+    Hip3SigningFailureCode.rejected,
+    Hip3SigningFailureCode.walletUnavailable,
+  ]) {
+    test(
+      'position signing $code has the correct telemetry and retains the cause',
+      () async {
+        final failure = Hip3SigningFailure(
+          code,
+          reason: 'Specific wallet cause',
+        );
+        final repository = _PositionsRepository()..signingFailure = failure;
+        final reporter = _Reporter();
+        final container = ProviderContainer(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repository),
+            observabilityReporterProvider.overrideWithValue(reporter),
+          ],
+        );
+        addTearDown(container.dispose);
+        final subscription = container.listen(
+          positionCommandProvider,
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+        await expectLater(
+          container
+              .read(positionCommandProvider)
+              .updateLeverage(_position(), '2'),
+          throwsA(same(failure)),
+        );
+        if (code == Hip3SigningFailureCode.rejected) {
+          expect(reporter.outcomes, ['started', 'cancelled']);
+          expect(reporter.errors, isEmpty);
+        } else {
+          expect(reporter.errors, [same(failure)]);
+        }
+        expect(repository.leverageKeys, hasLength(1));
+      },
+    );
+  }
   test('position size decimals come from the repository', () async {
     final repository = _PositionsRepository()..sizeDecimalsValue = 3;
     final container = ProviderContainer(
@@ -360,6 +404,7 @@ Position _position() => Position(
 );
 
 final class _PositionsRepository implements PositionsRepository {
+  Hip3SigningFailure? signingFailure;
   int sizeDecimalsValue = 8;
   final sizeDecimalsProducts = <String>[];
 
@@ -458,6 +503,7 @@ final class _PositionsRepository implements PositionsRepository {
     await leverageCompletion?.future;
     await Future<void>.delayed(const Duration(milliseconds: 2));
     if (failUpdates) throw const NetworkFailure();
+    if (signingFailure case final failure?) throw failure;
     if (pending != null) throw pending!;
     return position;
   }
@@ -484,6 +530,36 @@ final class _PositionsRepository implements PositionsRepository {
       status: TradingOrderStatus.submitted,
       createdAt: DateTime.utc(2026),
     );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _Reporter implements ObservabilityReporter {
+  final outcomes = <String>[];
+  final errors = <Object>[];
+
+  @override
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    outcomes.add(outcome);
+  }
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
+  }) {
+    errors.add(error);
   }
 
   @override

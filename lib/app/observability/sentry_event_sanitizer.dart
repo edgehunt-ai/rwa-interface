@@ -54,9 +54,27 @@ abstract final class SentryEventSanitizer {
     if (event.throwable case final ApiFailure failure) {
       for (final exception in event.exceptions ?? const <SentryException>[]) {
         exception.type = 'ApiFailure.${failure.kind.name}';
+        if (failure is ServerFailure) {
+          exception.value = apiFailureMessage(
+            failure,
+            fallback: failure.toString(),
+          );
+        }
       }
     }
-    final privyAuth = _safePrivyAuth(event.contexts['privy_auth']);
+    final identityDiagnostic = _safeMap(
+      event.contexts['identity_diagnostic'] ?? event.contexts['privy_auth'],
+      _privyAuthKeys,
+    );
+    if (identityDiagnostic?['safe_message'] case final String message
+        when event.contexts.containsKey('privy_auth') ||
+            identityDiagnostic?['operation'] == 'verify_email_code' ||
+            identityDiagnostic?['operation'] == 'request_email_code') {
+      identityDiagnostic!['safe_message'] = message.replaceAll(
+        RegExp(r'\b\d{4,10}\b'),
+        '<redacted-code>',
+      );
+    }
     final businessOperation = _safeBusinessOperation(
       event.contexts['business_operation'],
     );
@@ -81,14 +99,12 @@ abstract final class SentryEventSanitizer {
         SentryRuntime.listType,
         SentryApp.type,
         SentryTraceContext.type,
-        'privy_auth',
+        'identity_diagnostic',
         'business_operation',
       }.contains(key),
     );
-    if (privyAuth == null) {
-      event.contexts.remove('privy_auth');
-    } else {
-      event.contexts['privy_auth'] = privyAuth;
+    if (identityDiagnostic != null) {
+      event.contexts['identity_diagnostic'] = identityDiagnostic;
     }
     if (businessOperation == null) {
       event.contexts.remove('business_operation');
@@ -123,18 +139,6 @@ abstract final class SentryEventSanitizer {
   }
 
   static String redact(String value) => SensitiveTextRedactor.redact(value);
-
-  static Map<String, Object?>? _safePrivyAuth(Object? context) {
-    final result = _safeMap(context, _privyAuthKeys);
-    final message = result?['safe_message'];
-    if (message is String) {
-      result!['safe_message'] = message.replaceAll(
-        RegExp(r'\b\d{4,10}\b'),
-        '<redacted-code>',
-      );
-    }
-    return result;
-  }
 
   static Map<String, Object?>? _safeBusinessOperation(Object? context) =>
       _safeMap(context, _businessOperationKeys);
@@ -199,6 +203,7 @@ abstract final class SentryEventSanitizer {
   };
 
   static const _privyAuthKeys = <String>{
+    'operation',
     'safe_message',
     'failure_code',
     'provider_error',

@@ -1056,14 +1056,38 @@ void main() {
     },
   );
 
-  testWidgets(
-    'position settings maps wallet signing failures to readable copy',
-    (tester) async {
+  for (final (failure, message) in <(Object, String)>[
+    (
+      const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      'Signature request was cancelled.',
+    ),
+    (
+      const Hip3SigningFailure(
+        Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+        reason: 'Wallet RPC unavailable [50152]',
+      ),
+      'Wallet RPC unavailable [50152]',
+    ),
+    (
+      const ServerFailure(
+        statusCode: 503,
+        code: 'hip3_leverage_observation_stale',
+        retryable: true,
+        failureReason: 'Leverage observation is stale. Refresh and try again.',
+      ),
+      'Leverage observation is stale. Refresh and try again.',
+    ),
+    (
+      const ServerFailure(statusCode: 502, code: 'http_502', retryable: true),
+      'HTTP 502 http_502',
+    ),
+  ]) {
+    testWidgets('position settings preserves $message and selected leverage', (
+      tester,
+    ) async {
       await configureDisplay(tester, size: const Size(800, 800));
-      final repo = _Positions()
-        ..leverageError = const Hip3SigningFailure(
-          Hip3SigningFailureCode.rejected,
-        );
+      final repo = _Positions()..leverageError = failure;
       final position = _position();
       await tester.pumpWidget(
         ProviderScope(
@@ -1093,13 +1117,22 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Signature request was cancelled.'), findsOneWidget);
+      expect(find.text(message), findsOneWidget);
+      expect(repo.leverage, '5');
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Sign and confirm'),
+            )
+            .onPressed,
+        isNotNull,
+      );
       expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
       final notice = find.byKey(const Key('position-settings-error'));
       final button = find.widgetWithText(FilledButton, 'Sign and confirm');
       expect(tester.getTopLeft(button).dy - tester.getBottomLeft(notice).dy, 8);
-    },
-  );
+    });
+  }
 
   for (final (name, error, message) in <(String, Object, String)>[
     (

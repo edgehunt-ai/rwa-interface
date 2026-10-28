@@ -28,6 +28,51 @@ import '../../../../helpers/test_app.dart';
 
 void main() {
   testWidgets(
+    'wallet SDK cause is visible and another login attempt is usable',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final connector = _FakeWalletConnector()
+        ..failure = const IdentityFailure(
+          AuthenticationFailureCode.provider,
+          retryable: true,
+          reason: 'Wallet relay unavailable [502]',
+        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            reownWalletConnectorProvider.overrideWithValue(connector),
+            identityAuthGatewayProvider.overrideWithValue(
+              FakeIdentityAuthGateway(),
+            ),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+          ],
+          child: buildTestApp(
+            Consumer(
+              builder: (context, ref, _) => PrivyLoginScreen(
+                authentication: ref.watch(authenticationProvider),
+              ),
+            ),
+          ),
+        ),
+      );
+      await ProviderScope.containerOf(
+        tester.element(find.byType(PrivyLoginScreen)),
+      ).read(authenticationProvider.notifier).bootstrap();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Wallet'));
+      await tester.pumpAndSettle();
+      expect(find.text('Wallet relay unavailable [502]'), findsOneWidget);
+      await tester.tap(find.text('Wallet'));
+      await tester.pumpAndSettle();
+      expect(connector.connectCalls, 2);
+      expect(find.text('Wallet relay unavailable [502]'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'login shows the SDK cause and status without OAuth credentials',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
@@ -659,12 +704,14 @@ Widget _buildLoginApp(Widget child) => MaterialApp(
 );
 
 final class _FakeWalletConnector implements WalletConnector {
+  IdentityFailure? failure;
   var connectCalls = 0;
   final _connection = Completer<WalletConnection>();
 
   @override
   Future<WalletConnection> connect(BuildContext context) {
     connectCalls++;
+    if (failure case final error?) return Future.error(error);
     return _connection.future;
   }
 }

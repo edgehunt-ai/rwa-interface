@@ -4,6 +4,62 @@ import 'package:nobell/domain/models/api_failure.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() {
+  test('email identity diagnostics still remove bare verification codes', () {
+    final event = SentryEvent(
+      contexts: Contexts()
+        ..['identity_diagnostic'] = {
+          'operation': 'verify_email_code',
+          'safe_message': 'Invalid OTP 123456',
+        },
+    );
+    final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+    expect(sanitized.contexts['identity_diagnostic'], {
+      'operation': 'verify_email_code',
+      'safe_message': 'Invalid OTP <redacted-code>',
+    });
+  });
+  test('keeps safe identity diagnostic under a non-auth context name', () {
+    final event = SentryEvent(
+      contexts: Contexts()
+        ..['identity_diagnostic'] = {
+          'safe_message': 'OAuth exchange failed [50152] token=secret',
+          'provider_flow': 'oauth',
+          'raw_payload': 'must-not-survive',
+        },
+    );
+    final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+    expect(sanitized.contexts['identity_diagnostic'], {
+      'safe_message': 'OAuth exchange failed [50152] token=<redacted>',
+      'provider_flow': 'oauth',
+    });
+    expect(sanitized.contexts.containsKey('privy_auth'), isFalse);
+  });
+
+  test('API exception preserves server reason and gateway status safely', () {
+    for (final failure in const [
+      ServerFailure(
+        statusCode: 503,
+        code: 'hip3_leverage_observation_stale',
+        failureReason: 'Leverage observation is stale token=secret',
+      ),
+      ServerFailure(statusCode: 502, code: 'http_502'),
+    ]) {
+      final event = SentryEvent(
+        throwable: failure,
+        exceptions: [
+          SentryException(type: 'obfuscated', value: failure.toString()),
+        ],
+      );
+      final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+      expect(sanitized.exceptions!.single.type, 'ApiFailure.unavailable');
+      expect(
+        sanitized.exceptions!.single.value,
+        failure.statusCode == 503
+            ? 'Leverage observation is stale token=<redacted>'
+            : 'HTTP 502 http_502',
+      );
+    }
+  });
   test('drops network, timeout, and cancellation events', () {
     for (final failure in const <ApiFailure>[
       NetworkFailure(),
@@ -141,7 +197,7 @@ void main() {
       'response_size_bytes': '321',
       'decoder_error': 'generated_client',
     });
-    expect(sanitized.contexts['privy_auth'], {
+    expect(sanitized.contexts['identity_diagnostic'], {
       'safe_message': '<redacted-email> code=<redacted> Bearer <redacted>',
       'failure_code': 'invalidCode',
       'provider_error': 'auth_exception',
@@ -203,7 +259,8 @@ void main() {
     for (final value in [
       sanitized.message!.formatted,
       sanitized.exceptions!.single.value!,
-      (sanitized.contexts['privy_auth'] as Map)['safe_message'] as String,
+      (sanitized.contexts['identity_diagnostic'] as Map)['safe_message']
+          as String,
     ]) {
       expect(value, contains('OAuth exchange failed'));
       expect(value, isNot(contains('demo-refresh-token')));
