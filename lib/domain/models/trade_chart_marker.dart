@@ -20,11 +20,13 @@ final class TradeChartExecutionMarker {
     required this.kind,
     required this.at,
     this.price,
+    this.positionEffect,
   });
 
   final String id;
   final TradeChartMarkerKind kind;
   final DateTime at;
+  final String? positionEffect;
 
   /// Liquidation ledger events have no proven execution price. Anchor those
   /// events to the chart at their timestamp without inventing a fill price.
@@ -70,10 +72,10 @@ List<TradeChartExecutionMarker> tradeChartExecutions(
               'stopLoss' => TradeChartMarkerKind.stopLoss,
               _ => switch (fill.positionEffect) {
                 'open_long' ||
-                'close_long' ||
+                'close_short' ||
                 'short_to_long' => TradeChartMarkerKind.long,
                 'open_short' ||
-                'close_short' ||
+                'close_long' ||
                 'long_to_short' => TradeChartMarkerKind.short,
                 _ => null,
               },
@@ -85,6 +87,7 @@ List<TradeChartExecutionMarker> tradeChartExecutions(
         kind: kind,
         at: fill.executedAt,
         price: fill.price,
+        positionEffect: fill.positionEffect,
       );
     }
   }

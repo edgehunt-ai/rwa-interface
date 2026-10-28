@@ -26,26 +26,27 @@ void main() {
     expect(markers.map((e) => e.at), everyElement(_at));
   });
 
-  test(
-    'perpetual markers preserve direction for opens, closes and reversals',
-    () {
-      final markers = tradeChartExecutions([
-        for (final effect in [
-          'open_long',
-          'close_long',
-          'short_to_long',
-          'open_short',
-          'close_short',
-          'long_to_short',
-        ])
-          _order(effect, effect: effect),
-      ]);
-      expect(markers.map((e) => e.kind), [
-        ...List.filled(3, TradeChartMarkerKind.long),
-        ...List.filled(3, TradeChartMarkerKind.short),
-      ]);
-    },
-  );
+  test('perpetual markers follow execution direction for opens, closes and reversals', () {
+    final markers = tradeChartExecutions([
+      for (final effect in [
+        'open_long',
+        'close_long',
+        'short_to_long',
+        'open_short',
+        'close_short',
+        'long_to_short',
+      ])
+        _order(effect, effect: effect),
+    ]);
+    expect(markers.map((e) => e.kind), [
+      TradeChartMarkerKind.long,
+      TradeChartMarkerKind.short,
+      TradeChartMarkerKind.long,
+      TradeChartMarkerKind.short,
+      TradeChartMarkerKind.long,
+      TradeChartMarkerKind.short,
+    ]);
+  });
 
   test('TP and SL fill history is independent of current positions', () {
     expect(

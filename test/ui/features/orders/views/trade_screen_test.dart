@@ -363,6 +363,21 @@ void main() {
           findsOneWidget,
         );
       }
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('trade-chart-execution-short:fill')),
+          matching: find.text('L'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Tooltip &&
+              widget.message?.startsWith('Close short ·') == true,
+        ),
+        findsOneWidget,
+      );
       final executionRects = [
         for (final id in [
           'long:fill',
