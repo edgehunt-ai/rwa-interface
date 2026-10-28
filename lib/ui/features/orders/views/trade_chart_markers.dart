@@ -309,7 +309,7 @@ class _TradeChartMarkerOverlay extends StatelessWidget {
       _ => _markerFullLabel(marker.kind),
     };
     final tooltip =
-        '${actionLabel} · ${DateFormat('yyyy/MM/dd HH:mm:ss').format(marker.at.toLocal())}'
+        '$actionLabel · ${DateFormat('yyyy/MM/dd HH:mm:ss').format(marker.at.toLocal())}'
         '${marker.price == null ? '' : ' · ${TokenAmountFormatter.formatValue(marker.price!)}'}';
     final arrow = CustomPaint(
       size: const Size(4, 3),
