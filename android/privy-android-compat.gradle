@@ -12,6 +12,10 @@ subprojects { subproject ->
             if (subproject.name == "coinbase_wallet_sdk") {
                 subproject.android.defaultConfig.consumerProguardFiles.clear()
             }
+
+            if (subproject.name == "privy_flutter") {
+                subproject.apply from: rootProject.file("privy-activity-context.gradle")
+            }
         }
     }
 }
