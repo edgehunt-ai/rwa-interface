@@ -45,11 +45,13 @@ jobs:
           cache: true
       - name: Resolve Flutter plugins
         run: flutter pub get
+      - name: Prepare Android Gradle test project
+        # The Gradle wrapper and local.properties are generated and gitignored.
+        # Prepare them through Flutter before invoking Gradle on a clean checkout.
+        run: flutter build apk --debug --config-only --no-pub --target-platform android-arm64
       - name: Test Android authentication context lifecycle
         working-directory: android
-        run: |
-          printf 'sdk.dir=%s\nflutter.sdk=%s\n' "$ANDROID_HOME" "$FLUTTER_ROOT" > local.properties
-          ./gradlew :app:testDebugUnitTest -Ptarget-platform=android-arm64 --console=plain
+        run: ./gradlew :app:testDebugUnitTest -Ptarget-platform=android-arm64 --console=plain
 
   quality:
     name: Contract and Flutter Quality

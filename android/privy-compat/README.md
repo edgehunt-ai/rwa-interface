@@ -22,6 +22,10 @@ Run the native regression tests with:
 
 ```sh
 flutter pub get
+flutter build apk --debug --config-only --no-pub --target-platform android-arm64
 cd android
-./gradlew :app:testDebugUnitTest
+./gradlew :app:testDebugUnitTest -Ptarget-platform=android-arm64 --console=plain
 ```
+
+The config-only build generates the ignored Gradle wrapper and local SDK
+properties needed by a clean checkout without packaging an APK.
