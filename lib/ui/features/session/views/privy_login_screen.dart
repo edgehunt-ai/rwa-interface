@@ -1045,7 +1045,7 @@ class _LoginFailure extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.brandSoft,
+        color: context.semanticColors.dangerSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(

@@ -295,8 +295,21 @@ class _TradeChartMarkerOverlay extends StatelessWidget {
     }
     placed.add(Rect.fromLTWH(left, top, badgeWidth, markerHeight));
     final color = _markerColor(context, marker.kind);
+    final actionLabel = switch (marker.kind) {
+      TradeChartMarkerKind.long ||
+      TradeChartMarkerKind.short => switch (marker.positionEffect) {
+        'open_long' => 'Open long',
+        'close_long' => 'Close long',
+        'open_short' => 'Open short',
+        'close_short' => 'Close short',
+        'short_to_long' => 'Short → Long',
+        'long_to_short' => 'Long → Short',
+        _ => _markerFullLabel(marker.kind),
+      },
+      _ => _markerFullLabel(marker.kind),
+    };
     final tooltip =
-        '${_markerFullLabel(marker.kind)} · ${DateFormat('yyyy/MM/dd HH:mm:ss').format(marker.at.toLocal())}'
+        '$actionLabel · ${DateFormat('yyyy/MM/dd HH:mm:ss').format(marker.at.toLocal())}'
         '${marker.price == null ? '' : ' · ${TokenAmountFormatter.formatValue(marker.price!)}'}';
     final arrow = CustomPaint(
       size: const Size(4, 3),
