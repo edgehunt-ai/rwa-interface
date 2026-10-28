@@ -15,15 +15,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  android-bundle-tools:
+    name: Android Bundle Tools
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Android SDK and bundle verification tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools build-tools;36.0.0'
+      - name: Verify Android tools and test bundle verification
+        run: |
+          set -euo pipefail
+          sdkmanager --version
+          test -x "$ANDROID_HOME/build-tools/36.0.0/aapt2"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/zipalign"
+          python3 -m unittest discover -s scripts -p 'verify_android_bundle_test.py'
+
   quality:
     name: Contract and Flutter Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Test Android bundle verification
-        run: python3 -m unittest discover -s scripts -p 'verify_android_bundle_test.py'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2

@@ -148,6 +148,10 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
+      - name: Setup Android SDK and bundle verification tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools build-tools;36.0.0'
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -260,7 +264,6 @@ jobs:
           printf '%s  %s\n' \
             378b5434cd1378bef6b2bc527b8c7f0ff2584b273830335bce54d6d0813c8584 \
             "$bundletool" | sha256sum --check --status
-          sdkmanager 'build-tools;36.0.0' >/dev/null
           python3 scripts/verify_android_bundle.py \
             --bundle build/app/outputs/bundle/release/app-release.aab \
             --bundletool "$bundletool" \
