@@ -57,8 +57,9 @@ final class ApiFailureMapper {
         userAction: 'reauthenticate',
       );
     }
-    if (error.type == DioExceptionType.unknown && response != null ||
-        error.error is FormatException) {
+    if ((status == null || status < 400) &&
+        (error.type == DioExceptionType.unknown && response != null ||
+            error.error is FormatException)) {
       final reason = error.error?.toString().trim();
       return DecodingFailure(
         requestId: requestId,
@@ -79,7 +80,9 @@ final class ApiFailureMapper {
         statusCode: status,
         code: json['code']?.toString() ?? 'http_$status',
         requestId: requestId ?? json['request_id']?.toString(),
-        retryable: json['retryable'] == true,
+        retryable: json['retryable'] is bool
+            ? json['retryable'] == true
+            : const {502, 503, 504}.contains(status),
         userAction: json['user_action']?.toString(),
         message: json['message']?.toString(),
         failureReason: json['failure_reason']?.toString(),

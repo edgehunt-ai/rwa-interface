@@ -19,6 +19,7 @@ import '../../../../domain/models/order_intent.dart';
 import '../../orders/providers/order_providers.dart';
 import '../../../../domain/models/hip3_action_summary.dart';
 import '../../../../domain/models/hip3_protection.dart';
+import '../../../../domain/services/hip3_typed_data_signer.dart';
 
 final activeHip3ActionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
@@ -221,6 +222,28 @@ final class PositionCommands {
               context: context,
               duration: stopwatch.elapsed,
             );
+      }
+      rethrow;
+    } on Hip3SigningFailure catch (failure, stackTrace) {
+      if (_ref.mounted) {
+        final reporter = _ref.read(observabilityReporterProvider);
+        if (failure.code == Hip3SigningFailureCode.rejected) {
+          reporter.recordOperation(
+            operation,
+            outcome: 'cancelled',
+            context: context,
+            duration: stopwatch.elapsed,
+          );
+        } else {
+          reporter.recordError(
+            operation: operation,
+            error: failure,
+            stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
+            failureKind: 'wallet_signing',
+          );
+        }
       }
       rethrow;
     } on Object catch (error, stackTrace) {

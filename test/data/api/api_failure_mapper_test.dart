@@ -5,6 +5,58 @@ import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   const mapper = ApiFailureMapper();
+  for (final status in [502, 503, 504]) {
+    test('maps HTTP $status gateway body to retryable unavailability', () {
+      final request = RequestOptions(path: '/hip3/actions');
+      final failure = mapper.fromDio(
+        DioException(
+          requestOptions: request,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: request,
+            statusCode: status,
+            data: '<html>upstream unavailable</html>',
+          ),
+        ),
+      );
+      expect(failure.kind, FailureKind.unavailable);
+      expect(failure.retryable, isTrue);
+      expect(
+        apiFailureMessage(failure, fallback: 'failed'),
+        'HTTP $status http_$status',
+      );
+    });
+  }
+
+  test(
+    'gateway decoding error cannot hide HTTP status and server retry policy',
+    () {
+      final request = RequestOptions(path: '/hip3/actions');
+      final failure = mapper.fromDio(
+        DioException(
+          requestOptions: request,
+          type: DioExceptionType.unknown,
+          error: const FormatException('Invalid gateway response'),
+          response: Response(
+            requestOptions: request,
+            statusCode: 503,
+            data: {
+              'code': 'hip3_leverage_observation_stale',
+              'failure_reason':
+                  'Leverage observation is stale. Refresh and try again.',
+              'retryable': false,
+            },
+          ),
+        ),
+      );
+      expect(failure, isA<ServerFailure>());
+      expect(failure.retryable, isFalse);
+      expect(
+        apiFailureMessage(failure, fallback: 'failed'),
+        'Leverage observation is stale. Refresh and try again.',
+      );
+    },
+  );
   test('maps declared server error and request ID', () {
     final request = RequestOptions(path: '/orders');
     final failure = mapper.fromDio(

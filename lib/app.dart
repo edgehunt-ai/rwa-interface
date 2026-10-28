@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/app_router.dart';
+import 'package:nobell/app/routing/app_back_button_dispatcher.dart';
 import 'package:nobell/app/providers/locale_provider.dart';
 import 'package:nobell/app/providers/locale_sync_provider.dart';
 import 'package:nobell/app/providers/push_notification_providers.dart';
@@ -45,6 +46,9 @@ final class _AppView extends ConsumerStatefulWidget {
 
 final class _AppViewState extends ConsumerState<_AppView> {
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  late final _backButtonDispatcher = AppBackButtonDispatcher(
+    () => widget.router,
+  );
 
   @override
   void initState() {
@@ -95,7 +99,10 @@ final class _AppViewState extends ConsumerState<_AppView> {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      routerConfig: widget.router,
+      routeInformationProvider: widget.router.routeInformationProvider,
+      routeInformationParser: widget.router.routeInformationParser,
+      routerDelegate: widget.router.routerDelegate,
+      backButtonDispatcher: _backButtonDispatcher,
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         // Keep the status bar legible as the appearance changes. Without a
         // theme-owned AppBar most screens would keep the platform default,

@@ -37,6 +37,21 @@ jobs:
           test -x "$ANDROID_HOME/build-tools/36.0.0/aapt2"
           test -x "$ANDROID_HOME/build-tools/36.0.0/zipalign"
           python3 -m unittest discover -s scripts -p 'verify_android_bundle_test.py'
+      - name: Setup Flutter for native regression tests
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+      - name: Resolve Flutter plugins
+        run: flutter pub get
+      - name: Prepare Android Gradle test project
+        # The Gradle wrapper and local.properties are generated and gitignored.
+        # Prepare them through Flutter before invoking Gradle on a clean checkout.
+        run: flutter build apk --debug --config-only --no-pub --target-platform android-arm64
+      - name: Test Android authentication context lifecycle
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest -Ptarget-platform=android-arm64 --console=plain
 
   quality:
     name: Contract and Flutter Quality

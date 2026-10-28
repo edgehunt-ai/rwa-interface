@@ -263,8 +263,10 @@ final class PrivyIdentityAuthGateway
     if (external != null && external.address.toLowerCase() == normalized) {
       try {
         return await external.signTypedDataV4(typedData);
-      } catch (_) {
-        throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+      } on Hip3SigningFailure {
+        rethrow;
+      } catch (error) {
+        throw _signingFailure(error);
       }
     }
 
@@ -291,16 +293,51 @@ final class PrivyIdentityAuthGateway
       return switch (await _requestTypedData(matches.single, request)) {
         Success<EthereumRpcResponse>(:final value) when value.data.isNotEmpty =>
           value.data,
-        _ => throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+        Failure<EthereumRpcResponse>(:final error) => throw _signingFailure(
+          error,
+        ),
+        _ => throw const Hip3SigningFailure(
+          Hip3SigningFailureCode.walletUnavailable,
+          retryable: true,
+          reason: 'Wallet returned an empty signature.',
+        ),
       };
     } on Hip3SigningFailure {
       rethrow;
-    } catch (_) {
-      throw const Hip3SigningFailure(
-        Hip3SigningFailureCode.walletUnavailable,
-        retryable: true,
-      );
+    } catch (error) {
+      throw _signingFailure(error);
     }
+  }
+
+  static Hip3SigningFailure _signingFailure(Object error) {
+    final message = switch (error) {
+      PrivyException() => error.message,
+      PlatformException() =>
+        error.message?.trim().isNotEmpty == true
+            ? '${error.message} (${error.code})'
+            : error.code,
+      IdentityFailure() => error.reason ?? error.code.name,
+      _ => error.toString(),
+    };
+    final reason = _sanitizeDiagnosticMessage(
+      message.split('\n').first,
+      redactCodes: false,
+    ).trim();
+    // Only explicit refusal evidence is cancellation. Other SDK failures must
+    // retain their cause and remain reportable/retryable.
+    final rejected =
+        error is PlatformException && error.code == '4001' ||
+        RegExp(
+          r'\b(user rejected|user denied|user declined|user cancelled|user canceled)\b',
+          caseSensitive: false,
+        ).hasMatch(message);
+    return Hip3SigningFailure(
+      rejected
+          ? Hip3SigningFailureCode.rejected
+          : Hip3SigningFailureCode.walletUnavailable,
+      retryable: !rejected,
+      reason: reason.isEmpty ? null : reason,
+    );
   }
 
   @override
@@ -865,7 +902,11 @@ final class PrivyIdentityAuthGateway
     required String failureCode,
     required _PrivyProviderDiagnostic providerDiagnostic,
   }) {
-    final safeMessage = _sanitizeDiagnosticMessage(message);
+    final safeMessage = _sanitizeDiagnosticMessage(
+      message.split('\n').first,
+      redactCodes:
+          operation == 'verify_email_code' || operation == 'request_email_code',
+    );
     if (kDebugMode) debugPrint('Privy $operation failed: $safeMessage');
     _reportDiagnostic(
       operation: operation,
@@ -938,14 +979,25 @@ final class PrivyIdentityAuthGateway
             ..setTag('auth_provider', 'privy')
             ..setTag('operation', operation)
             ..setTag('auth_failure', failureCode)
-            ..setTag('provider_error', providerError);
+            ..setTag('provider_error', providerError)
+            ..fingerprint = [
+              'privy-identity',
+              operation,
+              failureCode,
+              providerError,
+              ?providerFlow,
+              ?providerStage,
+            ];
           if (providerFlow != null) {
             scope.setTag('provider_flow', providerFlow);
           }
           if (providerStage != null) {
             scope.setTag('provider_stage', providerStage);
           }
-          scope.setContexts('privy_auth', {
+          // Sentry's server-side password filter removes contexts named
+          // `privy_auth` entirely, including the already sanitized SDK reason.
+          scope.setContexts('identity_diagnostic', {
+            'operation': operation,
             'safe_message': message,
             'failure_code': failureCode,
             'provider_error': providerError,

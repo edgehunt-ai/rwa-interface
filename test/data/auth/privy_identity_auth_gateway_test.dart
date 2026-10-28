@@ -29,6 +29,69 @@ void main() {
   );
   const exportUrl = 'https://keys.example.test/export?source=app#ready';
 
+  group('typed data failure reasons', () {
+    for (final embedded in [true, false]) {
+      for (final (message, code) in [
+        ('User rejected the request', Hip3SigningFailureCode.rejected),
+        (
+          'Wallet RPC unavailable [50152] token=secret',
+          Hip3SigningFailureCode.walletUnavailable,
+        ),
+      ]) {
+        test(
+          'preserves ${embedded ? 'embedded' : 'external'} $code reason',
+          () async {
+            final wallet = _WalletConnection()
+              ..signingFailure = PrivyException('$message\nat internal.frame');
+            final user = _FakeUser(
+              id: 'user',
+              token: 'token',
+              ethereumWallets: [
+                EmbeddedEthereumWallet(
+                  address: wallet.address,
+                  hdWalletIndex: 0,
+                ),
+              ],
+            );
+            final gateway = PrivyIdentityAuthGateway(
+              exportUrl: exportUrl,
+              createPrivy: (_) => _FakePrivy(
+                authState: embedded
+                    ? Authenticated(user)
+                    : const Unauthenticated(),
+                siwe: _FakeSiwe(loginResult: Success(user)),
+              ),
+              requestTypedData: (_, _) async =>
+                  Failure(PrivyException('$message\nat internal.frame')),
+            );
+            await gateway.initialize(configuration);
+            if (!embedded) await gateway.loginWithWallet(wallet);
+            await expectLater(
+              gateway.signTypedDataV4(
+                expectedSigner: wallet.address,
+                typedData: const {'primaryType': 'Agent'},
+              ),
+              throwsA(
+                isA<Hip3SigningFailure>()
+                    .having((e) => e.code, 'code', code)
+                    .having(
+                      (e) => e.retryable,
+                      'retryable',
+                      code != Hip3SigningFailureCode.rejected,
+                    )
+                    .having(
+                      (e) => e.reason,
+                      'reason',
+                      message.replaceAll('token=secret', 'token=<redacted>'),
+                    ),
+              ),
+            );
+          },
+        );
+      }
+    }
+  });
+
   group('direct wallet broadcast recovery', () {
     final action = BstocksOrderAction(
       orderId: 'order-1',
@@ -1135,6 +1198,7 @@ final class _FakeSiwe implements LoginWithSiwe {
 }
 
 final class _WalletConnection implements WalletConnection {
+  Object? signingFailure;
   String? signedMessage;
   Map<String, Object?>? signedTypedData;
 
@@ -1158,6 +1222,7 @@ final class _WalletConnection implements WalletConnection {
 
   @override
   Future<String> signTypedDataV4(Map<String, Object?> typedData) async {
+    if (signingFailure case final error?) throw error;
     signedTypedData = typedData;
     return '0x${List.filled(64, '11').join()}1b';
   }
