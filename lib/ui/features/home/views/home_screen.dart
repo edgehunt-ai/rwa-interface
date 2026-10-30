@@ -586,7 +586,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                         product: product,
                         dense: true,
                         showVolume: selectedTab == 'Volume',
-                        onTap: () => context.go(
+                        onTap: () => context.push(
                           AppRoutes.tradeLocation(
                             symbol: product.symbol,
                             kind: product.kind.name,

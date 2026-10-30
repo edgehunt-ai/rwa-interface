@@ -103,6 +103,18 @@ final class _AppViewState extends ConsumerState<_AppView> {
       routeInformationParser: widget.router.routeInformationParser,
       routerDelegate: widget.router.routerDelegate,
       backButtonDispatcher: _backButtonDispatcher,
+      onNavigationNotification: (notification) {
+        final lifecycle = WidgetsBinding.instance.lifecycleState;
+        if (lifecycle == null || lifecycle == AppLifecycleState.detached) {
+          return true;
+        }
+        // A root secondary page cannot pop its Navigator, but the dispatcher
+        // can navigate back inside the app. Keep Android back in Flutter.
+        SystemNavigator.setFrameworkHandlesBack(
+          notification.canHandlePop || _backButtonDispatcher.hasAppDestination,
+        );
+        return true;
+      },
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         // Keep the status bar legible as the appearance changes. Without a
         // theme-owned AppBar most screens would keep the platform default,

@@ -289,7 +289,7 @@ class _MarketDiscoverySearchScreenState
     unawaited(
       ref.read(recentMarketSearchesProvider.notifier).record(reference),
     );
-    context.go(
+    context.push(
       AppRoutes.tradeLocation(
         symbol: reference.symbol,
         kind: reference.kind.name,
