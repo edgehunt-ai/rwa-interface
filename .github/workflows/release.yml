@@ -335,6 +335,16 @@ jobs:
             echo "The pinned PrivySDK requires Apple Swift 6.3 or newer; found ${swift_version}." >&2
             exit 1
           fi
+      - name: Setup OpenSSL for certificate compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! brew list --versions openssl@3 >/dev/null 2>&1; then
+            brew install openssl@3
+          fi
+          openssl_bin="$(brew --prefix openssl@3)/bin"
+          echo "$openssl_bin" >> "$GITHUB_PATH"
+          "$openssl_bin/openssl" version
       - name: Prepare iOS signing
         id: signing
         env:

@@ -5,8 +5,10 @@ import hashlib
 import os
 from pathlib import Path
 import plistlib
+import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -173,6 +175,108 @@ class TestFlightTests(unittest.TestCase):
                 self.assertNotIn("sensitive-key-content", str(caught.exception))
 
 
+class Pkcs12CompatibilityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if not shutil.which("openssl"):
+            raise unittest.SkipTest("OpenSSL 3 is required for PKCS#12 integration tests")
+        version = subprocess.run(["openssl", "version"], capture_output=True, text=True)
+        if not version.stdout.startswith("OpenSSL 3."):
+            raise unittest.SkipTest("OpenSSL 3 is required for PKCS#12 integration tests")
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.directory = Path(self.temporary.name)
+        self.password = "test-p12-export-password"
+        environment = patch.dict(os.environ, {
+            "IOS_DISTRIBUTION_CERTIFICATE_PASSWORD": self.password,
+        })
+        environment.start()
+        self.addCleanup(environment.stop)
+        self.key = self.directory / "test.key"
+        self.certificate = self.directory / "test.pem"
+        self.p12 = self.directory / "test.p12"
+        release.run([
+            "openssl", "req", "-x509", "-newkey", "rsa:2048", "-noenc",
+            "-keyout", str(self.key), "-out", str(self.certificate),
+            "-subj", "/CN=Nobell Signing Test", "-days", "1",
+        ])
+
+    def create_p12(self, extra_options=()):
+        release.run([
+            "openssl", "pkcs12", "-export", "-inkey", str(self.key),
+            "-in", str(self.certificate), "-out", str(self.p12),
+            "-passout", "env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD",
+            *extra_options,
+        ])
+
+    def test_normalizes_modern_and_legacy_p12_without_changing_identity_or_password(self):
+        for options in [(), ("-legacy",), ("-name", "Nobell Distribution")]:
+            with self.subTest(options=options):
+                self.create_p12(options)
+                command = ["openssl", "pkcs12", "-legacy", "-in", str(self.p12),
+                           "-passin", "env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD", "-noenc"]
+                original_material = release.run(command)
+                original_files = set(self.directory.iterdir())
+                release.normalize_pkcs12(self.p12)
+                # Compare cryptographic identity, allowing bag attributes
+                # such as a Keychain friendly name to change during export.
+                normalized_material = release.run(command)
+                for identity_command in [
+                    ["openssl", "x509", "-outform", "DER"],
+                    ["openssl", "pkey", "-pubout", "-outform", "DER"],
+                ]:
+                    self.assertEqual(
+                        release.run(identity_command, stdin=normalized_material),
+                        release.run(identity_command, stdin=original_material),
+                    )
+                self.assertEqual(set(self.directory.iterdir()), original_files)
+                self.assertEqual(stat.S_IMODE(self.p12.stat().st_mode), 0o600)
+                info = subprocess.run([
+                    "openssl", "pkcs12", "-in", str(self.p12), "-info", "-noout",
+                    "-passin", "env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD",
+                ], capture_output=True, text=True)
+                self.assertEqual(info.returncode, 0, info.stderr)
+                self.assertIn("MAC: sha1,", info.stderr)
+                self.assertIn("pbeWithSHA1And3-KeyTripleDES-CBC", info.stderr)
+                self.assertNotIn("AES-256-CBC", info.stderr)
+
+    def test_wrong_export_password_is_reported_before_keychain_import(self):
+        self.create_p12()
+        original_p12 = self.p12.read_bytes()
+        os.environ["IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"] = "wrong-test-password"
+        with self.assertRaisesRegex(release.ReleaseError, "Export Password.*invalid password") as caught:
+            release.normalize_pkcs12(self.p12)
+        self.assertNotIn("wrong-test-password", str(caught.exception))
+        self.assertNotIn(self.password, str(caught.exception))
+        self.assertEqual(self.p12.read_bytes(), original_p12)
+
+    @unittest.skipUnless(sys.platform == "darwin", "macOS Keychain import requires macOS")
+    def test_mac_keychain_imports_normalized_openssl_p12(self):
+        self.create_p12()
+        release.normalize_pkcs12(self.p12)
+        keychain = self.directory / "test-signing.keychain-db"
+        try:
+            release.run(["security", "create-keychain", "-p", self.password, str(keychain)])
+            release.run(["security", "unlock-keychain", "-p", self.password, str(keychain)])
+            release.run([
+                "security", "import", str(self.p12), "-P", self.password,
+                "-T", "/usr/bin/codesign", "-k", str(keychain),
+            ])
+        finally:
+            if keychain.exists():
+                release.run(["security", "delete-keychain", str(keychain)])
+
+    def test_corrupt_p12_does_not_expose_secret_contents(self):
+        invalid = b"private-invalid-p12-content"
+        release.write_private(self.p12, invalid)
+        with self.assertRaisesRegex(release.ReleaseError, "complete .p12") as caught:
+            release.normalize_pkcs12(self.p12)
+        self.assertNotIn(invalid.decode(), str(caught.exception))
+        self.assertNotIn(self.password, str(caught.exception))
+
+
 class ReleaseToolTests(unittest.TestCase):
     def test_formal_release_guard_still_requires_main(self):
         workflow = Path(__file__).resolve().parents[1] / ".github/workflows/release.yml"
@@ -207,13 +311,17 @@ class ReleaseToolTests(unittest.TestCase):
                 "GITHUB_OUTPUT": str(outputs),
             }
 
-            def command(arguments):
+            def command(arguments, *, stdin=None):
+                if arguments[:2] == ["openssl", "pkcs12"]:
+                    return b"mock normalized p12" if "-export" in arguments else b"mock private signing material"
                 if arguments == ["security", "list-keychains", "-d", "user"]:
                     return b'"/original/login.keychain-db"\n'
                 if arguments[:2] == ["security", "cms"]:
                     return plistlib.dumps(distribution_profile())
                 if arguments[:2] == ["security", "find-identity"]:
                     return f'  1) {IDENTITY} "Apple Distribution: Test"\n'.encode()
+                if arguments[:2] == ["security", "import"]:
+                    self.assertEqual(Path(arguments[2]).read_bytes(), b"mock normalized p12")
                 return b""
 
             with patch.dict(os.environ, environment, clear=True), patch.object(release.Path, "home", return_value=temporary), patch.object(release, "run", side_effect=command) as calls:

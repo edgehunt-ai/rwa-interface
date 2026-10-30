@@ -53,6 +53,25 @@ jobs:
         working-directory: android
         run: ./gradlew :app:testDebugUnitTest -Ptarget-platform=android-arm64 --console=plain
 
+  ios-signing-tools:
+    name: iOS Signing Tools
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup OpenSSL for certificate compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! brew list --versions openssl@3 >/dev/null 2>&1; then
+            brew install openssl@3
+          fi
+          openssl_bin="$(brew --prefix openssl@3)/bin"
+          echo "$openssl_bin" >> "$GITHUB_PATH"
+          "$openssl_bin/openssl" version
+      - name: Test PKCS12 compatibility with macOS Keychain
+        run: python3 -m unittest discover -s scripts -p 'ios_release_test.py'
+
   quality:
     name: Contract and Flutter Quality
     runs-on: ubuntu-latest
