@@ -56,16 +56,53 @@ def write_private(path, data):
     path.chmod(0o600)
 
 
-def run(command):
+def run(command, *, stdin=None):
     # Do not include command arguments in exceptions: security receives passwords.
     try:
-        result = subprocess.run(command, capture_output=True, check=False)
+        result = subprocess.run(command, input=stdin, capture_output=True, check=False)
     except FileNotFoundError:
         raise ReleaseError(f"Required Apple tool not found: {command[0]}") from None
     if result.returncode:
         reason = result.stderr.decode(errors="replace").strip()
         raise ReleaseError(f"{command[0]} {command[1]} failed: {reason}")
     return result.stdout
+
+
+def normalize_pkcs12(certificate_path):
+    # macOS Keychain can reject OpenSSL 3's default AES/SHA-256 PKCS#12
+    # encoding with the same error as a wrong password. Verify the supplied
+    # password with OpenSSL, then re-encode for Keychain using 3DES/SHA-1.
+    # Private PEM material stays in a captured pipe, never on disk or in logs.
+    password_source = "env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"
+    try:
+        key_material = run([
+            "openssl", "pkcs12", "-legacy", "-in", str(certificate_path),
+            "-passin", password_source, "-nocerts", "-noenc",
+        ])
+        certificates = run([
+            "openssl", "pkcs12", "-legacy", "-in", str(certificate_path),
+            "-passin", password_source, "-nokeys",
+        ])
+    except ReleaseError as error:
+        raise ReleaseError(
+            "Cannot decode IOS_DISTRIBUTION_CERTIFICATE_BASE64 using "
+            "IOS_DISTRIBUTION_CERTIFICATE_PASSWORD. Check the complete .p12 "
+            f"and its Export Password (not the PEM pass phrase). {error}"
+        ) from None
+    # PKCS#12 export reads the key and certificates independently; supply the
+    # public chain as a file so only the private key needs the stdin pipe.
+    chain_path = certificate_path.with_suffix(".certificates.pem")
+    try:
+        write_private(chain_path, certificates)
+        normalized = run([
+            "openssl", "pkcs12", "-export", "-inkey", "/dev/stdin",
+            "-in", str(chain_path), "-passout", password_source,
+            "-keypbe", "PBE-SHA1-3DES", "-certpbe", "PBE-SHA1-3DES",
+            "-macalg", "sha1",
+        ], stdin=key_material)
+    finally:
+        chain_path.unlink(missing_ok=True)
+    write_private(certificate_path, normalized)
 
 
 def output(name, value):
@@ -149,6 +186,7 @@ def prepare_signing(directory):
     keychain_path = directory / "signing.keychain-db"
     write_private(certificate_path, decode_secret("IOS_DISTRIBUTION_CERTIFICATE_BASE64"))
     write_private(profile_path, decode_secret("IOS_PROVISIONING_PROFILE_BASE64"))
+    normalize_pkcs12(certificate_path)
     original = run(["security", "list-keychains", "-d", "user"])
     write_private(directory / "original-keychains.txt", original)
     keychain_password = secrets.token_hex(32)

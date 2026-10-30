@@ -44,6 +44,15 @@ base64 -i Nobell_AppStore.mobileprovision | pbcopy
 Run the commands separately and save each copied value to its corresponding
 Secret. Do not commit the files or paste private keys into issues or logs.
 
+The runner uses OpenSSL 3 to verify the `.p12` export password and automatically
+re-encodes the package with Keychain-compatible 3DES/SHA-1 settings before
+import. This also accepts the default AES/SHA-256 format produced by OpenSSL 3;
+you do not need to regenerate the certificate or change the Secret for that
+format. The certificate, private key, and export password remain unchanged;
+unencrypted private-key material is passed only in memory. A decode error names
+the certificate/password Secrets to check. Use the `.p12` **Export Password**,
+which may differ from the PEM pass phrase protecting an original `.key` file.
+
 The existing Flutter build variables remain required: `API_BASE_URL`,
 `PRIVY_APP_ID`, `PRIVY_CLIENT_ID`, `PRIVY_EXPORT_URL`, `PRIVY_APP_URL_SCHEME`, and
 `REOWN_PROJECT_ID`. Enable Apple login in Privy and configure the mobile client
@@ -100,6 +109,10 @@ Local regression checks do not require macOS or real signing material:
 ```sh
 python3 -m unittest discover -s scripts -p 'ios_release_test.py'
 ```
+
+CI also runs these tests on macOS with OpenSSL 3, including a real Keychain
+import using a generated test certificate. No Apple credentials are needed
+for that compatibility check.
 
 Actual signed builds and TestFlight uploads require the configured credentials
 and the macOS Actions runner. Validate Apple login, Passkey login, and push
