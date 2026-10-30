@@ -97,6 +97,9 @@ The workflow imports the certificate into a temporary keychain, installs the
 profile, and generates a manual-signing configuration used only by the Runner
 target. The profile is checked for expiration, team, explicit Bundle ID,
 matching certificate/private key, and all three capabilities before building.
+The profile's original UUID, including letter case, is preserved for the
+installed filename, Runner signing specifier, and export options so Xcode can
+resolve the installed profile.
 The exported IPA is checked again for a valid signature, matching embedded
 profile, Apple login, the configured Passkey domain, and production APNs.
 

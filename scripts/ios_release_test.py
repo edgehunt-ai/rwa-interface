@@ -50,6 +50,18 @@ class SigningProfileTests(unittest.TestCase):
     def test_accepts_distribution_profile_and_matches_private_key_identity(self):
         self.assertEqual(self.validate(distribution_profile()), (PROFILE_UUID, IDENTITY))
 
+    def test_preserves_original_uuid_case_for_xcode_profile_lookup(self):
+        for profile_uuid in [PROFILE_UUID, PROFILE_UUID.lower()]:
+            with self.subTest(profile_uuid=profile_uuid):
+                profile = distribution_profile()
+                profile["UUID"] = profile_uuid
+                actual_uuid, identity = self.validate(profile)
+                self.assertEqual(actual_uuid, profile_uuid)
+                self.assertEqual(
+                    release.export_options(TEAM, actual_uuid, identity)["provisioningProfiles"],
+                    {release.BUNDLE_ID: profile_uuid},
+                )
+
     def test_rejects_wrong_team_bundle_or_identity(self):
         for field, value, message in [
             ("TeamIdentifier", ["OTHER12345"], "APPLE_TEAM_ID"),
@@ -340,6 +352,45 @@ class ReleaseToolTests(unittest.TestCase):
                 release.cleanup(directory)
             self.assertFalse(directory.exists())
             installed = temporary / "Library/Developer/Xcode/UserData/Provisioning Profiles" / f"{PROFILE_UUID}.mobileprovision"
+            self.assertFalse(installed.exists())
+
+    def test_installed_profile_and_signing_specifier_preserve_lowercase_uuid(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary = Path(temporary)
+            directory = temporary / "signing"
+            profile = distribution_profile()
+            profile_uuid = PROFILE_UUID.lower()
+            profile["UUID"] = profile_uuid
+            payload = plistlib.dumps(profile)
+            environment = {
+                "APPLE_TEAM_ID": TEAM,
+                "PRIVY_EXPORT_URL": f"https://{HOST}/export-private-key",
+                "IOS_DISTRIBUTION_CERTIFICATE_BASE64": base64.b64encode(b"p12").decode(),
+                "IOS_DISTRIBUTION_CERTIFICATE_PASSWORD": "test-password",
+                "IOS_PROVISIONING_PROFILE_BASE64": base64.b64encode(payload).decode(),
+                "GITHUB_OUTPUT": str(temporary / "outputs"),
+            }
+
+            def command(arguments):
+                if arguments == ["security", "list-keychains", "-d", "user"]:
+                    return b'"/original/login.keychain-db"\n'
+                if arguments[:2] == ["security", "cms"]:
+                    return payload
+                if arguments[:2] == ["security", "find-identity"]:
+                    return f'  1) {IDENTITY} "Apple Distribution: Test"\n'.encode()
+                return b""
+
+            installed = temporary / "Library/Developer/Xcode/UserData/Provisioning Profiles" / f"{profile_uuid}.mobileprovision"
+            with patch.dict(os.environ, environment, clear=True), patch.object(release.Path, "home", return_value=temporary), patch.object(release, "normalize_pkcs12"), patch.object(release, "run", side_effect=command):
+                release.prepare_signing(directory)
+                self.assertEqual(installed.read_bytes(), payload)
+                self.assertIn(
+                    f"PROVISIONING_PROFILE_SPECIFIER = {profile_uuid}\n",
+                    (directory / "RunnerSigning.xcconfig").read_text(),
+                )
+                options = plistlib.loads((directory / "ExportOptions.plist").read_bytes())
+                self.assertEqual(options["provisioningProfiles"], {release.BUNDLE_ID: profile_uuid})
+                release.cleanup(directory)
             self.assertFalse(installed.exists())
 
     def test_failed_security_command_does_not_log_password_arguments(self):

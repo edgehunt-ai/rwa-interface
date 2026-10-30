@@ -147,7 +147,14 @@ def validate_profile(profile, team_id, host, identities, now=None):
         raise ReleaseError(f"The provisioning profile must explicitly authorize {BUNDLE_ID}.")
     validate_capabilities(entitlements, team_id, host)
     try:
-        profile_uuid = str(UUID(profile["UUID"])).upper()
+        profile_uuid = profile["UUID"]
+        # Validate without rewriting: Xcode matches the profile's original
+        # identifier, including its case, against the signing specifier.
+        if not isinstance(profile_uuid, str) or not re.fullmatch(
+            r"[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}", profile_uuid
+        ):
+            raise ValueError("Invalid profile UUID")
+        UUID(profile_uuid)
     except (KeyError, ValueError, TypeError, AttributeError):
         raise ReleaseError("The provisioning profile has an invalid UUID.") from None
     certificates = {
