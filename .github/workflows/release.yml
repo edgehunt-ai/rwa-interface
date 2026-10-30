@@ -303,11 +303,13 @@ jobs:
           retention-days: 7
 
   ios-release:
-    name: iOS Unsigned Release IPA
+    name: iOS Signed Release IPA
     needs:
       - detect-release
     if: needs.detect-release.outputs.should_build == 'true'
     runs-on: macos-26
+    env:
+      APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -333,6 +335,21 @@ jobs:
             echo "The pinned PrivySDK requires Apple Swift 6.3 or newer; found ${swift_version}." >&2
             exit 1
           fi
+      - name: Prepare iOS signing
+        id: signing
+        env:
+          IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: python3 scripts/ios_release.py prepare-signing
+      - name: Configure optional TestFlight upload
+        id: testflight
+        if: needs.detect-release.outputs.should_release == 'true'
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
+        run: python3 scripts/ios_release.py configure-testflight
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -361,45 +378,78 @@ jobs:
             "APP_REVIEW_ENABLED=$APP_REVIEW_ENABLED" \
             "APP_REVIEW_USERS=$APP_REVIEW_USERS" > .env.ci
           make sync-privy-config ENV_FILE=.env.ci
-      - name: Build unsigned iOS release app
+      - name: Build and export signed IPA
+        env:
+          RELEASE_VERSION: ${{ needs.detect-release.outputs.version }}
+          IOS_SIGNING_CONFIG: ${{ steps.signing.outputs.signing_config }}
+          IOS_EXPORT_OPTIONS: ${{ steps.signing.outputs.export_options }}
         shell: bash
-        run: >-
-          flutter build ios --release --no-codesign --obfuscate
-          --dart-define-from-file=.env.ci
-          --split-debug-info=build/symbols/ios
-          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
-          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
-          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
-          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
-          --dart-define=SENTRY_RELEASE="nobell@${{ needs.detect-release.outputs.version }}"
+        run: |
+          set -euo pipefail
+          printf '\n#include "%s"\n' "$IOS_SIGNING_CONFIG" >> ios/Flutter/Release.xcconfig
+          flutter build ipa --release --obfuscate \
+            --export-options-plist="$IOS_EXPORT_OPTIONS" \
+            --build-name="${RELEASE_VERSION%%[-+]*}" \
+            --build-number="${RELEASE_VERSION##*+}" \
+            --dart-define-from-file=.env.ci \
+            --split-debug-info=build/symbols/ios \
+            ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN} \
+            --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT" \
+            --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE" \
+            --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE" \
+            --dart-define=SENTRY_RELEASE="nobell@$RELEASE_VERSION"
+          shopt -s nullglob
+          ipa_files=(build/ios/ipa/*.ipa)
+          if (( ${#ipa_files[@]} != 1 )); then
+            echo "Expected exactly one signed IPA from Xcode export." >&2
+            exit 1
+          fi
+          if [[ "${ipa_files[0]}" != "build/ios/ipa/nobell-ios.ipa" ]]; then
+            cp "${ipa_files[0]}" build/ios/ipa/nobell-ios.ipa
+          fi
+      - name: Verify signed IPA and capabilities
+        run: python3 scripts/ios_release.py verify-ipa --ipa build/ios/ipa/nobell-ios.ipa
       - name: Upload iOS symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
           SENTRY_RELEASE: nobell@${{ needs.detect-release.outputs.version }}
         run: dart run sentry_dart_plugin
-      - name: Package unsigned iOS IPA
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build/ios/ipa/Payload
-          ditto build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
-          ditto -c -k --norsrc --keepParent build/ios/ipa/Payload build/ios/nobell-ios-unsigned.ipa
       - name: Record iOS artifact size
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "## iOS artifact size"
-            du -h build/ios/nobell-ios-unsigned.ipa
+            du -h build/ios/ipa/nobell-ios.ipa
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nobell-ios-unsigned
+          name: nobell-ios
           path: |
-            build/ios/nobell-ios-unsigned.ipa
+            build/ios/ipa/nobell-ios.ipa
           if-no-files-found: error
           retention-days: 7
+      - name: Upload to TestFlight
+        if: needs.detect-release.outputs.should_release == 'true' && steps.testflight.outputs.enabled == 'true'
+        working-directory: ${{ runner.temp }}/nobell-ios-release
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun altool --upload-app --type ios \
+            --file "$GITHUB_WORKSPACE/build/ios/ipa/nobell-ios.ipa" \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          echo "TestFlight upload accepted; Apple processing is pending." >> "$GITHUB_STEP_SUMMARY"
+      - name: Record skipped TestFlight upload
+        if: needs.detect-release.outputs.should_release == 'true' && steps.testflight.outputs.enabled == 'false'
+        run: echo "TestFlight upload skipped because no App Store Connect API Key is configured." >> "$GITHUB_STEP_SUMMARY"
+      - name: Clean up iOS signing credentials
+        if: always()
+        run: python3 scripts/ios_release.py cleanup
 
   publish-release:
     name: Publish GitHub Release
@@ -463,7 +513,7 @@ jobs:
             release-assets/nobell-android-x86_64.apk \
             release-assets/nobell-android.aab \
             release-assets/nobell-android-mapping.txt \
-            release-assets/nobell-ios-unsigned.ipa \
+            release-assets/nobell-ios.ipa \
             --title "$TAG" \
             --notes-file release-notes.md \
             --target "${{ env.TARGET_SHA }}" \

@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/routing/app_router.dart';
+import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/data/services/market_search_history_service.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
@@ -20,11 +22,50 @@ import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
+import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 
 import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final kind in MarketProductKind.values) {
+    testWidgets('system back returns from $kind trade to the market list', (
+      tester,
+    ) async {
+      final router = AppRouter.create(initialLocation: AppRoutes.marketsPath);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketRankingTabProvider.overrideWithBuild((_, _) => 'Popular'),
+            marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+            marketProductsProvider.overrideWith(
+              (_, _) async =>
+                  DomainPage(items: [_testProduct('NVDA', kind: kind)]),
+            ),
+          ],
+          child: buildRouterTestApp(router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey('market-product-NVDA-${kind.name}')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(TradeScreen), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketScreen), findsOneWidget);
+      expect(find.byType(TradeScreen), findsNothing);
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        AppRoutes.marketsPath,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
     'leaving markets during a failed refresh does not leak disposal errors',
     (tester) async {

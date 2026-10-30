@@ -253,7 +253,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                           ),
                           product: product,
                           showVolume: selectedTab == 'Volume',
-                          onTap: () => context.go(
+                          onTap: () => context.push(
                             AppRoutes.tradeLocation(
                               symbol: product.symbol,
                               kind: product.kind.name,

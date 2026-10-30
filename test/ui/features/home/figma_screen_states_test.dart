@@ -774,6 +774,10 @@ void main() {
       tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
       'NVDA',
     );
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(TradeScreen), findsNothing);
     await _disposeContainerAfterWidgets(tester, container);
   });
 

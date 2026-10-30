@@ -1,0 +1,300 @@
+import base64
+import copy
+from datetime import datetime, timedelta
+import hashlib
+import os
+from pathlib import Path
+import plistlib
+import stat
+import subprocess
+import tempfile
+import textwrap
+import unittest
+from unittest.mock import patch
+import zipfile
+
+import ios_release as release
+
+
+TEAM = "ABCDE12345"
+HOST = "app.example.com"
+PROFILE_UUID = "12345678-1234-1234-1234-123456789ABC"
+CERTIFICATE = b"test distribution certificate"
+IDENTITY = hashlib.sha1(CERTIFICATE).hexdigest().upper()
+
+
+def distribution_profile():
+    return {
+        "UUID": PROFILE_UUID,
+        "TeamIdentifier": [TEAM],
+        "ApplicationIdentifierPrefix": [TEAM],
+        "ExpirationDate": datetime.now() + timedelta(days=30),
+        "DeveloperCertificates": [CERTIFICATE],
+        "Entitlements": {
+            "application-identifier": f"{TEAM}.{release.BUNDLE_ID}",
+            "com.apple.developer.team-identifier": TEAM,
+            "com.apple.developer.applesignin": ["Default"],
+            "com.apple.developer.associated-domains": ["*"],
+            "aps-environment": "production",
+            "get-task-allow": False,
+        },
+    }
+
+
+class SigningProfileTests(unittest.TestCase):
+    def validate(self, profile):
+        return release.validate_profile(profile, TEAM, HOST, {IDENTITY})
+
+    def test_accepts_distribution_profile_and_matches_private_key_identity(self):
+        self.assertEqual(self.validate(distribution_profile()), (PROFILE_UUID, IDENTITY))
+
+    def test_rejects_wrong_team_bundle_or_identity(self):
+        for field, value, message in [
+            ("TeamIdentifier", ["OTHER12345"], "APPLE_TEAM_ID"),
+            ("DeveloperCertificates", [b"another certificate"], "private key"),
+            ("UUID", "invalid-profile-id", "invalid UUID"),
+        ]:
+            with self.subTest(field=field):
+                profile = distribution_profile()
+                profile[field] = value
+                with self.assertRaisesRegex(release.ReleaseError, message):
+                    self.validate(profile)
+        profile = distribution_profile()
+        profile["Entitlements"]["application-identifier"] = f"{TEAM}.another.app"
+        with self.assertRaisesRegex(release.ReleaseError, release.BUNDLE_ID):
+            self.validate(profile)
+
+    def test_accepts_legacy_app_id_prefix_distinct_from_team(self):
+        profile = distribution_profile()
+        profile["ApplicationIdentifierPrefix"] = ["LEGACY1234"]
+        profile["Entitlements"]["application-identifier"] = f"LEGACY1234.{release.BUNDLE_ID}"
+        self.assertEqual(self.validate(profile), (PROFILE_UUID, IDENTITY))
+
+    def test_rejects_expired_development_ad_hoc_and_enterprise_profiles(self):
+        cases = [
+            ("ExpirationDate", datetime.now() - timedelta(days=1), "expired"),
+            ("ProvisionedDevices", ["test-device"], "App Store Connect"),
+            ("ProvisionsAllDevices", True, "App Store Connect"),
+        ]
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                profile = distribution_profile()
+                profile[field] = value
+                with self.assertRaisesRegex(release.ReleaseError, message):
+                    self.validate(profile)
+
+    def test_requires_all_capabilities_and_production_push(self):
+        cases = [
+            ("aps-environment", "development", "production APNs"),
+            ("com.apple.developer.applesignin", [], "Sign in with Apple"),
+            ("com.apple.developer.associated-domains", [], "Passkey domain"),
+            ("com.apple.developer.associated-domains", ["webcredentials:other.example.com"], "Passkey domain"),
+            ("com.apple.developer.team-identifier", "OTHER12345", "APPLE_TEAM_ID"),
+            ("get-task-allow", True, "get-task-allow"),
+        ]
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                profile = distribution_profile()
+                profile["Entitlements"][field] = value
+                with self.assertRaisesRegex(release.ReleaseError, message):
+                    self.validate(profile)
+
+    def test_accepts_exact_and_wildcard_associated_domains(self):
+        for domain in ["*", f"webcredentials:{HOST}", "webcredentials:*.example.com"]:
+            profile = distribution_profile()
+            profile["Entitlements"]["com.apple.developer.associated-domains"] = [domain]
+            self.validate(profile)
+
+    def test_export_requires_manual_app_store_signing_and_preserves_build_number(self):
+        options = release.export_options(TEAM, PROFILE_UUID, IDENTITY)
+        self.assertEqual(options["method"], "app-store-connect")
+        self.assertEqual(options["destination"], "export")
+        self.assertEqual(options["provisioningProfiles"], {release.BUNDLE_ID: PROFILE_UUID})
+        self.assertEqual(options["signingCertificate"], IDENTITY)
+        self.assertEqual(options["teamID"], TEAM)
+        self.assertFalse(options["manageAppVersionAndBuildNumber"])
+        self.assertEqual(plistlib.loads(plistlib.dumps(options)), options)
+
+
+class TestFlightTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.directory = Path(self.temporary.name)
+        self.output = self.directory / "outputs"
+        self.environment = patch.dict(os.environ, {"GITHUB_OUTPUT": str(self.output)}, clear=True)
+        self.environment.start()
+        self.addCleanup(self.environment.stop)
+
+    def configure_credentials(self):
+        key = b"-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n"
+        os.environ.update({
+            "APP_STORE_CONNECT_KEY_ID": "KEY1234567",
+            "APP_STORE_CONNECT_ISSUER_ID": "12345678-1234-1234-1234-123456789abc",
+            "APP_STORE_CONNECT_PRIVATE_KEY_BASE64": base64.b64encode(key).decode(),
+        })
+        return key
+
+    def test_no_credentials_skips_without_creating_key(self):
+        release.configure_testflight(self.directory)
+        self.assertEqual(self.output.read_text(), "enabled=false\n")
+        self.assertFalse((self.directory / "private_keys").exists())
+
+    def test_partial_configuration_reports_missing_names(self):
+        os.environ["APP_STORE_CONNECT_KEY_ID"] = "KEY1234567"
+        with self.assertRaisesRegex(release.ReleaseError, "APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY_BASE64"):
+            release.configure_testflight(self.directory)
+        self.assertFalse(self.output.exists())
+
+    def test_complete_configuration_writes_private_key_with_restricted_permissions(self):
+        key = self.configure_credentials()
+        release.configure_testflight(self.directory)
+        path = self.directory / "private_keys/AuthKey_KEY1234567.p8"
+        self.assertEqual(path.read_bytes(), key)
+        self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+        self.assertEqual(stat.S_IMODE(path.parent.stat().st_mode), 0o700)
+        self.assertEqual(self.output.read_text(), "enabled=true\n")
+
+    def test_invalid_credentials_never_echo_private_key(self):
+        for name, value, message in [
+            ("APP_STORE_CONNECT_KEY_ID", "invalid/id", "KEY_ID"),
+            ("APP_STORE_CONNECT_KEY_ID", " KEY1234567 ", "KEY_ID"),
+            ("APP_STORE_CONNECT_ISSUER_ID", "invalid-issuer", "ISSUER_ID"),
+            ("APP_STORE_CONNECT_ISSUER_ID", " 12345678-1234-1234-1234-123456789abc ", "ISSUER_ID"),
+            ("APP_STORE_CONNECT_PRIVATE_KEY_BASE64", "not-base64!", "valid base64"),
+            ("APP_STORE_CONNECT_PRIVATE_KEY_BASE64", base64.b64encode(b"sensitive-key-content").decode(), "downloaded .p8"),
+        ]:
+            with self.subTest(name=name, value=value):
+                self.configure_credentials()
+                os.environ[name] = value
+                with self.assertRaisesRegex(release.ReleaseError, message) as caught:
+                    release.configure_testflight(self.directory)
+                self.assertNotIn(value, str(caught.exception))
+                self.assertNotIn("sensitive-key-content", str(caught.exception))
+
+
+class ReleaseToolTests(unittest.TestCase):
+    def test_formal_release_guard_still_requires_main(self):
+        workflow = Path(__file__).resolve().parents[1] / ".github/workflows/release.yml"
+        step = workflow.read_text().split("      - name: Validate version and decide release\n", 1)[1]
+        script = step.split("        run: |\n", 1)[1].split("          git fetch --tags --force\n", 1)[0]
+        guard = textwrap.dedent(script)
+        for branch, version, expected_status in [
+            ("main", "0.8.1+29", 0),
+            ("release/0.8.1", "0.8.1+29", 1),
+            ("release/0.8.1", "0.8.1-rc.1+29", 0),
+        ]:
+            with self.subTest(branch=branch, version=version), tempfile.TemporaryDirectory() as temporary:
+                Path(temporary, "pubspec.yaml").write_text(f"version: {version}\n")
+                result = subprocess.run(["bash", "-c", guard], cwd=temporary,
+                                        env={**os.environ, "TARGET_BRANCH": branch},
+                                        text=True, capture_output=True)
+                self.assertEqual(result.returncode, expected_status, result.stderr)
+                if expected_status:
+                    self.assertIn("Formal releases are only allowed from the main branch", result.stderr)
+
+    def test_prepares_target_signing_configuration_and_temporary_keychain(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary = Path(temporary)
+            directory = temporary / "signing"
+            outputs = temporary / "outputs"
+            environment = {
+                "APPLE_TEAM_ID": TEAM,
+                "PRIVY_EXPORT_URL": f"https://{HOST}/export-private-key",
+                "IOS_DISTRIBUTION_CERTIFICATE_BASE64": base64.b64encode(b"p12").decode(),
+                "IOS_DISTRIBUTION_CERTIFICATE_PASSWORD": "test-password",
+                "IOS_PROVISIONING_PROFILE_BASE64": base64.b64encode(b"profile").decode(),
+                "GITHUB_OUTPUT": str(outputs),
+            }
+
+            def command(arguments):
+                if arguments == ["security", "list-keychains", "-d", "user"]:
+                    return b'"/original/login.keychain-db"\n'
+                if arguments[:2] == ["security", "cms"]:
+                    return plistlib.dumps(distribution_profile())
+                if arguments[:2] == ["security", "find-identity"]:
+                    return f'  1) {IDENTITY} "Apple Distribution: Test"\n'.encode()
+                return b""
+
+            with patch.dict(os.environ, environment, clear=True), patch.object(release.Path, "home", return_value=temporary), patch.object(release, "run", side_effect=command) as calls:
+                release.prepare_signing(directory)
+                settings = (directory / "RunnerSigning.xcconfig").read_text()
+                self.assertIn(f"DEVELOPMENT_TEAM = {TEAM}", settings)
+                self.assertIn(f"PROVISIONING_PROFILE_SPECIFIER = {PROFILE_UUID}", settings)
+                self.assertIn(f"CODE_SIGN_IDENTITY = {IDENTITY}", settings)
+                self.assertIn("APS_ENVIRONMENT = production", settings)
+                self.assertNotIn("test-password", settings + outputs.read_text())
+                self.assertFalse((directory / "distribution.p12").exists())
+                self.assertEqual(plistlib.loads((directory / "ExportOptions.plist").read_bytes())["signingStyle"], "manual")
+                self.assertIn(["security", "list-keychains", "-d", "user", "-s",
+                               str(directory / "signing.keychain-db"), "/original/login.keychain-db"],
+                              [call.args[0] for call in calls.call_args_list])
+                release.cleanup(directory)
+            self.assertFalse(directory.exists())
+            installed = temporary / "Library/Developer/Xcode/UserData/Provisioning Profiles" / f"{PROFILE_UUID}.mobileprovision"
+            self.assertFalse(installed.exists())
+
+    def test_failed_security_command_does_not_log_password_arguments(self):
+        result = subprocess.CompletedProcess([], 1, b"", b"MAC verification failed (wrong password?)")
+        with patch.object(release.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(release.ReleaseError, "wrong password") as caught:
+                release.run(["security", "import", "certificate.p12", "-P", "secret-password"])
+        self.assertNotIn("secret-password", str(caught.exception))
+
+    def test_missing_signing_configuration_fails_before_calling_security(self):
+        with patch.dict(os.environ, {}, clear=True), patch.object(release, "run") as command:
+            with self.assertRaisesRegex(release.ReleaseError, "IOS_DISTRIBUTION_CERTIFICATE_BASE64"):
+                release.prepare_signing(Path("unused"))
+            command.assert_not_called()
+
+    def test_cleanup_removes_keys_and_profile_even_if_keychain_restore_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "signing"
+            profile = Path(temporary) / "test.mobileprovision"
+            profile.write_bytes(b"profile")
+            release.write_private(directory / "original-keychains.txt", b'"/original/login.keychain-db"\n')
+            release.write_private(directory / "signing.keychain-db", b"keychain")
+            release.write_private(directory / "private_keys/AuthKey_TEST.p8", b"key")
+            release.write_private(directory / "installed-profile-path.txt", str(profile).encode())
+            with patch.object(release, "run", side_effect=[release.ReleaseError("restore failed"), b""]) as command:
+                with self.assertRaisesRegex(release.ReleaseError, "restore failed"):
+                    release.cleanup(directory)
+                self.assertEqual(command.call_count, 2)
+            self.assertFalse(directory.exists())
+            self.assertFalse(profile.exists())
+
+    def test_ipa_verifier_checks_exported_entitlements_and_certificate(self):
+        for invalid_push in [False, True]:
+            with self.subTest(invalid_push=invalid_push), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                ipa = directory / "test.ipa"
+                with zipfile.ZipFile(ipa, "w") as archive:
+                    archive.writestr("Payload/Runner.app/Info.plist", plistlib.dumps({"CFBundleIdentifier": release.BUNDLE_ID}))
+                profile = distribution_profile()
+                signed = copy.deepcopy(profile["Entitlements"])
+                signed["com.apple.developer.associated-domains"] = [f"webcredentials:{HOST}"]
+                if invalid_push:
+                    signed["aps-environment"] = "development"
+
+                def command(arguments):
+                    if arguments[0] == "ditto":
+                        with zipfile.ZipFile(arguments[3]) as archive:
+                            archive.extractall(arguments[4])
+                    elif "--entitlements" in arguments:
+                        return plistlib.dumps(signed)
+                    elif arguments[0] == "codesign" and arguments[2].startswith("--extract-certificates="):
+                        Path(arguments[2].partition("=")[2] + "0").write_bytes(CERTIFICATE)
+                    elif arguments[:2] == ["security", "cms"]:
+                        return plistlib.dumps(profile)
+                    return b""
+
+                with patch.dict(os.environ, {"APPLE_TEAM_ID": TEAM, "PRIVY_EXPORT_URL": f"https://{HOST}/export-private-key"}), patch.object(release, "run", side_effect=command):
+                    if invalid_push:
+                        with self.assertRaisesRegex(release.ReleaseError, "production APNs"):
+                            release.verify_ipa(ipa, directory)
+                    else:
+                        release.verify_ipa(ipa, directory)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -43,6 +43,120 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  for (final balanceLoaded in [true, false]) {
+    testWidgets(
+      'bStocks tab switches reset amount and slider with balance loaded=$balanceLoaded',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(600, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final balance = Completer<DecimalValue>();
+        final available = DecimalValue('1000', asset: 'USDT');
+        if (balanceLoaded) balance.complete(available);
+        Future<void> pumpForm() async {
+          if (balanceLoaded) {
+            await tester.pumpAndSettle();
+          } else {
+            // A loading spinner keeps scheduling frames until data arrives.
+            await tester.pump(const Duration(milliseconds: 500));
+            await tester.pump(const Duration(milliseconds: 500));
+          }
+        }
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bstocksSettlementTokenProvider.overrideWith(
+                (ref) => _environment().bstocksSettlementToken,
+              ),
+              bstocksOrderAvailableBalanceProvider.overrideWith(
+                (_) => balance.future,
+              ),
+              bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
+                (_) async => BstocksSellAvailability(
+                  quantity: await balance.future,
+                  decimals: 18,
+                ),
+              ),
+              marketSnapshotProvider.overrideWith(
+                (ref, product) async => MarketSnapshot(
+                  price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+                ),
+              ),
+            ],
+            child: buildTestApp(
+              const BstocksOrderPanel(productId: 'bstocks:nvdab'),
+            ),
+          ),
+        );
+        await pumpForm();
+        final slider = find.byKey(const Key('bstocks-percentage-slider'));
+        // Repeat Market -> Limit after the balance has already been cached.
+        for (final tab in [
+          'Limit',
+          'Sell',
+          'Market',
+          'Buy',
+          'Limit',
+          'Market',
+        ]) {
+          tester.widget<Slider>(slider).onChanged!(6);
+          await tester.pump();
+          expect(tester.widget<Slider>(slider).value, 6);
+          final amountBeforeSwitch = tester
+              .widget<TextField>(find.byType(TextField).last)
+              .controller
+              ?.text;
+          if (balanceLoaded) expect(amountBeforeSwitch, isNotEmpty);
+          await tester.tap(find.text(tab));
+          await pumpForm();
+          if (tab == 'Limit') {
+            final priceInput = find.byKey(
+              const Key('bstocks-limit-price-sheet-input'),
+            );
+            Navigator.of(tester.element(priceInput)).pop();
+            await pumpForm();
+            expect(tester.widget<Slider>(slider).value, 6);
+            expect(
+              tester
+                  .widget<TextField>(find.byType(TextField).last)
+                  .controller
+                  ?.text,
+              amountBeforeSwitch,
+            );
+            await tester.tap(find.text(tab));
+            await pumpForm();
+            Navigator.of(
+              tester.element(
+                find.byKey(const Key('bstocks-limit-price-sheet-input')),
+              ),
+            ).pop('100');
+            await pumpForm();
+          }
+          expect(tester.widget<Slider>(slider).value, 0, reason: tab);
+          for (final field in tester.widgetList<TextField>(
+            find.byType(TextField),
+          )) {
+            if (field.key == const Key('bstocks-limit-price-input')) continue;
+            expect(field.controller?.text, isEmpty, reason: tab);
+          }
+        }
+        if (!balanceLoaded) {
+          balance.complete(available);
+          await tester.pumpAndSettle();
+          expect(tester.widget<Slider>(slider).value, 0);
+          expect(
+            tester
+                .widget<TextField>(find.byType(TextField).first)
+                .controller
+                ?.text,
+            isEmpty,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   for (final scenario in [
     (
       kind: MarketProductKind.bstock,

@@ -25,6 +25,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 abstract final class AppRouter {
   static GoRouter create({String initialLocation = AppRoutes.homePath}) {
+    // Detail pages retain their invoking page with push(), while their URL
+    // must still identify the displayed product for sharing and reloads.
+    GoRouter.optionURLReflectsImperativeAPIs = true;
     return GoRouter(
       initialLocation: initialLocation,
       observers: [SentryNavigatorObserver()],

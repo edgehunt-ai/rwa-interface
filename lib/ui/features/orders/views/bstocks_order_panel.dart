@@ -911,6 +911,16 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     return _currentMarketPrice;
   }
 
+  void _resetAmountInputs() {
+    percentage = 0;
+    _percentageWaitingForAmount = false;
+    _syncLimitFields(() {
+      amount.clear();
+      quantity.clear();
+      orderValue.clear();
+    });
+  }
+
   Future<void> _setOrderType(TradingOrderType next) async {
     if (next == type) return;
     if (next == TradingOrderType.limit) {
@@ -930,16 +940,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
       );
       if (!mounted || value == null) return;
-      setState(() => type = next);
+      setState(() {
+        type = next;
+        _resetAmountInputs();
+      });
       _setControllerText(limitPrice, value);
-      _setControllerText(quantity, '');
-      _setControllerText(orderValue, '');
       _scheduleQuote();
       return;
     }
-    setState(() => type = next);
-    quantity.clear();
-    orderValue.clear();
+    setState(() {
+      type = next;
+      _resetAmountInputs();
+    });
     limitPrice.clear();
     _scheduleQuote();
   }
@@ -1164,11 +1176,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 label: (value) =>
                     value == TradingSide.buy ? l10n.buy : l10n.sell,
                 onChanged: (value) {
-                  setState(() => side = value);
-                  _percentageWaitingForAmount = false;
-                  amount.clear();
-                  quantity.clear();
-                  orderValue.clear();
+                  if (value == side) return;
+                  setState(() {
+                    side = value;
+                    _resetAmountInputs();
+                  });
                   _scheduleQuote();
                 },
               ),

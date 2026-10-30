@@ -156,6 +156,10 @@ npm run api:update:branch -- feat/example
 GitHub Actions 会在 push 和 pull request 上运行 Flutter 质量门禁。移动端发布从通过
 检查的 `main` revision 构建，Flutter Web 应用和私钥导出页使用各自独立的 workflow。
 
+iOS 发布任务会签名并导出用于 App Store Connect 的 `nobell-ios.ipa`。配置
+App Store Connect API Key 后，新版本会自动上传 TestFlight；未配置时跳过上传。
+所需签名 Secrets 和可选上传凭据见 [iOS 发布配置](../ios-release.md)（英文）。
+
 Android 发布任务同时产出 Google Play App Bundle（`nobell-android.aab`）、用于直接
 分发的 split APK，以及供 Play Vitals 还原的 R8 mapping。上传时使用发布签名密钥，
 并确保 `ANDROID_SHA256_CERT_FINGERPRINTS` 同时包含 Play 应用签名证书与上传密钥

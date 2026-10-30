@@ -651,7 +651,11 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
       _ready = true;
       return;
     }
-    _prepare();
+    // Login can push a route. Wait until the sheet has mounted before changing
+    // the Navigator, otherwise its overlay is mutated during build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _prepare();
+    });
   }
 
   Future<void> _prepare() async {

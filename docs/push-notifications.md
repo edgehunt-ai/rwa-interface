@@ -34,6 +34,28 @@ Receiving a message does not navigate automatically. Foreground listening stops
 on logout. Display and sound remain subject to OS notification permissions,
 channel settings and Do Not Disturb. No notification settings UI is required.
 
+### iOS capabilities and signing
+
+The Runner target declares Associated Domains, Sign in with Apple, and Push
+Notifications. Enable all three for `global.nobell.app` in Apple Developer.
+Apple login uses Privy OAuth; Passkey login separately uses Associated Domains.
+Enable and configure Apple login in the Privy Dashboard as well.
+
+`Runner.entitlements` uses the `APS_ENVIRONMENT` build setting: Debug defaults
+to `development`, while Profile and Release default to `production`. Use a
+provisioning profile that supports the declared capabilities and matches the
+APNs environment. For a Profile or Release build signed with a development
+profile, override `APS_ENVIRONMENT=development` in Xcode or the `xcodebuild`
+invocation. Verify the final signed app's entitlements after archive/export.
+
+For local builds, select the publishing team in Xcode under Runner → Signing &
+Capabilities. Refresh provisioning profiles after changing the App ID
+capabilities. The release workflow signs and exports an App Store Connect IPA
+and uploads it to TestFlight when its API Key is configured; see
+[iOS release setup](ios-release.md) for the required signing Secrets. Test Apple
+login, Passkey login, and remote push delivery on a signed physical device
+before publishing.
+
 ### Activity detail links
 
 Open a specific record with `/activity/<encoded-activity-record-id>`. Build the route with

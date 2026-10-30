@@ -87,9 +87,15 @@ void main() {
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
     ]);
 
-    router.go(AppRoutes.marketSearchPath);
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
+    expect(find.byType(MarketDiscoverySearchScreen), findsOneWidget);
+    expect(find.byType(TradeScreen), findsNothing);
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      AppRoutes.marketSearchPath,
+    );
     expect(find.text('No recent searches'), findsNothing);
     expect(
       tester

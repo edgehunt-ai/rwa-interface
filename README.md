@@ -216,6 +216,12 @@ GitHub Actions runs the Flutter quality gate for pushes and pull requests.
 Mobile releases are built from successful `main` revisions, while the Flutter
 Web app and private-key export page use their dedicated workflows.
 
+The iOS release job signs and exports `nobell-ios.ipa` for App Store Connect.
+It uploads new releases to TestFlight when an App Store Connect API Key is
+configured, and skips upload when no API Key is configured. See
+[iOS release setup](docs/ios-release.md) for signing Secrets and optional upload
+credentials.
+
 The Android release job produces a Google Play App Bundle (`nobell-android.aab`),
 split APKs for direct distribution, and the R8 mapping for Play Vitals. Upload
 the bundle with the release signing key, and keep

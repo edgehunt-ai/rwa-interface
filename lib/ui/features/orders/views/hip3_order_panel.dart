@@ -322,6 +322,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
     }
   }
 
+  void _resetAmountInputs() {
+    _percentage = 0;
+    _percentageWaitingForBalance = false;
+    _percentageWaitingForPrice = false;
+    _limitOrderValueIsSource = true;
+    _setLimitControllerText(_amount, '');
+    _setLimitControllerText(_orderValue, '');
+  }
+
   Future<void> _setOrderType(TradingOrderType next) async {
     if (next == _type || _orderTypeChanging) return;
     _orderTypeChanging = true;
@@ -332,20 +341,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
         if (!mounted || value == null) return;
         setState(() {
           _type = next;
-          _limitOrderValueIsSource = true;
+          _resetAmountInputs();
           _limitPrice.text = value;
-          _amount.clear();
-          _orderValue.clear();
-          _percentage = 0;
         });
       } else {
         setState(() {
           _type = next;
-          _limitOrderValueIsSource = true;
+          _resetAmountInputs();
           _limitPrice.clear();
-          _amount.clear();
-          _orderValue.clear();
-          _percentage = 0;
         });
       }
       _scheduleQuote();
@@ -1620,7 +1623,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
                               ? l10n.long
                               : l10n.short,
                           onChanged: (value) {
-                            setState(() => _side = value);
+                            if (value == _side) return;
+                            setState(() {
+                              _side = value;
+                              _resetAmountInputs();
+                            });
                             _scheduleQuote();
                           },
                         ),
