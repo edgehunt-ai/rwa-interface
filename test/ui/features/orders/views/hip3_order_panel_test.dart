@@ -60,6 +60,110 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  for (final contextLoaded in [true, false]) {
+    testWidgets(
+      'HIP-3 tab switches reset amount and slider with context loaded=$contextLoaded',
+      (tester) async {
+        await configureDisplay(tester, size: const Size(600, 1200));
+        SharedPreferences.setMockInitialValues({});
+        final opening = _Opening();
+        final context = Completer<Hip3OpeningContext>();
+        if (contextLoaded) context.complete(opening._context('NVDA'));
+        Future<void> pumpForm() async {
+          if (contextLoaded) {
+            await tester.pumpAndSettle();
+          } else {
+            // A loading spinner keeps scheduling frames until data arrives.
+            await tester.pump(const Duration(milliseconds: 500));
+            await tester.pump(const Duration(milliseconds: 500));
+          }
+        }
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              marketSnapshotProvider.overrideWith(
+                (ref, product) async => MarketSnapshot(
+                  price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+                ),
+              ),
+            ],
+            child: _app(
+              const Hip3OrderPanel(),
+              opening: _DelayedOpening(opening, context.future),
+            ),
+          ),
+        );
+        await pumpForm();
+        final slider = find.byType(Slider);
+        for (final tab in [
+          'Limit',
+          'Short',
+          'Market',
+          'Long',
+          'Limit',
+          'Market',
+        ]) {
+          tester.widget<Slider>(slider).onChanged!(0.06);
+          await tester.pump();
+          expect(tester.widget<Slider>(slider).value, closeTo(0.06, 0.001));
+          final amountBeforeSwitch = tester
+              .widget<TextField>(find.byType(TextField).last)
+              .controller
+              ?.text;
+          if (contextLoaded) expect(amountBeforeSwitch, isNotEmpty);
+          await tester.tap(find.text(tab).last);
+          await pumpForm();
+          if (tab == 'Limit') {
+            final priceInput = find.byKey(
+              const Key('hip3-limit-price-sheet-input'),
+            );
+            Navigator.of(tester.element(priceInput)).pop();
+            await pumpForm();
+            expect(tester.widget<Slider>(slider).value, closeTo(0.06, 0.001));
+            expect(
+              tester
+                  .widget<TextField>(find.byType(TextField).last)
+                  .controller
+                  ?.text,
+              amountBeforeSwitch,
+            );
+            await tester.tap(find.text(tab).last);
+            await pumpForm();
+            Navigator.of(
+              tester.element(
+                find.byKey(const Key('hip3-limit-price-sheet-input')),
+              ),
+            ).pop('100');
+            await pumpForm();
+          }
+          expect(tester.widget<Slider>(slider).value, 0, reason: tab);
+          expect(
+            tester
+                .widget<TextField>(find.byType(TextField).last)
+                .controller
+                ?.text,
+            isEmpty,
+            reason: tab,
+          );
+        }
+        if (!contextLoaded) {
+          context.complete(opening._context('NVDA'));
+          await tester.pumpAndSettle();
+          expect(tester.widget<Slider>(slider).value, 0);
+          expect(
+            tester
+                .widget<TextField>(find.byType(TextField).last)
+                .controller
+                ?.text,
+            isEmpty,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('opening TP/SL risk consent stays synchronized with details', (
     tester,
   ) async {
