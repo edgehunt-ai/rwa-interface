@@ -1,3 +1,4 @@
-// Rive looks up its font initializer with dlsym rather than a native call.
-// Keep the symbol in the Swift Package Manager static link (Sentry RWA-2F).
-OTHER_LDFLAGS = $(inherited) -Wl,-u,_init
+// Rive resolves its FFI entry points with dlsym from the SPM static library.
+// Force-link the font initializer and preserve global exports through LTO and
+// dead stripping so runtime lookups remain available (Sentry RWA-2F).
+OTHER_LDFLAGS = $(inherited) -Wl,-u,_init -Wl,-export_dynamic
