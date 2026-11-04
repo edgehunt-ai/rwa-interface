@@ -957,5 +957,8 @@
   "tradeChartOutsideRange": "{count} 个 {types} 超出图表范围",
   "@tradeChartOutsideRange": {"placeholders": {"count": {"type": "int"}, "types": {"type": "String"}}},
   "settingsYourAccount": "你的账户",
-  "settingsLoginToManageAccount": "登录以管理你的账户"
+  "settingsLoginToManageAccount": "登录以管理你的账户",
+  "regionRestrictionTitle": "访问受限",
+  "regionRestrictionMessage": "本服务暂不向以下部分地区提供。",
+  "regionAccessCheckFailed": "暂时无法检查地区服务可用性。"
 }

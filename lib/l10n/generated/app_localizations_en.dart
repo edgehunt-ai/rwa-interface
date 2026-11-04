@@ -2975,4 +2975,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLoginToManageAccount => 'Log in to manage your account';
+
+  @override
+  String get regionRestrictionTitle => 'Access Restricted';
+
+  @override
+  String get regionRestrictionMessage =>
+      'This service is not available in certain regions.';
+
+  @override
+  String get regionAccessCheckFailed =>
+      'Unable to check regional availability.';
 }

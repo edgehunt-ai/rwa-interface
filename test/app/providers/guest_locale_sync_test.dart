@@ -14,6 +14,7 @@ import 'package:nobell/app/providers/locale_sync_provider.dart';
 import 'package:nobell/app/providers/session_scope.dart';
 import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/models/access_region.dart';
 import 'package:nobell/domain/models/user_account.dart';
 import 'package:nobell/domain/repositories/account_repository.dart';
 import 'package:nobell/ui/features/account/providers/account_providers.dart';
@@ -174,6 +175,15 @@ class _Harness {
   _Harness() {
     container = ProviderContainer(
       overrides: [
+        accessRegionProvider.overrideWith(
+          (ref) async => AccessRegion(
+            countryCode: null,
+            source: 'unknown',
+            restricted: false,
+            restrictedCountries: const [],
+            restrictedRegions: const [],
+          ),
+        ),
         identityAuthGatewayProvider.overrideWithValue(
           FakeIdentityAuthGateway(),
         ),

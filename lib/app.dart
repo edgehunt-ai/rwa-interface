@@ -18,6 +18,9 @@ import 'package:nobell/ui/features/session/providers/authentication_provider.dar
 import 'package:nobell/ui/features/positions/views/hip3_confirmation_host.dart';
 import 'package:nobell/ui/core/feedback/error_message.dart';
 
+import 'app/providers/api_providers.dart';
+import 'ui/features/compliance/views/region_restriction_host.dart';
+
 class AppRoot extends StatelessWidget {
   AppRoot({super.key, GoRouter? router, this.initialThemeMode})
     : router = router ?? AppRouter.create();
@@ -48,6 +51,8 @@ final class _AppViewState extends ConsumerState<_AppView> {
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final _backButtonDispatcher = AppBackButtonDispatcher(
     () => widget.router,
+    isNavigationBlocked: () =>
+        ref.read(accessRegionProvider).value?.restricted == true,
   );
 
   @override
@@ -82,6 +87,18 @@ final class _AppViewState extends ConsumerState<_AppView> {
     final themeMode = ref.watch(appThemeModeProvider);
     final authentication = ref.watch(authenticationProvider);
     final appReady = authentication is! AuthenticationInitializing;
+    final regionRestricted =
+        ref.watch(accessRegionProvider).value?.restricted == true;
+    ref.listen(accessRegionProvider, (previous, next) {
+      if (previous?.value?.restricted == next.value?.restricted) return;
+      final lifecycle = WidgetsBinding.instance.lifecycleState;
+      if (lifecycle == null || lifecycle == AppLifecycleState.detached) return;
+      SystemNavigator.setFrameworkHandlesBack(
+        next.value?.restricted == true ||
+            widget.router.canPop() ||
+            _backButtonDispatcher.hasAppDestination,
+      );
+    });
     ref.listen<AuthenticationState>(authenticationProvider, (_, next) {
       if (next is! AuthenticationAuthenticated) {
         _messengerKey.currentState?.hideCurrentSnackBar();
@@ -111,7 +128,9 @@ final class _AppViewState extends ConsumerState<_AppView> {
         // A root secondary page cannot pop its Navigator, but the dispatcher
         // can navigate back inside the app. Keep Android back in Flutter.
         SystemNavigator.setFrameworkHandlesBack(
-          notification.canHandlePop || _backButtonDispatcher.hasAppDestination,
+          regionRestricted ||
+              notification.canHandlePop ||
+              _backButtonDispatcher.hasAppDestination,
         );
         return true;
       },
@@ -131,8 +150,10 @@ final class _AppViewState extends ConsumerState<_AppView> {
         child: LaunchAnimationGate(
           ready: appReady,
           child: FoldableAdaptiveShell(
-            child: Hip3ConfirmationHost(
-              child: child ?? const SizedBox.shrink(),
+            child: RegionRestrictionHost(
+              child: Hip3ConfirmationHost(
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         ),

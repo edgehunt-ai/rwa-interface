@@ -2805,4 +2805,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsLoginToManageAccount => '登录以管理你的账户';
+
+  @override
+  String get regionRestrictionTitle => '访问受限';
+
+  @override
+  String get regionRestrictionMessage => '本服务暂不向以下部分地区提供。';
+
+  @override
+  String get regionAccessCheckFailed => '暂时无法检查地区服务可用性。';
 }

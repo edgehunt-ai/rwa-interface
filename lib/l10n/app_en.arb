@@ -995,5 +995,8 @@
   "tradeChartOutsideRange": "{count} {types} off-chart",
   "@tradeChartOutsideRange": {"placeholders": {"count": {"type": "int"}, "types": {"type": "String"}}},
   "settingsYourAccount": "Your account",
-  "settingsLoginToManageAccount": "Log in to manage your account"
+  "settingsLoginToManageAccount": "Log in to manage your account",
+  "regionRestrictionTitle": "Access Restricted",
+  "regionRestrictionMessage": "This service is not available in certain regions.",
+  "regionAccessCheckFailed": "Unable to check regional availability."
 }

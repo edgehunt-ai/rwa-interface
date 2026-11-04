@@ -14,6 +14,7 @@ import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:rwa_api_client/src/date_serializer.dart';
 import 'package:rwa_api_client/src/model/date.dart';
 
+import 'package:rwa_api_client/src/model/access_region.dart';
 import 'package:rwa_api_client/src/model/account_balance.dart';
 import 'package:rwa_api_client/src/model/account_deletion_blocker.dart';
 import 'package:rwa_api_client/src/model/account_deletion_request.dart';
@@ -446,6 +447,7 @@ import 'package:rwa_api_client/src/model/realtime_transfer_event.dart';
 import 'package:rwa_api_client/src/model/realtime_withdrawal_event.dart';
 import 'package:rwa_api_client/src/model/reference_price.dart';
 import 'package:rwa_api_client/src/model/replace_favorites_request.dart';
+import 'package:rwa_api_client/src/model/restricted_region.dart';
 import 'package:rwa_api_client/src/model/revoke_other_sessions200_response.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain.dart';
@@ -533,6 +535,7 @@ import 'package:rwa_api_client/src/model/withdrawal_status.dart';
 part 'serializers.g.dart';
 
 @SerializersFor([
+  AccessRegion,
   AccountBalance,
   AccountDeletionBlocker,
   AccountDeletionRequest,
@@ -965,6 +968,7 @@ part 'serializers.g.dart';
   RealtimeWithdrawalEvent,
   ReferencePrice,
   ReplaceFavoritesRequest,
+  RestrictedRegion,
   RevokeOtherSessions200Response,
   SelfCustodialWithdrawal,
   SelfCustodialWithdrawalChain,
@@ -1289,6 +1293,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(MarginMode)]),
         () => ListBuilder<MarginMode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(RestrictedRegion)]),
+        () => ListBuilder<RestrictedRegion>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),

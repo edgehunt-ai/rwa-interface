@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/repositories/access_region_repository_impl.dart';
+import '../../domain/models/access_region.dart';
+import '../../domain/repositories/access_region_repository.dart';
+
 import '../../data/repositories/trade_chart_liquidations_repository_impl.dart';
 import '../../data/services/trade_chart_liquidations_service.dart';
 import '../../domain/repositories/trade_chart_liquidations_repository.dart';
@@ -110,6 +114,19 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
     GeneratedAccountService(source.client.getAccountApi()),
   );
 });
+final accessRegionRepositoryProvider = Provider<AccessRegionRepository>((ref) {
+  final source = ref.watch(apiDataSourceProvider);
+  return AccessRegionRepositoryImpl(
+    GeneratedSystemService(source.client.getSystemApi()),
+  );
+});
+
+// Only retain the decision while observed; the host refreshes on foregrounding.
+final accessRegionProvider = FutureProvider.autoDispose<AccessRegion>(
+  (ref) => ref.watch(accessRegionRepositoryProvider).getAccessRegion(),
+  retry: (retryCount, error) => null,
+);
+
 final systemEnvironmentRepositoryProvider =
     Provider<SystemEnvironmentRepository>((ref) {
       final source = ref.watch(apiDataSourceProvider);

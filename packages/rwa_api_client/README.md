@@ -26,6 +26,9 @@ RWA Trading Platform 的公共产品契约，是客户端和服务端共享的�
 * 可增长的列表接口使用 cursor 分页。
 * 金融与交易命令要求 `Idempotency-Key`，冲突返回 `409 Error`。
 * 错误统一返回 `Error`，每个 JSON 响应携带 `X-Request-ID`。
+* 受限地区：请求 IP 所在国家在受限名单内时，除撤单、提现、登出与账户管理外的
+  写命令返回 `403`，`code` 为 `region_restricted`，`details.country_code` 为判定出的国家。
+  客户端应先读取 `GET /v1/system/access-region` 决定是否展示受限提示。
 * 创建命令立即返回当前资源，不等待终态；后续状态通过资源 GET 与 SSE 获取，
   不提供通用 operation polling 资源。
 
@@ -190,6 +193,7 @@ Class | Method | HTTP request | Description
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listPortfolioAssets**](doc/PortfolioApi.md#listportfolioassets) | **GET** /v1/portfolio/assets | 分页列出真实用户资产
 [*PositionsApi*](doc/PositionsApi.md) | [**getPosition**](doc/PositionsApi.md#getposition) | **GET** /v1/positions/{position_id} | 仓位详情
 [*PositionsApi*](doc/PositionsApi.md) | [**listPositions**](doc/PositionsApi.md#listpositions) | **GET** /v1/positions | 持仓列表
+[*SystemApi*](doc/SystemApi.md) | [**getAccessRegion**](doc/SystemApi.md#getaccessregion) | **GET** /v1/system/access-region | 当前请求的地区访问判定
 [*SystemApi*](doc/SystemApi.md) | [**getDisclosures**](doc/SystemApi.md#getdisclosures) | **GET** /v1/system/disclosures | 产品说明文案
 [*SystemApi*](doc/SystemApi.md) | [**getSystemEnvironment**](doc/SystemApi.md#getsystemenvironment) | **GET** /v1/system/environment | 部署环境标识
 [*SystemApi*](doc/SystemApi.md) | [**listAppVersions**](doc/SystemApi.md#listappversions) | **GET** /v1/system/app-version | 各平台最新版本
@@ -206,6 +210,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [AccessRegion](doc/AccessRegion.md)
  - [AccountBalance](doc/AccountBalance.md)
  - [AccountDeletionBlocker](doc/AccountDeletionBlocker.md)
  - [AccountDeletionRequest](doc/AccountDeletionRequest.md)
@@ -638,6 +643,7 @@ Class | Method | HTTP request | Description
  - [RealtimeWithdrawalEvent](doc/RealtimeWithdrawalEvent.md)
  - [ReferencePrice](doc/ReferencePrice.md)
  - [ReplaceFavoritesRequest](doc/ReplaceFavoritesRequest.md)
+ - [RestrictedRegion](doc/RestrictedRegion.md)
  - [RevokeOtherSessions200Response](doc/RevokeOtherSessions200Response.md)
  - [SelfCustodialWithdrawal](doc/SelfCustodialWithdrawal.md)
  - [SelfCustodialWithdrawalChain](doc/SelfCustodialWithdrawalChain.md)

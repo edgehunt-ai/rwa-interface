@@ -12,6 +12,30 @@ final class GeneratedSystemService implements SystemService {
   final ApiFailureMapper _mapper;
 
   @override
+  Future<api.AccessRegion> getAccessRegion() async {
+    try {
+      final response = await _api.getAccessRegion(
+        headers: {'Cache-Control': 'no-cache, no-store'},
+      );
+      final data = response.data;
+      if (data == null) {
+        throw _mapper.fromMissingBody(
+          response,
+          apiOperation: 'system.get_access_region',
+          responseModel: 'AccessRegion',
+        );
+      }
+      return data;
+    } on DioException catch (error) {
+      throw _mapper.fromDio(
+        error,
+        apiOperation: 'system.get_access_region',
+        responseModel: 'AccessRegion',
+      );
+    }
+  }
+
+  @override
   Future<api.SystemEnvironment> getEnvironment() async {
     try {
       final response = await _api.getSystemEnvironment();
