@@ -439,6 +439,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
   /// balance must not abort the order.
   Future<void> _refreshAvailableMargin() async {
     final generation = ref.read(sessionGenerationProvider);
+    final reporter = ref.read(observabilityReporterProvider);
     try {
       ref.invalidate(
         hip3OpeningContextProvider(widget.productId ?? widget.symbol),
@@ -449,13 +450,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() => _context = context);
     } on Object catch (error, stackTrace) {
-      ref
-          .read(observabilityReporterProvider)
-          .recordError(
-            operation: 'hip3.trading_context.refresh',
-            error: error,
-            stackTrace: stackTrace,
-          );
+      reporter.recordError(
+        operation: 'hip3.trading_context.refresh',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -466,6 +465,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
     final productId = _context?.productId ?? widget.productId;
     if (productId == null || _settingsUpdating || !mounted) return;
     final generation = ref.read(sessionGenerationProvider);
+    final reporter = ref.read(observabilityReporterProvider);
     setState(() {
       _settingsUpdating = true;
       _error = null;
@@ -489,13 +489,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
       });
       _scheduleQuote();
     } on Object catch (error, stackTrace) {
-      ref
-          .read(observabilityReporterProvider)
-          .recordError(
-            operation: 'hip3.order.settings.update',
-            error: error,
-            stackTrace: stackTrace,
-          );
+      reporter.recordError(
+        operation: 'hip3.order.settings.update',
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(() => _error = _specificErrorMessage(error));
       }
@@ -1137,6 +1135,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
 
   Future<void> _review() async {
     if (_submitting) return;
+    final reporter = ref.read(observabilityReporterProvider);
     setState(() {
       _submitting = true;
       _error = null;
@@ -1149,13 +1148,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
     try {
       await _reviewInternal();
     } catch (error, stackTrace) {
-      ref
-          .read(observabilityReporterProvider)
-          .recordError(
-            operation: 'hip3.order.review.unhandled',
-            error: error,
-            stackTrace: stackTrace,
-          );
+      reporter.recordError(
+        operation: 'hip3.order.review.unhandled',
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (mounted) setState(() => _error = _specificErrorMessage(error));
     } finally {
       if (mounted) {
@@ -1199,6 +1196,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
 
   Future<void> _reviewInternal() async {
     final generation = ref.read(sessionGenerationProvider).value;
+    final reporter = ref.read(observabilityReporterProvider);
     bool isCurrent() =>
         mounted && ref.read(sessionGenerationProvider).value == generation;
     if (_contextLoading) {
@@ -1366,13 +1364,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel>
         setState(() => _error = _specificErrorMessage(failure));
       }
     } on Object catch (error, stackTrace) {
-      ref
-          .read(observabilityReporterProvider)
-          .recordError(
-            operation: 'hip3.order.review',
-            error: error,
-            stackTrace: stackTrace,
-          );
+      reporter.recordError(
+        operation: 'hip3.order.review',
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (isCurrent()) {
         setState(() => _error = _specificErrorMessage(error));
       }

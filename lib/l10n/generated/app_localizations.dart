@@ -5286,6 +5286,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log in to manage your account'**
   String get settingsLoginToManageAccount;
+
+  /// No description provided for @regionRestrictionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Access Restricted'**
+  String get regionRestrictionTitle;
+
+  /// No description provided for @regionRestrictionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This service is not available in certain regions.'**
+  String get regionRestrictionMessage;
+
+  /// No description provided for @regionAccessCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to check regional availability.'**
+  String get regionAccessCheckFailed;
 }
 
 class _AppLocalizationsDelegate

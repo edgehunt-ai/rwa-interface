@@ -7,7 +7,9 @@ import 'routes.dart';
 /// redirect is pending or an unmatched URL produces an empty error match list.
 /// Keep this compatibility guard until the upstream delegate handles emptiness.
 final class AppBackButtonDispatcher extends RootBackButtonDispatcher {
-  AppBackButtonDispatcher(this._router);
+  AppBackButtonDispatcher(this._router, {this.isNavigationBlocked});
+
+  final bool Function()? isNavigationBlocked;
 
   // Read the current router so replacing AppRoot.router cannot leave the
   // dispatcher attached to an old delegate.
@@ -23,6 +25,7 @@ final class AppBackButtonDispatcher extends RootBackButtonDispatcher {
 
   @override
   Future<bool> invokeCallback(Future<bool> defaultValue) async {
+    if (isNavigationBlocked?.call() == true) return true;
     final router = _router();
     final delegate = router.routerDelegate;
     final configuration = delegate.currentConfiguration;

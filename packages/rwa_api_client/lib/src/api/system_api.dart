@@ -9,6 +9,7 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/access_region.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
@@ -22,6 +23,79 @@ class SystemApi {
   final Serializers _serializers;
 
   const SystemApi(this._dio, this._serializers);
+
+  /// 当前请求的地区访问判定
+  /// 按请求 IP 判定所在国家，并返回该国家是否在受限名单内。国家优先取 CDN 边缘的判定结果，缺失时查服务端 IP 地理库；仍无法判定（含 Tor 出口、 内网或本地请求）时 &#x60;country_code&#x60; 为 &#x60;null&#x60;、&#x60;source&#x60; 为 &#x60;unknown&#x60;， 并按不受限处理。  &#x60;restricted&#x60; 为 &#x60;true&#x60; 时，客户端应展示受限提示；服务端同时会拒绝 除撤单、提现、登出与账户管理外的写命令（&#x60;403 region_restricted&#x60;）。 &#x60;restricted_regions&#x60; 是受限名单的展示顺序与英文显示名（如 &#x60;CN&#x60; 显示为 &#x60;Mainland China&#x60;），客户端直接按顺序拼接提示文案，不必自行维护国家名称； &#x60;restricted_countries&#x60; 是同一名单的国家代码（ISO 3166-1 alpha-2，升序）。 限制关闭的环境（内部测试）仍返回名单，但 &#x60;restricted&#x60; 恒为 &#x60;false&#x60;， 服务端也不拦截。结果随请求 IP 变化，不可缓存。 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AccessRegion] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AccessRegion>> getAccessRegion({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/system/access-region';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AccessRegion? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(AccessRegion),
+      ) as AccessRegion;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AccessRegion>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
 
   /// 产品说明文案
   /// 返回 24×7 交易说明、各交易时段说明、产品风险提示等长文案， 便于不发版调整措辞与多语言。 

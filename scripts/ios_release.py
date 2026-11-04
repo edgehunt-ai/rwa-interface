@@ -253,6 +253,18 @@ def configure_testflight(directory):
     print("App Store Connect API Key configured; TestFlight upload is enabled.")
 
 
+def verify_rive_symbols(app, info):
+    executable_name = info.get("CFBundleExecutable")
+    if not executable_name or Path(executable_name).name != executable_name:
+        raise ReleaseError("The exported IPA has an invalid application executable.")
+    # Check the dynamic exports, which dlsym uses, even when the release binary
+    # has had its normal symbol table stripped. Rive is statically linked by SPM.
+    exports = run(["xcrun", "dyld_info", "-exports", str(app / executable_name)])
+    symbols = {line.split()[-1] for line in exports.decode(errors="replace").splitlines() if line.split()}
+    if "_init" not in symbols:
+        raise ReleaseError("The exported IPA is missing Rive's font initializer (_init); launch animation initialization would fail (RWA-2F).")
+
+
 def verify_ipa(ipa_path, directory):
     require_environment(["APPLE_TEAM_ID"])
     with tempfile.TemporaryDirectory(prefix="verify-", dir=directory) as temporary:
@@ -271,6 +283,7 @@ def verify_ipa(ipa_path, directory):
         info = plistlib.loads((app / "Info.plist").read_bytes())
         if info.get("CFBundleIdentifier") != BUNDLE_ID:
             raise ReleaseError("The exported IPA has the wrong Bundle ID.")
+        verify_rive_symbols(app, info)
         run(["codesign", "--verify", "--deep", "--strict", str(app)])
         signed = plistlib.loads(run(["codesign", "--display", "--entitlements", ":-", str(app)]))
         team_id = os.environ["APPLE_TEAM_ID"].strip()

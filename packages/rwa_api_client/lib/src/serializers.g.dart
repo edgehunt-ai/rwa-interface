@@ -19,6 +19,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add($RealtimeCandleUpdate.serializer)
       ..add($RealtimeEventBase.serializer)
       ..add($RealtimePriceUpdate.serializer)
+      ..add(AccessRegion.serializer)
+      ..add(AccessRegionSource_Enum.serializer)
       ..add(AccountBalance.serializer)
       ..add(AccountDeletionBlocker.serializer)
       ..add(AccountDeletionRequest.serializer)
@@ -848,6 +850,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RealtimeWithdrawalEventEventEnum.serializer)
       ..add(ReferencePrice.serializer)
       ..add(ReplaceFavoritesRequest.serializer)
+      ..add(RestrictedRegion.serializer)
       ..add(RevokeOtherSessions200Response.serializer)
       ..add(SelfCustodialWithdrawal.serializer)
       ..add(SelfCustodialWithdrawalChain.serializer)
@@ -1387,6 +1390,12 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(KeyValue)]),
           () => ListBuilder<KeyValue>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(RestrictedRegion)]),
+          () => ListBuilder<RestrictedRegion>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(TokenBalance)]),
           () => ListBuilder<TokenBalance>())

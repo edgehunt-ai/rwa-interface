@@ -22,6 +22,7 @@ export 'package:rwa_api_client/src/api/positions_api.dart';
 export 'package:rwa_api_client/src/api/system_api.dart';
 export 'package:rwa_api_client/src/api/wallets_api.dart';
 
+export 'package:rwa_api_client/src/model/access_region.dart';
 export 'package:rwa_api_client/src/model/account_balance.dart';
 export 'package:rwa_api_client/src/model/account_deletion_blocker.dart';
 export 'package:rwa_api_client/src/model/account_deletion_request.dart';
@@ -454,6 +455,7 @@ export 'package:rwa_api_client/src/model/realtime_transfer_event.dart';
 export 'package:rwa_api_client/src/model/realtime_withdrawal_event.dart';
 export 'package:rwa_api_client/src/model/reference_price.dart';
 export 'package:rwa_api_client/src/model/replace_favorites_request.dart';
+export 'package:rwa_api_client/src/model/restricted_region.dart';
 export 'package:rwa_api_client/src/model/revoke_other_sessions200_response.dart';
 export 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
 export 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain.dart';

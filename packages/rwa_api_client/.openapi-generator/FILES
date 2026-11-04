@@ -22,6 +22,7 @@ lib/src/auth/basic_auth.dart
 lib/src/auth/bearer_auth.dart
 lib/src/auth/oauth.dart
 lib/src/date_serializer.dart
+lib/src/model/access_region.dart
 lib/src/model/account_balance.dart
 lib/src/model/account_deletion_blocker.dart
 lib/src/model/account_deletion_request.dart
@@ -455,6 +456,7 @@ lib/src/model/realtime_transfer_event.dart
 lib/src/model/realtime_withdrawal_event.dart
 lib/src/model/reference_price.dart
 lib/src/model/replace_favorites_request.dart
+lib/src/model/restricted_region.dart
 lib/src/model/revoke_other_sessions200_response.dart
 lib/src/model/self_custodial_withdrawal.dart
 lib/src/model/self_custodial_withdrawal_chain.dart

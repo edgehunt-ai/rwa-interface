@@ -47,6 +47,9 @@ final class _SystemService implements SystemService {
   _SystemService(this.version);
   final api.AppVersionInfo version;
   @override
+  Future<api.AccessRegion> getAccessRegion() => throw UnimplementedError();
+
+  @override
   Future<api.SystemEnvironment> getEnvironment() => throw UnimplementedError();
 
   @override
