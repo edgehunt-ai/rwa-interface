@@ -504,5 +504,38 @@ class ReleaseToolTests(unittest.TestCase):
                 command.assert_not_called()
 
 
+@unittest.skipUnless(sys.platform == "darwin", "Rive export stripping requires Apple tools")
+class RiveStrippingTests(unittest.TestCase):
+    def test_global_exports_survive_non_global_stripping(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            source = directory / "ffi.c"
+            source.write_text(textwrap.dedent("""\
+                __attribute__((visibility("default"), used)) void init(void) {}
+                __attribute__((visibility("default"), used)) void initBindingCallbacks(void) {}
+                __attribute__((visibility("default"), used)) void loadRiveFile(void) {}
+                int main(void) { return 0; }
+            """))
+            executable = directory / "Runner"
+            release.run([
+                "xcrun", "clang", "-O2", "-flto", "-Wl,-dead_strip",
+                "-Wl,-u,_init", "-Wl,-export_dynamic", str(source), "-o", str(executable),
+            ])
+            info = {"CFBundleExecutable": "Runner"}
+            release.verify_rive_symbols(directory, info)
+
+            # Reproduce the default archive stripping after a successful link.
+            stripped = directory / "all"
+            stripped.mkdir()
+            shutil.copy2(executable, stripped / "Runner")
+            release.run(["xcrun", "strip", "-u", "-r", str(stripped / "Runner")])
+            with self.assertRaisesRegex(release.ReleaseError, "_init, _initBindingCallbacks, _loadRiveFile"):
+                release.verify_rive_symbols(stripped, info)
+
+            # STRIP_STYLE=non-global removes locals but preserves FFI exports.
+            release.run(["xcrun", "strip", "-x", str(executable)])
+            release.verify_rive_symbols(directory, info)
+
+
 if __name__ == "__main__":
     unittest.main()

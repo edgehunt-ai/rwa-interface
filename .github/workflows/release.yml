@@ -418,7 +418,16 @@ jobs:
             cp "${ipa_files[0]}" build/ios/ipa/nobell-ios.ipa
           fi
       - name: Verify signed IPA and capabilities
+        id: verify-ipa
         run: python3 scripts/ios_release.py verify-ipa --ipa build/ios/ipa/nobell-ios.ipa
+      - name: Preserve failed IPA for diagnosis
+        if: failure() && steps.verify-ipa.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nobell-ios-failed-verification
+          path: build/ios/ipa/nobell-ios.ipa
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload iOS symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
