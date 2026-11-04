@@ -108,9 +108,11 @@ entry points at runtime. `ios/Flutter/RiveLinking.xcconfig` force-links `_init`
 and uses `-export_dynamic` to preserve global symbols through LTO and dead
 stripping. The IPA check also requires the dynamic exports `_init`,
 `_initBindingCallbacks`, and `_loadRiveFile`, and reports missing names before
-upload. After changing these flags, compare the release IPA size and verify
-the cold-start animation on a physical device; exporting globals can retain
-additional native code.
+upload. Release/Profile also set `STRIP_STYLE = non-global`: Xcode's default
+`all` stripping prunes these exports after linking, even with `-export_dynamic`.
+Local symbols are still removed. After changing these settings, compare the
+release IPA size and verify the cold-start animation on a physical device;
+exporting globals can retain additional native code.
 
 Temporary signing configuration, certificate files, API private keys, the
 installed profile, and the temporary keychain are removed even when a build or
@@ -124,7 +126,12 @@ python3 -m unittest discover -s scripts -p 'ios_release_test.py'
 
 CI also runs these tests on macOS with OpenSSL 3, including a real Keychain
 import using a generated test certificate. No Apple credentials are needed
-for that compatibility check.
+for that compatibility check. An Apple linker/strip regression test reproduces
+the export loss with `strip -u -r` and checks that `strip -x` preserves the FFI
+entry points. CI also builds an unsigned Release archive of the app and checks
+its actual Rive exports; build logs and the export list are retained as artifacts.
+If signed IPA verification fails during release, the IPA is retained separately
+as `nobell-ios-failed-verification` for diagnosis and is not uploaded to TestFlight.
 
 Actual signed builds and TestFlight uploads require the configured credentials
 and the macOS Actions runner. Validate Apple login, Passkey login, and push
