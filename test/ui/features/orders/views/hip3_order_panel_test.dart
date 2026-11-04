@@ -60,6 +60,64 @@ import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 
 void main() {
+  testWidgets(
+    'HIP-3 settings failure after disposal preserves the original error',
+    (tester) async {
+      final gate = Completer<void>();
+      final opening = _Opening(blockedContextCall: 2, contextGate: gate);
+      final reporter = _RecordingReporter();
+      await tester.pumpWidget(
+        _app(const Hip3OrderPanel(), opening: opening, observability: reporter),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+      await tester.pumpAndSettle();
+
+      final update = tester
+          .widget<Hip3LeverageSheet>(find.byType(Hip3LeverageSheet))
+          .onConfirm(7);
+      final completed = expectLater(update, completes);
+      expect(opening.settingsRequests, 1);
+      await tester.pumpWidget(const SizedBox.shrink());
+      opening.failing = true;
+      gate.complete();
+      await tester.pump();
+      await completed;
+
+      expect(reporter.operations, ['hip3.order.settings.update:failed']);
+      expect(
+        (reporter.errors.single as ServerFailure).message,
+        'required service is unavailable',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('HIP-3 settings failure shows the service reason and can retry', (
+    tester,
+  ) async {
+    final opening = _Opening();
+    await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: opening));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+    await tester.pumpAndSettle();
+    final confirm = tester
+        .widget<Hip3LeverageSheet>(find.byType(Hip3LeverageSheet))
+        .onConfirm;
+
+    opening.failing = true;
+    await confirm(7);
+    await tester.pump();
+    expect(find.text('required service is unavailable'), findsOneWidget);
+
+    opening.failing = false;
+    await confirm(7);
+    await tester.pump();
+    expect(find.text('required service is unavailable'), findsNothing);
+    expect(opening.settingsRequests, 2);
+    expect(find.text('7×'), findsWidgets);
+  });
+
   for (final contextLoaded in [true, false]) {
     testWidgets(
       'HIP-3 tab switches reset amount and slider with context loaded=$contextLoaded',
@@ -3568,6 +3626,7 @@ final class _UnifiedAccountRepository
 
 final class _RecordingReporter implements ObservabilityReporter {
   final List<String> operations = [];
+  final List<Object> errors = [];
 
   @override
   Future<void> clearUser() async {}
@@ -3589,7 +3648,10 @@ final class _RecordingReporter implements ObservabilityReporter {
     Map<String, String> context = const {},
     Duration? duration,
     String failureKind = 'unexpected',
-  }) => recordOperation(operation, outcome: 'failed');
+  }) {
+    errors.add(error);
+    recordOperation(operation, outcome: 'failed');
+  }
 
   @override
   void recordOperation(

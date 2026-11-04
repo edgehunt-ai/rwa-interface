@@ -428,7 +428,7 @@ class ReleaseToolTests(unittest.TestCase):
                 directory = Path(temporary)
                 ipa = directory / "test.ipa"
                 with zipfile.ZipFile(ipa, "w") as archive:
-                    archive.writestr("Payload/Runner.app/Info.plist", plistlib.dumps({"CFBundleIdentifier": release.BUNDLE_ID}))
+                    archive.writestr("Payload/Runner.app/Info.plist", plistlib.dumps({"CFBundleIdentifier": release.BUNDLE_ID, "CFBundleExecutable": "Runner"}))
                 profile = distribution_profile()
                 signed = copy.deepcopy(profile["Entitlements"])
                 signed["com.apple.developer.associated-domains"] = [f"webcredentials:{HOST}"]
@@ -439,6 +439,8 @@ class ReleaseToolTests(unittest.TestCase):
                     if arguments[0] == "ditto":
                         with zipfile.ZipFile(arguments[3]) as archive:
                             archive.extractall(arguments[4])
+                    elif arguments[:3] == ["xcrun", "dyld_info", "-exports"]:
+                        return b"0x1234  _init\n"
                     elif "--entitlements" in arguments:
                         return plistlib.dumps(signed)
                     elif arguments[0] == "codesign" and arguments[2].startswith("--extract-certificates="):
@@ -453,6 +455,28 @@ class ReleaseToolTests(unittest.TestCase):
                             release.verify_ipa(ipa, directory)
                     else:
                         release.verify_ipa(ipa, directory)
+
+    def test_rive_initializer_must_be_dynamically_exported(self):
+        app = Path("Payload/Runner.app")
+        for exports, valid in [
+            (b"exports information:\n0x1000  _init\n", True),
+            (b"0x1000  _initBindingCallbacks\n0x2000  _riveFontDummyLinker\n", False),
+            (b"", False),
+        ]:
+            with self.subTest(exports=exports), patch.object(release, "run", return_value=exports) as command:
+                if valid:
+                    release.verify_rive_symbols(app, {"CFBundleExecutable": "Runner"})
+                else:
+                    with self.assertRaisesRegex(release.ReleaseError, "Rive's font initializer"):
+                        release.verify_rive_symbols(app, {"CFBundleExecutable": "Runner"})
+                command.assert_called_once_with(["xcrun", "dyld_info", "-exports", str(app / "Runner")])
+
+    def test_rive_verifier_rejects_invalid_executable_names(self):
+        for name in [None, "", "../Runner", "/tmp/Runner"]:
+            with self.subTest(name=name), patch.object(release, "run") as command:
+                with self.assertRaisesRegex(release.ReleaseError, "invalid application executable"):
+                    release.verify_rive_symbols(Path("Payload/Runner.app"), {"CFBundleExecutable": name})
+                command.assert_not_called()
 
 
 if __name__ == "__main__":

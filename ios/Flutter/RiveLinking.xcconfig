@@ -1,0 +1,3 @@
+// Rive looks up its font initializer with dlsym rather than a native call.
+// Keep the symbol in the Swift Package Manager static link (Sentry RWA-2F).
+OTHER_LDFLAGS = $(inherited) -Wl,-u,_init
