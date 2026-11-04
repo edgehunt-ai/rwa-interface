@@ -103,6 +103,15 @@ resolve the installed profile.
 The exported IPA is checked again for a valid signature, matching embedded
 profile, Apple login, the configured Passkey domain, and production APNs.
 
+Rive is statically linked through Swift Package Manager and resolves its FFI
+entry points at runtime. `ios/Flutter/RiveLinking.xcconfig` force-links `_init`
+and uses `-export_dynamic` to preserve global symbols through LTO and dead
+stripping. The IPA check also requires the dynamic exports `_init`,
+`_initBindingCallbacks`, and `_loadRiveFile`, and reports missing names before
+upload. After changing these flags, compare the release IPA size and verify
+the cold-start animation on a physical device; exporting globals can retain
+additional native code.
+
 Temporary signing configuration, certificate files, API private keys, the
 installed profile, and the temporary keychain are removed even when a build or
 upload step fails. The runner's original keychain search list is restored.

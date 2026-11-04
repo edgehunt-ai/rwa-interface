@@ -23,6 +23,13 @@ HOST = "app.example.com"
 PROFILE_UUID = "12345678-1234-1234-1234-123456789ABC"
 CERTIFICATE = b"test distribution certificate"
 IDENTITY = hashlib.sha1(CERTIFICATE).hexdigest().upper()
+RIVE_EXPORTS = (
+    b"    -exports:\n"
+    b"        offset      symbol\n"
+    b"        0x00001000  _init\n"
+    b"        0x00002000  _initBindingCallbacks\n"
+    b"        0x00003000  _loadRiveFile\n"
+)
 
 
 def distribution_profile():
@@ -440,7 +447,7 @@ class ReleaseToolTests(unittest.TestCase):
                         with zipfile.ZipFile(arguments[3]) as archive:
                             archive.extractall(arguments[4])
                     elif arguments[:3] == ["xcrun", "dyld_info", "-exports"]:
-                        return b"0x1234  _init\n"
+                        return RIVE_EXPORTS
                     elif "--entitlements" in arguments:
                         return plistlib.dumps(signed)
                     elif arguments[0] == "codesign" and arguments[2].startswith("--extract-certificates="):
@@ -456,20 +463,38 @@ class ReleaseToolTests(unittest.TestCase):
                     else:
                         release.verify_ipa(ipa, directory)
 
-    def test_rive_initializer_must_be_dynamically_exported(self):
+    def test_rive_entry_points_must_be_dynamically_exported(self):
         app = Path("Payload/Runner.app")
-        for exports, valid in [
-            (b"exports information:\n0x1000  _init\n", True),
-            (b"0x1000  _initBindingCallbacks\n0x2000  _riveFontDummyLinker\n", False),
-            (b"", False),
+        for exports in [
+            RIVE_EXPORTS,
+            RIVE_EXPORTS.replace(b"_init\n", b"_init [weak-def]\n"),
         ]:
             with self.subTest(exports=exports), patch.object(release, "run", return_value=exports) as command:
-                if valid:
-                    release.verify_rive_symbols(app, {"CFBundleExecutable": "Runner"})
-                else:
-                    with self.assertRaisesRegex(release.ReleaseError, "Rive's font initializer"):
-                        release.verify_rive_symbols(app, {"CFBundleExecutable": "Runner"})
+                release.verify_rive_symbols(app, {"CFBundleExecutable": "Runner"})
                 command.assert_called_once_with(["xcrun", "dyld_info", "-exports", str(app / "Runner")])
+
+    def test_rive_verifier_reports_each_missing_entry_point(self):
+        for symbol in [b"_init", b"_initBindingCallbacks", b"_loadRiveFile"]:
+            # A similarly named export must not satisfy the runtime lookup.
+            exports = RIVE_EXPORTS.replace(symbol + b"\n", symbol + b"Extra\n")
+            with self.subTest(symbol=symbol), patch.object(release, "run", return_value=exports):
+                with self.assertRaises(release.ReleaseError) as caught:
+                    release.verify_rive_symbols(Path("Payload/Runner.app"), {"CFBundleExecutable": "Runner"})
+                self.assertEqual(
+                    str(caught.exception),
+                    "The exported IPA is missing required Rive dynamic exports: "
+                    + symbol.decode()
+                    + "; launch animation initialization would fail (RWA-2F).",
+                )
+
+    def test_rive_verifier_reports_all_missing_entry_points(self):
+        for exports in [b"", b"0x1000  _riveFontDummyLinker\n"]:
+            with self.subTest(exports=exports), patch.object(release, "run", return_value=exports):
+                with self.assertRaisesRegex(
+                    release.ReleaseError,
+                    "required Rive dynamic exports: _init, _initBindingCallbacks, _loadRiveFile;",
+                ):
+                    release.verify_rive_symbols(Path("Payload/Runner.app"), {"CFBundleExecutable": "Runner"})
 
     def test_rive_verifier_rejects_invalid_executable_names(self):
         for name in [None, "", "../Runner", "/tmp/Runner"]:

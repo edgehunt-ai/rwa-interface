@@ -23,6 +23,8 @@ import zipfile
 
 
 BUNDLE_ID = "global.nobell.app"
+# Font initialization, callback registration, and file loading in rive_native.
+RIVE_REQUIRED_SYMBOLS = ("_init", "_initBindingCallbacks", "_loadRiveFile")
 TESTFLIGHT_SECRETS = (
     "APP_STORE_CONNECT_KEY_ID",
     "APP_STORE_CONNECT_ISSUER_ID",
@@ -260,9 +262,19 @@ def verify_rive_symbols(app, info):
     # Check the dynamic exports, which dlsym uses, even when the release binary
     # has had its normal symbol table stripped. Rive is statically linked by SPM.
     exports = run(["xcrun", "dyld_info", "-exports", str(app / executable_name)])
-    symbols = {line.split()[-1] for line in exports.decode(errors="replace").splitlines() if line.split()}
-    if "_init" not in symbols:
-        raise ReleaseError("The exported IPA is missing Rive's font initializer (_init); launch animation initialization would fail (RWA-2F).")
+    # dyld_info may append annotations such as [weak-def] after the name.
+    symbols = set(re.findall(
+        r"^\s*0x[0-9a-fA-F]+\s+(_\S+)(?=\s|$)",
+        exports.decode(errors="replace"),
+        re.MULTILINE,
+    ))
+    missing = [symbol for symbol in RIVE_REQUIRED_SYMBOLS if symbol not in symbols]
+    if missing:
+        raise ReleaseError(
+            "The exported IPA is missing required Rive dynamic exports: "
+            + ", ".join(missing)
+            + "; launch animation initialization would fail (RWA-2F)."
+        )
 
 
 def verify_ipa(ipa_path, directory):
