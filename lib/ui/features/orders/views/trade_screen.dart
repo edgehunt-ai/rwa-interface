@@ -350,11 +350,15 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         ? null
         : ref.watch(marketProductLookupProvider(productQuery));
     final stockProducts = stock?.products.toSet();
+    final spotTradingAvailable = ref.watch(spotTradingAvailableProvider);
     final availableProducts = productsState?.value?.items
         .where(
-          (product) => stockProducts!.contains(
-            MarketProductRef(symbol: product.symbol, kind: product.kind),
-          ),
+          (product) =>
+              stockProducts!.contains(
+                MarketProductRef(symbol: product.symbol, kind: product.kind),
+              ) &&
+              (spotTradingAvailable ||
+                  product.kind != MarketProductKind.bstock),
         )
         .toList(growable: false);
     MarketProduct? activeProduct;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,6 +40,27 @@ final class MarketProductFeed {
   final bool loadMoreFailed;
 }
 
+/// Whether bStocks spot trading entry points are offered on this platform.
+///
+/// App Store review (guideline 3.1.5) rejects spot trading because bStocks
+/// orders may route through third-party exchange venues. iOS therefore lists
+/// only perps and blocks spot trade routes; existing spot holdings, deposits,
+/// transfers, withdrawals, and history remain available.
+final spotTradingAvailableProvider = Provider<bool>(
+  (_) => kIsWeb || defaultTargetPlatform != TargetPlatform.iOS,
+);
+
+/// Restricts a market list query to products offered on this platform.
+MarketQuery availableMarketQuery(MarketQuery query, {required bool spot}) =>
+    spot || query.productType == MarketProductKind.perp
+    ? query
+    : (
+        query: query.query,
+        cursor: query.cursor,
+        group: query.group,
+        productType: MarketProductKind.perp,
+      );
+
 const _marketRankingTabKey = 'market_ranking_tab';
 
 final marketRankingTabProvider =
@@ -74,12 +96,19 @@ final class MarketProductTypeNotifier
     final stored = (await SharedPreferences.getInstance()).getString(
       _marketProductTypeKey,
     );
-    return MarketProductKind.values
-        .where((kind) => kind.name == stored)
-        .firstOrNull;
+    return _available(
+      MarketProductKind.values.where((kind) => kind.name == stored).firstOrNull,
+    );
   }
 
+  MarketProductKind? _available(MarketProductKind? kind) =>
+      kind == MarketProductKind.bstock &&
+          !ref.read(spotTradingAvailableProvider)
+      ? null
+      : kind;
+
   Future<void> select(MarketProductKind? kind) async {
+    kind = _available(kind);
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(_marketProductTypeKey, kind?.name ?? 'all');
     state = AsyncData(kind);
@@ -115,7 +144,13 @@ final marketListRefreshProvider = Provider.autoDispose<void>((ref) {
 final marketProductsProvider = FutureProvider.autoDispose
     .family<DomainPage<MarketProduct>, MarketQuery>((ref, query) {
       _cacheMarketList(ref);
-      return _listMarketProducts(ref, query);
+      return _listMarketProducts(
+        ref,
+        availableMarketQuery(
+          query,
+          spot: ref.watch(spotTradingAvailableProvider),
+        ),
+      );
     });
 
 final marketProductFeedProvider = AsyncNotifierProvider.autoDispose
@@ -342,8 +377,15 @@ final recentMarketSearchesProvider =
 
 final class RecentMarketSearches extends AsyncNotifier<List<MarketProductRef>> {
   @override
-  Future<List<MarketProductRef>> build() =>
-      ref.read(marketSearchHistoryServiceProvider).read();
+  Future<List<MarketProductRef>> build() async =>
+      _available(await ref.read(marketSearchHistoryServiceProvider).read());
+
+  List<MarketProductRef> _available(List<MarketProductRef> products) =>
+      ref.read(spotTradingAvailableProvider)
+      ? products
+      : products
+            .where((product) => product.kind != MarketProductKind.bstock)
+            .toList(growable: false);
 
   Future<void> record(MarketProductRef product) async {
     final previous = state.asData?.value ?? const <MarketProductRef>[];
@@ -351,7 +393,7 @@ final class RecentMarketSearches extends AsyncNotifier<List<MarketProductRef>> {
       final updated = await ref
           .read(marketSearchHistoryServiceProvider)
           .record(product);
-      state = AsyncData(updated);
+      state = AsyncData(_available(updated));
     } catch (_) {
       state = AsyncData(previous);
     }
