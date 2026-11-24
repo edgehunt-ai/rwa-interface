@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 import 'package:nobell/data/api/api_environment.dart';
 import 'package:nobell/app_review/app_review.dart';
 import 'package:nobell/domain/models/activity_record.dart';
@@ -63,6 +64,34 @@ void main() {
         quantity: type == TradingOrderType.limit ? DecimalValue('1') : null,
         limitPrice: type == TradingOrderType.limit ? money('90') : null,
       );
+
+  test('unavailable spot trading starts without bStocks seeds', () async {
+    final container = ProviderContainer(
+      overrides: [spotTradingAvailableProvider.overrideWithValue(false)],
+    );
+    addTearDown(container.dispose);
+    final ledger = container.read(appReviewStoreProvider);
+    final activity = await AppReviewActivityRepository(ledger).list();
+    expect(
+      activity.items.where(
+        (record) => record.kind == MarketProductKind.bstock.name,
+      ),
+      isEmpty,
+    );
+    expect(activity.items, isNotEmpty);
+
+    expect(
+      ledger.positions.values.map((position) => position.kind),
+      everyElement(MarketProductKind.perp),
+    );
+    expect(
+      ledger.orders.values.map((order) => order.kind),
+      everyElement(MarketProductKind.perp),
+    );
+    expect(ledger.positions, isNotEmpty);
+    expect(ledger.stocksValue, 0);
+    expect(ledger.availableCash, ledger.cash);
+  });
 
   test('funding obtains a live quote when submit precedes preview', () async {
     final repo = AppReviewFundingRepository(store, quoteDelegate: orders);

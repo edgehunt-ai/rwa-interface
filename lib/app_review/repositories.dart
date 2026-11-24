@@ -539,18 +539,19 @@ final class AppReviewActivityRepository implements ActivityRepository {
   }) async {
     final records = <ActivityRecord>[
       ...store.activities.reversed,
-      ActivityRecord(
-        id: 'review-activity-order',
-        category: ActivityCategory.orders,
-        type: 'market',
-        status: ActivityState.success,
-        title: 'Bought NVDA',
-        amount: _usd('2500.00'),
-        context: 'App Review simulated order',
-        symbol: 'NVDA',
-        kind: MarketProductKind.bstock.name,
-        createdAt: _now.subtract(const Duration(days: 1)),
-      ),
+      if (store.spotTrading)
+        ActivityRecord(
+          id: 'review-activity-order',
+          category: ActivityCategory.orders,
+          type: 'market',
+          status: ActivityState.success,
+          title: 'Bought NVDA',
+          amount: _usd('2500.00'),
+          context: 'App Review simulated order',
+          symbol: 'NVDA',
+          kind: MarketProductKind.bstock.name,
+          createdAt: _now.subtract(const Duration(days: 1)),
+        ),
       ActivityRecord(
         id: 'review-activity-deposit',
         category: ActivityCategory.cash,

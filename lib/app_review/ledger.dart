@@ -12,7 +12,9 @@ DecimalValue _money(num value) => _usd(_number(value));
 /// One session's simulated ledger. Only quote delegates perform network reads;
 /// financial mutations in this store never invoke wallets or transport code.
 final class AppReviewStore {
-  AppReviewStore({this.onChanged}) {
+  /// Without [spotTrading], the review account starts without bStocks
+  /// holdings, orders, or activity that the app offers no way to create.
+  AppReviewStore({this.onChanged, this.spotTrading = true}) {
     devices['app-review-device'] = RegisteredDevice(
       deviceId: 'app-review-device',
       platform: 'ios',
@@ -22,8 +24,14 @@ final class AppReviewStore {
       lastSeenAt: _now,
       createdAt: _now,
     );
-    orders.addAll(_initialOpenOrders());
-    for (final seed in AppReviewPortfolioRepository.positions) {
+    bool seeded(MarketProductKind kind) =>
+        spotTrading || kind != MarketProductKind.bstock;
+    orders.addEntries(
+      _initialOpenOrders().entries.where((entry) => seeded(entry.value.kind)),
+    );
+    for (final seed in AppReviewPortfolioRepository.positions.where(
+      (seed) => seeded(seed.kind),
+    )) {
       positions[seed.positionId] = seed;
       seedMarksPending.add(seed.positionId);
     }
@@ -50,6 +58,7 @@ final class AppReviewStore {
     }
   }
   final void Function()? onChanged;
+  final bool spotTrading;
   UserPreferences settings = const UserPreferences(
     language: 'en',
     pushEnabled: true,

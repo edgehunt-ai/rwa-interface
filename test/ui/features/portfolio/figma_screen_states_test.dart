@@ -32,6 +32,7 @@ import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/portfolio/views/assets_screen.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 import '../../../helpers/test_app.dart';
 

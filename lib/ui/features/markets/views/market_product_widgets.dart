@@ -12,6 +12,7 @@ import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/core/widgets/venue_icon.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 String marketProductGroupForTab(String tab) => switch (tab) {
   'Favorites' => 'favorites',

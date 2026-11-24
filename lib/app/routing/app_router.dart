@@ -8,7 +8,7 @@ import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/perps_withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
-import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
 import 'package:nobell/ui/features/not_found/views/not_found_screen.dart';

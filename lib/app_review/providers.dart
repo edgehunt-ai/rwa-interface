@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/platform_feature_providers.dart';
 import '../domain/models/deposit.dart';
 
 import 'configuration.dart';
@@ -10,6 +11,7 @@ final appReviewStoreProvider = Provider<AppReviewStore>((ref) {
     onChanged: () {
       ref.read(appReviewRevisionProvider.notifier).increment();
     },
+    spotTrading: ref.watch(spotTradingAvailableProvider),
   );
   ref.onDispose(() => store.active = false);
   return store;
