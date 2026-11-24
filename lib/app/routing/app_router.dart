@@ -8,6 +8,7 @@ import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/perps_withdrawal_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
 import 'package:nobell/ui/features/not_found/views/not_found_screen.dart';
@@ -122,7 +123,14 @@ abstract final class AppRouter {
           path: AppRoutes.tradePath,
           redirect: (context, state) {
             final symbol = state.uri.queryParameters['symbol']?.trim();
-            return symbol == null || symbol.isEmpty
+            if (symbol == null || symbol.isEmpty) return AppRoutes.marketsPath;
+            // Unspecified kinds open bStocks, so only perps bypass the gate.
+            final spot = state.uri.queryParameters['kind'] != 'perp';
+            return spot &&
+                    !ProviderScope.containerOf(
+                      context,
+                      listen: false,
+                    ).read(spotTradingAvailableProvider)
                 ? AppRoutes.marketsPath
                 : null;
           },

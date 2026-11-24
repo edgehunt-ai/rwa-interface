@@ -1460,6 +1460,37 @@ void main() {
     expect(find.byKey(const Key('cash-action-sheet')), findsNothing);
   });
 
+  testWidgets('Assets bStocks rows do not open trading when spot is hidden', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          spotTradingAvailableProvider.overrideWithValue(false),
+          portfolioRepositoryProvider.overrideWithValue(
+            _BstockHoldingsPortfolio(),
+          ),
+        ],
+        child: _assetsApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('3.0154 NVDAB'), findsOneWidget);
+    expect(
+      tester
+          .widget<InkWell>(
+            find
+                .ancestor(
+                  of: find.text('3.0154 NVDAB'),
+                  matching: find.byType(InkWell),
+                )
+                .first,
+          )
+          .onTap,
+      isNull,
+    );
+  });
+
   testWidgets('Assets localizes the bStocks unrealized PnL label', (
     tester,
   ) async {

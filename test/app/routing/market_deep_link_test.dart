@@ -149,4 +149,47 @@ void main() {
     expect(find.byType(TradeScreen), findsNothing);
     expect(find.byType(MarketDiscoverySearchScreen), findsNothing);
   });
+
+  for (final location in [
+    '/trade?symbol=NVDAB&kind=bstock',
+    '/trade?symbol=NVDAB',
+  ]) {
+    testWidgets('unavailable spot trading recovers $location to markets', (
+      tester,
+    ) async {
+      final router = AppRouter.create(initialLocation: location);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [spotTradingAvailableProvider.overrideWithValue(false)],
+          child: buildRouterTestApp(router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketScreen), findsOneWidget);
+      expect(find.byType(TradeScreen), findsNothing);
+    });
+  }
+
+  testWidgets('unavailable spot trading keeps perps trade links', (
+    tester,
+  ) async {
+    final router = AppRouter.create(
+      initialLocation: AppRoutes.tradeLocation(symbol: 'NVDA', kind: 'perp'),
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          spotTradingAvailableProvider.overrideWithValue(false),
+          marketProductProvider.overrideWith(
+            (_, ref) async => product(ref.symbol, ref.kind),
+          ),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(TradeScreen), findsOneWidget);
+  });
 }

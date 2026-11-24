@@ -239,6 +239,50 @@ void main() {
     ]);
   });
 
+  test('unavailable spot trading restricts market lists to perps', () async {
+    SharedPreferences.setMockInitialValues({'market_product_type': 'bstock'});
+    final repository = _MarketsRepository();
+    final history = _MarketSearchHistoryService();
+    final container = ProviderContainer(
+      overrides: [
+        spotTradingAvailableProvider.overrideWithValue(false),
+        marketsRepositoryProvider.overrideWithValue(repository),
+        marketSearchHistoryServiceProvider.overrideWithValue(history),
+      ],
+    );
+    addTearDown(container.dispose);
+    const spot = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+    const perp = MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp);
+
+    expect(await container.read(marketProductTypeProvider.future), isNull);
+    await container
+        .read(marketProductTypeProvider.notifier)
+        .select(MarketProductKind.bstock);
+    expect(container.read(marketProductTypeProvider).value, isNull);
+    for (final productType in [null, MarketProductKind.bstock]) {
+      await container.read(
+        marketProductsProvider((
+          query: 'nv',
+          cursor: null,
+          group: 'hot',
+          productType: productType,
+        )).future,
+      );
+    }
+    expect(
+      repository.requests.map((request) => request.productType),
+      everyElement(MarketProductKind.perp),
+    );
+
+    await container.read(recentMarketSearchesProvider.future);
+    await container.read(recentMarketSearchesProvider.notifier).record(spot);
+    await container.read(recentMarketSearchesProvider.notifier).record(perp);
+    expect(container.read(recentMarketSearchesProvider).asData?.value, [perp]);
+  });
+
   test('resolves bStock decimals from the supported token catalog', () async {
     final container = ProviderContainer(
       overrides: [

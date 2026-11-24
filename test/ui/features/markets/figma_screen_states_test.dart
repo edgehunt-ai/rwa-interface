@@ -264,13 +264,15 @@ void main() {
   ) async {
     await configureDisplay(tester, size: const Size(393, 852));
     await tester.pumpWidget(
-      buildTestApp(
-        Column(
-          children: [
-            MarketProductFilter(value: null, onChanged: (_) {}),
-            const SizedBox(height: 12),
-            MarketRankingTabs(active: 'Popular', onSelected: (_) {}),
-          ],
+      ProviderScope(
+        child: buildTestApp(
+          Column(
+            children: [
+              MarketProductFilter(value: null, onChanged: (_) {}),
+              const SizedBox(height: 12),
+              MarketRankingTabs(active: 'Popular', onSelected: (_) {}),
+            ],
+          ),
         ),
       ),
     );
@@ -327,6 +329,27 @@ void main() {
         MarketProductKind.perp,
       ]),
     );
+  });
+
+  testWidgets('unavailable spot trading hides the Spot product tab', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await configureDisplay(tester, size: const Size(393, 852));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          spotTradingAvailableProvider.overrideWithValue(false),
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('market-product-all')), findsOneWidget);
+    expect(find.byKey(const Key('market-product-bstock')), findsNothing);
+    expect(find.byKey(const Key('market-product-perp')), findsOneWidget);
   });
 
   testWidgets('volume ranking shows USD turnover instead of price change', (

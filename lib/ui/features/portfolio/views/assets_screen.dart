@@ -30,6 +30,7 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -1837,6 +1838,7 @@ class _SpotBalances extends ConsumerWidget {
         accountItems,
         holdings.items,
         assets.value ?? const <PortfolioAsset>[],
+        spotTradingAvailable: ref.watch(spotTradingAvailableProvider),
       ),
     );
   }
@@ -1867,8 +1869,9 @@ class _SpotBalances extends ConsumerWidget {
     BuildContext context,
     List<TradingAccount> accountItems,
     List<HoldingGroup> holdingGroups,
-    List<PortfolioAsset> assetItems,
-  ) {
+    List<PortfolioAsset> assetItems, {
+    required bool spotTradingAvailable,
+  }) {
     final allPositions = holdingGroups
         .expand((group) => group.positions)
         .where((position) => position.kind == MarketProductKind.bstock)
@@ -1936,12 +1939,14 @@ class _SpotBalances extends ConsumerWidget {
         key: position.symbol,
         build: () => _HoldingRow(
           position: position,
-          onTap: () => context.push(
-            AppRoutes.tradeLocation(
-              symbol: '${_underlyingSymbol(position.symbol)}B',
-              kind: position.kind.name,
-            ),
-          ),
+          onTap: spotTradingAvailable
+              ? () => context.push(
+                  AppRoutes.tradeLocation(
+                    symbol: '${_underlyingSymbol(position.symbol)}B',
+                    kind: position.kind.name,
+                  ),
+                )
+              : null,
         ),
       ));
     }
@@ -3196,7 +3201,7 @@ String? _perpsBadge(DecimalValue? leverage, String venue) {
 class _HoldingRow extends StatelessWidget {
   const _HoldingRow({required this.position, required this.onTap});
   final Position position;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

@@ -181,21 +181,22 @@ class _RankingTab extends StatelessWidget {
   }
 }
 
-class MarketProductFilter extends StatelessWidget {
+class MarketProductFilter extends ConsumerWidget {
   const MarketProductFilter({super.key, this.value, required this.onChanged});
 
   final MarketProductKind? value;
   final ValueChanged<MarketProductKind?> onChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final scaledLineHeight = MediaQuery.textScalerOf(context).scale(20);
     final tabHeight = scaledLineHeight > 20 ? scaledLineHeight + 12 : 32.0;
     final tabs = <(String, MarketProductKind?)>[
       (l10n.allProducts, null),
-      (l10n.spot, MarketProductKind.bstock),
+      if (ref.watch(spotTradingAvailableProvider))
+        (l10n.spot, MarketProductKind.bstock),
       (l10n.perps, MarketProductKind.perp),
     ];
     return SizedBox(
