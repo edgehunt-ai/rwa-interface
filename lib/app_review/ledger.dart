@@ -13,8 +13,8 @@ DecimalValue _money(num value) => _usd(_number(value));
 /// financial mutations in this store never invoke wallets or transport code.
 final class AppReviewStore {
   /// Without [spotTrading], the review account starts without bStocks
-  /// holdings or orders that the app offers no way to create.
-  AppReviewStore({this.onChanged, bool spotTrading = true}) {
+  /// holdings, orders, or activity that the app offers no way to create.
+  AppReviewStore({this.onChanged, this.spotTrading = true}) {
     devices['app-review-device'] = RegisteredDevice(
       deviceId: 'app-review-device',
       platform: 'ios',
@@ -58,6 +58,7 @@ final class AppReviewStore {
     }
   }
   final void Function()? onChanged;
+  final bool spotTrading;
   UserPreferences settings = const UserPreferences(
     language: 'en',
     pushEnabled: true,

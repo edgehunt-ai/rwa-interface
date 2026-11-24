@@ -65,12 +65,20 @@ void main() {
         limitPrice: type == TradingOrderType.limit ? money('90') : null,
       );
 
-  test('unavailable spot trading starts without bStocks seeds', () {
+  test('unavailable spot trading starts without bStocks seeds', () async {
     final container = ProviderContainer(
       overrides: [spotTradingAvailableProvider.overrideWithValue(false)],
     );
     addTearDown(container.dispose);
     final ledger = container.read(appReviewStoreProvider);
+    final activity = await AppReviewActivityRepository(ledger).list();
+    expect(
+      activity.items.where(
+        (record) => record.kind == MarketProductKind.bstock.name,
+      ),
+      isEmpty,
+    );
+    expect(activity.items, isNotEmpty);
 
     expect(
       ledger.positions.values.map((position) => position.kind),

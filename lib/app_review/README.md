@@ -60,8 +60,8 @@ from that ledger. Seed entry levels align with their first live market
 observation. Later market refreshes update valuations without restoring closed
 positions. Financial execution never requests a wallet signature or broadcasts
 a transaction. Where bStocks spot trading is unavailable (iOS), the ledger
-starts without bStocks holdings or open orders, because the app offers no way
-to create them.
+starts without bStocks holdings, open orders, or activity, because the app
+offers no way to create them.
 
 Perps allocation includes the cross USDC pool (cash plus position collateral,
 less isolated and opening-order collateral), used cross/isolated margin,
