@@ -30,7 +30,6 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/widgets/themed_illustration.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_source_sheet.dart';
-import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -38,6 +37,7 @@ import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 import 'package:nobell/ui/core/widgets/venue_icon.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 import '../../../core/feedback/error_message.dart';
 import '../../../core/feedback/provider_refresh.dart';

@@ -11,6 +11,7 @@ import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_search_screen.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 import '../../helpers/test_app.dart';
 
