@@ -11,6 +11,7 @@ import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/repositories/markets_repository.dart';
 import 'package:nobell/data/services/market_search_history_service.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 void main() {
   test('ranking tab defaults and persisted selection respect auth state', () {

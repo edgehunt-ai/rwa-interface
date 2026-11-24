@@ -56,6 +56,7 @@ import 'package:nobell/ui/features/session/providers/authentication_provider.dar
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 import 'package:nobell/ui/core/widgets/app_svg_icon.dart';
 import 'package:nobell/ui/core/widgets/venue_icon.dart';
+import 'package:nobell/app/providers/platform_feature_providers.dart';
 
 part 'trade_screen_details.dart';
 part 'trade_position_tp_sl_sheet.dart';

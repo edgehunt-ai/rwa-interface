@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/platform_feature_providers.dart';
 import '../../../../app/providers/provider_lifecycle.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../data/services/market_search_history_service.dart';
@@ -39,16 +39,6 @@ final class MarketProductFeed {
   final bool isLoadingMore;
   final bool loadMoreFailed;
 }
-
-/// Whether bStocks spot trading entry points are offered on this platform.
-///
-/// App Store review (guideline 3.1.5) rejects spot trading because bStocks
-/// orders may route through third-party exchange venues. iOS therefore lists
-/// only perps and blocks spot trade routes; existing spot holdings, deposits,
-/// transfers, withdrawals, and history remain available.
-final spotTradingAvailableProvider = Provider<bool>(
-  (_) => kIsWeb || defaultTargetPlatform != TargetPlatform.iOS,
-);
 
 /// Restricts a market list query to products offered on this platform.
 MarketQuery availableMarketQuery(MarketQuery query, {required bool spot}) =>
